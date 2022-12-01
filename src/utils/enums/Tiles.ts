@@ -1,0 +1,42 @@
+export const Flags = {
+  FLAGS_PUBLIC: 0x0080,
+  FLAGS_OPEN: 0x0040,
+  FLAGS_ROTATED_LEFT: 0x0030,
+  FLAGS_FLIPPED: 0x0020,
+  FLAGS_WATER: 0x0400,
+  FLAGS_FIRE: 0x1000,
+  FLAGS_RED: 0x2000,
+  FLAGS_SILENCED: 0x200,
+  FLAGS_GREEN: 0x4000,
+  FLAGS_BLUE: 0x8000,
+  FLAGS_LOCKED: 0x0002,
+  FLAGS_TILEEXTRA: 0x0001,
+  FLAGS_TREE: 0x19
+};
+
+export enum ActionTypes {
+  DOOR = 2,
+  LOCK,
+  ENTRANCE = 9,
+  SIGN,
+  BOOMBOX = 12,
+  MAIN_DOOR,
+  FOREGROUND = 17,
+  BACKGROUND,
+  SEED,
+  PORTAL = 26,
+  SHEET_MUSIC = 28
+}
+
+export const Options = {
+  MUSIC_BLOCKS_DISABLED: 0x10,
+  MUSIC_BLOCKS_INVIS: 0x20
+};
+
+export enum ExtraTypes {
+  DOOR = 0x1,
+  MAIN_DOOR = 0x1,
+  SIGN,
+  LOCK,
+  TREE
+}
