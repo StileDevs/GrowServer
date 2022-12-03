@@ -18,8 +18,6 @@ export default class extends Action {
     peer: Peer<PeerDataType>,
     action: ActionType<{ name: string }>
   ): Promise<void> {
-    // console.log(peer);
-    // @ts-ignore
     const worldName: string = action.name || "";
     if (worldName.length <= 0) {
       peer.send(Variant.from("OnFailedToEnterWorld", 1));
@@ -34,13 +32,14 @@ export default class extends Action {
 
     if (base.cache.worlds.has(worldName)) {
       const world = base.cache.worlds.get(worldName)!;
-      await world.enter(peer, { x: 0, y: 0 });
+      const mainDoor = world.data.blocks?.find((block) => block.fg);
+
+      await world.enter(peer, { x: mainDoor?.x, y: mainDoor?.y });
     } else {
       const world = new World(base, worldName);
-      await world.enter(peer, { x: 0, y: 0 });
-    }
+      const mainDoor = world.data.blocks?.find((block) => block.fg);
 
-    //console.log(world);
-    //world.enter(peer, { x: 0, y: 0 });
+      await world.enter(peer, { x: mainDoor?.x, y: mainDoor?.y });
+    }
   }
 }
