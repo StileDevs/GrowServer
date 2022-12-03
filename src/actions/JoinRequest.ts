@@ -32,12 +32,12 @@ export default class extends Action {
 
     if (base.cache.worlds.has(worldName)) {
       const world = base.cache.worlds.get(worldName)!;
-      const mainDoor = world.data.blocks?.find((block) => block.fg);
+      const mainDoor = world.data.blocks?.find((block) => 6);
 
       await world.enter(peer, { x: mainDoor?.x, y: mainDoor?.y });
     } else {
       const world = new World(base, worldName);
-      const mainDoor = world.data.blocks?.find((block) => block.fg);
+      const mainDoor = world.data.blocks?.find((block) => 6);
 
       await world.enter(peer, { x: mainDoor?.x, y: mainDoor?.y });
     }
