@@ -1,4 +1,3 @@
-import { Peer } from "growsockets";
 import { Listener } from "../abstracts/Listener";
 import { BaseServer } from "../structures/BaseServer";
 

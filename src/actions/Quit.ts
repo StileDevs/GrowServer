@@ -1,6 +1,7 @@
-import { Peer, TankPacket, Variant } from "growsockets";
 import { Action } from "../abstracts/Action";
+import { Peer } from "../structures/Peer";
 import { BaseServer } from "../structures/BaseServer";
+import { ActionType } from "../types/action";
 
 export default class extends Action {
   constructor() {
@@ -10,7 +11,7 @@ export default class extends Action {
     };
   }
 
-  public handle(base: BaseServer, peer: Peer<{ netID: number }>): void {
+  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string }>): void {
     peer.disconnect();
   }
 }

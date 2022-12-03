@@ -1,7 +1,9 @@
-import { Peer, Variant } from "growsockets";
+import { Variant } from "growsockets";
+import { Peer } from "../structures/Peer";
 import { Action } from "../abstracts/Action";
 import { BaseServer } from "../structures/BaseServer";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
+import { ActionType } from "../types/action";
 
 export default class extends Action {
   constructor() {
@@ -11,21 +13,12 @@ export default class extends Action {
     };
   }
 
-  public async handle(base: BaseServer, peer: Peer<{ netID: number }>): Promise<void> {
-    const peerData = await peer.getDataFromCache();
-    // console.log(peerData);
-    //console.log(base.items.metadata);
-    // base.items.metadata.then((data) => {
-    //   let lol = data.items.find((v) => v.name === "Dirt");
-    //   console.log(lol);
-    // });
-
-    //console.log(base.cache.users.get(`${peer.data.netID}`));
+  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string }>): void {
     const tes = new DialogBuilder()
       .defaultColor()
-      .addLabelWithIcon("rtaa", "1000", "big")
+      .addLabelWithIcon("Hello", "1000", "big")
       .addSpacer("small")
-      .addTextBox("Welcome to aaaaa")
+      .addTextBox("Welcome to GrowServer")
       .addQuickExit()
       .str();
     peer.send(

@@ -1,9 +1,10 @@
-import { Peer, Variant, TankPacket, TextPacket } from "growsockets";
+import { Variant, TankPacket, TextPacket } from "growsockets";
 import { Listener } from "../abstracts/Listener";
 import { ActionType } from "../types/action";
 import { BaseServer } from "../structures/BaseServer";
 import { DataTypes } from "../utils/enums/DataTypes";
 import { parseAction } from "../utils/Utils";
+import { Peer } from "../structures/Peer";
 
 export default class extends Listener<"data"> {
   constructor() {
@@ -11,7 +12,7 @@ export default class extends Listener<"data"> {
     this.name = "data";
   }
 
-  private failGuest(peer: Peer<{ netID: number }>) {
+  private failGuest(peer: Peer) {
     peer.send(
       Variant.from(
         "OnConsoleMessage",
@@ -28,7 +29,7 @@ export default class extends Listener<"data"> {
   }
 
   public async run(base: BaseServer, netID: number, data: Buffer): Promise<void> {
-    const peer = Peer.new(base.server, netID) as Peer<any>;
+    const peer = new Peer(base.server, netID, base);
     const dataType = data.readInt32LE();
 
     switch (dataType) {
@@ -58,8 +59,8 @@ export default class extends Listener<"data"> {
             );
 
             peer.data.tankIDName = parsed.tankIDName;
-            peer.data.requestedName = parsed.requestedName;
-            base.saveUser(peer.data.netID, peer);
+            peer.data.requestedName = parsed.requestedName as string;
+            peer.saveToCache();
           } else {
             peer.send(
               Variant.from(
@@ -83,11 +84,23 @@ export default class extends Listener<"data"> {
         if (parsed?.action) {
           try {
             const action = base.action.get(parsed.action as string);
-            action?.handle(base, peer, parsed as ActionType<unknown>);
+            action?.handle(base, peer.getSelfCache()!, parsed as ActionType<unknown>);
           } catch (err) {
             console.log(err);
           }
         }
+        break;
+      }
+
+      case DataTypes.TANK: {
+        if (data.length < 60) {
+          peer.send(Variant.from("OnConsoleMessage", "Received invalid tank packet."));
+          return peer.disconnect();
+        }
+        const tank = TankPacket.fromBuffer(data);
+        // console.log(tank);
+
+        break;
       }
     }
   }

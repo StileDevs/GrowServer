@@ -28,7 +28,7 @@ Install all necessary dependencies by running:
 $ npm install
 ```
 
-Because `GrowSockets` package their `tsc` are not local use, you need to install `tsc` globally first by:
+Since `GrowSockets` their `tsc` are not local use, you need to install `tsc` globally first by:
 
 ```
 $ npm install -g typescript

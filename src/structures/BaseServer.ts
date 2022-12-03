@@ -1,23 +1,23 @@
 import fs from "node:fs";
-import { Server, Peer, TextPacket, TankPacket, DefaultCache } from "growsockets";
+import { Server, TextPacket, TankPacket, DefaultCache } from "growsockets";
 import { WebServer } from "./Webserver";
 import { hashItemsDat } from "../utils/Utils";
 import { Action } from "../abstracts/Action";
 import { ItemsDat } from "itemsdat";
 import { World } from "./World";
-import { User } from "../types/user";
+import { Peer } from "./Peer";
 
 export class BaseServer {
   public server: Server<unknown, unknown, unknown>;
   public items;
   public action: Map<string, Action>;
   public cache: {
-    users: Map<number, Peer<User>>;
+    users: Map<number, Peer>;
     worlds: Map<string, World>;
   };
 
   constructor() {
-    this.server = new Server({ http: { enabled: false }, cache: new DefaultCache() });
+    this.server = new Server({ http: { enabled: false } });
     this.items = {
       hash: `${hashItemsDat(fs.readFileSync("./assets/dat/items.dat"))}`,
       content: fs.readFileSync("./assets/dat/items.dat"),
@@ -54,9 +54,4 @@ export class BaseServer {
       console.log(`Loaded "${initFile.config.eventName}" actions`);
     });
   }
-
-  public saveUser(netID: number, peerData: Peer<User>) {
-    this.cache.users.set(netID, peerData);
-  }
-  public getUser(netId: number, peerData: Peer<User>) {}
 }

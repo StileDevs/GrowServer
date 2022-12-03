@@ -26,6 +26,13 @@ export class World {
     this.worldName = worldName;
   }
 
+  public saveToCache() {
+    return this.base.cache.worlds.set(this.worldName, this);
+  }
+  public getWorldCache(worldName: string) {
+    return this.base.cache.worlds.get(worldName);
+  }
+
   public async enter(peer: Peer<PeerDataType>, { x, y }: EnterArg) {
     if (!this.base.cache.worlds.has(this.worldName)) await this.generate(true);
     else this.data = this.base.cache.worlds.get(this.worldName)!.data;
@@ -36,7 +43,6 @@ export class World {
     const tank = TankPacket.from({
       type: TankTypes.PEER_WORLD,
       data: () => {
-        // Terakhir disini World data, tinggal kasih block2 aja
         const HEADER_LENGTH = this.worldName.length + 20;
         const buffer = Buffer.alloc(HEADER_LENGTH);
 
@@ -47,7 +53,6 @@ export class World {
         buffer.writeUint32LE(this.data.width!, 8 + this.worldName.length);
         buffer.writeUint32LE(this.data.height!, 12 + this.worldName.length);
         buffer.writeUint32LE(this.data.blockCount!, 16 + this.worldName.length);
-        // console.log(buffer);
 
         const blockBytes: any[] = [];
         this.data.blocks?.forEach((block) => {
@@ -180,7 +185,7 @@ export class World {
       x++;
     }
     this.data = data;
-    if (cache) this.base.cache.worlds.set(this.worldName, this);
+    if (cache) this.saveToCache();
   }
 
   public add_lock_data_to_packet(block: Block, buffer: Buffer) {
