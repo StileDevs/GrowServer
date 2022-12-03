@@ -41,21 +41,28 @@ export class World {
         const buffer = Buffer.alloc(HEADER_LENGTH);
 
         buffer.writeUint16LE(0xf);
-        buffer.writeUint32LE(0);
-        buffer.writeUint16LE(this.worldName.length);
-        buffer.writeUint32LE(this.data.width!);
-        buffer.writeUint32LE(this.data.height!);
-        buffer.writeUint32LE(this.data.blockCount!);
+        buffer.writeUint32LE(0x0, 2);
+        buffer.writeUint16LE(this.worldName.length, 6);
+        buffer.write(this.worldName, 8);
+        buffer.writeUint32LE(this.data.width!, 8 + this.worldName.length);
+        buffer.writeUint32LE(this.data.height!, 12 + this.worldName.length);
+        buffer.writeUint32LE(this.data.blockCount!, 16 + this.worldName.length);
         // console.log(buffer);
 
         const blockBytes: any[] = [];
         this.data.blocks?.forEach((block) => {
-          let blockBuffer = Buffer.alloc(8);
+          let blockBuffer = Buffer.alloc(block.fg === 6 ? 8 + 4 + block.door?.label!.length! : 8);
 
           blockBuffer.writeUInt32LE(block.fg! | (block.bg! << 16));
-          blockBuffer.writeUint16LE(block.y! * WORLD_SIZE.WIDTH + block.x!);
+          blockBuffer.writeUint16LE(0x0);
           blockBuffer.writeUint16LE(Flags.FLAGS_PUBLIC);
-
+          
+          if (block.fg === 6) {
+            blockBuffer.writeUint8(0x1, 8);
+            blockBuffer.writeUint16LE(block.door?.label!.length!, 9);
+            blockBuffer.write(block.door?.label!, 11);
+            blockBuffer.writeUint8(0x0, 11 + block.door?.label!.length!);
+          }
           blockBuffer.forEach((b) => blockBytes.push(b));
           // blockBytes.push(blockBuffer);
         });
