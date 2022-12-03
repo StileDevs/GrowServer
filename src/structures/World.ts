@@ -54,8 +54,8 @@ export class World {
           let blockBuffer = Buffer.alloc(block.fg === 6 ? 8 + 4 + block.door?.label!.length! : 8);
 
           blockBuffer.writeUInt32LE(block.fg! | (block.bg! << 16));
-          blockBuffer.writeUint16LE(0x0);
-          blockBuffer.writeUint16LE(Flags.FLAGS_PUBLIC);
+          blockBuffer.writeUint16LE(0x0, 4);
+          blockBuffer.writeUint16LE(Flags.FLAGS_PUBLIC, 6);
           
           if (block.fg === 6) {
             blockBuffer.writeUint8(0x1, 8);
