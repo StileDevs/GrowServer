@@ -56,7 +56,7 @@ export class World {
           blockBuffer.writeUInt32LE(block.fg! | (block.bg! << 16));
           blockBuffer.writeUint16LE(0x0, 4);
           blockBuffer.writeUint16LE(Flags.FLAGS_PUBLIC, 6);
-          
+
           if (block.fg === 6) {
             blockBuffer.writeUint8(0x1, 8);
             blockBuffer.writeUint16LE(block.door?.label!.length!, 9);
@@ -64,13 +64,9 @@ export class World {
             blockBuffer.writeUint8(0x0, 11 + block.door?.label!.length!);
           }
           blockBuffer.forEach((b) => blockBytes.push(b));
-          // blockBytes.push(blockBuffer);
         });
 
         return Buffer.concat([buffer, Buffer.from(blockBytes)]);
-        //return buffer;
-        //return Buffer.from(blockBytes);
-        //return Buffer.concat([buffer, Buffer.from(blockBytes)]);
       }
     });
 
