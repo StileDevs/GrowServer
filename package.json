@@ -17,6 +17,7 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
+    "chalk": "4.1.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "growsockets": "github:Pogtopia/Growsockets#a490651f58f9220a423ecacb6e5cdd12baa1a49d",

@@ -1,8 +1,8 @@
 import express from "express";
 import { readFileSync } from "node:fs";
-import http from "http";
-import https from "https";
-import path from "node:path";
+import http from "node:http";
+import https from "node:https";
+import { Logger } from "./Logger";
 const app = express();
 
 let options = {
@@ -10,7 +10,7 @@ let options = {
   cert: readFileSync("./assets/ssl/server.crt")
 };
 
-export function WebServer() {
+export function WebServer(log: Logger) {
   app.use("/growtopia/server_data.php", (req, res) => {
     res.send(
       "server|127.0.0.1\nport|17091\ntype|1\n#maint|Maintenance woi\nmeta|lolwhat\nRTENDMARKERBS1001"
@@ -24,6 +24,6 @@ export function WebServer() {
   httpsServer.listen(443);
 
   httpsServer.on("listening", function () {
-    console.log("Starting web server");
+    log.ready("Starting web server");
   });
 }

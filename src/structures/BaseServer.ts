@@ -6,6 +6,7 @@ import { Action } from "../abstracts/Action";
 import { ItemsDat } from "itemsdat";
 import { World } from "./World";
 import { Peer } from "./Peer";
+import { Logger } from "./Logger";
 
 export class BaseServer {
   public server: Server<unknown, unknown, unknown>;
@@ -15,6 +16,7 @@ export class BaseServer {
     users: Map<number, Peer>;
     worlds: Map<string, World>;
   };
+  public log: Logger;
 
   constructor() {
     this.server = new Server({ http: { enabled: false } });
@@ -28,13 +30,14 @@ export class BaseServer {
       users: new Map(),
       worlds: new Map()
     };
+    this.log = new Logger();
   }
 
   public start() {
     this.#_loadEvents();
     this.#_loadActions();
     this.server.listen();
-    WebServer();
+    WebServer(this.log);
   }
 
   #_loadEvents() {
@@ -42,7 +45,7 @@ export class BaseServer {
       let file = (await import(`../events/${event}`)).default;
       let initFile = new file();
       this.server.on(initFile.name, (...args) => initFile.run(this, ...args));
-      console.log(`Loaded "${initFile.name}" events`);
+      this.log.event(`Loaded "${initFile.name}" events`);
     });
   }
 
@@ -51,7 +54,7 @@ export class BaseServer {
       let file = (await import(`../actions/${event}`)).default;
       let initFile = new file();
       this.action.set(initFile.config.eventName, initFile);
-      console.log(`Loaded "${initFile.config.eventName}" actions`);
+      this.log.action(`Loaded "${initFile.config.eventName}" actions`);
     });
   }
 }

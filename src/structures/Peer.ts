@@ -1,5 +1,7 @@
-import { Peer as OldPeer, Server, TankPacket } from "growsockets";
+import { Peer as OldPeer, Server, TankPacket, TextPacket, Variant } from "growsockets";
 import { PeerDataType } from "../types/peer";
+import { WORLD_SIZE } from "../utils/Constants";
+import { DataTypes } from "../utils/enums/DataTypes";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { BaseServer } from "./BaseServer";
 import { World } from "./World";
@@ -22,20 +24,42 @@ export class Peer extends OldPeer<PeerDataType> {
     return this.base.cache.users.get(this.data.netID);
   }
 
+  public sound(file: string, delay: number = 100) {
+    this.send(
+      TextPacket.from(DataTypes.ACTION, "action|play_sfx", `file|${file}`, `delayMS|${delay}`)
+    );
+  }
+
+  public hasWorld(worldName: string) {
+    // prettier-ignore
+    return this.base.cache.worlds.has(worldName) ? this.base.cache.worlds.get(worldName)! : new World(this.base, worldName);
+  }
+
+  public respawn() {
+    const world = this.hasWorld(this.data.world!);
+    const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
+
+    this.send(
+      Variant.from({ netID: this.data.netID }, "OnSetFreezeState", 1),
+      Variant.from({ netID: this.data.netID }, "OnKilled"),
+      Variant.from({ netID: this.data.netID, delay: 2000 }, "OnSetPos", [
+        (mainDoor?.x! % WORLD_SIZE.WIDTH) * 32,
+        (mainDoor?.y! % WORLD_SIZE.WIDTH) * 32
+      ])
+    );
+
+    this.sound("audio/teleport.wav", 2000);
+    // put this above later instead send new packet
+    this.send(Variant.from({ netID: this.data.netID, delay: 2000 }, "OnSetFreezeState", 0));
+  }
+
   public async enterWorld(worldName: string) {
-    if (this.base.cache.worlds.has(worldName)) {
-      const world = this.base.cache.worlds.get(worldName)!;
-      const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
+    const world = this.hasWorld(worldName);
+    const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
 
-      await world.enter(this, { x: mainDoor?.x, y: mainDoor?.y });
-      this.inventory();
-    } else {
-      const world = new World(this.base, worldName);
-      const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
-
-      await world.enter(this, { x: mainDoor?.x, y: mainDoor?.y });
-      this.inventory();
-    }
+    await world.enter(this, { x: mainDoor?.x, y: mainDoor?.y });
+    this.inventory();
+    this.sound("audio/door_open.wav");
   }
 
   public inventory() {
@@ -53,6 +77,14 @@ export class Peer extends OldPeer<PeerDataType> {
         {
           id: 2, // Dirt
           amount: 200
+        },
+        {
+          id: 1000, // Public Lava
+          amount: 200
+        },
+        {
+          id: 156, // Fairy wing
+          amount: 1
         }
       ]
     };

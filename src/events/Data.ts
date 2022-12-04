@@ -5,6 +5,7 @@ import { BaseServer } from "../structures/BaseServer";
 import { DataTypes } from "../utils/enums/DataTypes";
 import { parseAction } from "../utils/Utils";
 import { Peer } from "../structures/Peer";
+import { TankTypes } from "../utils/enums/TankTypes";
 
 export default class extends Listener<"data"> {
   constructor() {
@@ -29,7 +30,8 @@ export default class extends Listener<"data"> {
   }
 
   public async run(base: BaseServer, netID: number, data: Buffer): Promise<void> {
-    const peer = new Peer(base.server, netID, base);
+    // prettier-ignore
+    const peer = base.cache.users.has(netID) ? base.cache.users.get(netID)! : new Peer(base.server, netID, base);
     const dataType = data.readInt32LE();
 
     switch (dataType) {
@@ -98,8 +100,45 @@ export default class extends Listener<"data"> {
           return peer.disconnect();
         }
         const tank = TankPacket.fromBuffer(data);
-        // console.log(tank);
 
+        // Place/Punch
+        if (tank.data?.type === 3) {
+          console.log(tank);
+          console.log(peer.data);
+          switch (tank.data.info) {
+            // Fist
+            case 18: {
+              const packet = TankPacket.from({
+                type: TankTypes.TILE_DAMAGE,
+                netID: peer.data.netID,
+                state: 0x8, // bitwise 0x10 if rotated left
+                info: tank.data?.info,
+                xPunch: tank.data?.xPunch,
+                yPunch: tank.data?.yPunch
+              });
+              peer.send(packet.parse());
+            }
+
+            // Others
+            default: {
+              const packet = TankPacket.from({
+                type: TankTypes.TILE_PUNCH,
+                netID: peer.data.netID,
+                state: 0x8, // bitwise 0x10 if rotated left
+                info: tank.data?.info,
+                xPunch: tank.data?.xPunch,
+                yPunch: tank.data?.yPunch
+              });
+              peer.send(packet.parse());
+            }
+          }
+        } // Movement
+        else if (tank.data?.type === 0) {
+          peer.data.x = tank.data.xPos;
+          peer.data.y = tank.data.yPos;
+          peer.saveToCache();
+          // TODO: update movement to every peer if they in same world
+        }
         break;
       }
     }
