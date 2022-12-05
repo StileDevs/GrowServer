@@ -7,7 +7,7 @@ import { Block, EnterArg, WorldData } from "../types/worlds";
 import { BaseServer } from "./BaseServer";
 import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
-import { TileExtras } from "./TileExtra";
+import { HandleTile } from "./TileExtra";
 
 export class World {
   public data: WorldData = {};
@@ -49,19 +49,11 @@ export class World {
 
         const blockBytes: any[] = [];
         this.data.blocks?.forEach((block) => {
-          let blockBuffer = Buffer.alloc(block.fg === 6 ? 8 + 4 + block.door?.label!.length! : 8);
+          let item = this.base.items.metadata.items.find((i) => i.id === block.fg);
 
-          blockBuffer.writeUInt32LE(block.fg! | (block.bg! << 16));
-          blockBuffer.writeUint16LE(0x0, 4);
-          blockBuffer.writeUint16LE(Flags.FLAGS_PUBLIC, 6);
+          let blockBuf = HandleTile(block, item?.type);
 
-          if (block.fg === 6) {
-            blockBuffer.writeUint8(0x1, 8);
-            blockBuffer.writeUint16LE(block.door?.label!.length!, 9);
-            blockBuffer.write(block.door?.label!, 11);
-            blockBuffer.writeUint8(0x0, 11 + block.door?.label!.length!);
-          }
-          blockBuffer.forEach((b) => blockBytes.push(b));
+          blockBuf.forEach((b) => blockBytes.push(b));
         });
 
         return Buffer.concat([buffer, Buffer.from(blockBytes)]);
