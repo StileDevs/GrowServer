@@ -4,6 +4,7 @@ import { WebServer } from "./Webserver";
 import { hashItemsDat } from "../utils/Utils";
 import { Action } from "../abstracts/Action";
 import { ItemsDat } from "itemsdat";
+import { ItemsDatMeta } from "itemsdat/src/Types";
 import { World } from "./World";
 import { Peer } from "./Peer";
 import { Logger } from "./Logger";
@@ -23,7 +24,7 @@ export class BaseServer {
     this.items = {
       hash: `${hashItemsDat(fs.readFileSync("./assets/dat/items.dat"))}`,
       content: fs.readFileSync("./assets/dat/items.dat"),
-      metadata: new ItemsDat(fs.readFileSync("./assets/dat/items.dat")).decode()
+      metadata: {} as ItemsDatMeta
     };
     this.action = new Map();
     this.cache = {
@@ -34,10 +35,13 @@ export class BaseServer {
   }
 
   public start() {
-    this.#_loadEvents();
-    this.#_loadActions();
-    this.server.listen();
-    WebServer(this.log);
+    this.#_loadItems().then(() => {
+      this.log.ready("Items data ready!");
+      this.#_loadEvents();
+      this.#_loadActions();
+      this.server.listen();
+      WebServer(this.log);
+    });
   }
 
   #_loadEvents() {
@@ -47,6 +51,11 @@ export class BaseServer {
       this.server.on(initFile.name, (...args) => initFile.run(this, ...args));
       this.log.event(`Loaded "${initFile.name}" events`);
     });
+  }
+
+  async #_loadItems() {
+    let items = await new ItemsDat(fs.readFileSync("./assets/dat/items.dat")).decode();
+    this.items.metadata = items;
   }
 
   #_loadActions() {

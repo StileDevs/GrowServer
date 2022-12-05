@@ -140,7 +140,7 @@ export default class extends Listener<"data"> {
           const world = peer.hasWorld(peer.data.world!);
           const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
           const block = world.data.blocks![pos];
-          const item = (await base.items.metadata).items;
+          const item = base.items.metadata.items;
 
           // prettier-ignore
           const isBg = item[tank.data.info!].type === ActionTypes.BACKGROUND || item[tank.data.info!].type === ActionTypes.SHEET_MUSIC;
