@@ -12,11 +12,11 @@ export default class extends Action {
     };
   }
 
-  public async handle(
+  public handle(
     base: BaseServer,
     peer: Peer,
     action: ActionType<{ action: string; name: string }>
-  ): Promise<void> {
+  ): void {
     const worldName: string = action.name || "";
     if (worldName.length <= 0) {
       peer.send(Variant.from("OnFailedToEnterWorld", 1));
@@ -29,6 +29,6 @@ export default class extends Action {
       );
     }
 
-    await peer.enterWorld(worldName);
+    peer.enterWorld(worldName);
   }
 }

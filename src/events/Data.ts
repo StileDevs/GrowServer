@@ -6,6 +6,8 @@ import { DataTypes } from "../utils/enums/DataTypes";
 import { parseAction } from "../utils/Utils";
 import { Peer } from "../structures/Peer";
 import { TankTypes } from "../utils/enums/TankTypes";
+import { WORLD_SIZE } from "../utils/Constants";
+import { ActionTypes } from "../utils/enums/Tiles";
 
 export default class extends Listener<"data"> {
   constructor() {
@@ -60,8 +62,40 @@ export default class extends Listener<"data"> {
               Variant.from("SetHasGrowID", 1, parsed.tankIDName, parsed.tankIDPass)
             );
 
+            let inventory = {
+              max: 32,
+              items: [
+                {
+                  id: 18, // Fist
+                  amount: 1
+                },
+                {
+                  id: 32, // Wrench
+                  amount: 1
+                },
+                {
+                  id: 2, // Dirt
+                  amount: 10
+                },
+                {
+                  id: 1000, // Public Lava
+                  amount: 200
+                },
+                {
+                  id: 14, // Cave Background
+                  amount: 200
+                },
+                {
+                  id: 156, // Fairy wing
+                  amount: 1
+                }
+              ]
+            };
+
             peer.data.tankIDName = parsed.tankIDName;
             peer.data.requestedName = parsed.requestedName as string;
+            peer.data.country = parsed.country as string;
+            peer.data.inventory = inventory;
             peer.saveToCache();
           } else {
             peer.send(
@@ -103,24 +137,22 @@ export default class extends Listener<"data"> {
 
         // Place/Punch
         if (tank.data?.type === 3) {
+          const world = peer.hasWorld(peer.data.world!);
+          const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
+          const block = world.data.blocks![pos];
+          const item = (await base.items.metadata).items;
+
+          // prettier-ignore
+          const isBg = item[tank.data.info!].type === ActionTypes.BACKGROUND || item[tank.data.info!].type === ActionTypes.SHEET_MUSIC;
+
+          console.log({ block, pos, isBg });
           console.log(tank);
-          console.log(peer.data);
+          // TODO: Handle if block was break/placed, then save it to world cache
+
           switch (tank.data.info) {
             // Fist
             case 18: {
-              const packet = TankPacket.from({
-                type: TankTypes.TILE_DAMAGE,
-                netID: peer.data.netID,
-                state: 0x8, // bitwise 0x10 if rotated left
-                info: tank.data?.info,
-                xPunch: tank.data?.xPunch,
-                yPunch: tank.data?.yPunch
-              });
-              peer.send(packet.parse());
-            }
-
-            // Others
-            default: {
+              // if (!block.fg || !block.bg) return;
               const packet = TankPacket.from({
                 type: TankTypes.TILE_PUNCH,
                 netID: peer.data.netID,
@@ -130,6 +162,48 @@ export default class extends Listener<"data"> {
                 yPunch: tank.data?.yPunch
               });
               peer.send(packet.parse());
+
+              if (isBg) {
+                world.data.blocks![pos].bg = 0;
+                world.saveToCache();
+              } else {
+                world.data.blocks![pos].fg = 0;
+                world.saveToCache();
+              }
+            }
+
+            // Others
+            default: {
+              // ignore fist & wrench
+              if (tank.data.info === 18 || tank.data.info === 32) return;
+              const packet = TankPacket.from({
+                type: TankTypes.TILE_PUNCH,
+                netID: peer.data.netID,
+                state: 0x8, // bitwise 0x10 if rotated left
+                info: tank.data?.info,
+                xPunch: tank.data?.xPunch,
+                yPunch: tank.data?.yPunch
+              });
+
+              peer.send(packet.parse());
+
+              if (isBg) {
+                world.data.blocks![pos].bg = tank.data.info;
+                world.saveToCache();
+              } else {
+                world.data.blocks![pos].fg = tank.data.info;
+                world.saveToCache();
+              }
+              // prettier-ignore
+              let item = peer.data.inventory?.items.find((item) => item.id === tank.data?.info)!;
+              let items = peer.data.inventory?.items;
+              item.amount = item.amount! - 1;
+
+              // prettier-ignore
+              if (item.amount === 0) {
+                peer.data.inventory!.items! = peer.data.inventory?.items.filter((i) => i.amount !== 0)!;
+              }
+              return peer.saveToCache();
             }
           }
         } // Movement
@@ -139,6 +213,7 @@ export default class extends Listener<"data"> {
           peer.saveToCache();
           // TODO: update movement to every peer if they in same world
         }
+
         break;
       }
     }

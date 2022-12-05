@@ -9,25 +9,18 @@ import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Con
 import { TankTypes } from "../utils/enums/TankTypes";
 import { TileExtras } from "./TileExtra";
 
-const write = (arr: number[], int: number, size: number) => {
-  arr.push(int & 0x000000ff);
-
-  if (size > 1) arr.push((int & 0x0000ff00) >> 8);
-  if (size > 2) arr.push((int & 0x00ff0000) >> 16);
-  if (size > 3) arr.push((int & 0xff000000) >> 24);
-};
-
 export class World {
   public data: WorldData = {};
   public worldName;
 
   constructor(private base: BaseServer, worldName: string) {
     this.base = base;
-    this.worldName = worldName;
+    this.worldName = worldName.toUpperCase();
   }
 
   public saveToCache() {
-    return this.base.cache.worlds.set(this.worldName, this);
+    this.base.cache.worlds.set(this.worldName, this);
+    return;
   }
   public getWorldCache(worldName: string) {
     return this.base.cache.worlds.get(worldName);
@@ -95,8 +88,8 @@ export class World {
           `userID|0\n` + // taro di peer nanti
           `colrect|0|0|20|30\n` +
           `posXY|${peer.data.x}|${peer.data.y}\n` +
-          `name|\`w${"tes"}\`\`\n` +
-          `country|us\n` + // country peer
+          `name|\`w${peer.data.tankIDName}\`\`\n` +
+          `country|${peer.data.country}\n` + // country peer
           "invis|0\n" +
           "mstate|0\n" +
           "smstate|0\n" +
@@ -118,7 +111,7 @@ export class World {
     );
   }
 
-  public async generate(cache?: boolean) {
+  public generate(cache?: boolean) {
     if (!this.worldName) throw new Error("World name required.");
     const width = WORLD_SIZE.WIDTH;
     const height = WORLD_SIZE.HEIGHT;

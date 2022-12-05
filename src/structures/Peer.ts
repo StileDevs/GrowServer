@@ -17,7 +17,8 @@ export class Peer extends OldPeer<PeerDataType> {
 
   /** Extended version of setDataToCache */
   public saveToCache() {
-    return this.base.cache.users.set(this.data.netID, this);
+    this.base.cache.users.set(this.data.netID, this);
+    return;
   }
 
   public getSelfCache() {
@@ -45,49 +46,24 @@ export class Peer extends OldPeer<PeerDataType> {
       Variant.from({ netID: this.data.netID, delay: 2000 }, "OnSetPos", [
         (mainDoor?.x! % WORLD_SIZE.WIDTH) * 32,
         (mainDoor?.y! % WORLD_SIZE.WIDTH) * 32
-      ])
+      ]),
+      Variant.from({ netID: this.data.netID, delay: 2000 }, "OnSetFreezeState", 0)
     );
 
     this.sound("audio/teleport.wav", 2000);
-    // put this above later instead send new packet
-    this.send(Variant.from({ netID: this.data.netID, delay: 2000 }, "OnSetFreezeState", 0));
   }
 
-  public async enterWorld(worldName: string) {
+  public enterWorld(worldName: string) {
     const world = this.hasWorld(worldName);
     const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
 
-    await world.enter(this, { x: mainDoor?.x, y: mainDoor?.y });
+    world.enter(this, { x: mainDoor?.x, y: mainDoor?.y });
     this.inventory();
     this.sound("audio/door_open.wav");
   }
 
   public inventory() {
-    let inventory = {
-      max: 32,
-      items: [
-        {
-          id: 18, // Fist
-          amount: 1
-        },
-        {
-          id: 32, // Wrench
-          amount: 1
-        },
-        {
-          id: 2, // Dirt
-          amount: 200
-        },
-        {
-          id: 1000, // Public Lava
-          amount: 200
-        },
-        {
-          id: 156, // Fairy wing
-          amount: 1
-        }
-      ]
-    };
+    const inventory = this.data.inventory!;
 
     this.send(
       TankPacket.from({
