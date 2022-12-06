@@ -246,8 +246,8 @@ export default class extends Listener<"data"> {
           const world = peer.hasWorld(peer.data.world);
           const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
           const block = world.data.blocks![pos];
-          console.log(block);
-          // fix ini nanti
+
+          // TODO: add more door
           if (block.fg === 6) return peer.leaveWorld();
         }
 

@@ -31,6 +31,8 @@ export default class extends Action {
       );
     }
 
-    peer.enterWorld(worldName);
+    setTimeout(() => {
+      peer.enterWorld(worldName.toUpperCase());
+    }, 300);
   }
 }

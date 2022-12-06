@@ -16,7 +16,7 @@ export class World {
 
   constructor(private base: BaseServer, worldName: string) {
     this.base = base;
-    this.worldName = worldName.toUpperCase();
+    this.worldName = worldName;
   }
 
   public saveToCache() {
@@ -59,6 +59,7 @@ export class World {
 
     const tank = TankPacket.from({
       type: TankTypes.PEER_WORLD,
+      state: 8,
       data: () => {
         const HEADER_LENGTH = this.worldName.length + 20;
         const buffer = Buffer.alloc(HEADER_LENGTH);
@@ -90,7 +91,6 @@ export class World {
       yPos = (y < 0 ? mainDoor?.y || 0 : y) * 32;
 
     peer.send(tank);
-
     peer.data.x = xPos;
     peer.data.y = yPos;
     peer.data.world = this.worldName;
