@@ -1,5 +1,5 @@
 import { Peer as OldPeer, Server, TankPacket, TextPacket, Variant } from "growsockets";
-import { PeerDataType } from "../types/peer";
+import { EveryPeerOptions, PeerDataType } from "../types/peer";
 import { WORLD_SIZE } from "../utils/Constants";
 import { DataTypes } from "../utils/enums/DataTypes";
 import { TankTypes } from "../utils/enums/TankTypes";
@@ -31,13 +31,29 @@ export class Peer extends OldPeer<PeerDataType> {
     );
   }
 
+  public leaveWorld() {
+    const world = this.hasWorld(this.data.world);
+
+    world.leave(this);
+  }
+
+  // prettier-ignore
+  public everyPeer( {sameWorld = false}: EveryPeerOptions, callbackfn: (peer: Peer, netID: number) => void): void {
+    this.base.cache.users.forEach((p, k) => {
+      if (sameWorld) {
+        if(p.data.world === this.data.world && p.data.world !== "EXIT") return callbackfn(p, k);
+      }
+      callbackfn(p, k);
+    });
+  }
+
   public hasWorld(worldName: string) {
     // prettier-ignore
     return this.base.cache.worlds.has(worldName) ? this.base.cache.worlds.get(worldName)! : new World(this.base, worldName);
   }
 
   public respawn() {
-    const world = this.hasWorld(this.data.world!);
+    const world = this.hasWorld(this.data.world);
     const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
 
     this.send(

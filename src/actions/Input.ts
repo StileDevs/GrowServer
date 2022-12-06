@@ -17,13 +17,14 @@ export default class extends Action {
     peer: Peer,
     action: ActionType<{ action: string; text: string }>
   ): void {
-    const data = base.cache.users.get(peer.data.netID)?.data;
-    peer.send(
-      Variant.from("OnTalkBubble", data?.netID!, action.text, 0),
-      Variant.from(
-        "OnConsoleMessage",
-        `CP:0_PL:0_OID:_CT:[W]_ <\`w${data?.tankIDName}\`\`> ${action.text}`
-      )
-    );
+    peer.everyPeer({ sameWorld: true }, (p) => {
+      p.send(
+        Variant.from("OnTalkBubble", peer.data.netID, action.text, 0),
+        Variant.from(
+          "OnConsoleMessage",
+          `CP:0_PL:0_OID:_CT:[W]_ <\`w${peer.data.tankIDName}\`\`> ${action.text}`
+        )
+      );
+    });
   }
 }

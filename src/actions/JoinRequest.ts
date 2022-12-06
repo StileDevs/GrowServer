@@ -19,12 +19,14 @@ export default class extends Action {
   ): void {
     const worldName: string = action.name || "";
     if (worldName.length <= 0) {
-      peer.send(Variant.from("OnFailedToEnterWorld", 1));
-      return peer.send(Variant.from("OnConsoleMessage", "That world name is uhh `9empty``"));
+      return peer.send(
+        Variant.from("OnFailedToEnterWorld", 1),
+        Variant.from("OnConsoleMessage", "That world name is uhh `9empty``")
+      );
     }
     if (worldName.match(/\W+|_|EXIT/gi)) {
-      peer.send(Variant.from("OnFailedToEnterWorld", 1));
       return peer.send(
+        Variant.from("OnFailedToEnterWorld", 1),
         Variant.from("OnConsoleMessage", "That world name is too `9special`` to be entered.")
       );
     }

@@ -1,6 +1,6 @@
 // BIKIN WORLD & HUBUNING USERS SAMA WORLDNYA KE DATABASE
 
-import { Peer, TankPacket, Variant } from "growsockets";
+import { TankPacket, Variant } from "growsockets";
 import { PeerDataType } from "../types/peer";
 import { Flags } from "../utils/enums/Tiles";
 import { Block, EnterArg, WorldData } from "../types/worlds";
@@ -8,6 +8,7 @@ import { BaseServer } from "./BaseServer";
 import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { HandleTile } from "./TileExtra";
+import { Peer } from "./Peer";
 
 export class World {
   public data: WorldData = {};
@@ -26,8 +27,31 @@ export class World {
     return this.base.cache.worlds.get(worldName);
   }
 
-  public async enter(peer: Peer<PeerDataType>, { x, y }: EnterArg) {
-    if (!this.base.cache.worlds.has(this.worldName)) await this.generate(true);
+  public leave(peer: Peer, sendMenu = true) {
+    this.data.playerCount!--;
+
+    peer.everyPeer({ sameWorld: true }, (p) => {
+      if (p.data.netID !== peer.data.netID)
+        p.send(Variant.from("OnRemove", `netID|${peer.data.netID}`));
+    });
+
+    if (sendMenu)
+      peer.send(
+        Variant.from({ delay: 500 }, "OnRequestWorldSelectMenu"),
+        Variant.from({ delay: 500 }, "OnConsoleMessage", `Where do you want to go?`)
+      );
+
+    peer.data.world = "EXIT";
+
+    peer.saveToCache();
+
+    if (this.data.playerCount! < 1) {
+      // TODO: delete the cache (if needed) & save it to db
+    }
+  }
+
+  public enter(peer: Peer, { x, y }: EnterArg) {
+    if (!this.base.cache.worlds.has(this.worldName)) this.generate(true);
     else this.data = this.base.cache.worlds.get(this.worldName)!.data;
 
     if (typeof x !== "number") x = -1;
@@ -101,6 +125,10 @@ export class World {
         [0, 0, 0]
       )
     );
+    this.data.playerCount!++;
+
+    this.saveToCache();
+    peer.saveToCache();
   }
 
   public generate(cache?: boolean) {

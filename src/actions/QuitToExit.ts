@@ -11,5 +11,7 @@ export default class extends Action {
     };
   }
 
-  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string }>): void {}
+  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string }>): void {
+    peer.leaveWorld();
+  }
 }

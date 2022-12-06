@@ -96,6 +96,7 @@ export default class extends Listener<"data"> {
             peer.data.requestedName = parsed.requestedName as string;
             peer.data.country = parsed.country as string;
             peer.data.inventory = inventory;
+            peer.data.world = "EXIT";
             peer.saveToCache();
           } else {
             peer.send(
@@ -137,24 +138,44 @@ export default class extends Listener<"data"> {
 
         // Place/Punch
         if (tank.data?.type === 3) {
-          const world = peer.hasWorld(peer.data.world!);
+          const world = peer.hasWorld(peer.data.world);
           const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
           const block = world.data.blocks![pos];
           const item = base.items.metadata.items;
+          const itemMeta = item[block.fg || block.bg!];
 
           // prettier-ignore
           const isBg = item[tank.data.info!].type === ActionTypes.BACKGROUND || item[tank.data.info!].type === ActionTypes.SHEET_MUSIC;
-
-          console.log({ block, pos, isBg });
-          console.log(tank);
-          // TODO: Handle if block was break/placed, then save it to world cache
 
           switch (tank.data.info) {
             // Fist
             case 18: {
               // if (!block.fg || !block.bg) return;
+
+              itemMeta.resetStateAfter;
+
+              if (typeof block.damage !== "number" || block.resetStateAt! <= Date.now())
+                block.damage = 0;
+
+              if (block.damage >= itemMeta.breakHits!) {
+                block.damage = 0;
+                block.resetStateAt = 0;
+
+                if (block.fg) block.fg = 0;
+                else if (block.bg) block.bg = 0;
+
+                tank.data.type = TankTypes.TILE_PUNCH;
+                tank.data.info = 18;
+              } else {
+                tank.data.info = block.damage + 5;
+                tank.data.type = TankTypes.TILE_DAMAGE;
+
+                block.resetStateAt = Date.now() + itemMeta.resetStateAfter! * 1000;
+                block.damage++;
+              }
+
               const packet = TankPacket.from({
-                type: TankTypes.TILE_PUNCH,
+                type: tank.data.type,
                 netID: peer.data.netID,
                 state: 0x8, // bitwise 0x10 if rotated left
                 info: tank.data?.info,
@@ -163,13 +184,13 @@ export default class extends Listener<"data"> {
               });
               peer.send(packet.parse());
 
-              if (isBg) {
-                world.data.blocks![pos].bg = 0;
-                world.saveToCache();
-              } else {
-                world.data.blocks![pos].fg = 0;
-                world.saveToCache();
-              }
+              // if (isBg) {
+              //   world.data.blocks![pos].bg = 0;
+              // } else {
+              //   world.data.blocks![pos].fg = 0;
+              // }
+              world.saveToCache();
+              break;
             }
 
             // Others
@@ -189,29 +210,45 @@ export default class extends Listener<"data"> {
 
               if (isBg) {
                 world.data.blocks![pos].bg = tank.data.info;
-                world.saveToCache();
               } else {
                 world.data.blocks![pos].fg = tank.data.info;
-                world.saveToCache();
               }
-              // prettier-ignore
-              let item = peer.data.inventory?.items.find((item) => item.id === tank.data?.info)!;
-              let items = peer.data.inventory?.items;
-              item.amount = item.amount! - 1;
 
               // prettier-ignore
-              if (item.amount === 0) {
+              let invenItem = peer.data.inventory?.items.find((item) => item.id === tank.data?.info)!;
+              invenItem.amount = invenItem.amount! - 1;
+
+              if (invenItem.amount === 0) {
+                // prettier-ignore
                 peer.data.inventory!.items! = peer.data.inventory?.items.filter((i) => i.amount !== 0)!;
               }
+              world.saveToCache();
               return peer.saveToCache();
             }
           }
         } // Movement
         else if (tank.data?.type === 0) {
+          tank.data.netID = peer.data.netID;
+          tank.data.type = TankTypes.PEER_MOVE;
+
           peer.data.x = tank.data.xPos;
           peer.data.y = tank.data.yPos;
+
           peer.saveToCache();
-          // TODO: update movement to every peer if they in same world
+
+          peer.everyPeer({ sameWorld: true }, (p) => {
+            p.send(tank);
+          });
+        } // Entering door
+        else if (tank.data?.type === 7) {
+          if (peer.data.world === "EXIT") return;
+
+          const world = peer.hasWorld(peer.data.world);
+          const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
+          const block = world.data.blocks![pos];
+          console.log(block);
+          // fix ini nanti
+          if (block.fg === 6) return peer.leaveWorld();
         }
 
         break;
@@ -219,13 +256,3 @@ export default class extends Listener<"data"> {
     }
   }
 }
-
-/*
-[0] OnSuperMainStartAcceptLogonHrdxs47254722215a
-[1] 1743231928
-[2] ubistatic-a.akamaihd.net
-[3] 0098/654975/cache/
-[4] cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster
-[5] proto=179|choosemusic=audio/mp3/theme3.mp3|active_holiday=17|wing_week_day=0|ubi_week_day=0|server_tick=3021347|clash_active=1|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|
-[6] 370236174
-*/

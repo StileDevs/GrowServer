@@ -6,7 +6,7 @@ export interface InventoryItems {
 export interface PeerDataType {
   x?: number;
   y?: number;
-  world?: string;
+  world: string;
   inventory?: {
     max: number;
     items: InventoryItems[];
@@ -15,4 +15,8 @@ export interface PeerDataType {
   tankIDName: string;
   netID: number;
   country: string;
+}
+
+export interface EveryPeerOptions {
+  sameWorld?: boolean;
 }
