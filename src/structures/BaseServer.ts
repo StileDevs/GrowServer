@@ -20,7 +20,7 @@ export class BaseServer {
   public log: Logger;
 
   constructor() {
-    this.server = new Server({ http: { enabled: false } });
+    this.server = new Server({ http: { enabled: false }, log: false });
     this.items = {
       hash: `${hashItemsDat(fs.readFileSync("./assets/dat/items.dat"))}`,
       content: fs.readFileSync("./assets/dat/items.dat"),
