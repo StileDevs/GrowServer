@@ -22,7 +22,7 @@ export default class extends Dialog {
       .defaultColor()
       .addLabelWithIcon("Find the item", "6016", "big")
       .addInputBox("find_item_name", "", action.find_item_name, 30)
-      .addSpacer("big");
+      .addSpacer("small");
 
     const items = base.items.metadata.items.filter((v) =>
       v.name?.toLowerCase().includes(action.find_item_name.toLowerCase())
@@ -31,10 +31,10 @@ export default class extends Dialog {
       if (item.id! % 2 === 0) dialog.addButtonWithIcon(item.id!, item.id!, item.name!);
     });
 
-    dialog.addSpacer("big");
-    dialog.endDialog("find_item_end", "Cancel", "Find others");
+    // fix spacing dialog later
+    // dialog.addSpacer("big");
+    dialog.endDialog("find_item_end", "Cancel", "");
     dialog.addQuickExit();
-    // fix spacing dialog
 
     // console.log(dialog.str());
 
