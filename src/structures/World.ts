@@ -3,7 +3,7 @@
 import { TankPacket, Variant } from "growsockets";
 import { PeerDataType } from "../types/peer";
 import { Flags } from "../utils/enums/Tiles";
-import { Block, EnterArg, WorldData } from "../types/worlds";
+import { Block, EnterArg, WorldData } from "../types/world";
 import { BaseServer } from "./BaseServer";
 import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";

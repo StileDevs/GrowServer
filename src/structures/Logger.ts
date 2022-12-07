@@ -23,7 +23,15 @@ export class Logger {
   }
 
   public action(...content: unknown[]) {
-    console.log(`[${this.time} - ${chalk.rgb(255, 0, 217)("ACTION")}  ]`, ...content);
+    console.log(`[${this.time} - ${chalk.rgb(242, 124, 27)("ACTION")}  ]`, ...content);
+  }
+
+  public dialog(...content: unknown[]) {
+    console.log(`[${this.time} - ${chalk.rgb(69, 214, 200)("DIALOG")}  ]`, ...content);
+  }
+
+  public command(...content: unknown[]) {
+    console.log(`[${this.time} - ${chalk.rgb(95, 232, 150)("COMMAND")} ]`, ...content);
   }
 
   public debug(...content: unknown[]) {

@@ -8,6 +8,9 @@ import { ItemsDatMeta } from "itemsdat/src/Types";
 import { World } from "./World";
 import { Peer } from "./Peer";
 import { Logger } from "./Logger";
+import { Command } from "../abstracts/Command";
+import { CooldownOptions } from "../types/command";
+import { Dialog } from "../abstracts/Dialog";
 
 export class BaseServer {
   public server: Server<unknown, unknown, unknown>;
@@ -18,6 +21,9 @@ export class BaseServer {
     worlds: Map<string, World>;
   };
   public log: Logger;
+  public commands: Map<string, Command>;
+  public cooldown: Map<string, CooldownOptions>;
+  public dialogs: Map<string, Dialog>;
 
   constructor() {
     this.server = new Server({ http: { enabled: false }, log: false });
@@ -32,6 +38,9 @@ export class BaseServer {
       worlds: new Map()
     };
     this.log = new Logger();
+    this.commands = new Map();
+    this.cooldown = new Map();
+    this.dialogs = new Map();
   }
 
   public start() {
@@ -39,6 +48,8 @@ export class BaseServer {
       this.log.ready("Items data ready!");
       this.#_loadEvents();
       this.#_loadActions();
+      this.#_loadCommands();
+      this.#_loadDialogs();
       this.server.listen();
       WebServer(this.log);
     });
@@ -64,6 +75,24 @@ export class BaseServer {
       let initFile = new file();
       this.action.set(initFile.config.eventName, initFile);
       this.log.action(`Loaded "${initFile.config.eventName}" actions`);
+    });
+  }
+
+  #_loadDialogs() {
+    fs.readdirSync(`${__dirname}/../dialogs`).forEach(async (event) => {
+      let file = (await import(`../dialogs/${event}`)).default;
+      let initFile = new file();
+      this.dialogs.set(initFile.config.dialogName, initFile);
+      this.log.dialog(`Loaded "${initFile.config.dialogName}" dialogs`);
+    });
+  }
+
+  #_loadCommands() {
+    fs.readdirSync(`${__dirname}/../commands`).forEach(async (fileName) => {
+      let file = (await import(`../commands/${fileName}`)).default;
+      let initFile = new file();
+      this.commands.set(initFile.opt.name, initFile);
+      this.log.command(`Loaded "${initFile.opt.name}" command`);
     });
   }
 }

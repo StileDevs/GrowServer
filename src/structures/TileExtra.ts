@@ -1,6 +1,6 @@
 import { Action } from "../abstracts/Action";
 import { ActionTypes, Options, Flags, ExtraTypes } from "../utils/enums/Tiles";
-import { Block } from "../types/worlds";
+import { Block } from "../types/world";
 import { World } from "./World";
 
 export function HandleTile(block: Block, actionType?: number): Buffer {

@@ -73,6 +73,17 @@ export class DialogBuilder {
   }
 
   /**
+   * Adds a button with icon.
+   * @param {string | number} name The name of the button
+   * @param {string | number} itemID The button icon using itemID
+   * @param {string} text The text in the button
+   */
+
+  public addButtonWithIcon(name: string | number, itemID: string | number, text: string) {
+    this.#str += `add_button_with_icon|${name}|${text}|left|${itemID}|\n`;
+  }
+
+  /**
    * Adds a checkbox
    * @param {string} name The name of the checkbox
    * @param {string} string The text in the checkbox

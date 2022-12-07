@@ -1,4 +1,4 @@
-import { Peer } from "growsockets";
+import { Peer } from "../structures/Peer";
 import { ActionConfig, ActionType } from "../types/action";
 import { BaseServer } from "../structures/BaseServer";
 
@@ -11,5 +11,5 @@ export abstract class Action {
     };
   }
 
-  public handle(base: BaseServer, peer: Peer<unknown>, action: ActionType<unknown>) {}
+  public handle(base: BaseServer, peer: Peer, action: ActionType<unknown>) {}
 }

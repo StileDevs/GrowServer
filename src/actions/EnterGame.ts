@@ -20,6 +20,7 @@ export default class extends Action {
       .addSpacer("small")
       .addTextBox("Welcome to GrowServer")
       .addQuickExit()
+      .endDialog("gazzette_end", "Cancel", "Ok")
       .str();
     peer.send(
       Variant.from("OnRequestWorldSelectMenu"),
