@@ -41,9 +41,10 @@ export class Peer extends OldPeer<PeerDataType> {
   public everyPeer( {sameWorld = false}: EveryPeerOptions, callbackfn: (peer: Peer, netID: number) => void): void {
     this.base.cache.users.forEach((p, k) => {
       if (sameWorld) {
-        if(p.data.world === this.data.world && p.data.world !== "EXIT") return callbackfn(p, k);
+        if(p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") return callbackfn(p, k);
+      } else {
+        callbackfn(p, k);
       }
-      callbackfn(p, k);
     });
   }
 
