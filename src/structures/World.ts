@@ -64,6 +64,7 @@ export class World {
         const HEADER_LENGTH = this.worldName.length + 20;
         const buffer = Buffer.alloc(HEADER_LENGTH);
 
+        // World data
         buffer.writeUint16LE(0xf);
         buffer.writeUint32LE(0x0, 2);
         buffer.writeUint16LE(this.worldName.length, 6);
@@ -72,6 +73,7 @@ export class World {
         buffer.writeUint32LE(this.data.height!, 12 + this.worldName.length);
         buffer.writeUint32LE(this.data.blockCount!, 16 + this.worldName.length);
 
+        // Block data
         const blockBytes: any[] = [];
         this.data.blocks?.forEach((block) => {
           let item = this.base.items.metadata.items.find((i) => i.id === block.fg);
@@ -81,7 +83,35 @@ export class World {
           blockBuf.forEach((b) => blockBytes.push(b));
         });
 
-        return Buffer.concat([buffer, Buffer.from(blockBytes)]);
+        // Drop data
+        const dropData = Buffer.alloc(8 + this.data.dropped?.items.length! * 16 + 12);
+        dropData.writeUInt32LE(this.data.dropped?.items.length!);
+        dropData.writeUInt32LE(this.data.dropped?.uid!);
+
+        let pos = 8;
+        this.data.dropped?.items.forEach((item) => {
+          dropData.writeUInt16LE(item.id, pos);
+          dropData.writeFloatLE(item.x, pos + 2);
+          dropData.writeFloatLE(item.y, pos + 6);
+          dropData.writeUInt8(item.amount < -1 ? 0 : item.amount, pos + 10);
+          // ignore flags / 0x0
+          dropData.writeUInt32LE(item.uid, pos + 12);
+
+          pos += 16;
+        });
+
+        // Weather
+        const weatherData = Buffer.alloc(16);
+        weatherData.writeUint16LE(0);
+        weatherData.writeUint16LE(0x1, 2);
+        weatherData.writeUint32LE(0x0, 8);
+        weatherData.writeUint32LE(0x0, 12);
+
+        return Buffer.concat([
+          buffer,
+          Buffer.from(blockBytes),
+          Buffer.concat([dropData, weatherData])
+        ]);
       }
     });
 
