@@ -101,11 +101,11 @@ export class World {
         });
 
         // Weather
-        const weatherData = Buffer.alloc(16);
+        const weatherData = Buffer.alloc(12);
         weatherData.writeUint16LE(0);
         weatherData.writeUint16LE(0x1, 2);
+        weatherData.writeUint32LE(0x0, 4);
         weatherData.writeUint32LE(0x0, 8);
-        weatherData.writeUint32LE(0x0, 12);
 
         return Buffer.concat([
           buffer,
