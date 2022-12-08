@@ -65,8 +65,8 @@ export class World {
         const buffer = Buffer.alloc(HEADER_LENGTH);
 
         // World data
-        buffer.writeUint16LE(0xf);
-        buffer.writeUint32LE(0x0, 2);
+        buffer.writeUint16LE(0x14);
+        buffer.writeUint32LE(0x40, 2);
         buffer.writeUint16LE(this.worldName.length, 6);
         buffer.write(this.worldName, 8);
         buffer.writeUint32LE(this.data.width!, 8 + this.worldName.length);
@@ -84,7 +84,7 @@ export class World {
         });
 
         // Drop data
-        const dropData = Buffer.alloc(8 + this.data.dropped?.items.length! * 16 + 12);
+        const dropData = Buffer.alloc(8 + this.data.dropped?.items.length! * 16);
         dropData.writeUInt32LE(this.data.dropped?.items.length!);
         dropData.writeUInt32LE(this.data.dropped?.uid!);
 
@@ -155,6 +155,68 @@ export class World {
         [0, 0, 0]
       )
     );
+
+    peer.everyPeer({ sameWorld: true }, (p) => {
+      p.send(
+        Variant.from(
+          { delay: -1 },
+          "OnSpawn",
+          "spawn|avatar\n" +
+            `netID|${peer.data.netID}\n` +
+            `userID|0\n` + // taro di peer nanti
+            `colrect|0|0|20|30\n` +
+            `posXY|${peer.data.x}|${peer.data.y}\n` +
+            `name|\`w${peer.data.tankIDName}\`\`\n` +
+            `country|${peer.data.country}\n` + // country peer
+            "invis|0\n" +
+            "mstate|0\n" +
+            "smstate|0\n" +
+            "onlineID|\n" +
+            "type|local"
+        ),
+        Variant.from(
+          {
+            netID: p.data.netID
+          },
+          "OnSetClothing",
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0],
+          0x8295c3ff, // skin color
+          [0, 0, 0]
+        )
+      );
+
+      peer.send(
+        Variant.from(
+          { delay: -1 },
+          "OnSpawn",
+          "spawn|avatar\n" +
+            `netID|${p.data.netID}\n` +
+            `userID|0\n` + // taro di peer nanti
+            `colrect|0|0|20|30\n` +
+            `posXY|${p.data.x}|${p.data.y}\n` +
+            `name|\`w${p.data.tankIDName}\`\`\n` +
+            `country|${p.data.country}\n` + // country peer
+            "invis|0\n" +
+            "mstate|0\n" +
+            "smstate|0\n" +
+            "onlineID|\n" +
+            "type|local"
+        ),
+        Variant.from(
+          {
+            netID: p.data.netID
+          },
+          "OnSetClothing",
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0],
+          0x8295c3ff, // skin color
+          [0, 0, 0]
+        )
+      );
+    });
     this.data.playerCount!++;
 
     this.saveToCache();
