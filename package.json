@@ -18,9 +18,10 @@
   },
   "dependencies": {
     "chalk": "4.1.1",
+    "crypto-js": "^4.1.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
-    "growsockets": "JadlionHD/GrowSockets#fixed",
+    "growsockets": "github:JadlionHD/GrowSockets#fixed",
     "itemsdat": "github:Pogtopia/itemsdat#bdef25b19917b92c3dfb3e2f42e5a5fe2c59d74f",
     "mysql2": "^2.3.3"
   }
