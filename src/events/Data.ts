@@ -49,7 +49,7 @@ export default class extends Listener<"data"> {
 
         // Using login & password
         if (parsed?.requestedName && parsed?.tankIDName && parsed?.tankIDPass) {
-          if (parsed.tankIDName === "tes" && parsed.tankIDPass === "123") {
+          if (parsed.tankIDName === "tes" && parsed.tankIDPass === "123" || parsed.tankIDName === "tes1" && parsed.tankIDPass === "123") {
             peer.send(
               Variant.from(
                 "OnSuperMainStartAcceptLogonHrdxs47254722215a",
