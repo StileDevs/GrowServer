@@ -1,4 +1,4 @@
-import { Peer } from "growsockets";
+import { Peer } from "../structures/Peer";
 
 export interface Jammer {
   type: "zombie" | "punch" | "signal";
@@ -103,5 +103,5 @@ export interface EnterArg {
 export interface GetBlockArg {
   x: number;
   y: number;
-  peer: Peer<unknown>;
+  peer: Peer;
 }

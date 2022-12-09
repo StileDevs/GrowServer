@@ -30,7 +30,7 @@ export class World {
   public leave(peer: Peer, sendMenu = true) {
     this.data.playerCount!--;
 
-    peer.everyPeer({ sameWorld: true }, (p) => {
+    peer.everyPeer((p) => {
       if (p.data.netID !== peer.data.netID)
         p.send(Variant.from("OnRemove", `netID|${peer.data.netID}`));
     });
@@ -156,66 +156,73 @@ export class World {
       )
     );
 
-    peer.everyPeer({ sameWorld: true }, (p) => {
-      p.send(
-        Variant.from(
-          { delay: -1 },
-          "OnSpawn",
-          "spawn|avatar\n" +
-            `netID|${peer.data.netID}\n` +
-            `userID|0\n` + // taro di peer nanti
-            `colrect|0|0|20|30\n` +
-            `posXY|${peer.data.x}|${peer.data.y}\n` +
-            `name|\`w${peer.data.tankIDName}\`\`\n` +
-            `country|${peer.data.country}\n` + // country peer
-            "invis|0\n" +
-            "mstate|0\n" +
-            "smstate|0\n" +
-            "onlineID|\n" +
-            "type|local"
-        ),
-        Variant.from(
-          {
-            netID: p.data.netID
-          },
-          "OnSetClothing",
-          [0, 0, 0],
-          [0, 0, 0],
-          [0, 0, 0],
-          0x8295c3ff, // skin color
-          [0, 0, 0]
-        )
-      );
+    peer.everyPeer((p) => {
+      if (
+        p.data.netID !== peer.data.netID &&
+        p.data.world === peer.data.world &&
+        p.data.world !== "EXIT"
+      ) {
+        console.log(peer, p);
+        p.send(
+          Variant.from(
+            { delay: -1 },
+            "OnSpawn",
+            "spawn|avatar\n" +
+              `netID|${peer.data.netID}\n` +
+              `userID|0\n` + // taro di peer nanti
+              `colrect|0|0|20|30\n` +
+              `posXY|${peer.data.x}|${peer.data.y}\n` +
+              `name|\`w${peer.data.tankIDName}\`\`\n` +
+              `country|${peer.data.country}\n` + // country peer
+              "invis|0\n" +
+              "mstate|0\n" +
+              "smstate|0\n" +
+              "onlineID|\n" +
+              "type|local"
+          ),
+          Variant.from(
+            {
+              netID: p.data.netID
+            },
+            "OnSetClothing",
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            0x8295c3ff, // skin color
+            [0, 0, 0]
+          )
+        );
 
-      peer.send(
-        Variant.from(
-          { delay: -1 },
-          "OnSpawn",
-          "spawn|avatar\n" +
-            `netID|${p.data.netID}\n` +
-            `userID|0\n` + // taro di peer nanti
-            `colrect|0|0|20|30\n` +
-            `posXY|${p.data.x}|${p.data.y}\n` +
-            `name|\`w${p.data.tankIDName}\`\`\n` +
-            `country|${p.data.country}\n` + // country peer
-            "invis|0\n" +
-            "mstate|0\n" +
-            "smstate|0\n" +
-            "onlineID|\n" +
-            "type|local"
-        ),
-        Variant.from(
-          {
-            netID: p.data.netID
-          },
-          "OnSetClothing",
-          [0, 0, 0],
-          [0, 0, 0],
-          [0, 0, 0],
-          0x8295c3ff, // skin color
-          [0, 0, 0]
-        )
-      );
+        peer.send(
+          Variant.from(
+            { delay: -1 },
+            "OnSpawn",
+            "spawn|avatar\n" +
+              `netID|${p.data.netID}\n` +
+              `userID|0\n` + // taro di peer nanti
+              `colrect|0|0|20|30\n` +
+              `posXY|${p.data.x}|${p.data.y}\n` +
+              `name|\`w${p.data.tankIDName}\`\`\n` +
+              `country|${p.data.country}\n` + // country peer
+              "invis|0\n" +
+              "mstate|0\n" +
+              "smstate|0\n" +
+              "onlineID|\n" +
+              "type|local"
+          ),
+          Variant.from(
+            {
+              netID: p.data.netID
+            },
+            "OnSetClothing",
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, 0, 0],
+            0x8295c3ff, // skin color
+            [0, 0, 0]
+          )
+        );
+      }
     });
     this.data.playerCount!++;
 

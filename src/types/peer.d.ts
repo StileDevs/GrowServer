@@ -16,7 +16,3 @@ export interface PeerDataType {
   netID: number;
   country: string;
 }
-
-export interface EveryPeerOptions {
-  sameWorld?: boolean;
-}

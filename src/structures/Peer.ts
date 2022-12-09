@@ -1,5 +1,5 @@
 import { Peer as OldPeer, Server, TankPacket, TextPacket, Variant } from "growsockets";
-import { EveryPeerOptions, PeerDataType } from "../types/peer";
+import { PeerDataType } from "../types/peer";
 import { WORLD_SIZE } from "../utils/Constants";
 import { DataTypes } from "../utils/enums/DataTypes";
 import { TankTypes } from "../utils/enums/TankTypes";
@@ -37,14 +37,9 @@ export class Peer extends OldPeer<PeerDataType> {
     world.leave(this);
   }
 
-  // prettier-ignore
-  public everyPeer( {sameWorld = false}: EveryPeerOptions, callbackfn: (peer: Peer, netID: number) => void): void {
+  public everyPeer(callbackfn: (peer: Peer, netID: number) => void): void {
     this.base.cache.users.forEach((p, k) => {
-      if (sameWorld) {
-        if(p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") return callbackfn(p, k);
-      } else {
-        callbackfn(p, k);
-      }
+      callbackfn(p, k);
     });
   }
 

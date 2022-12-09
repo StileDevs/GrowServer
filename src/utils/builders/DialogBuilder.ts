@@ -34,6 +34,16 @@ export class DialogBuilder {
   }
 
   /**
+   * Adds a label
+   * @param {string} text Title of the label
+   * @returns {this}
+   */
+
+  public addLabel(text: string) {
+    this.#str += `add_label|${text}|\n`;
+  }
+
+  /**
    * Adds a label with an icon
    * @param {string} text Title of the label
    * @param {string} titleid The icon to add to the label
@@ -41,7 +51,7 @@ export class DialogBuilder {
    * @returns {this}
    */
 
-  public addLabelWithIcon(text: string, titleid: string, type: string): this {
+  public addLabelWithIcon(text: string, titleid: string | number, type: string): this {
     switch (type.toUpperCase()) {
       case "BIG":
         this.#str += `add_label_with_icon|big|${text}|left|${titleid}|\n`;
@@ -131,7 +141,7 @@ export class DialogBuilder {
    * Adds an input box
    * @param {string} name The id of the input box
    * @param {string} text The text beside it
-   * @param {string} cont Default content?
+   * @param {string | number} cont Default content?
    * @param {string | number} size The max size of the box
    * @returns {this}
    */
@@ -139,7 +149,7 @@ export class DialogBuilder {
   public addInputBox(
     name: string = "",
     text: string = "",
-    cont: string = "",
+    cont: string | number = "",
     size: string | number = 0
   ): this {
     this.#str += `add_text_input|${name}|${text}|${cont}|${size}|\n`;

@@ -40,7 +40,7 @@ export default class extends Command {
         .addSmallText(`Example: ${cmd?.opt.example.join(", ")}`)
         .endDialog("help_end", "", "Ok")
         .addQuickExit();
-      peer.send(Variant.from("OnDialogRequest", dialog.str()));
+      return peer.send(Variant.from("OnDialogRequest", dialog.str()));
     }
 
     let dialog = new DialogBuilder()

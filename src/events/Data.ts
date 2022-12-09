@@ -49,7 +49,10 @@ export default class extends Listener<"data"> {
 
         // Using login & password
         if (parsed?.requestedName && parsed?.tankIDName && parsed?.tankIDPass) {
-          if (parsed.tankIDName === "tes" && parsed.tankIDPass === "123" || parsed.tankIDName === "tes1" && parsed.tankIDPass === "123") {
+          if (
+            (parsed.tankIDName === "tes" && parsed.tankIDPass === "123") ||
+            (parsed.tankIDName === "tes1" && parsed.tankIDPass === "123")
+          ) {
             peer.send(
               Variant.from(
                 "OnSuperMainStartAcceptLogonHrdxs47254722215a",
@@ -93,7 +96,7 @@ export default class extends Listener<"data"> {
             };
 
             peer.data.tankIDName = parsed.tankIDName;
-            peer.data.requestedName = parsed.requestedName as string;
+            // peer.data.requestedName = parsed.requestedName as string;
             peer.data.country = parsed.country as string;
             peer.data.inventory = inventory;
             peer.data.world = "EXIT";
@@ -236,8 +239,8 @@ export default class extends Listener<"data"> {
 
           peer.saveToCache();
 
-          peer.everyPeer({ sameWorld: true }, (p) => {
-            p.send(tank);
+          peer.everyPeer((p) => {
+            if (p.data.world === peer.data.world && p.data.world !== "EXIT") p.send(tank);
           });
         } // Entering door
         else if (tank.data?.type === 7) {

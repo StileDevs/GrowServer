@@ -74,14 +74,16 @@ export default class extends Action {
       return;
     }
 
-    peer.everyPeer({ sameWorld: true }, (p) => {
-      p.send(
-        Variant.from("OnTalkBubble", peer.data.netID, action.text, 0),
-        Variant.from(
-          "OnConsoleMessage",
-          `CP:0_PL:0_OID:_CT:[W]_ <\`w${peer.data.tankIDName}\`\`> ${action.text}`
-        )
-      );
+    peer.everyPeer((p) => {
+      if (p.data.world === peer.data.world && peer.data.world !== "EXIT") {
+        p.send(
+          Variant.from("OnTalkBubble", peer.data.netID, action.text, 0),
+          Variant.from(
+            "OnConsoleMessage",
+            `CP:0_PL:0_OID:_CT:[W]_ <\`w${peer.data.tankIDName}\`\`> ${action.text}`
+          )
+        );
+      }
     });
   }
 }
