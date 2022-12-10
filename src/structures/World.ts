@@ -23,8 +23,42 @@ export class World {
     this.base.cache.worlds.set(this.worldName, this);
     return;
   }
+
   public getWorldCache(worldName: string) {
     return this.base.cache.worlds.get(worldName);
+  }
+
+  public saveToDatabase() {
+    const wrld = this.getWorldCache(this.worldName)!;
+    this.base.database.getWorld(this.worldName).then((world) => {
+      if (world) {
+        this.base.database
+          .updateWorld({
+            name: wrld.worldName,
+            ownedBy: null, // make sure this is not null if lock are done
+            blockCount: wrld.data.blockCount!,
+            width: wrld.data.width!,
+            height: wrld.data.height!,
+            blocks: Buffer.from(JSON.stringify(wrld.data.blocks))
+          })
+          .then((v) => {
+            return v;
+          });
+      } else {
+        this.base.database
+          .saveWorld({
+            name: wrld?.data.name!,
+            ownedBy: null, // make sure this is not null if lock are done
+            blockCount: wrld?.data.blockCount!,
+            width: wrld?.data.width!,
+            height: wrld?.data.height!,
+            blocks: Buffer.from(JSON.stringify(wrld?.data.blocks!))
+          })
+          .then((v) => {
+            return v;
+          });
+      }
+    });
   }
 
   public leave(peer: Peer, sendMenu = true) {
@@ -43,16 +77,39 @@ export class World {
 
     peer.data.world = "EXIT";
 
+    this.saveToCache();
     peer.saveToCache();
-
+    this.saveToDatabase();
+    peer.saveToDatabase();
     if (this.data.playerCount! < 1) {
       // TODO: delete the cache (if needed) & save it to db
     }
   }
 
-  public enter(peer: Peer, { x, y }: EnterArg) {
-    if (!this.base.cache.worlds.has(this.worldName)) this.generate(true);
-    else this.data = this.base.cache.worlds.get(this.worldName)!.data;
+  public async enter(peer: Peer, { x, y }: EnterArg) {
+    // this.data = peer.hasWorld(this.worldName).data;
+    // console.log(this.base.cache.worlds.get(worldName));
+    if (!this.base.cache.worlds.has(this.worldName)) {
+      const world = await this.base.database.getWorld(this.worldName);
+      if (world) {
+        this.data = {
+          name: world.name,
+          width: world.width,
+          height: world.height,
+          blockCount: world.blockCount,
+          blocks: JSON.parse(world.blocks?.toString()!),
+          admins: [],
+          playerCount: 0,
+          jammers: [],
+          dropped: {
+            uid: 0,
+            items: []
+          }
+        };
+      } else {
+        this.generate(true);
+      }
+    } else this.data = this.base.cache.worlds.get(this.worldName)!.data;
 
     if (typeof x !== "number") x = -1;
     if (typeof y !== "number") y = -1;
@@ -134,7 +191,7 @@ export class World {
           `userID|0\n` + // taro di peer nanti
           `colrect|0|0|20|30\n` +
           `posXY|${peer.data.x}|${peer.data.y}\n` +
-          `name|\`w${peer.data.tankIDName}\`\`\n` +
+          `name|\`w${peer.name}\`\`\n` +
           `country|${peer.data.country}\n` + // country peer
           "invis|0\n" +
           "mstate|0\n" +
@@ -162,33 +219,31 @@ export class World {
         p.data.world === peer.data.world &&
         p.data.world !== "EXIT"
       ) {
-        console.log(peer, p);
         p.send(
           Variant.from(
             { delay: -1 },
             "OnSpawn",
             "spawn|avatar\n" +
               `netID|${peer.data.netID}\n` +
-              `userID|0\n` + // taro di peer nanti
+              `userID|0\n` +
               `colrect|0|0|20|30\n` +
               `posXY|${peer.data.x}|${peer.data.y}\n` +
-              `name|\`w${peer.data.tankIDName}\`\`\n` +
-              `country|${peer.data.country}\n` + // country peer
+              `name|\`w${peer.name}\`\`\n` +
+              `country|${peer.data.country}\n` +
               "invis|0\n" +
               "mstate|0\n" +
               "smstate|0\n" +
-              "onlineID|\n" +
-              "type|local"
+              "onlineID|\n"
           ),
           Variant.from(
             {
-              netID: p.data.netID
+              netID: peer.data.netID
             },
             "OnSetClothing",
             [0, 0, 0],
             [0, 0, 0],
             [0, 0, 0],
-            0x8295c3ff, // skin color
+            0x8295c3ff,
             [0, 0, 0]
           )
         );
@@ -199,16 +254,15 @@ export class World {
             "OnSpawn",
             "spawn|avatar\n" +
               `netID|${p.data.netID}\n` +
-              `userID|0\n` + // taro di peer nanti
+              `userID|0\n` +
               `colrect|0|0|20|30\n` +
               `posXY|${p.data.x}|${p.data.y}\n` +
-              `name|\`w${p.data.tankIDName}\`\`\n` +
-              `country|${p.data.country}\n` + // country peer
+              `name|\`w${p.name}\`\`\n` +
+              `country|${p.data.country}\n` +
               "invis|0\n" +
               "mstate|0\n" +
               "smstate|0\n" +
-              "onlineID|\n" +
-              "type|local"
+              "onlineID|\n"
           ),
           Variant.from(
             {
@@ -218,7 +272,7 @@ export class World {
             [0, 0, 0],
             [0, 0, 0],
             [0, 0, 0],
-            0x8295c3ff, // skin color
+            0x8295c3ff,
             [0, 0, 0]
           )
         );
@@ -242,10 +296,11 @@ export class World {
       height,
       blockCount,
       blocks: [],
-      admins: [],
+      admins: [], // separate to different table
       playerCount: 0,
-      jammers: [],
+      jammers: [], // separate to different table
       dropped: {
+        // separate (maybe?) to different table
         uid: 0,
         items: []
       }

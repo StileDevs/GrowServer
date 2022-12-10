@@ -24,12 +24,7 @@ export default class extends Action {
       .str();
     peer.send(
       Variant.from("OnRequestWorldSelectMenu"),
-      Variant.from(
-        "OnConsoleMessage",
-        `Welcome \`1${
-          base.cache.users.get(peer.data.netID)?.data.tankIDName
-        }\`\`. Where would you like to go?`
-      ),
+      Variant.from("OnConsoleMessage", `Welcome ${peer.name} Where would you like to go?`),
       Variant.from({ delay: 100 }, "OnDialogRequest", tes)
     );
   }

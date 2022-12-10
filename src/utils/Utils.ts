@@ -1,3 +1,4 @@
+import CryptoJS from "crypto-js";
 interface DataObject {
   [key: string]: string | number;
 }
@@ -29,4 +30,11 @@ export function hashItemsDat(file: Buffer) {
   let hash = 0x55555555;
   file.forEach((x) => (hash = (hash >>> 27) + (hash << 5) + x));
   return hash >>> 0;
+}
+
+export function encrypt(data: string): string {
+  return CryptoJS.AES.encrypt(data, process.env.ENCRYPT_SECRET!).toString();
+}
+export function decrypt(data: string): string {
+  return CryptoJS.AES.decrypt(data, process.env.ENCRYPT_SECRET!).toString(CryptoJS.enc.Utf8);
 }

@@ -1,5 +1,14 @@
 import { Peer } from "../structures/Peer";
 
+export interface WorldDB {
+  name: string;
+  ownedBy?: string | null;
+  blockCount: number;
+  blocks: Buffer;
+  width: number;
+  height: number;
+}
+
 export interface Jammer {
   type: "zombie" | "punch" | "signal";
   enabled: boolean;

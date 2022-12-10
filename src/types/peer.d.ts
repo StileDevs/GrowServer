@@ -15,4 +15,6 @@ export interface PeerDataType {
   tankIDName: string;
   netID: number;
   country: string;
+  id_user: string;
+  role: string;
 }

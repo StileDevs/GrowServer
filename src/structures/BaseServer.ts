@@ -11,6 +11,7 @@ import { Logger } from "./Logger";
 import { Command } from "../abstracts/Command";
 import { CooldownOptions } from "../types/command";
 import { Dialog } from "../abstracts/Dialog";
+import { Database } from "../database/db";
 
 export class BaseServer {
   public server: Server<unknown, unknown, unknown>;
@@ -24,6 +25,7 @@ export class BaseServer {
   public commands: Map<string, Command>;
   public cooldown: Map<string, CooldownOptions>;
   public dialogs: Map<string, Dialog>;
+  public database;
 
   constructor() {
     this.server = new Server({ http: { enabled: false }, log: false });
@@ -41,6 +43,7 @@ export class BaseServer {
     this.commands = new Map();
     this.cooldown = new Map();
     this.dialogs = new Map();
+    this.database = new Database();
   }
 
   public start() {
@@ -51,7 +54,7 @@ export class BaseServer {
       this.#_loadCommands();
       this.#_loadDialogs();
       this.server.listen();
-      WebServer(this.log);
+      WebServer(this.log, this.database);
     });
   }
 

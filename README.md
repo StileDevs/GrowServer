@@ -20,6 +20,24 @@ A Growtopia private server using NodeJS
 
 First, create `assets` on the root folder. For the `items.dat` file, you need to create `assets/dat` then put the file inside. after that for the ssl files, you need to creat `assets/ssl` then put `server.key` & `server.crt` inside.
 
+## Enviroment file
+
+Example for default .env file
+
+```
+MYSQL_HOST=localhost
+MYSQL_PORT=3306
+MYSQL_DATABASE=growtopia_db
+MYSQL_USERNAME=root
+MYSQL_PASS=
+ENCRYPT_SECRET=SUPERSECRET # Default encrypt secret
+WEB_ADDRESS=127.0.0.1
+```
+
+## Database
+
+For the database, you need to import the database sql first from `assets/growtopia_db.sql`. You can use [XAMPP](https://www.apachefriends.org/download.html) for the database or using [MySQL Community Server](https://dev.mysql.com/downloads/mysql/).
+
 ## Starting server
 
 Install all necessary dependencies by running:

@@ -67,7 +67,15 @@ export default class extends Action {
       }, base.commands.get(commandName)!.opt.cooldown * 1000);
 
       try {
-        await base.commands.get(commandName)?.execute(base, peer, text, args);
+        if (
+          base.commands.get(commandName)?.opt.permission.some((perm) => perm === peer.data.role)
+        ) {
+          await base.commands.get(commandName)?.execute(base, peer, text, args);
+        } else {
+          peer.send(
+            Variant.from("OnConsoleMessage", `You dont have permission to use this command.`)
+          );
+        }
       } catch (err) {
         console.log(err);
       }

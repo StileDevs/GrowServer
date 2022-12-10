@@ -4,6 +4,7 @@ import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { CommandOptions } from "../types/command";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
+import { Role } from "../utils/Constants";
 import { DataTypes } from "../utils/enums/DataTypes";
 
 export default class extends Command {
@@ -13,13 +14,13 @@ export default class extends Command {
     super();
     this.opt = {
       name: "find",
-      description: "Shows every available commands",
+      description: "Find some items",
       cooldown: 5,
       ratelimit: 5,
       category: "Basic",
       usage: "/find",
       example: ["/find"],
-      permission: []
+      permission: [Role.BASIC, Role.SUPPORTER, Role.DEVELOPER]
     };
   }
 

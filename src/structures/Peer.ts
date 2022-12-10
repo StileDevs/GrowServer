@@ -1,6 +1,6 @@
 import { Peer as OldPeer, Server, TankPacket, TextPacket, Variant } from "growsockets";
 import { PeerDataType } from "../types/peer";
-import { WORLD_SIZE } from "../utils/Constants";
+import { Role, WORLD_SIZE } from "../utils/Constants";
 import { DataTypes } from "../utils/enums/DataTypes";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { BaseServer } from "./BaseServer";
@@ -21,6 +21,15 @@ export class Peer extends OldPeer<PeerDataType> {
     return;
   }
 
+  /** Extended version of setDataToDatabase */
+  public saveToDatabase() {
+    this.base.database
+      .saveUserInventory(Buffer.from(JSON.stringify(this.data.inventory)), this.data.id_user)
+      .then((v) => {
+        return v;
+      });
+  }
+
   public getSelfCache() {
     return this.base.cache.users.get(this.data.netID);
   }
@@ -35,6 +44,20 @@ export class Peer extends OldPeer<PeerDataType> {
     const world = this.hasWorld(this.data.world);
 
     world.leave(this);
+  }
+
+  public get name(): string {
+    switch (this.data.role) {
+      default: {
+        return `\`w${this.data.tankIDName}\`\``;
+      }
+      case Role.SUPPORTER: {
+        return `\`e${this.data.tankIDName}\`\``;
+      }
+      case Role.DEVELOPER: {
+        return `\`b@${this.data.tankIDName}\`\``;
+      }
+    }
   }
 
   public everyPeer(callbackfn: (peer: Peer, netID: number) => void): void {

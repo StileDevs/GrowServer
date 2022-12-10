@@ -4,6 +4,7 @@ import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { CommandOptions } from "../types/command";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
+import { Role } from "../utils/Constants";
 
 export default class extends Command {
   public opt: CommandOptions;
@@ -18,7 +19,7 @@ export default class extends Command {
       category: "Basic",
       usage: "/help <command_name?>",
       example: ["/help", "/help ping"],
-      permission: []
+      permission: [Role.BASIC, Role.SUPPORTER, Role.DEVELOPER]
     };
   }
 
