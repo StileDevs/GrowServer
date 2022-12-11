@@ -1,4 +1,4 @@
-# GrowServer
+# GrowServer (WIP)
 
 A Growtopia private server using NodeJS
 
