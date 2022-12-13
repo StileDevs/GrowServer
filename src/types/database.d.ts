@@ -3,7 +3,7 @@ export interface User {
   name: string;
   password: string;
   role: string;
-  gems?: string;
+  gems?: number;
   inventory?: Buffer;
   clothing?: Buffer;
   created_at: Date;

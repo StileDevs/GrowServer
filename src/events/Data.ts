@@ -133,8 +133,12 @@ export default class extends Listener<"data"> {
             peer.data.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
             // prettier-ignore
             peer.data.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
-            peer.data.gems = user.gems?.length ? parseInt(user.gems!) : 0;
+            peer.data.gems = user.gems ? user.gems : 0;
             peer.data.world = "EXIT";
+
+            // Load Gems
+            peer.send(Variant.from("OnSetBux", peer.data.gems));
+
             peer.saveToCache();
             peer.saveToDatabase();
           });
