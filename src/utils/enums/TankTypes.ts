@@ -6,6 +6,7 @@ export enum TankTypes {
   PEER_ENTER_DOOR = 7,
   TILE_DAMAGE,
   PEER_INVENTORY,
+  PEER_CLOTH,
   PEER_COLLECT = 11,
   TILE_TREE,
   PEER_DROP = 14,

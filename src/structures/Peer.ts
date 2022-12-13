@@ -15,6 +15,44 @@ export class Peer extends OldPeer<PeerDataType> {
     this.base = base;
   }
 
+  public sendClothes() {
+    this.send(
+      Variant.from(
+        {
+          netID: this.data.netID
+        },
+        "OnSetClothing",
+        [this.data.clothing?.hair!, this.data.clothing?.shirt!, this.data.clothing?.pants!],
+        [this.data.clothing?.feet!, this.data.clothing?.face!, this.data.clothing?.hand!],
+        [this.data.clothing?.back!, this.data.clothing?.mask!, this.data.clothing?.necklace!],
+        0x8295c3ff,
+        [this.data.clothing?.ances!, 0.0, 0.0]
+      )
+    );
+
+    this.everyPeer((p) => {
+      if (
+        p.data.world === this.data.world &&
+        p.data.netID !== this.data.netID &&
+        p.data.world !== "EXIT"
+      ) {
+        p.send(
+          Variant.from(
+            {
+              netID: this.data.netID
+            },
+            "OnSetClothing",
+            [this.data.clothing?.hair!, this.data.clothing?.shirt!, this.data.clothing?.pants!],
+            [this.data.clothing?.feet!, this.data.clothing?.face!, this.data.clothing?.hand!],
+            [this.data.clothing?.back!, this.data.clothing?.mask!, this.data.clothing?.necklace!],
+            0x8295c3ff,
+            [this.data.clothing?.ances!, 0.0, 0.0]
+          )
+        );
+      }
+    });
+  }
+
   /** Extended version of setDataToCache */
   public saveToCache() {
     this.base.cache.users.set(this.data.netID, this);
@@ -23,11 +61,9 @@ export class Peer extends OldPeer<PeerDataType> {
 
   /** Extended version of setDataToDatabase */
   public saveToDatabase() {
-    this.base.database
-      .saveUserInventory(Buffer.from(JSON.stringify(this.data.inventory)), this.data.id_user)
-      .then((v) => {
-        return v;
-      });
+    this.base.database.saveUser(this.data).then((v) => {
+      return v;
+    });
   }
 
   public getSelfCache() {
@@ -42,7 +78,6 @@ export class Peer extends OldPeer<PeerDataType> {
 
   public leaveWorld() {
     const world = this.hasWorld(this.data.world);
-
     world.leave(this);
   }
 

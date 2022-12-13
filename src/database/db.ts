@@ -1,5 +1,6 @@
 import knex from "knex";
 import { User } from "../types/database";
+import { PeerDataType } from "../types/peer";
 import { WorldData, WorldDB } from "../types/world";
 import { encrypt } from "../utils/Utils";
 
@@ -26,8 +27,17 @@ export class Database {
     else return undefined;
   }
 
-  public async saveUserInventory(buf: Buffer, id_user: string) {
-    let res = await this.knex("user").where({ id_user }).update({ inventory: buf }, []);
+  public async saveUser(data: PeerDataType) {
+    let res = await this.knex("user")
+      .where({ id_user: data.id_user })
+      .update(
+        {
+          inventory: Buffer.from(JSON.stringify(data.inventory)),
+          clothing: Buffer.from(JSON.stringify(data.clothing)),
+          gems: data.gems
+        },
+        []
+      );
 
     if (res.length) return true;
     else return undefined;

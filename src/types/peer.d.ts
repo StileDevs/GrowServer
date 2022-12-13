@@ -17,4 +17,19 @@ export interface PeerDataType {
   country: string;
   id_user: string;
   role: string;
+  gems: number;
+  clothing?: Clothing;
+}
+
+export interface Clothing {
+  hair: number;
+  shirt: number;
+  pants: number;
+  feet: number;
+  face: number;
+  hand: number;
+  back: number;
+  mask: number;
+  necklace: number;
+  ances: number;
 }

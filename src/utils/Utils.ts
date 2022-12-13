@@ -1,4 +1,5 @@
 import CryptoJS from "crypto-js";
+import { Peer } from "../structures/Peer";
 interface DataObject {
   [key: string]: string | number;
 }
@@ -24,6 +25,15 @@ export function parseAction(chunk: Buffer): DataObject | undefined {
   });
 
   return data;
+}
+
+export function find(users: Map<number, Peer>, func: (user: Peer) => boolean) {
+  for (const item of users.values()) {
+    if (func(item)) {
+      return item;
+    }
+  }
+  return undefined;
 }
 
 export function hashItemsDat(file: Buffer) {

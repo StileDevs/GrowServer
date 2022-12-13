@@ -3,13 +3,14 @@ import { Listener } from "../abstracts/Listener";
 import { ActionType } from "../types/action";
 import { BaseServer } from "../structures/BaseServer";
 import { DataTypes } from "../utils/enums/DataTypes";
-import { decrypt, parseAction } from "../utils/Utils";
+import { decrypt, find, parseAction } from "../utils/Utils";
 import { Peer } from "../structures/Peer";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { WORLD_SIZE } from "../utils/Constants";
 import { ActionTypes } from "../utils/enums/Tiles";
 import { handlePlace } from "../tanks/Place";
 import { handlePunch } from "../tanks/Punch";
+import { ClothTypes } from "../utils/enums/ItemTypes";
 
 export default class extends Listener<"data"> {
   constructor() {
@@ -72,6 +73,18 @@ export default class extends Listener<"data"> {
               return peer.disconnect();
             }
 
+            // Check if there's same account is logged in
+            const targetPeer = find(base.cache.users, (v) => v.data.id_user === user.id_user);
+            if (targetPeer) {
+              peer.send(
+                Variant.from(
+                  "OnConsoleMessage",
+                  "`4Already Logged In?`` It seems that this account already logged in by somebody else."
+                )
+              );
+
+              targetPeer.disconnect();
+            }
             peer.send(
               Variant.from(
                 "OnSuperMainStartAcceptLogonHrdxs47254722215a",
@@ -95,23 +108,20 @@ export default class extends Listener<"data"> {
                   id: 32, // Wrench
                   amount: 1
                 }
-                // {
-                //   id: 2, // Dirt
-                //   amount: 10
-                // },
-                // {
-                //   id: 1000, // Public Lava
-                //   amount: 200
-                // },
-                // {
-                //   id: 14, // Cave Background
-                //   amount: 200
-                // },
-                // {
-                //   id: 156, // Fairy wing
-                //   amount: 1
-                // }
               ]
+            };
+
+            const defaultClothing = {
+              hair: 0,
+              shirt: 0,
+              pants: 0,
+              feet: 0,
+              face: 0,
+              hand: 0,
+              back: 0,
+              mask: 0,
+              necklace: 0,
+              ances: 0
             };
 
             peer.data.tankIDName = user.name;
@@ -120,7 +130,10 @@ export default class extends Listener<"data"> {
             peer.data.id_user = user.id_user;
             peer.data.role = user.role;
             // prettier-ignore
-            peer.data.inventory = user.inventory.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
+            peer.data.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
+            // prettier-ignore
+            peer.data.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
+            peer.data.gems = user.gems?.length ? parseInt(user.gems!) : 0;
             peer.data.world = "EXIT";
             peer.saveToCache();
             peer.saveToDatabase();
@@ -146,68 +159,150 @@ export default class extends Listener<"data"> {
         }
         const tank = TankPacket.fromBuffer(data);
 
-        // Movement
-        if (tank.data?.type === TankTypes.PEER_MOVE) {
-          tank.data.netID = peer.data.netID;
-          tank.data.type = TankTypes.PEER_MOVE;
+        // console.log(tank);
+        switch (tank.data?.type) {
+          // case TankTypes.PEER_ICON: {
+          //   peer.everyPeer(
+          //     (p) => p.data.world === peer.data.world && p.data.world !== "EXIT" && p.send(tank)
+          //   );
+          // }
 
-          peer.data.x = tank.data.xPos;
-          peer.data.y = tank.data.yPos;
+          case TankTypes.PEER_CLOTH: {
+            const item = base.items.metadata.items.find((v) => v.id === tank.data?.info);
 
-          peer.saveToCache();
+            switch (item?.bodyPartType) {
+              case ClothTypes.HAIR: {
+                if (peer.data.clothing!.hair === tank.data.info!) peer.data.clothing!.hair = 0;
+                else peer.data.clothing!.hair = tank.data.info!;
 
-          peer.everyPeer((p) => {
-            if (
-              p.data.netID !== peer.data.netID &&
-              p.data.world === peer.data.world &&
-              p.data.world !== "EXIT"
-            ) {
-              p.send(tank.parse());
+                break;
+              }
+              case ClothTypes.SHIRT: {
+                if (peer.data.clothing!.shirt === tank.data.info!) peer.data.clothing!.shirt = 0;
+                else peer.data.clothing!.shirt = tank.data.info!;
+
+                break;
+              }
+              case ClothTypes.PANTS: {
+                if (peer.data.clothing!.pants === tank.data.info!) peer.data.clothing!.pants = 0;
+                else peer.data.clothing!.pants = tank.data.info!;
+
+                break;
+              }
+              case ClothTypes.FEET: {
+                if (peer.data.clothing!.feet === tank.data.info!) peer.data.clothing!.feet = 0;
+                else peer.data.clothing!.feet = tank.data.info!;
+
+                break;
+              }
+              case ClothTypes.FACE: {
+                if (peer.data.clothing!.face === tank.data.info!) peer.data.clothing!.face = 0;
+                else peer.data.clothing!.face = tank.data.info!;
+
+                break;
+              }
+              case ClothTypes.HAND: {
+                if (item.type === 107) {
+                  if (peer.data.clothing!.ances === tank.data.info!) peer.data.clothing!.ances = 0;
+                  else peer.data.clothing!.ances = tank.data.info!;
+                  break;
+                }
+
+                if (peer.data.clothing!.hand === tank.data.info!) peer.data.clothing!.hand = 0;
+                else peer.data.clothing!.hand = tank.data.info!;
+
+                break;
+              }
+              case ClothTypes.BACK: {
+                if (peer.data.clothing!.back === tank.data.info!) peer.data.clothing!.back = 0;
+                else peer.data.clothing!.back = tank.data.info!;
+
+                break;
+              }
+              case ClothTypes.MASK: {
+                if (peer.data.clothing!.mask === tank.data.info!) peer.data.clothing!.mask = 0;
+                else peer.data.clothing!.mask = tank.data.info!;
+
+                break;
+              }
+              case ClothTypes.NECKLACE: {
+                if (peer.data.clothing!.necklace === tank.data.info!)
+                  peer.data.clothing!.necklace = 0;
+                else peer.data.clothing!.necklace = tank.data.info!;
+
+                break;
+              }
+              case ClothTypes.ANCES: {
+                if (peer.data.clothing!.ances === tank.data.info!) peer.data.clothing!.ances = 0;
+                else peer.data.clothing!.ances = tank.data.info!;
+
+                break;
+              }
             }
-          });
-        } // Place/Punch
-        else if (tank.data?.type === TankTypes.TILE_PUNCH) {
-          const world = peer.hasWorld(peer.data.world);
-          const item = base.items.metadata.items;
-          tank.data.netID = peer.data.netID;
 
-          switch (tank.data.info) {
-            // Fist
-            case 18: {
-              handlePunch(tank, peer, item, world);
-              break;
-            }
-
-            // Others
-            default: {
-              handlePlace(tank, peer, item, world);
-              break;
-            }
+            peer.saveToCache();
+            peer.saveToDatabase();
+            peer.sendClothes();
+            // handle equip cloth here
           }
 
-          console.log(tank);
-          // loop all
-          peer.everyPeer((p) => {
-            if (
-              p.data.netID !== peer.data.netID &&
-              p.data.world === peer.data.world &&
-              p.data.world !== "EXIT"
-            ) {
-              p.send(tank);
+          case TankTypes.PEER_MOVE: {
+            tank.data.netID = peer.data.netID;
+            tank.data.type = TankTypes.PEER_MOVE;
+
+            peer.data.x = tank.data.xPos;
+            peer.data.y = tank.data.yPos;
+
+            peer.saveToCache();
+
+            peer.everyPeer((p) => {
+              if (
+                p.data.netID !== peer.data.netID &&
+                p.data.world === peer.data.world &&
+                p.data.world !== "EXIT"
+              ) {
+                p.send(tank.parse());
+              }
+            });
+            break;
+          }
+          case TankTypes.TILE_PUNCH: {
+            const world = peer.hasWorld(peer.data.world);
+            const item = base.items.metadata.items;
+            tank.data.netID = peer.data.netID;
+
+            // Fist
+            if (tank.data.info === 18) {
+              handlePunch(tank, peer, item, world);
             }
-          });
-        } // Entering door
-        else if (tank.data?.type === TankTypes.PEER_ENTER_DOOR) {
-          if (peer.data.world === "EXIT") return;
+            // Others
+            else {
+              handlePlace(tank, peer, item, world);
+            }
 
-          const world = peer.hasWorld(peer.data.world);
-          const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
-          const block = world.data.blocks![pos];
+            peer.everyPeer((p) => {
+              if (
+                p.data.netID !== peer.data.netID &&
+                p.data.world === peer.data.world &&
+                p.data.world !== "EXIT"
+              ) {
+                p.send(tank);
+              }
+            });
+            break;
+          }
+          case TankTypes.PEER_ENTER_DOOR: {
+            if (peer.data.world === "EXIT") return;
 
-          // TODO: add more door
-          if (block.fg === 6) return peer.leaveWorld();
+            const world = peer.hasWorld(peer.data.world);
+            const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
+            const block = world.data.blocks![pos];
+
+            // TODO: add more door
+            if (block.fg === 6) return peer.leaveWorld();
+            break;
+          }
         }
-
         break;
       }
     }

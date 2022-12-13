@@ -1,6 +1,6 @@
 // BIKIN WORLD & HUBUNING USERS SAMA WORLDNYA KE DATABASE
 
-import { TankPacket, Variant } from "growsockets";
+import { TankPacket, TextPacket, Variant } from "growsockets";
 import { PeerDataType } from "../types/peer";
 import { Flags } from "../utils/enums/Tiles";
 import { Block, EnterArg, WorldData } from "../types/world";
@@ -9,6 +9,7 @@ import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Con
 import { TankTypes } from "../utils/enums/TankTypes";
 import { HandleTile } from "./TileExtra";
 import { Peer } from "./Peer";
+import { DataTypes } from "../utils/enums/DataTypes";
 
 export class World {
   public data: WorldData = {};
@@ -65,8 +66,25 @@ export class World {
     this.data.playerCount!--;
 
     peer.everyPeer((p) => {
-      if (p.data.netID !== peer.data.netID)
-        p.send(Variant.from("OnRemove", `netID|${peer.data.netID}`));
+      if (p.data.netID !== peer.data.netID && p.data.world === peer.data.world)
+        p.send(
+          Variant.from("OnRemove", `netID|${peer.data.netID}`),
+          Variant.from(
+            "OnConsoleMessage",
+            `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+          ),
+          Variant.from(
+            "OnTalkBubble",
+            peer.data.netID,
+            `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+          ),
+          TextPacket.from(
+            DataTypes.ACTION,
+            "action|play_sfx",
+            `file|audio/door_shut.wav`,
+            `delayMS|0`
+          )
+        );
     });
 
     if (sendMenu)
@@ -76,7 +94,6 @@ export class World {
       );
 
     peer.data.world = "EXIT";
-
     this.saveToCache();
     peer.saveToCache();
     this.saveToDatabase();
@@ -188,7 +205,7 @@ export class World {
         "OnSpawn",
         "spawn|avatar\n" +
           `netID|${peer.data.netID}\n` +
-          `userID|0\n` + // taro di peer nanti
+          `userID|${peer.data.id_user}\n` + // taro di peer nanti
           `colrect|0|0|20|30\n` +
           `posXY|${peer.data.x}|${peer.data.y}\n` +
           `name|\`w${peer.name}\`\`\n` +
@@ -205,11 +222,11 @@ export class World {
           netID: peer.data.netID
         },
         "OnSetClothing",
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0],
-        0x8295c3ff, // skin color
-        [0, 0, 0]
+        [peer.data.clothing?.hair!, peer.data.clothing?.shirt!, peer.data.clothing?.pants!],
+        [peer.data.clothing?.feet!, peer.data.clothing?.face!, peer.data.clothing?.hand!],
+        [peer.data.clothing?.back!, peer.data.clothing?.mask!, peer.data.clothing?.necklace!],
+        0x8295c3ff,
+        [peer.data.clothing?.ances!, 0.0, 0.0]
       )
     );
 
@@ -225,7 +242,7 @@ export class World {
             "OnSpawn",
             "spawn|avatar\n" +
               `netID|${peer.data.netID}\n` +
-              `userID|0\n` +
+              `userID|${peer.data.id_user}\n` +
               `colrect|0|0|20|30\n` +
               `posXY|${peer.data.x}|${peer.data.y}\n` +
               `name|\`w${peer.name}\`\`\n` +
@@ -240,11 +257,26 @@ export class World {
               netID: peer.data.netID
             },
             "OnSetClothing",
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
+            [peer.data.clothing?.hair!, peer.data.clothing?.shirt!, peer.data.clothing?.pants!],
+            [peer.data.clothing?.feet!, peer.data.clothing?.face!, peer.data.clothing?.hand!],
+            [peer.data.clothing?.back!, peer.data.clothing?.mask!, peer.data.clothing?.necklace!],
             0x8295c3ff,
-            [0, 0, 0]
+            [peer.data.clothing?.ances!, 0.0, 0.0]
+          ),
+          Variant.from(
+            "OnConsoleMessage",
+            `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+          ),
+          Variant.from(
+            "OnTalkBubble",
+            peer.data.netID,
+            `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+          ),
+          TextPacket.from(
+            DataTypes.ACTION,
+            "action|play_sfx",
+            `file|audio/door_open.wav`,
+            `delayMS|0`
           )
         );
 
@@ -254,7 +286,7 @@ export class World {
             "OnSpawn",
             "spawn|avatar\n" +
               `netID|${p.data.netID}\n` +
-              `userID|0\n` +
+              `userID|${p.data.id_user}\n` +
               `colrect|0|0|20|30\n` +
               `posXY|${p.data.x}|${p.data.y}\n` +
               `name|\`w${p.name}\`\`\n` +
@@ -269,11 +301,11 @@ export class World {
               netID: p.data.netID
             },
             "OnSetClothing",
-            [0, 0, 0],
-            [0, 0, 0],
-            [0, 0, 0],
+            [p.data.clothing?.hair!, p.data.clothing?.shirt!, p.data.clothing?.pants!],
+            [p.data.clothing?.feet!, p.data.clothing?.face!, p.data.clothing?.hand!],
+            [p.data.clothing?.back!, p.data.clothing?.mask!, p.data.clothing?.necklace!],
             0x8295c3ff,
-            [0, 0, 0]
+            [p.data.clothing?.ances!, 0.0, 0.0]
           )
         );
       }
