@@ -8,6 +8,8 @@ import { Peer } from "../structures/Peer";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { WORLD_SIZE } from "../utils/Constants";
 import { ActionTypes } from "../utils/enums/Tiles";
+import { handlePlace } from "../tanks/Place";
+import { handlePunch } from "../tanks/Punch";
 
 export default class extends Listener<"data"> {
   constructor() {
@@ -144,97 +146,8 @@ export default class extends Listener<"data"> {
         }
         const tank = TankPacket.fromBuffer(data);
 
-        // Place/Punch
-        if (tank.data?.type === 3) {
-          const world = peer.hasWorld(peer.data.world);
-          const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
-          const block = world.data.blocks![pos];
-          const item = base.items.metadata.items;
-          const itemMeta = item[block.fg || block.bg!];
-
-          // prettier-ignore
-          const isBg = item[tank.data.info!].type === ActionTypes.BACKGROUND || item[tank.data.info!].type === ActionTypes.SHEET_MUSIC;
-
-          switch (tank.data.info) {
-            // Fist
-            case 18: {
-              // if (!block.fg || !block.bg) return;
-
-              itemMeta.resetStateAfter;
-
-              if (typeof block.damage !== "number" || block.resetStateAt! <= Date.now())
-                block.damage = 0;
-
-              if (block.damage >= itemMeta.breakHits!) {
-                block.damage = 0;
-                block.resetStateAt = 0;
-
-                if (block.fg) block.fg = 0;
-                else if (block.bg) block.bg = 0;
-
-                tank.data.type = TankTypes.TILE_PUNCH;
-                tank.data.info = 18;
-              } else {
-                tank.data.info = block.damage + 5;
-                tank.data.type = TankTypes.TILE_DAMAGE;
-
-                block.resetStateAt = Date.now() + itemMeta.resetStateAfter! * 1000;
-                block.damage++;
-              }
-
-              peer.send(tank);
-
-              // if (isBg) {
-              //   world.data.blocks![pos].bg = 0;
-              // } else {
-              //   world.data.blocks![pos].fg = 0;
-              // }
-              world.saveToCache();
-              break;
-            }
-
-            // Others
-            default: {
-              // ignore fist & wrench
-              if (tank.data.info === 18 || tank.data.info === 32) return;
-              tank.data.netID = peer.data.netID;
-              tank.data.type = TankTypes.TILE_PUNCH;
-
-              peer.send(tank);
-
-              if (isBg) {
-                world.data.blocks![pos].bg = tank.data.info;
-              } else {
-                world.data.blocks![pos].fg = tank.data.info;
-              }
-
-              // prettier-ignore
-              let invenItem = peer.data.inventory?.items.find((item) => item.id === tank.data?.info)!;
-              invenItem.amount = invenItem.amount! - 1;
-
-              if (invenItem.amount === 0) {
-                // prettier-ignore
-                peer.data.inventory!.items! = peer.data.inventory?.items.filter((i) => i.amount !== 0)!;
-              }
-              world.saveToCache();
-              peer.saveToCache();
-
-              break;
-            }
-          }
-
-          // loop all
-          peer.everyPeer((p) => {
-            if (
-              p.data.netID !== peer.data.netID &&
-              p.data.world === peer.data.world &&
-              p.data.world !== "EXIT"
-            ) {
-              p.send(tank);
-            }
-          });
-        } // Movement
-        else if (tank.data?.type === 0) {
+        // Movement
+        if (tank.data?.type === TankTypes.PEER_MOVE) {
           tank.data.netID = peer.data.netID;
           tank.data.type = TankTypes.PEER_MOVE;
 
@@ -249,13 +162,42 @@ export default class extends Listener<"data"> {
               p.data.world === peer.data.world &&
               p.data.world !== "EXIT"
             ) {
-              console.log(p.data.tankIDName);
-              console.log(tank);
               p.send(tank.parse());
             }
           });
+        } // Place/Punch
+        else if (tank.data?.type === TankTypes.TILE_PUNCH) {
+          const world = peer.hasWorld(peer.data.world);
+          const item = base.items.metadata.items;
+          tank.data.netID = peer.data.netID;
+
+          switch (tank.data.info) {
+            // Fist
+            case 18: {
+              handlePunch(tank, peer, item, world);
+              break;
+            }
+
+            // Others
+            default: {
+              handlePlace(tank, peer, item, world);
+              break;
+            }
+          }
+
+          console.log(tank);
+          // loop all
+          peer.everyPeer((p) => {
+            if (
+              p.data.netID !== peer.data.netID &&
+              p.data.world === peer.data.world &&
+              p.data.world !== "EXIT"
+            ) {
+              p.send(tank);
+            }
+          });
         } // Entering door
-        else if (tank.data?.type === 7) {
+        else if (tank.data?.type === TankTypes.PEER_ENTER_DOOR) {
           if (peer.data.world === "EXIT") return;
 
           const world = peer.hasWorld(peer.data.world);
