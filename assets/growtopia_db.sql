@@ -3,8 +3,9 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 10, 2022 at 11:29 AM
+-- Generation Time: Dec 14, 2022 at 06:29 AM
 -- Server version: 10.4.24-MariaDB
+-- PHP Version: 8.1.6
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -34,6 +35,7 @@ CREATE TABLE `user` (
   `password` varchar(255) NOT NULL,
   `role` varchar(255) NOT NULL,
   `gems` int(11) DEFAULT NULL,
+  `clothing` blob DEFAULT NULL,
   `inventory` blob NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
