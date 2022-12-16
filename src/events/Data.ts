@@ -11,6 +11,7 @@ import { ActionTypes } from "../utils/enums/Tiles";
 import { handlePlace } from "../tanks/Place";
 import { handlePunch } from "../tanks/Punch";
 import { ClothTypes } from "../utils/enums/ItemTypes";
+import { handleWrench } from "../tanks/BlockWrench";
 
 export default class extends Listener<"data"> {
   constructor() {
@@ -163,7 +164,6 @@ export default class extends Listener<"data"> {
         }
         const tank = TankPacket.fromBuffer(data);
 
-        // console.log(tank);
         switch (tank.data?.type) {
           // case TankTypes.PEER_ICON: {
           //   peer.everyPeer(
@@ -272,38 +272,83 @@ export default class extends Listener<"data"> {
           }
           case TankTypes.TILE_PUNCH: {
             const world = peer.hasWorld(peer.data.world);
-            const item = base.items.metadata.items;
             tank.data.netID = peer.data.netID;
 
             // Fist
             if (tank.data.info === 18) {
-              handlePunch(tank, peer, item, world);
+              handlePunch(tank, peer, base, world);
+            } else if (tank.data.info === 32) {
+              handleWrench(base, tank, peer, world);
             }
             // Others
             else {
-              handlePlace(tank, peer, item, world);
+              handlePlace(tank, peer, base, world);
             }
 
-            peer.everyPeer((p) => {
-              if (
-                p.data.netID !== peer.data.netID &&
-                p.data.world === peer.data.world &&
-                p.data.world !== "EXIT"
-              ) {
-                p.send(tank);
-              }
-            });
             break;
           }
           case TankTypes.PEER_ENTER_DOOR: {
             if (peer.data.world === "EXIT") return;
 
-            const world = peer.hasWorld(peer.data.world);
+            let world = peer.hasWorld(peer.data.world);
             const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
             const block = world.data.blocks![pos];
 
-            // TODO: add more door
+            if (!block || !block.door) return;
             if (block.fg === 6) return peer.leaveWorld();
+
+            const worldDes = block.door?.destination?.split(":")!;
+            if (!worldDes[0]) worldDes[0] = peer.data.world;
+            if (!worldDes[1]) worldDes[1] = peer.data.world;
+
+            const worldName = worldDes[0].toUpperCase();
+            const id = worldDes[1].toUpperCase();
+
+            if (worldName === peer.data.world) {
+              let door = world.data.blocks?.find((b) => b.door && b.door.id === id);
+
+              if (!door) door = world.data.blocks?.find((b) => b.fg === 6);
+
+              const doorX = (door?.x || 0) * 32;
+              const doorY = (door?.y || 0) * 32;
+
+              peer.data.x = doorX;
+              peer.data.y = doorY;
+
+              peer.send(Variant.from("OnZoomCamera", [10000], 1000));
+
+              peer.everyPeer((p) => {
+                if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+                  p.send(
+                    Variant.from({ netID: peer.data.netID }, "OnSetFreezeState", 0),
+                    Variant.from(
+                      {
+                        netID: peer.data.netID
+                      },
+                      "OnSetPos",
+                      [doorX, doorY]
+                    ),
+                    Variant.from(
+                      {
+                        netID: peer.data.netID
+                      },
+                      "OnPlayPositioned",
+                      "audio/door_open.wav"
+                    )
+                  );
+                }
+              });
+            } else {
+              if (worldName === "EXIT") return peer.leaveWorld();
+              else {
+                world = peer.hasWorld(worldName);
+
+                let door = world.data.blocks?.find((b) => b.door && b.door.id === id);
+                if (!door) door = world.data.blocks?.find((b) => b.fg === 6);
+
+                peer.enterWorld(worldName);
+              }
+            }
             break;
           }
         }

@@ -1,5 +1,13 @@
 import { Peer } from "../structures/Peer";
 
+export interface Place {
+  peer: Peer;
+  x: number;
+  y: number;
+  id: number;
+  isBg?: boolean;
+}
+
 export interface WorldDB {
   name: string;
   ownedBy?: string | null;
@@ -87,6 +95,11 @@ export interface Tree {
   plantedAt: number;
 }
 
+export interface HeartMonitor {
+  name: string;
+  user_id: number;
+}
+
 export interface Block {
   fg?: number;
   bg?: number;
@@ -95,6 +108,7 @@ export interface Block {
   lock?: LockedBlocked;
   door?: Door;
   sign?: Sign;
+  heartMonitor?: HeartMonitor;
   damage?: number;
   resetStateAt?: number;
   worldLock?: boolean;

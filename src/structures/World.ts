@@ -3,7 +3,7 @@
 import { TankPacket, TextPacket, Variant } from "growsockets";
 import { PeerDataType } from "../types/peer";
 import { Flags } from "../utils/enums/Tiles";
-import { Block, EnterArg, WorldData } from "../types/world";
+import { Block, EnterArg, Place, WorldData } from "../types/world";
 import { BaseServer } from "./BaseServer";
 import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
@@ -62,9 +62,34 @@ export class World {
     });
   }
 
+  public place({ peer, x, y, isBg, id }: Place) {
+    let state = 0x8;
+
+    const block = this.data.blocks![x + y * this.data.width!];
+    block[isBg ? "bg" : "fg"] = id;
+
+    peer.everyPeer((p) => {
+      if (p.data.world === this.data.name && p.data.world !== "EXIT") {
+        const packet = TankPacket.from({
+          type: TankTypes.TILE_PUNCH,
+          netID: peer.data.netID,
+          state,
+          info: id,
+          xPunch: x,
+          yPunch: y
+        });
+
+        p.send(packet.parse());
+      }
+    });
+  }
+
   public leave(peer: Peer, sendMenu = true) {
     this.data.playerCount!--;
 
+    peer.send(
+      TextPacket.from(DataTypes.ACTION, "action|play_sfx", `file|audio/door_shut.wav`, `delayMS|0`)
+    );
     peer.everyPeer((p) => {
       if (p.data.netID !== peer.data.netID && p.data.world === peer.data.world)
         p.send(
@@ -152,7 +177,7 @@ export class World {
         this.data.blocks?.forEach((block) => {
           let item = this.base.items.metadata.items.find((i) => i.id === block.fg);
 
-          let blockBuf = HandleTile(block, item?.type);
+          let blockBuf = HandleTile(this.base, block, item?.type);
 
           blockBuf.forEach((b) => blockBytes.push(b));
         });
