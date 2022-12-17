@@ -11,6 +11,7 @@ export interface PeerDataType {
     max: number;
     items: InventoryItems[];
   };
+  rotatedLeft: boolean;
   requestedName: string;
   tankIDName: string;
   netID: number;

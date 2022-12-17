@@ -6,7 +6,6 @@ import { DataTypes } from "../utils/enums/DataTypes";
 import { decrypt, find, parseAction } from "../utils/Utils";
 import { Peer } from "../structures/Peer";
 import { TankTypes } from "../utils/enums/TankTypes";
-import { WORLD_SIZE } from "../utils/Constants";
 import { ActionTypes } from "../utils/enums/Tiles";
 import { handlePlace } from "../tanks/Place";
 import { handlePunch } from "../tanks/Punch";
@@ -126,6 +125,7 @@ export default class extends Listener<"data"> {
             };
 
             peer.data.tankIDName = user.name;
+            peer.data.rotatedLeft = false;
             // peer.data.requestedName = parsed.requestedName as string;
             peer.data.country = parsed?.country as string;
             peer.data.id_user = user.id_user;
@@ -174,43 +174,59 @@ export default class extends Listener<"data"> {
           case TankTypes.PEER_CLOTH: {
             const item = base.items.metadata.items.find((v) => v.id === tank.data?.info);
 
+            const isAnces = (): boolean => {
+              if (item?.type === ActionTypes.ANCES) {
+                if (peer.data.clothing!.ances === tank.data?.info!) peer.data.clothing!.ances = 0;
+                else peer.data.clothing!.ances = tank.data?.info!;
+                return true;
+              } else {
+                return false;
+              }
+            };
+
             switch (item?.bodyPartType) {
               case ClothTypes.HAIR: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.hair === tank.data.info!) peer.data.clothing!.hair = 0;
                 else peer.data.clothing!.hair = tank.data.info!;
 
                 break;
               }
               case ClothTypes.SHIRT: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.shirt === tank.data.info!) peer.data.clothing!.shirt = 0;
                 else peer.data.clothing!.shirt = tank.data.info!;
 
                 break;
               }
               case ClothTypes.PANTS: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.pants === tank.data.info!) peer.data.clothing!.pants = 0;
                 else peer.data.clothing!.pants = tank.data.info!;
 
                 break;
               }
               case ClothTypes.FEET: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.feet === tank.data.info!) peer.data.clothing!.feet = 0;
                 else peer.data.clothing!.feet = tank.data.info!;
 
                 break;
               }
               case ClothTypes.FACE: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.face === tank.data.info!) peer.data.clothing!.face = 0;
                 else peer.data.clothing!.face = tank.data.info!;
 
                 break;
               }
               case ClothTypes.HAND: {
-                if (item.type === 107) {
-                  if (peer.data.clothing!.ances === tank.data.info!) peer.data.clothing!.ances = 0;
-                  else peer.data.clothing!.ances = tank.data.info!;
-                  break;
-                }
+                if (isAnces()) break;
 
                 if (peer.data.clothing!.hand === tank.data.info!) peer.data.clothing!.hand = 0;
                 else peer.data.clothing!.hand = tank.data.info!;
@@ -218,18 +234,24 @@ export default class extends Listener<"data"> {
                 break;
               }
               case ClothTypes.BACK: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.back === tank.data.info!) peer.data.clothing!.back = 0;
                 else peer.data.clothing!.back = tank.data.info!;
 
                 break;
               }
               case ClothTypes.MASK: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.mask === tank.data.info!) peer.data.clothing!.mask = 0;
                 else peer.data.clothing!.mask = tank.data.info!;
 
                 break;
               }
               case ClothTypes.NECKLACE: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.necklace === tank.data.info!)
                   peer.data.clothing!.necklace = 0;
                 else peer.data.clothing!.necklace = tank.data.info!;
@@ -237,6 +259,8 @@ export default class extends Listener<"data"> {
                 break;
               }
               case ClothTypes.ANCES: {
+                if (isAnces()) break;
+
                 if (peer.data.clothing!.ances === tank.data.info!) peer.data.clothing!.ances = 0;
                 else peer.data.clothing!.ances = tank.data.info!;
 
@@ -247,7 +271,6 @@ export default class extends Listener<"data"> {
             peer.saveToCache();
             peer.saveToDatabase();
             peer.sendClothes();
-            // handle equip cloth here
           }
 
           case TankTypes.PEER_MOVE: {
@@ -256,6 +279,7 @@ export default class extends Listener<"data"> {
 
             peer.data.x = tank.data.xPos;
             peer.data.y = tank.data.yPos;
+            peer.data.rotatedLeft = Boolean(tank.data.state! & 0x10);
 
             peer.saveToCache();
 

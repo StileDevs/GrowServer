@@ -68,6 +68,11 @@ export class World {
     const block = this.data.blocks![x + y * this.data.width!];
     block[isBg ? "bg" : "fg"] = id;
 
+    if (peer.data.rotatedLeft) {
+      state |= 0x10;
+      block.rotatedLeft = true;
+    }
+
     peer.everyPeer((p) => {
       if (p.data.world === this.data.name && p.data.world !== "EXIT") {
         const packet = TankPacket.from({

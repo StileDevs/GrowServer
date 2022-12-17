@@ -26,6 +26,8 @@ export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, worl
     tankData.type = TankTypes.TILE_PUNCH;
     tankData.info = 18;
 
+    block.rotatedLeft = undefined;
+
     switch (itemMeta.type) {
       case ActionTypes.PORTAL:
       case ActionTypes.DOOR:

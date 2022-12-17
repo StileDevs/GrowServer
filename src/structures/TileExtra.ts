@@ -28,8 +28,11 @@ export function HandleTile(base: BaseServer, block: Block, actionType?: number):
     }
 
     case ActionTypes.SIGN: {
+      let flag = 0x0;
       const label = block.sign?.label || "";
       buf = Buffer.alloc(15 + label.length);
+
+      if (block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
       buf.writeUint16LE(0x0, 4);
@@ -48,19 +51,19 @@ export function HandleTile(base: BaseServer, block: Block, actionType?: number):
 
       const name = block.heartMonitor?.name || "";
       const id = block.heartMonitor?.user_id || 0;
-      let tileExtra = Flags.FLAGS_TILEEXTRA;
+      let flag = 0x0;
 
       // Check if the peer offline/online
       const targetPeer = find(base.cache.users, (p) => p.data.id_user === id);
-      if (targetPeer) {
-        tileExtra = Flags.FLAGS_TILEEXTRA | Flags.FLAGS_OPEN;
-      }
+
+      if (targetPeer) flag |= Flags.FLAGS_OPEN;
+      if (block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
 
       buf = Buffer.alloc(15 + name.length);
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
       buf.writeUint16LE(0x0, 4);
-      buf.writeUint16LE(tileExtra, 6);
+      buf.writeUint16LE(flag, 6);
 
       buf.writeUint8(ExtraTypes.HEART_MONITOR, 8);
       buf.writeUint32LE(id, 9);
