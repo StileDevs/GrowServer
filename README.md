@@ -51,3 +51,10 @@ After that, to run the development server by:
 ```
 $ npm run dev
 ```
+
+## Credits
+
+Give a thumbs to these cool people:
+
+- [Alexander (Syn9673)](https://github.com/Syn9673) with his `Growsockets` module.
+- [Restart](https://github.com/iRestartz)
