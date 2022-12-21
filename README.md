@@ -58,3 +58,4 @@ Give a thumbs to these cool people:
 
 - [Alexander (Syn9673)](https://github.com/Syn9673) with his `Growsockets` module.
 - [Restart](https://github.com/iRestartz)
+- [Ritshu](https://github.com/Ritshu)
