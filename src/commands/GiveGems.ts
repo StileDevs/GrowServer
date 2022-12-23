@@ -49,7 +49,7 @@ export default class extends Command {
       peer.send(Variant.from("OnSetBux", parseInt(args[0])));
       peer.data.gems = parseInt(args[0]);
       peer.saveToCache();
-      peer.saveToDatabase();
+      // peer.saveToDatabase();
       peer.send(Variant.from("OnConsoleMessage", `Sucessfully received \`w${args[0]}\`\` gems.`));
     }
   }

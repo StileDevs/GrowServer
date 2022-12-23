@@ -16,6 +16,11 @@ export class Database {
         user: process.env.MYSQL_USERNAME,
         password: process.env.MYSQL_PASS,
         database: process.env.MYSQL_DATABASE
+      },
+      log: {
+        error(m) {
+          console.log(m);
+        }
       }
     });
   }
@@ -28,6 +33,8 @@ export class Database {
   }
 
   public async saveUser(data: PeerDataType) {
+    if (!data.id_user) return;
+
     let res = await this.knex("user")
       .where({ id_user: data.id_user })
       .update(
@@ -59,21 +66,42 @@ export class Database {
     else return undefined;
   }
 
-  public async saveWorld({ name, ownedBy = null, blockCount, blocks, width, height }: WorldDB) {
+  public async saveWorld({
+    name,
+    ownedBy = null,
+    blockCount,
+    blocks,
+    width,
+    height,
+    owner
+  }: WorldDB) {
+    if (!name && !blockCount && !blocks && !width && !height) return;
+
     let res = await this.knex("worlds").insert({
       name: name,
       ownedBy: ownedBy ? ownedBy : null,
       blockCount,
       width,
       height,
-      blocks
+      blocks,
+      owner
     });
 
     if (res.length) return true;
     else return undefined;
   }
 
-  public async updateWorld({ name, ownedBy = null, blockCount, blocks, width, height }: WorldDB) {
+  public async updateWorld({
+    name,
+    ownedBy = null,
+    blockCount,
+    blocks,
+    width,
+    height,
+    owner
+  }: WorldDB) {
+    if (!name && !blockCount && !blocks && !width && !height) return;
+
     let res = await this.knex("worlds")
       .where({ name })
       .update(
@@ -82,7 +110,8 @@ export class Database {
           blockCount,
           width,
           height,
-          blocks
+          blocks,
+          owner
         },
         []
       );

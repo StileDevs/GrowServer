@@ -1,4 +1,5 @@
 import CryptoJS from "crypto-js";
+import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 interface DataObject {
   [key: string]: string | number;
@@ -47,4 +48,36 @@ export function encrypt(data: string): string {
 }
 export function decrypt(data: string): string {
   return CryptoJS.AES.decrypt(data, process.env.ENCRYPT_SECRET!).toString(CryptoJS.enc.Utf8);
+}
+
+export function handleSaveAll(server: BaseServer, dcAll = false) {
+  server.log.warn(`Saving ${server.cache.users.size} peers & ${server.cache.worlds.size} worlds.`);
+
+  const saveWorlds = () => {
+    if (server.cache.worlds.size === 0) process.exit();
+    else {
+      let o = 0;
+      server.cache.worlds.forEach(async (world) => {
+        await world.saveToDatabase();
+
+        o += 1;
+        if (o === server.cache.worlds.size) process.exit();
+      });
+    }
+  };
+
+  if (server.cache.users.size === 0) process.exit();
+  else {
+    let i = 0;
+    server.cache.users.forEach(async (player) => {
+      await player.saveToDatabase();
+      if (dcAll) {
+        player.disconnect("now");
+      } else {
+        // send onconsolemessage for auto saving
+      }
+      i += 1;
+      if (i === server.cache.users.size) saveWorlds();
+    });
+  }
 }

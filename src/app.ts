@@ -1,5 +1,6 @@
 import { BaseServer } from "./structures/BaseServer";
 import fs from "node:fs";
+import { handleSaveAll } from "./utils/Utils";
 
 if (!fs.existsSync("./assets"))
   throw new Error("Could not find 'assets' folder, please create new one.");
@@ -19,3 +20,7 @@ if (!fs.existsSync("./assets/dat/items.dat"))
 const server = new BaseServer();
 
 server.start();
+
+process.on("SIGINT", () => handleSaveAll(server, true));
+process.on("SIGQUIT", () => handleSaveAll(server, true));
+process.on("SIGTERM", () => handleSaveAll(server, true));

@@ -9,6 +9,9 @@ export default class extends Listener<"disconnect"> {
 
   public run(base: BaseServer, netID: number): void {
     console.log("Peer", netID, "disconnected");
+    let peer = base.cache.users.get(netID);
+    peer?.saveToDatabase();
+
     base.cache.users.delete(netID);
   }
 }

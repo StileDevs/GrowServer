@@ -1,4 +1,4 @@
-import { TankPacket } from "growsockets";
+import { TankPacket, Variant } from "growsockets";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { HandleTile } from "../structures/TileExtra";
@@ -20,6 +20,8 @@ interface Arg {
 export function handleBlockPlacing(p: Arg): boolean {
   switch (p.actionType) {
     case ActionTypes.SHEET_MUSIC:
+    case ActionTypes.BEDROCK:
+    case ActionTypes.LAVA:
     case ActionTypes.FOREGROUND:
     case ActionTypes.BACKGROUND: {
       p.world.place({
@@ -80,20 +82,56 @@ export function handleBlockPlacing(p: Arg): boolean {
         id: p.id
       });
 
-      tileUpdate(p.base, p.peer, p.actionType, p.block);
+      tileUpdate(p.base, p.peer, p.actionType, p.block, p.world);
+
+      return true;
+      break;
+    }
+
+    case ActionTypes.LOCK: {
+      if (p.id !== 242) return false;
+
+      p.block.worldLock = true;
+      if (!p.block.lock) {
+        p.block.lock = {
+          ownerUserID: p.peer.data.id_user as number
+        };
+      }
+      p.world.data.owner = {
+        id: p.peer.data.id_user as number,
+        name: p.peer.data.tankIDName,
+        displayName: p.peer.name
+      };
+
+      p.world.place({
+        peer: p.peer,
+        x: p.block.x!,
+        y: p.block.y!,
+        isBg: p.isBg,
+        id: p.id
+      });
+
+      tileUpdate(p.base, p.peer, p.actionType, p.block, p.world);
 
       return true;
       break;
     }
 
     default: {
+      console.log("adwadewijoadfijow");
       return false;
       break;
     }
   }
 }
 
-export function tileUpdate(base: BaseServer, peer: Peer, actionType: number, block: Block): void {
+export function tileUpdate(
+  base: BaseServer,
+  peer: Peer,
+  actionType: number,
+  block: Block,
+  world: World
+): void {
   peer.everyPeer((p) => {
     if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
       p.send(
@@ -101,7 +139,7 @@ export function tileUpdate(base: BaseServer, peer: Peer, actionType: number, blo
           type: TankTypes.TILE_UPDATE,
           xPunch: block.x,
           yPunch: block.y,
-          data: () => HandleTile(base, block, actionType)
+          data: () => HandleTile(base, block, world, actionType)
         })
       );
     }

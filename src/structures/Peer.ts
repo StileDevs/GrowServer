@@ -60,10 +60,8 @@ export class Peer extends OldPeer<PeerDataType> {
   }
 
   /** Extended version of setDataToDatabase */
-  public saveToDatabase() {
-    this.base.database.saveUser(this.data).then((v) => {
-      return v;
-    });
+  public async saveToDatabase() {
+    return await this.base.database.saveUser(this.data);
   }
 
   public getSelfCache() {
@@ -102,8 +100,12 @@ export class Peer extends OldPeer<PeerDataType> {
   }
 
   public hasWorld(worldName: string) {
-    // prettier-ignore
-    return this.base.cache.worlds.has(worldName) ? this.base.cache.worlds.get(worldName)! : new World(this.base, worldName);
+    if (this.base.cache.worlds.has(worldName)) {
+      return this.base.cache.worlds.get(worldName)!;
+    } else {
+      let world = new World(this.base, worldName);
+      return world;
+    }
   }
 
   public respawn() {
@@ -123,11 +125,11 @@ export class Peer extends OldPeer<PeerDataType> {
     this.sound("audio/teleport.wav", 2000);
   }
 
-  public enterWorld(worldName: string) {
+  public enterWorld(worldName: string, x?: number, y?: number) {
     const world = this.hasWorld(worldName);
     const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
 
-    world.enter(this, { x: mainDoor?.x, y: mainDoor?.y });
+    world.enter(this, { x: x ? x : mainDoor?.x, y: y ? y : mainDoor?.y });
     this.inventory();
     this.sound("audio/door_open.wav");
   }

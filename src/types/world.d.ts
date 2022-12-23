@@ -15,6 +15,7 @@ export interface WorldDB {
   blocks: Buffer;
   width: number;
   height: number;
+  owner?: Buffer | null;
 }
 
 export interface Jammer {
@@ -47,7 +48,11 @@ export interface WorldData {
   height?: number;
   blockCount?: number;
   blocks?: Block[];
-  owner?: number;
+  owner?: {
+    name: string;
+    displayName: string;
+    id: number;
+  };
   admins?: number[];
   playerCount?: number;
   bpm?: number;

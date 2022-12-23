@@ -29,37 +29,30 @@ export class World {
     return this.base.cache.worlds.get(worldName);
   }
 
-  public saveToDatabase() {
+  public async saveToDatabase() {
     const wrld = this.getWorldCache(this.worldName)!;
-    this.base.database.getWorld(this.worldName).then((world) => {
-      if (world) {
-        this.base.database
-          .updateWorld({
-            name: wrld.worldName,
-            ownedBy: null, // make sure this is not null if lock are done
-            blockCount: wrld.data.blockCount!,
-            width: wrld.data.width!,
-            height: wrld.data.height!,
-            blocks: Buffer.from(JSON.stringify(wrld.data.blocks))
-          })
-          .then((v) => {
-            return v;
-          });
-      } else {
-        this.base.database
-          .saveWorld({
-            name: wrld?.data.name!,
-            ownedBy: null, // make sure this is not null if lock are done
-            blockCount: wrld?.data.blockCount!,
-            width: wrld?.data.width!,
-            height: wrld?.data.height!,
-            blocks: Buffer.from(JSON.stringify(wrld?.data.blocks!))
-          })
-          .then((v) => {
-            return v;
-          });
-      }
-    });
+    const world = await this.base.database.getWorld(this.worldName);
+    if (world) {
+      await this.base.database.updateWorld({
+        name: wrld.worldName,
+        ownedBy: wrld.data.owner ? `${wrld.data.owner.id}` : null,
+        blockCount: wrld.data.blockCount!,
+        width: wrld.data.width!,
+        height: wrld.data.height!,
+        blocks: Buffer.from(JSON.stringify(wrld.data.blocks)),
+        owner: wrld.data.owner ? Buffer.from(JSON.stringify(wrld.data.owner)) : null
+      });
+    } else {
+      await this.base.database.saveWorld({
+        name: wrld?.data.name!,
+        ownedBy: wrld?.data.owner ? `${wrld.data.owner.id}` : null,
+        blockCount: wrld?.data.blockCount!,
+        width: wrld?.data.width!,
+        height: wrld?.data.height!,
+        blocks: Buffer.from(JSON.stringify(wrld?.data.blocks!)),
+        owner: wrld.data.owner ? Buffer.from(JSON.stringify(wrld?.data.owner!)) : null
+      });
+    }
   }
 
   public place({ peer, x, y, isBg, id }: Place) {
@@ -83,7 +76,6 @@ export class World {
           xPunch: x,
           yPunch: y
         });
-
         p.send(packet.parse());
       }
     });
@@ -96,7 +88,11 @@ export class World {
       TextPacket.from(DataTypes.ACTION, "action|play_sfx", `file|audio/door_shut.wav`, `delayMS|0`)
     );
     peer.everyPeer((p) => {
-      if (p.data.netID !== peer.data.netID && p.data.world === peer.data.world)
+      if (
+        p.data.netID !== peer.data.netID &&
+        p.data.world !== "EXIT" &&
+        p.data.world === peer.data.world
+      )
         p.send(
           Variant.from("OnRemove", `netID|${peer.data.netID}`),
           Variant.from(
@@ -126,16 +122,14 @@ export class World {
     peer.data.world = "EXIT";
     this.saveToCache();
     peer.saveToCache();
-    this.saveToDatabase();
-    peer.saveToDatabase();
+    // this.saveToDatabase();
+    // peer.saveToDatabase();
     if (this.data.playerCount! < 1) {
       // TODO: delete the cache (if needed) & save it to db
     }
   }
 
-  public async enter(peer: Peer, { x, y }: EnterArg) {
-    // this.data = peer.hasWorld(this.worldName).data;
-    // console.log(this.base.cache.worlds.get(worldName));
+  public async getData() {
     if (!this.base.cache.worlds.has(this.worldName)) {
       const world = await this.base.database.getWorld(this.worldName);
       if (world) {
@@ -151,12 +145,19 @@ export class World {
           dropped: {
             uid: 0,
             items: []
-          }
+          },
+          owner: world.owner ? JSON.parse(world.owner?.toString()!) : null
         };
       } else {
         this.generate(true);
       }
     } else this.data = this.base.cache.worlds.get(this.worldName)!.data;
+  }
+
+  public async enter(peer: Peer, { x, y }: EnterArg) {
+    // this.data = peer.hasWorld(this.worldName).data;
+    // console.log(this.base.cache.worlds.get(worldName));
+    await this.getData();
 
     if (typeof x !== "number") x = -1;
     if (typeof y !== "number") y = -1;
@@ -182,7 +183,7 @@ export class World {
         this.data.blocks?.forEach((block) => {
           let item = this.base.items.metadata.items.find((i) => i.id === block.fg);
 
-          let blockBuf = HandleTile(this.base, block, item?.type);
+          let blockBuf = HandleTile(this.base, block, this, item?.type);
 
           blockBuf.forEach((b) => blockBytes.push(b));
         });
@@ -259,6 +260,15 @@ export class World {
         [peer.data.clothing?.ances!, 0.0, 0.0]
       )
     );
+
+    if (this.data.owner) {
+      peer.send(
+        Variant.from(
+          "OnConsoleMessage",
+          `\`#[\`0\`9World Locked by ${this.data.owner.displayName}\`#]`
+        )
+      );
+    }
 
     peer.everyPeer((p) => {
       if (

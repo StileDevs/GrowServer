@@ -5,7 +5,12 @@ import { World } from "./World";
 import { BaseServer } from "./BaseServer";
 import { find } from "../utils/Utils";
 
-export function HandleTile(base: BaseServer, block: Block, actionType?: number): Buffer {
+export function HandleTile(
+  base: BaseServer,
+  block: Block,
+  world: World,
+  actionType?: number
+): Buffer {
   let buf: Buffer;
   switch (actionType) {
     case ActionTypes.PORTAL:
@@ -69,6 +74,24 @@ export function HandleTile(base: BaseServer, block: Block, actionType?: number):
       buf.writeUint32LE(id, 9);
       buf.writeUint16LE(name.length, 13);
       buf.write(name, 15);
+
+      return buf;
+    }
+
+    case ActionTypes.LOCK: {
+      const owner = (block.lock ? block.lock.ownerUserID : world.data.owner?.id) as number;
+
+      // 0 = admincount
+      buf = Buffer.alloc(26 + 4 * 0);
+
+      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUint16LE(0x0, 4);
+      buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
+
+      buf.writeUInt16LE(ExtraTypes.LOCK | (0x0 << 8), 8);
+      buf.writeUInt32LE(owner, 10);
+      buf.writeUInt32LE(0, 14); // admin count
+      buf.writeInt32LE(-1, 18);
 
       return buf;
     }

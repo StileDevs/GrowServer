@@ -34,6 +34,7 @@ export default class extends Dialog {
       )
     );
     peer.inventory();
-    peer.saveToDatabase();
+    peer.saveToCache();
+    // peer.saveToDatabase();
   }
 }

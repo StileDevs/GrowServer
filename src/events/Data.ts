@@ -83,6 +83,7 @@ export default class extends Listener<"data"> {
                 )
               );
 
+              targetPeer.leaveWorld();
               targetPeer.disconnect();
             }
             peer.send(
@@ -94,7 +95,8 @@ export default class extends Listener<"data"> {
                 "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
                 "proto=179|choosemusic=audio/mp3/jazz_loop.mp3|active_holiday=0|wing_week_day=0|ubi_week_day=0|server_tick=76098085|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|proto=179|choosemusic=audio/mp3/jazz_loop.mp3|active_holiday=17|wing_week_day=0|ubi_week_day=0|server_tick=3021347|clash_active=1|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
               ),
-              Variant.from("SetHasGrowID", 1, user.name, decrypt(user.password))
+              Variant.from("SetHasGrowID", 1, user.name, decrypt(user.password)),
+              Variant.from("SetHasAccountSecured", 1)
             );
 
             const defaultInventory = {
@@ -165,11 +167,15 @@ export default class extends Listener<"data"> {
         const tank = TankPacket.fromBuffer(data);
 
         switch (tank.data?.type) {
-          // case TankTypes.PEER_ICON: {
-          //   peer.everyPeer(
-          //     (p) => p.data.world === peer.data.world && p.data.world !== "EXIT" && p.send(tank)
-          //   );
-          // }
+          case TankTypes.PEER_ICON: {
+            tank.data.netID = peer.data.netID;
+
+            peer.everyPeer((p) => {
+              if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+                p.send(tank);
+              }
+            });
+          }
 
           case TankTypes.PEER_CLOTH: {
             const item = base.items.metadata.items.find((v) => v.id === tank.data?.info);
@@ -323,10 +329,9 @@ export default class extends Listener<"data"> {
 
             const worldDes = block.door?.destination?.split(":")!;
             if (!worldDes[0]) worldDes[0] = peer.data.world;
-            if (!worldDes[1]) worldDes[1] = peer.data.world;
 
-            const worldName = worldDes[0].toUpperCase();
-            const id = worldDes[1].toUpperCase();
+            const worldName = worldDes[0];
+            const id = worldDes[1];
 
             if (worldName === peer.data.world) {
               let door = world.data.blocks?.find((b) => b.door && b.door.id === id);
@@ -365,12 +370,39 @@ export default class extends Listener<"data"> {
             } else {
               if (worldName === "EXIT") return peer.leaveWorld();
               else {
-                world = peer.hasWorld(worldName);
+                let wrld = peer.hasWorld(worldName);
 
-                let door = world.data.blocks?.find((b) => b.door && b.door.id === id);
-                if (!door) door = world.data.blocks?.find((b) => b.fg === 6);
+                let door = wrld.data.blocks?.find((b) => b.door && b.door.id === id);
+                if (!door) door = wrld.data.blocks?.find((b) => b.fg === 6);
 
-                peer.enterWorld(worldName);
+                world.data.playerCount!--;
+                peer.everyPeer((p) => {
+                  if (
+                    p.data.netID !== peer.data.netID &&
+                    p.data.world === peer.data.world &&
+                    p.data.world !== "EXIT"
+                  ) {
+                    p.send(
+                      Variant.from("OnRemove", `netID|${peer.data.netID}`),
+                      Variant.from(
+                        "OnConsoleMessage",
+                        `\`5<${peer.name}\`\` left, \`w${world.data.playerCount}\`\` others here\`5>\`\``
+                      ),
+                      Variant.from(
+                        "OnTalkBubble",
+                        peer.data.netID,
+                        `\`5<${peer.name}\`\` left, \`w${world.data.playerCount}\`\` others here\`5>\`\``
+                      ),
+                      TextPacket.from(
+                        DataTypes.ACTION,
+                        "action|play_sfx",
+                        `file|audio/door_shut.wav`,
+                        `delayMS|0`
+                      )
+                    );
+                  }
+                });
+                peer.enterWorld(worldName, door?.x, door?.y);
               }
             }
             break;

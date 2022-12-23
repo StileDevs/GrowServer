@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 14, 2022 at 06:29 AM
+-- Generation Time: Dec 23, 2022 at 12:28 PM
 -- Server version: 10.4.24-MariaDB
 -- PHP Version: 8.1.6
 
@@ -50,6 +50,7 @@ CREATE TABLE `worlds` (
   `id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `ownedBy` int(11) DEFAULT NULL,
+  `owner` blob DEFAULT NULL,
   `width` int(11) NOT NULL,
   `height` int(11) NOT NULL,
   `blockCount` int(11) NOT NULL,
