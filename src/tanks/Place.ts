@@ -30,9 +30,11 @@ export function handlePlace(tank: TankPacket, peer: Peer, base: BaseServer, worl
 
   if (world.data.owner) {
     if (world.data.owner.id !== peer.data.id_user) {
-      return peer.send(
-        Variant.from({ netID: peer.data.netID }, "OnPlayPositioned", "audio/punch_locked.wav")
-      );
+      if (peer.data.role !== Role.DEVELOPER) {
+        return peer.send(
+          Variant.from({ netID: peer.data.netID }, "OnPlayPositioned", "audio/punch_locked.wav")
+        );
+      }
     }
   }
 

@@ -91,9 +91,9 @@ export default class extends Listener<"data"> {
                 "OnSuperMainStartAcceptLogonHrdxs47254722215a",
                 base.items.hash,
                 "ubistatic-a.akamaihd.net",
-                "0098/654975/cache/",
+                "0098/310007/cache/",
                 "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
-                "proto=179|choosemusic=audio/mp3/jazz_loop.mp3|active_holiday=0|wing_week_day=0|ubi_week_day=0|server_tick=76098085|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|proto=179|choosemusic=audio/mp3/jazz_loop.mp3|active_holiday=17|wing_week_day=0|ubi_week_day=0|server_tick=3021347|clash_active=1|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
+                "proto=181|choosemusic=audio/mp3/tsirhc.mp3|active_holiday=9|wing_week_day=0|ubi_week_day=0|server_tick=92720229|clash_active=0|drop_lavacheck_faster=1|isPayingUser=1|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
               ),
               Variant.from("SetHasGrowID", 1, user.name, decrypt(user.password)),
               Variant.from("SetHasAccountSecured", 1)
@@ -165,10 +165,13 @@ export default class extends Listener<"data"> {
           return peer.disconnect();
         }
         const tank = TankPacket.fromBuffer(data);
-
         switch (tank.data?.type) {
+          default: {
+            console.log("Unknown tank", tank);
+            break;
+          }
           case TankTypes.PEER_ICON: {
-            tank.data.netID = peer.data.netID;
+            tank.data.state = peer.data.rotatedLeft ? 16 : 0;
 
             peer.everyPeer((p) => {
               if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
@@ -178,6 +181,7 @@ export default class extends Listener<"data"> {
           }
 
           case TankTypes.PEER_CLOTH: {
+            tank.data.state = peer.data.rotatedLeft ? 16 : 0;
             const item = base.items.metadata.items.find((v) => v.id === tank.data?.info);
 
             const isAnces = (): boolean => {
@@ -281,21 +285,15 @@ export default class extends Listener<"data"> {
 
           case TankTypes.PEER_MOVE: {
             tank.data.netID = peer.data.netID;
-            tank.data.type = TankTypes.PEER_MOVE;
 
             peer.data.x = tank.data.xPos;
             peer.data.y = tank.data.yPos;
             peer.data.rotatedLeft = Boolean(tank.data.state! & 0x10);
 
             peer.saveToCache();
-
             peer.everyPeer((p) => {
-              if (
-                p.data.netID !== peer.data.netID &&
-                p.data.world === peer.data.world &&
-                p.data.world !== "EXIT"
-              ) {
-                p.send(tank.parse());
+              if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+                p.send(tank);
               }
             });
             break;
