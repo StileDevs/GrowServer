@@ -31,7 +31,7 @@ export function WebServer(log: Logger, db: Database) {
 
   app.use("/growtopia/server_data.php", (req, res) => {
     res.send(
-      "server|127.0.0.1\nport|17091\ntype|1\n#maint|Maintenance woi\nmeta|lolwhat\nRTENDMARKERBS1001"
+      `server|${process.env.WEB_ADDRESS}\nport|17091\ntype|1\n#maint|Maintenance woi\nmeta|lolwhat\nRTENDMARKERBS1001`
     );
   });
 
