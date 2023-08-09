@@ -1,6 +1,9 @@
 import CryptoJS from "crypto-js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
+import { Collection } from "../structures/Collection";
+import { PeerDataType } from "../types/peer";
+import { World } from "../structures/World";
 interface DataObject {
   [key: string]: string | number;
 }
@@ -28,10 +31,15 @@ export function parseAction(chunk: Buffer): DataObject | undefined {
   return data;
 }
 
-export function find(users: Map<number, Peer>, func: (user: Peer) => boolean) {
+export function find(
+  base: BaseServer,
+  users: Collection<number, PeerDataType>,
+  func: (user: Peer) => boolean
+) {
   for (const item of users.values()) {
-    if (func(item)) {
-      return item;
+    const peer = users.getSelf(item.netID);
+    if (func(peer)) {
+      return peer;
     }
   }
   return undefined;
@@ -57,8 +65,10 @@ export function handleSaveAll(server: BaseServer, dcAll = false) {
     if (server.cache.worlds.size === 0) process.exit();
     else {
       let o = 0;
-      server.cache.worlds.forEach(async (world) => {
-        await world.saveToDatabase();
+      server.cache.worlds.forEach(async (wrld) => {
+        const world = new World(server, wrld.name!);
+        if (typeof world.worldName === "string") await world.saveToDatabase();
+        else server.log.warn(`Oh no there's undefined (${o}) world, skipping..`);
 
         o += 1;
         if (o === server.cache.worlds.size) process.exit();
@@ -69,7 +79,8 @@ export function handleSaveAll(server: BaseServer, dcAll = false) {
   if (server.cache.users.size === 0) process.exit();
   else {
     let i = 0;
-    server.cache.users.forEach(async (player) => {
+    server.cache.users.forEach(async (peer) => {
+      const player = server.cache.users.getSelf(peer.netID);
       await player.saveToDatabase();
       if (dcAll) {
         player.disconnect("now");

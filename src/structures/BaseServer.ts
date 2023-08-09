@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { Server, TextPacket, TankPacket, DefaultCache } from "growsockets";
+import { TextPacket, TankPacket, Client } from "growtopia.js";
 import { WebServer } from "./Webserver";
 import { hashItemsDat } from "../utils/Utils";
 import { Action } from "../abstracts/Action";
@@ -12,14 +12,17 @@ import { Command } from "../abstracts/Command";
 import { CooldownOptions } from "../types/command";
 import { Dialog } from "../abstracts/Dialog";
 import { Database } from "../database/db";
+import { Collection } from "./Collection";
+import { PeerDataType } from "../types/peer";
+import { WorldData } from "../types/world";
 
 export class BaseServer {
-  public server: Server<unknown, unknown, unknown>;
+  public server: Client;
   public items;
   public action: Map<string, Action>;
   public cache: {
-    users: Map<number, Peer>;
-    worlds: Map<string, World>;
+    users: Collection<number, PeerDataType>;
+    worlds: Collection<string, WorldData>;
   };
   public log: Logger;
   public commands: Map<string, Command>;
@@ -28,7 +31,7 @@ export class BaseServer {
   public database;
 
   constructor() {
-    this.server = new Server({ http: { enabled: false }, log: false });
+    this.server = new Client({ https: { enable: false } });
     this.items = {
       hash: `${hashItemsDat(fs.readFileSync("./assets/dat/items.dat"))}`,
       content: fs.readFileSync("./assets/dat/items.dat"),
@@ -36,8 +39,8 @@ export class BaseServer {
     };
     this.action = new Map();
     this.cache = {
-      users: new Map(),
-      worlds: new Map()
+      users: new Collection(this),
+      worlds: new Collection(this)
     };
     this.log = new Logger();
     this.commands = new Map();
@@ -69,6 +72,20 @@ export class BaseServer {
 
   async #_loadItems() {
     let items = await new ItemsDat(fs.readFileSync("./assets/dat/items.dat")).decode();
+
+    // 1181890091
+    // let tes = items.items.find((v) => v.id === 10000)!;
+    // console.log(tes);
+    // tes.extraFile = "interface/large/news_banner1.rttex";
+    // tes.extraFileHash = 1181890091;
+    // console.log(tes);
+
+    // const encoded = await new ItemsDat().encode(items);
+    // let newItems = await new ItemsDat(encoded).decode();
+
+    // this.items.content = encoded;
+    // this.items.hash = `${hashItemsDat(encoded)}`;
+    // this.items.metadata = newItems;
     this.items.metadata = items;
   }
 

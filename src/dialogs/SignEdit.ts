@@ -1,4 +1,4 @@
-import { TankPacket, TextPacket, Variant } from "growsockets";
+import { TankPacket, TextPacket, Variant } from "growtopia.js";
 import { Dialog } from "../abstracts/Dialog";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
@@ -29,16 +29,16 @@ export default class extends Dialog {
     }>
   ): void {
     const world = peer.hasWorld(peer.data.world);
-    const pos = parseInt(action.tilex) + parseInt(action.tiley) * world.data.width!;
-    const block = world.data.blocks![pos];
+    const pos = parseInt(action.tilex) + parseInt(action.tiley) * world?.data.width!;
+    const block = world?.data.blocks![pos]!;
     const itemMeta = base.items.metadata.items.find((i) => i.id === parseInt(action.itemID));
 
-    if (world.data.owner) {
+    if (world?.data.owner) {
       if (world.data.owner.id !== peer.data.id_user) return;
     }
 
     block.sign!.label = action.label || "";
 
-    tileUpdate(base, peer, itemMeta?.type!, block, world);
+    tileUpdate(base, peer, itemMeta?.type!, block, world!);
   }
 }

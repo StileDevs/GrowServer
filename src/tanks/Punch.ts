@@ -1,4 +1,4 @@
-import { TankPacket, Variant } from "growsockets";
+import { TankPacket, Variant } from "growtopia.js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { World } from "../structures/World";
@@ -75,6 +75,11 @@ export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, worl
 
       case ActionTypes.SIGN: {
         block.sign = undefined;
+        break;
+      }
+
+      case ActionTypes.DEADLY_BLOCK: {
+        block.dblockID = undefined;
         break;
       }
 

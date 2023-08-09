@@ -1,4 +1,4 @@
-import { TankPacket, Variant } from "growsockets";
+import { TankPacket, Variant } from "growtopia.js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { HandleTile } from "../structures/TileExtra";
@@ -102,6 +102,23 @@ export function handleBlockPlacing(p: Arg): boolean {
         name: p.peer.data.tankIDName,
         displayName: p.peer.name
       };
+
+      p.world.place({
+        peer: p.peer,
+        x: p.block.x!,
+        y: p.block.y!,
+        isBg: p.isBg,
+        id: p.id
+      });
+
+      tileUpdate(p.base, p.peer, p.actionType, p.block, p.world);
+
+      return true;
+      break;
+    }
+
+    case ActionTypes.DISPLAY_BLOCK: {
+      p.block.dblockID = 0;
 
       p.world.place({
         peer: p.peer,

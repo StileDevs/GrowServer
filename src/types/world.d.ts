@@ -114,6 +114,7 @@ export interface Block {
   door?: Door;
   sign?: Sign;
   heartMonitor?: HeartMonitor;
+  dblockID?: number;
   damage?: number;
   resetStateAt?: number;
   worldLock?: boolean;

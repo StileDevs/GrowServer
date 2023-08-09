@@ -1,4 +1,4 @@
-import { Variant, TankPacket, TextPacket } from "growsockets";
+import { Variant, TankPacket, TextPacket } from "growtopia.js";
 import { Listener } from "../abstracts/Listener";
 import { ActionType } from "../types/action";
 import { BaseServer } from "../structures/BaseServer";
@@ -12,10 +12,10 @@ import { handlePunch } from "../tanks/Punch";
 import { ClothTypes } from "../utils/enums/ItemTypes";
 import { handleWrench } from "../tanks/BlockWrench";
 
-export default class extends Listener<"data"> {
+export default class extends Listener<"raw"> {
   constructor() {
     super();
-    this.name = "data";
+    this.name = "raw";
   }
 
   private failGuest(peer: Peer) {
@@ -36,7 +36,7 @@ export default class extends Listener<"data"> {
 
   public async run(base: BaseServer, netID: number, data: Buffer): Promise<void> {
     // prettier-ignore
-    const peer = base.cache.users.has(netID) ? base.cache.users.get(netID)! : new Peer(base.server, netID, base);
+    const peer = base.cache.users.has(netID) ? base.cache.users.getSelf(netID)! : new Peer(base, netID);
     const dataType = data.readInt32LE();
 
     switch (dataType) {
@@ -74,7 +74,7 @@ export default class extends Listener<"data"> {
             }
 
             // Check if there's same account is logged in
-            const targetPeer = find(base.cache.users, (v) => v.data.id_user === user.id_user);
+            const targetPeer = find(base, base.cache.users, (v) => v.data.id_user === user.id_user);
             if (targetPeer) {
               peer.send(
                 Variant.from(
@@ -91,9 +91,9 @@ export default class extends Listener<"data"> {
                 "OnSuperMainStartAcceptLogonHrdxs47254722215a",
                 base.items.hash,
                 "ubistatic-a.akamaihd.net",
-                "0098/310007/cache/",
+                "0098/748571133/cache/",
                 "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
-                "proto=181|choosemusic=audio/mp3/tsirhc.mp3|active_holiday=9|wing_week_day=0|ubi_week_day=0|server_tick=92720229|clash_active=0|drop_lavacheck_faster=1|isPayingUser=1|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
+                "proto=192|choosemusic=audio/mp3/about_theme.mp3|active_holiday=0|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
               ),
               Variant.from("SetHasGrowID", 1, user.name, decrypt(user.password)),
               Variant.from("SetHasAccountSecured", 1)
@@ -237,6 +237,9 @@ export default class extends Listener<"data"> {
               }
               case ClothTypes.HAND: {
                 if (isAnces()) break;
+                const handItem = base.items.metadata.items.find(
+                  (item) => item.id === tank.data?.info
+                );
 
                 if (peer.data.clothing!.hand === tank.data.info!) peer.data.clothing!.hand = 0;
                 else peer.data.clothing!.hand = tank.data.info!;
@@ -299,7 +302,7 @@ export default class extends Listener<"data"> {
             break;
           }
           case TankTypes.TILE_PUNCH: {
-            const world = peer.hasWorld(peer.data.world);
+            const world = peer.hasWorld(peer.data.world)!;
             tank.data.netID = peer.data.netID;
 
             // Fist
@@ -319,8 +322,8 @@ export default class extends Listener<"data"> {
             if (peer.data.world === "EXIT") return;
 
             let world = peer.hasWorld(peer.data.world);
-            const pos = tank.data.xPunch! + tank.data.yPunch! * world.data.width!;
-            const block = world.data.blocks![pos];
+            const pos = tank.data.xPunch! + tank.data.yPunch! * world?.data.width!;
+            const block = world?.data.blocks![pos];
 
             if (!block || !block.door) return;
             if (block.fg === 6) return peer.leaveWorld();
@@ -332,9 +335,9 @@ export default class extends Listener<"data"> {
             const id = worldDes[1];
 
             if (worldName === peer.data.world) {
-              let door = world.data.blocks?.find((b) => b.door && b.door.id === id);
+              let door = world?.data.blocks?.find((b) => b.door && b.door.id === id);
 
-              if (!door) door = world.data.blocks?.find((b) => b.fg === 6);
+              if (!door) door = world?.data.blocks?.find((b) => b.fg === 6);
 
               const doorX = (door?.x || 0) * 32;
               const doorY = (door?.y || 0) * 32;
@@ -370,10 +373,10 @@ export default class extends Listener<"data"> {
               else {
                 let wrld = peer.hasWorld(worldName);
 
-                let door = wrld.data.blocks?.find((b) => b.door && b.door.id === id);
-                if (!door) door = wrld.data.blocks?.find((b) => b.fg === 6);
+                let door = wrld?.data.blocks?.find((b) => b.door && b.door.id === id);
+                if (!door) door = wrld?.data.blocks?.find((b) => b.fg === 6);
 
-                world.data.playerCount!--;
+                world!.data.playerCount!--;
                 peer.everyPeer((p) => {
                   if (
                     p.data.netID !== peer.data.netID &&
@@ -384,12 +387,12 @@ export default class extends Listener<"data"> {
                       Variant.from("OnRemove", `netID|${peer.data.netID}`),
                       Variant.from(
                         "OnConsoleMessage",
-                        `\`5<${peer.name}\`\` left, \`w${world.data.playerCount}\`\` others here\`5>\`\``
+                        `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``
                       ),
                       Variant.from(
                         "OnTalkBubble",
                         peer.data.netID,
-                        `\`5<${peer.name}\`\` left, \`w${world.data.playerCount}\`\` others here\`5>\`\``
+                        `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``
                       ),
                       TextPacket.from(
                         DataTypes.ACTION,

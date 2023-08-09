@@ -1,4 +1,4 @@
-import { TankPacket, Variant } from "growsockets";
+import { TankPacket, Variant } from "growtopia.js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { World } from "../structures/World";

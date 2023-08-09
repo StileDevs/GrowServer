@@ -48,16 +48,25 @@ export function WebServer(log: Logger, db: Database) {
     }
   });
 
-  let httpServer = http.createServer(app);
-  let httpsServer = https.createServer(options, app);
+  if (process.env.WEB_ENV === "production") {
+    app.listen(3000, () => {
+      log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
+      log.info(
+        `To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`
+      );
+    });
+  } else if (process.env.WEB_ENV === "development") {
+    let httpServer = http.createServer(app);
+    let httpsServer = https.createServer(options, app);
 
-  httpServer.listen(80);
-  httpsServer.listen(443);
+    httpServer.listen(80);
+    httpsServer.listen(443);
 
-  httpsServer.on("listening", function () {
-    log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
-    log.info(
-      `To register account you need to register at: http://${process.env.WEB_ADDRESS}:80/register`
-    );
-  });
+    httpsServer.on("listening", function () {
+      log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
+      log.info(
+        `To register account you need to register at: http://${process.env.WEB_ADDRESS}:80/register`
+      );
+    });
+  }
 }

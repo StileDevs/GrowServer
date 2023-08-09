@@ -59,7 +59,7 @@ export function HandleTile(
       let flag = 0x0;
 
       // Check if the peer offline/online
-      const targetPeer = find(base.cache.users, (p) => p.data.id_user === id);
+      const targetPeer = base.cache.users.findPeer((p) => p.data.id_user === id);
 
       if (targetPeer) flag |= Flags.FLAGS_OPEN;
       if (block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
@@ -74,6 +74,19 @@ export function HandleTile(
       buf.writeUint32LE(id, 9);
       buf.writeUint16LE(name.length, 13);
       buf.write(name, 15);
+
+      return buf;
+    }
+
+    case ActionTypes.DISPLAY_BLOCK: {
+      buf = Buffer.alloc(13);
+
+      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUint16LE(0x0, 4);
+      buf.writeUint16LE(0x0, 6);
+
+      buf.writeUint8(ExtraTypes.DISPLAY_BLOCK, 8);
+      buf.writeUint32LE(block.dblockID!, 9);
 
       return buf;
     }

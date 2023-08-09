@@ -1,12 +1,15 @@
 {
   "name": "growserver",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "a growtopia private server",
   "main": "dist/app.js",
   "scripts": {
     "build": "tsc",
     "start": "node -r dotenv/config dist/app.js",
-    "dev": "rimraf dist && npm run build && npm start"
+    "migrate": "knex migrate:latest",
+    "seed": "knex seed:run",
+    "dev": "rimraf dist && npm run build && npm start",
+    "setup": "(node scripts/setup.js) && npm run migrate && npm run seed && echo Setup Completed"
   },
   "author": "JadlionHD <jadlion.dev@gmail.com>",
   "license": "MIT",
@@ -18,6 +21,7 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
+    "better-sqlite3": "^8.5.0",
     "body-parser": "^1.20.1",
     "chalk": "4.1.1",
     "crypto-js": "^4.1.1",
@@ -25,9 +29,8 @@
     "ejs": "^3.1.8",
     "express": "^4.18.2",
     "express-rate-limit": "^6.7.0",
-    "growsockets": "github:JadlionHD/GrowSockets#fixed",
-    "itemsdat": "github:Pogtopia/itemsdat#bdef25b19917b92c3dfb3e2f42e5a5fe2c59d74f",
-    "knex": "^2.3.0",
-    "mysql2": "^2.3.3"
+    "growtopia.js": "^1.2.7",
+    "itemsdat": "github:JadlionHD/itemsdat",
+    "knex": "^2.5.1"
   }
 }

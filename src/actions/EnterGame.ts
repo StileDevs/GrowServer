@@ -1,4 +1,4 @@
-import { Variant } from "growsockets";
+import { Variant } from "growtopia.js";
 import { Peer } from "../structures/Peer";
 import { Action } from "../abstracts/Action";
 import { BaseServer } from "../structures/BaseServer";
@@ -19,7 +19,7 @@ export default class extends Action {
       .addLabelWithIcon("Hello", "1000", "big")
       .addSpacer("small")
       .addTextBox("Welcome to GrowServer")
-      .raw("add_image_button|banner|interface/large/news_banner.rttex|noflags|||\n")
+      .raw("add_image_button||interface/large/news_banner1.rttex|bannerlayout|||\n")
       .addQuickExit()
       .endDialog("gazzette_end", "Cancel", "Ok")
       .str();

@@ -1,11 +1,11 @@
-import { TankPacket, Variant } from "growsockets";
+import { TankPacket, Variant } from "growtopia.js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { World } from "../structures/World";
 import { Role } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { ActionTypes } from "../utils/enums/Tiles";
-import { handleBlockPlacing } from "./BlockPlacing";
+import { handleBlockPlacing, tileUpdate } from "./BlockPlacing";
 
 /** Handle Place */
 export function handlePlace(tank: TankPacket, peer: Peer, base: BaseServer, world: World): void {
@@ -70,6 +70,15 @@ export function handlePlace(tank: TankPacket, peer: Peer, base: BaseServer, worl
     }
   }
 
+  if (block.fg === 2946) {
+    block.dblockID = placedItem.id;
+    if (placedItem.collisionType === 1) {
+      removeItem(peer, tank, true);
+      return tileUpdate(base, peer, ActionTypes.DISPLAY_BLOCK, block, world);
+    }
+    tileUpdate(base, peer, ActionTypes.DISPLAY_BLOCK, block, world);
+  }
+
   const placed = handleBlockPlacing({
     actionType: placedItem.type!,
     peer,
@@ -80,6 +89,13 @@ export function handlePlace(tank: TankPacket, peer: Peer, base: BaseServer, worl
     base
   });
 
+  removeItem(peer, tank, placed);
+  world.saveToCache();
+  peer.saveToCache();
+  return;
+}
+
+function removeItem(peer: Peer, tank: TankPacket, placed: boolean) {
   // prettier-ignore
   let invenItem = peer.data.inventory?.items.find((item) => item.id === tank.data?.info)!;
   if (placed) invenItem.amount = invenItem.amount! - 1;
@@ -89,8 +105,5 @@ export function handlePlace(tank: TankPacket, peer: Peer, base: BaseServer, worl
     // prettier-ignore
     peer.data.inventory!.items! = peer.data.inventory?.items.filter((i) => i.amount !== 0)!;
   }
-
-  world.saveToCache();
-  peer.saveToCache();
-  return;
+  peer.inventory();
 }

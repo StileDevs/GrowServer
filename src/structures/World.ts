@@ -1,6 +1,6 @@
 // BIKIN WORLD & HUBUNING USERS SAMA WORLDNYA KE DATABASE
 
-import { TankPacket, TextPacket, Variant } from "growsockets";
+import { TankPacket, TextPacket, Variant } from "growtopia.js";
 import { PeerDataType } from "../types/peer";
 import { Flags } from "../utils/enums/Tiles";
 import { Block, EnterArg, Place, WorldData } from "../types/world";
@@ -21,12 +21,12 @@ export class World {
   }
 
   public saveToCache() {
-    this.base.cache.worlds.set(this.worldName, this);
+    this.base.cache.worlds.setWorld(this.worldName, this.data);
     return;
   }
 
   public getWorldCache(worldName: string) {
-    return this.base.cache.worlds.get(worldName);
+    return this.base.cache.worlds.getWorld(worldName);
   }
 
   public async saveToDatabase() {
@@ -151,7 +151,7 @@ export class World {
       } else {
         this.generate(true);
       }
-    } else this.data = this.base.cache.worlds.get(this.worldName)!.data;
+    } else this.data = this.base.cache.worlds.get(this.worldName)!;
   }
 
   public async enter(peer: Peer, { x, y }: EnterArg) {
@@ -178,6 +178,9 @@ export class World {
         buffer.writeUint32LE(this.data.height!, 12 + this.worldName.length);
         buffer.writeUint32LE(this.data.blockCount!, 16 + this.worldName.length);
 
+        // Tambahan 5 bytes, gatau ini apaan
+        const unk1 = Buffer.alloc(5);
+
         // Block data
         const blockBytes: any[] = [];
         this.data.blocks?.forEach((block) => {
@@ -187,6 +190,9 @@ export class World {
 
           blockBuf.forEach((b) => blockBytes.push(b));
         });
+
+        // Tambahan 12 bytes, gatau ini apaan
+        const unk2 = Buffer.alloc(12);
 
         // Drop data
         const dropData = Buffer.alloc(8 + this.data.dropped?.items.length! * 16);
@@ -207,15 +213,15 @@ export class World {
 
         // Weather
         const weatherData = Buffer.alloc(12);
-        weatherData.writeUint16LE(0);
-        weatherData.writeUint16LE(0x1, 2);
-        weatherData.writeUint32LE(0x0, 4);
-        weatherData.writeUint32LE(0x0, 8);
+        weatherData.writeUint16LE(0); // weather id
+        weatherData.writeUint16LE(0x1, 2); // on atau off (mungkin)
+        weatherData.writeUint32LE(0x0, 4); // ??
+        weatherData.writeUint32LE(0x0, 8); // ??
 
         return Buffer.concat([
           buffer,
-          Buffer.from(blockBytes),
-          Buffer.concat([dropData, weatherData])
+          Buffer.concat([unk1, Buffer.from(blockBytes)]),
+          Buffer.concat([unk2, dropData, weatherData])
         ]);
       }
     });

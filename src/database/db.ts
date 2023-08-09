@@ -9,24 +9,21 @@ export class Database {
 
   constructor() {
     this.knex = knex({
-      client: "mysql2",
+      client: "better-sqlite3",
       connection: {
-        host: process.env.MYSQL_HOST,
-        port: parseInt(process.env.MYSQL_PORT!),
-        user: process.env.MYSQL_USERNAME,
-        password: process.env.MYSQL_PASS,
-        database: process.env.MYSQL_DATABASE
+        filename: "./data/dev.db"
       },
       log: {
         error(m) {
           console.log(m);
         }
-      }
+      },
+      useNullAsDefault: true
     });
   }
 
   public async getUser(username: string) {
-    let res = await this.knex.select("*").from<User>("user").where({ name: username });
+    let res = await this.knex.select("*").from<User>("users").where({ name: username });
 
     if (res.length) return res[0];
     else return undefined;
@@ -35,7 +32,7 @@ export class Database {
   public async saveUser(data: PeerDataType) {
     if (!data.id_user) return;
 
-    let res = await this.knex("user")
+    let res = await this.knex("users")
       .where({ id_user: data.id_user })
       .update(
         {
@@ -53,7 +50,7 @@ export class Database {
   public async createUser(username: string, password: string) {
     const encPass = encrypt(password);
 
-    let res = await this.knex("user").insert({ name: username, password: encPass, role: "1" });
+    let res = await this.knex("users").insert({ name: username, password: encPass, role: "1" });
 
     if (res.length) return res[0];
     else return undefined;

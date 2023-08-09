@@ -1,4 +1,4 @@
-import { Variant } from "growsockets";
+import { Variant } from "growtopia.js";
 import { Peer } from "../structures/Peer";
 import { Action } from "../abstracts/Action";
 import { BaseServer } from "../structures/BaseServer";

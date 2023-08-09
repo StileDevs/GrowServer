@@ -1,4 +1,4 @@
-import { Variant } from "growsockets";
+import { Variant } from "growtopia.js";
 import { Command } from "../abstracts/Command";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
@@ -28,7 +28,7 @@ export default class extends Command {
     if (!/\d/.test(args[0]))
       return peer.send(Variant.from("OnConsoleMessage", `Gems amount are must be a number.`));
     if (args.length > 1) {
-      const targetPeer = find(base.cache.users, (user) =>
+      const targetPeer = find(base, base.cache.users, (user) =>
         user.data.tankIDName.toLowerCase().includes(args[1].toLowerCase())
       );
       if (!targetPeer)

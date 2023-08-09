@@ -3,7 +3,7 @@ import { Peer } from "../structures/Peer";
 import { BaseServer } from "../structures/BaseServer";
 import { ActionType } from "../types/action";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
-import { Variant } from "growsockets";
+import { Variant } from "growtopia.js";
 
 export default class extends Action {
   constructor() {

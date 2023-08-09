@@ -1,4 +1,4 @@
-import { Peer as OldPeer, Server, TankPacket, TextPacket, Variant } from "growsockets";
+import { Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
 import { PeerDataType } from "../types/peer";
 import { Role, WORLD_SIZE } from "../utils/Constants";
 import { DataTypes } from "../utils/enums/DataTypes";
@@ -9,8 +9,8 @@ import { World } from "./World";
 export class Peer extends OldPeer<PeerDataType> {
   public base;
 
-  constructor(server: Server<unknown, unknown, unknown>, netID: number, base: BaseServer) {
-    super(server, netID);
+  constructor(base: BaseServer, netID: number) {
+    super(base.server, netID);
 
     this.base = base;
   }
@@ -55,7 +55,7 @@ export class Peer extends OldPeer<PeerDataType> {
 
   /** Extended version of setDataToCache */
   public saveToCache() {
-    this.base.cache.users.set(this.data.netID, this);
+    this.base.cache.users.setSelf(this.data.netID, this.data);
     return;
   }
 
@@ -65,9 +65,8 @@ export class Peer extends OldPeer<PeerDataType> {
   }
 
   public getSelfCache() {
-    return this.base.cache.users.get(this.data.netID);
+    return this.base.cache.users.getSelf(this.data.netID);
   }
-
   public sound(file: string, delay: number = 100) {
     this.send(
       TextPacket.from(DataTypes.ACTION, "action|play_sfx", `file|${file}`, `delayMS|${delay}`)
@@ -76,7 +75,7 @@ export class Peer extends OldPeer<PeerDataType> {
 
   public leaveWorld() {
     const world = this.hasWorld(this.data.world);
-    world.leave(this);
+    world?.leave(this);
   }
 
   public get name(): string {
@@ -95,13 +94,15 @@ export class Peer extends OldPeer<PeerDataType> {
 
   public everyPeer(callbackfn: (peer: Peer, netID: number) => void): void {
     this.base.cache.users.forEach((p, k) => {
-      callbackfn(p, k);
+      const pp = this.base.cache.users.getSelf(p.netID);
+      callbackfn(pp, k);
     });
   }
 
   public hasWorld(worldName: string) {
+    if (!worldName.length || worldName === "EXIT") return undefined;
     if (this.base.cache.worlds.has(worldName)) {
-      return this.base.cache.worlds.get(worldName)!;
+      return this.base.cache.worlds.getWorld(worldName)!;
     } else {
       let world = new World(this.base, worldName);
       return world;
@@ -110,7 +111,7 @@ export class Peer extends OldPeer<PeerDataType> {
 
   public respawn() {
     const world = this.hasWorld(this.data.world);
-    const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
+    const mainDoor = world?.data.blocks?.find((block) => block.fg === 6);
 
     this.send(
       Variant.from({ netID: this.data.netID }, "OnSetFreezeState", 1),
@@ -127,9 +128,9 @@ export class Peer extends OldPeer<PeerDataType> {
 
   public enterWorld(worldName: string, x?: number, y?: number) {
     const world = this.hasWorld(worldName);
-    const mainDoor = world.data.blocks?.find((block) => block.fg === 6);
+    const mainDoor = world?.data.blocks?.find((block) => block.fg === 6);
 
-    world.enter(this, { x: x ? x : mainDoor?.x, y: y ? y : mainDoor?.y });
+    world?.enter(this, { x: x ? x : mainDoor?.x, y: y ? y : mainDoor?.y });
     this.inventory();
     this.sound("audio/door_open.wav");
   }
