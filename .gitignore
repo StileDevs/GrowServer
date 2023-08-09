@@ -1,6 +1,4 @@
 .env
 node_modules
 dist
-assets/dat/**
-assets/ssl/**
 yarn.lock
