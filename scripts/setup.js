@@ -1,5 +1,9 @@
 const fs = require("fs");
 
+if (!fs.existsSync("./data")) {
+  fs.mkdirSync("./data");
+}
+
 if (!fs.existsSync("./.env")) {
   fs.writeFileSync(
     "./.env",
