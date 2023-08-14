@@ -18,7 +18,7 @@ export default class extends Action {
       .defaultColor()
       .addLabelWithIcon("Hello", "1000", "big")
       .addSpacer("small")
-      .addTextBox("Welcome to GrowServer")
+      .addTextBox("Welcome to GrowtopiaPrivate Using NodeJs")
       .raw("add_image_button||interface/large/news_banner1.rttex|bannerlayout|||\n")
       .addQuickExit()
       .endDialog("gazzette_end", "Cancel", "Ok")

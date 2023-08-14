@@ -2,6 +2,7 @@ import express from "express";
 import { readFileSync } from "node:fs";
 import http from "node:http";
 import https from "node:https";
+import { encode, decode } from 'base-64';
 import { Logger } from "./Logger";
 import bodyparser from "body-parser";
 import rateLimit from "express-rate-limit";
@@ -39,14 +40,46 @@ export function WebServer(log: Logger, db: Database) {
     res.render("register.ejs");
   });
 
-  app.post("/api/register", apiLimiter, async (req, res) => {
-    if (req.body && req.body.username && req.body.password) {
-      let result = await db.createUser(req.body.username, req.body.password);
+  app.get("/resetpass", async (req, res) => {
+  const code = req.query.code?.toString(); // Convert to string
+    if (!code) {
+      res.status(400).send('Invalid reset request');
+      return;
+    }
+    try {
+      const decodedConcatenated = decode(code);
+      const [decodedId, decodedPassword, decodedNewpw] = decodedConcatenated.split(',');
+      const user = await db.getUsers(decodedId, decodedPassword);      
+      if (user) {
+        await db.updatepass(decodedId, decodedNewpw)
+        res.send("Success Reset Password")
+      } else {
+        res.status(400).send('Invalid reset Code');
+      }
+    } catch (error) {
+      console.error('Error retrieving user:', error);
+      res.status(500).send('Internal server error');
+    }
+  });
+  
+  app.get("/recovery", (req, res) => {
+    res.render("recovery.ejs");
+  });
 
+  app.post("/api/register", apiLimiter, async (req, res) => {
+    if (req.body && req.body.username && req.body.password && req.body.mail) {
+      let result = await db.createUsers(req.body.username, req.body.password, req.body.mail);
       if (result) res.send("OK, Successfully creating account");
       else res.send("Error");
     }
   });
+  app.post("/api/recovery", apiLimiter, async (req, res) => {
+    if (req.body && req.body.username && req.body.password){
+      let result = await db.sendmailpass(req.body.username,req.body.password)
+      if (result) res.send("OK, Successfully");
+      else res.send("Error");
+    }
+  })
 
   if (process.env.WEB_ENV === "production") {
     app.listen(3000, () => {

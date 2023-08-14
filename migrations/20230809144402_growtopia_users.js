@@ -7,6 +7,7 @@ exports.up = function (knex) {
     tb.increments("id_user").primary().notNullable();
     tb.string("name", 255).notNullable();
     tb.string("password", 255).notNullable();
+    tb.string("email", 255).notNullable();
     tb.string("role", 255).notNullable();
     tb.integer("gems", 11).nullable();
     tb.binary("clothing").nullable();

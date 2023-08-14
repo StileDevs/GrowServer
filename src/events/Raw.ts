@@ -66,7 +66,7 @@ export default class extends Listener<"raw"> {
                 TextPacket.from(
                   DataTypes.ACTION,
                   "action|set_url",
-                  `url||https://127.0.0.1/recover`,
+                  `url||https://127.0.0.1/recovery`,
                   "label|`$Recover your Password``"
                 )
               );
