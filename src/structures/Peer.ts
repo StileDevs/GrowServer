@@ -100,7 +100,7 @@ export class Peer extends OldPeer<PeerDataType> {
   }
 
   public hasWorld(worldName: string) {
-    if (!worldName.length || worldName === "EXIT") return undefined;
+    if (!worldName || worldName === "EXIT") return undefined;
     if (this.base.cache.worlds.has(worldName)) {
       return this.base.cache.worlds.getWorld(worldName)!;
     } else {
