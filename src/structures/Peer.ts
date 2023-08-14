@@ -74,6 +74,8 @@ export class Peer extends OldPeer<PeerDataType> {
   }
 
   public leaveWorld() {
+    if (!this.data.world) return;
+
     const world = this.hasWorld(this.data.world);
     world?.leave(this);
   }
