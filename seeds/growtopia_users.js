@@ -13,7 +13,7 @@ exports.seed = async function (knex) {
       name: "admin",
       password: encrypt("admin"),
       email: "justpandaever@gmail.com",
-      role: "3",
+      role: "1",
       gems: 1000,
       clothing: null,
       inventory: null,
