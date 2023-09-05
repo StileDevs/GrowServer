@@ -57,7 +57,7 @@ export class World {
     }
   }
 
-  public place({ peer, x, y, isBg, id }: Place) {
+  public place({ peer, x, y, isBg, id, fruit }: Place) {
     let state = 0x8;
 
     const block = this.data.blocks![x + y * this.data.width!];
@@ -71,14 +71,18 @@ export class World {
     peer.everyPeer((p) => {
       if (p.data.world === this.data.name && p.data.world !== "EXIT") {
         const packet = TankPacket.from({
-          type: TankTypes.TILE_PUNCH,
+          type: TankTypes.PEER_DROP,
           netID: peer.data.netID,
           state,
           info: id,
           xPunch: x,
           yPunch: y
         });
-        p.send(packet.parse());
+
+        const buffer = packet.parse();
+
+        buffer[7] = fruit || 0;
+        p.send(buffer);
       }
     });
   }
