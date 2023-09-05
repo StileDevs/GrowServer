@@ -25,18 +25,41 @@ export default class extends Dialog {
       itemID: string;
     }>
   ): void {
-    // TODo: drop visual & save it to db
-    const drop = new TankPacket({
-      type: TankTypes.PEER_DROP,
-      netID: -1,
-      targetNetID: peer.data.netID,
-      state: 0,
-      info: parseInt(action.itemID),
-      xPos: peer.data.x,
-      yPos: peer.data.y
-    });
+    if (!/\d/.test(action.drop_count) || !/\d/.test(action.itemID)) {
+      return peer.send(
+        Variant.from("OnTalkBubble", peer.data.netID, "Uh oh, thats not a valid number")
+      );
+    }
+    const itemID = parseInt(action.itemID);
+    const count = parseInt(action.drop_count);
+    const itemExist = peer.data.inventory?.items.find((i) => i.id === itemID);
+    if (!itemExist || itemExist.amount <= 0) {
+      return peer.send(
+        Variant.from(
+          "OnTalkBubble",
+          peer.data.netID,
+          "That item, seems not exist in your inventory"
+        )
+      );
+    }
 
-    peer.send(drop);
-    // peer.send(TextPacket.from(DataTypes.ACTION, "action|drop", `itemID|${action.itemID}`));
+    if (count > itemExist.amount) {
+      return peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Really?"));
+    }
+
+    if (count <= 0) {
+      return peer.send(
+        Variant.from(
+          "OnTalkBubble",
+          peer.data.netID,
+          "Nice try. You remind me of myself at that age."
+        )
+      );
+    }
+
+    peer.drop(itemID, count);
+    peer.removeItemInven(itemID, count);
+    peer.inventory();
+    peer.sendClothes();
   }
 }

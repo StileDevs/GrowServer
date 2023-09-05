@@ -59,8 +59,14 @@ export class Database {
   public async getWorld(name: string) {
     let res = await this.knex.select("*").from<WorldData>("worlds").where({ name });
 
-    if (res.length) return res[0];
-    else return undefined;
+    if (res.length) {
+      // Parse buffer to json
+      res[0].dropped = res[0].dropped
+        ? JSON.parse(res[0].dropped.toString())
+        : { uid: 0, items: [] };
+
+      return res[0];
+    } else return undefined;
   }
 
   public async saveWorld({
@@ -70,7 +76,8 @@ export class Database {
     blocks,
     width,
     height,
-    owner
+    owner,
+    dropped
   }: WorldDB) {
     if (!name && !blockCount && !blocks && !width && !height) return;
 
@@ -81,7 +88,8 @@ export class Database {
       width,
       height,
       blocks,
-      owner
+      owner,
+      dropped
     });
 
     if (res.length) return true;
@@ -95,7 +103,8 @@ export class Database {
     blocks,
     width,
     height,
-    owner
+    owner,
+    dropped
   }: WorldDB) {
     if (!name && !blockCount && !blocks && !width && !height) return;
 
@@ -108,7 +117,8 @@ export class Database {
           width,
           height,
           blocks,
-          owner
+          owner,
+          dropped
         },
         []
       );

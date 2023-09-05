@@ -106,6 +106,13 @@ export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, worl
 
     block.resetStateAt = Date.now() + itemMeta.resetStateAfter! * 1000;
     block.damage++;
+
+    switch (itemMeta.type) {
+      case ActionTypes.SEED: {
+        world.harvest(peer, block);
+        break;
+      }
+    }
   }
 
   peer.send(tank);

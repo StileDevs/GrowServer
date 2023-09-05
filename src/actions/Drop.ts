@@ -20,17 +20,16 @@ export default class extends Action {
   ): void {
     const itemID = parseInt(action.itemID);
     const item = base.items.metadata.items.find((v) => v.id === itemID);
-    const peerItem = peer.data.inventory?.items.find((v) => v.id === itemID);
 
+    const peerItem = peer.data.inventory?.items.find((v) => v.id === itemID);
     let dialog = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(`Drop ${item?.name}`, item?.id!, "big")
-      .addTextBox("How many to drop?")
+      .addTextBox("How many to drowwwp?")
       .addInputBox("drop_count", "", peerItem?.amount, 5)
       .embed("itemID", itemID)
       .endDialog("drop_end", "Cancel", "OK")
       .str();
-
     peer.send(Variant.from("OnDialogRequest", dialog));
   }
 }
