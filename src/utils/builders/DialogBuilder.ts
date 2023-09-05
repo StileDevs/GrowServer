@@ -94,9 +94,11 @@ export class DialogBuilder {
   public addButtonWithIcon(
     name: string | number,
     itemID: string | number,
-    text: string
+    text: string,
+    frame = "left",
+    count = 0
   ): DialogBuilder {
-    this.#str += `add_button_with_icon|${name}|${text}|left|${itemID}|\n`;
+    this.#str += `add_button_with_icon|${name}|${text}|${frame}|${itemID}|${count ? count : ""}\n`;
     return this;
   }
 
