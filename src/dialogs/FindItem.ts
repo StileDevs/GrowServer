@@ -16,25 +16,36 @@ export default class extends Dialog {
   public handle(
     base: BaseServer,
     peer: Peer,
-    action: DialogReturnType<{ action: string; dialog_name: string; find_item_name: string }>
+    action: DialogReturnType<{
+      action: string;
+      dialog_name: string;
+      find_item_name: string;
+      seed_only: string;
+    }>
   ): void {
+    const isSeed = parseInt(action.seed_only) ? true : false;
     let dialog = new DialogBuilder()
       .defaultColor()
+      .addQuickExit()
       .addLabelWithIcon("Find the item", "6016", "big")
-      .addInputBox("find_item_name", "", action.find_item_name, 30)
       .addSpacer("small");
 
     const items = base.items.metadata.items.filter((v) =>
       v.name?.toLowerCase().includes(action.find_item_name.toLowerCase())
     );
     items.forEach((item) => {
-      if (item.id! % 2 === 0) dialog.addButtonWithIcon(item.id!, item.id!, item.name!);
+      if (isSeed) {
+        if (item.id! % 2 === 1)
+          dialog.addButtonWithIcon(item.id!, item.id!, item.name!, "staticBlueFrame", item.id);
+      } else {
+        if (item.id! % 2 === 0)
+          dialog.addButtonWithIcon(item.id!, item.id!, item.name!, "staticBlueFrame", item.id);
+      }
     });
 
     // fix spacing dialog later
     // dialog.addSpacer("big");
     dialog.endDialog("find_item_end", "Cancel", "");
-    dialog.addQuickExit();
 
     // console.log(dialog.str());
 
