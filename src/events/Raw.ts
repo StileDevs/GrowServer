@@ -178,6 +178,7 @@ export default class extends Listener<"raw"> {
                 p.send(tank);
               }
             });
+            break;
           }
 
           case TankTypes.PEER_CLOTH: {
@@ -284,9 +285,11 @@ export default class extends Listener<"raw"> {
             peer.saveToCache();
             peer.saveToDatabase();
             peer.sendClothes();
+            break;
           }
 
           case TankTypes.PEER_MOVE: {
+            if (peer.data.world === "EXIT") break;
             tank.data.netID = peer.data.netID;
 
             peer.data.x = tank.data.xPos;
@@ -318,6 +321,15 @@ export default class extends Listener<"raw"> {
 
             break;
           }
+
+          case TankTypes.PEER_COLLECT: {
+            const world = peer.hasWorld(peer.data.world);
+            const dropped = world?.data.dropped?.items.find((i) => i.uid === tank.data?.info);
+
+            world?.collect(peer, dropped!.uid);
+            break;
+          }
+
           case TankTypes.PEER_ENTER_DOOR: {
             if (peer.data.world === "EXIT") return;
 

@@ -5,6 +5,7 @@ import { DataTypes } from "../utils/enums/DataTypes";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { BaseServer } from "./BaseServer";
 import { World } from "./World";
+import { ItemCollisionType } from "../utils/enums/Tiles";
 
 export class Peer extends OldPeer<PeerDataType> {
   public base;
@@ -135,6 +136,43 @@ export class Peer extends OldPeer<PeerDataType> {
     world?.enter(this, { x: x ? x : mainDoor?.x, y: y ? y : mainDoor?.y });
     this.inventory();
     this.sound("audio/door_open.wav");
+  }
+
+  public drop(id: number, amount: number) {
+    if (this.data.world === "EXIT") return;
+
+    const world = this.hasWorld(this.data.world);
+    // world.getFromCache();
+
+    const extra = Math.random() * 6;
+
+    const x = this.data.x! + (this.data.rotatedLeft ? -25 : +25) + extra;
+    const y = this.data.y! + extra - Math.floor(Math.random() * (3 - -1) + -3);
+
+    world?.drop(this, x, y, id, amount);
+  }
+
+  public addItemInven(id: number, amount: number = 1) {
+    const item = this.data.inventory?.items.find((i) => i.id === id);
+
+    if (!item) this.data.inventory?.items.push({ id, amount });
+    else if (item.amount < 200) item.amount += amount;
+
+    // this.inventory();
+    this.saveToCache();
+  }
+
+  public removeItemInven(id: number, amount: number = 1) {
+    const item = this.data.inventory?.items.find((i) => i.id === id);
+
+    if (item) {
+      item.amount -= amount;
+      if (item.amount < 1)
+        this.data.inventory!.items = this.data.inventory!.items.filter((i) => i.id !== id);
+    }
+
+    // this.inventory();
+    this.saveToCache();
   }
 
   public inventory() {

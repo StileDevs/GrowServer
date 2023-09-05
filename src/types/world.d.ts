@@ -16,6 +16,7 @@ export interface WorldDB {
   width: number;
   height: number;
   owner?: Buffer | null;
+  dropped?: Buffer;
 }
 
 export interface Jammer {

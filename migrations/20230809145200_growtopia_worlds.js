@@ -12,6 +12,7 @@ exports.up = function (knex) {
     tb.integer("height", 11).notNullable();
     tb.integer("blockCount", 11).notNullable();
     tb.binary("blocks").nullable();
+    tb.binary("dropped").nullable();
     tb.timestamp("created_at", { useTz: false }).nullable();
     tb.timestamp("updated_at", { useTz: false }).nullable();
   });
