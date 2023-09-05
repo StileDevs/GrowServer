@@ -12,6 +12,11 @@ export function HandleTile(
   actionType?: number
 ): Buffer {
   let buf: Buffer;
+  const lockPos =
+    block.lock && !block.lock.isOwner
+      ? block.lock.ownerX! + block.lock.ownerY! * world.data.width!
+      : 0;
+
   switch (actionType) {
     case ActionTypes.PORTAL:
     case ActionTypes.DOOR:
@@ -20,7 +25,7 @@ export function HandleTile(
       buf = Buffer.alloc(12 + label.length);
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
-      buf.writeUint16LE(0x0, 4);
+      buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
 
       buf.writeUint8(ExtraTypes.DOOR, 8);
@@ -40,7 +45,7 @@ export function HandleTile(
       if (block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
-      buf.writeUint16LE(0x0, 4);
+      buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
 
       buf.writeUint8(ExtraTypes.SIGN, 8);
@@ -67,7 +72,7 @@ export function HandleTile(
       buf = Buffer.alloc(15 + name.length);
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
-      buf.writeUint16LE(0x0, 4);
+      buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(flag, 6);
 
       buf.writeUint8(ExtraTypes.HEART_MONITOR, 8);
@@ -98,7 +103,7 @@ export function HandleTile(
       buf = Buffer.alloc(26 + 4 * 0);
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
-      buf.writeUint16LE(0x0, 4);
+      buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
 
       buf.writeUInt16LE(ExtraTypes.LOCK | (0x0 << 8), 8);
@@ -109,11 +114,25 @@ export function HandleTile(
       return buf;
     }
 
+    case ActionTypes.SEED: {
+      buf = Buffer.alloc(14);
+
+      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUint16LE(lockPos, 4);
+      buf.writeUint16LE(0x0, 6);
+      buf.writeUint8(ExtraTypes.SEED, 8);
+
+      buf.writeUInt32LE(Math.floor((Date.now() - block.tree?.plantedAt!) / 1000), 9);
+      buf.writeUInt8(block.tree?.fruitCount! > 4 ? 4 : block.tree?.fruitCount!, 13);
+
+      return buf;
+    }
+
     default: {
       buf = Buffer.alloc(8);
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
-      buf.writeUint16LE(0x0, 4);
+      buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(Flags.FLAGS_PUBLIC, 6);
 
       return buf;

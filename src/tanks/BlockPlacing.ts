@@ -134,6 +134,34 @@ export function handleBlockPlacing(p: Arg): boolean {
       break;
     }
 
+    case ActionTypes.SEED: {
+      if (p.block.fg !== 0) return false;
+
+      const item = p.base.items.metadata.items[p.id];
+      const fruitCount = Math.floor(Math.random() * 10 * (1 - item.rarity! / 1000)) + 1;
+      const now = Date.now();
+
+      p.block.tree = {
+        fruit: p.id - 1,
+        fruitCount: fruitCount,
+        fullyGrownAt: now + item.growTime! * 1000,
+        plantedAt: now
+      };
+
+      p.world.place({
+        peer: p.peer,
+        x: p.block.x!,
+        y: p.block.y!,
+        id: p.id,
+        fruit: fruitCount > 4 ? 4 : fruitCount
+      });
+
+      tileUpdate(p.base, p.peer, p.actionType, p.block, p.world);
+
+      return true;
+      break;
+    }
+
     default: {
       console.log("Unknown block placing", { actionType: p.actionType, block: p.block });
       return false;

@@ -6,6 +6,7 @@ export interface Place {
   y: number;
   id: number;
   isBg?: boolean;
+  fruit?: number;
 }
 
 export interface WorldDB {
