@@ -25,7 +25,7 @@ export default class extends Action {
     let dialog = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(`Drop ${item?.name}`, item?.id!, "big")
-      .addTextBox("How many to drowwwp?")
+      .addTextBox("How many to drop?")
       .addInputBox("drop_count", "", peerItem?.amount, 5)
       .embed("itemID", itemID)
       .endDialog("drop_end", "Cancel", "OK")
