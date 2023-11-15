@@ -74,7 +74,11 @@ export default class extends Listener<"raw"> {
             }
 
             // Check if there's same account is logged in
-            const targetPeer = find(base, base.cache.users, (v) => v.data.id_user === user.id_user);
+            const targetPeer = find(
+              base,
+              base.cache.users,
+              (v) => v.data?.id_user === user.id_user
+            );
             if (targetPeer) {
               peer.send(
                 Variant.from(
@@ -126,21 +130,21 @@ export default class extends Listener<"raw"> {
               ances: 0
             };
 
-            peer.data.tankIDName = user.name;
-            peer.data.rotatedLeft = false;
+            peer.data!.tankIDName = user.name;
+            peer.data!.rotatedLeft = false;
             // peer.data.requestedName = parsed.requestedName as string;
-            peer.data.country = parsed?.country as string;
-            peer.data.id_user = user.id_user;
-            peer.data.role = user.role;
+            peer.data!.country = parsed?.country as string;
+            peer.data!.id_user = user.id_user;
+            peer.data!.role = user.role;
             // prettier-ignore
-            peer.data.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
+            peer.data!.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
             // prettier-ignore
-            peer.data.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
-            peer.data.gems = user.gems ? user.gems : 0;
-            peer.data.world = "EXIT";
+            peer.data!.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
+            peer.data!.gems = user.gems ? user.gems : 0;
+            peer.data!.world = "EXIT";
 
             // Load Gems
-            peer.send(Variant.from("OnSetBux", peer.data.gems));
+            peer.send(Variant.from("OnSetBux", peer.data?.gems!));
 
             peer.saveToCache();
             peer.saveToDatabase();
@@ -171,10 +175,10 @@ export default class extends Listener<"raw"> {
             break;
           }
           case TankTypes.PEER_ICON: {
-            tank.data.state = peer.data.rotatedLeft ? 16 : 0;
+            tank.data.state = peer.data?.rotatedLeft ? 16 : 0;
 
             peer.everyPeer((p) => {
-              if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+              if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
                 p.send(tank);
               }
             });
@@ -182,13 +186,13 @@ export default class extends Listener<"raw"> {
           }
 
           case TankTypes.PEER_CLOTH: {
-            tank.data.state = peer.data.rotatedLeft ? 16 : 0;
+            tank.data.state = peer.data?.rotatedLeft ? 16 : 0;
             const item = base.items.metadata.items.find((v) => v.id === tank.data?.info);
 
             const isAnces = (): boolean => {
               if (item?.type === ActionTypes.ANCES) {
-                if (peer.data.clothing!.ances === tank.data?.info!) peer.data.clothing!.ances = 0;
-                else peer.data.clothing!.ances = tank.data?.info!;
+                if (peer.data?.clothing!.ances === tank.data?.info!) peer.data!.clothing!.ances = 0;
+                else peer.data!.clothing!.ances = tank.data?.info!;
                 return true;
               } else {
                 return false;
@@ -199,40 +203,40 @@ export default class extends Listener<"raw"> {
               case ClothTypes.HAIR: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.hair === tank.data.info!) peer.data.clothing!.hair = 0;
-                else peer.data.clothing!.hair = tank.data.info!;
+                if (peer.data?.clothing!.hair === tank.data.info!) peer.data.clothing!.hair = 0;
+                else peer.data!.clothing!.hair = tank.data.info!;
 
                 break;
               }
               case ClothTypes.SHIRT: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.shirt === tank.data.info!) peer.data.clothing!.shirt = 0;
-                else peer.data.clothing!.shirt = tank.data.info!;
+                if (peer.data?.clothing!.shirt === tank.data.info!) peer.data.clothing!.shirt = 0;
+                else peer.data!.clothing!.shirt = tank.data.info!;
 
                 break;
               }
               case ClothTypes.PANTS: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.pants === tank.data.info!) peer.data.clothing!.pants = 0;
-                else peer.data.clothing!.pants = tank.data.info!;
+                if (peer.data?.clothing!.pants === tank.data.info!) peer.data.clothing!.pants = 0;
+                else peer.data!.clothing!.pants = tank.data.info!;
 
                 break;
               }
               case ClothTypes.FEET: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.feet === tank.data.info!) peer.data.clothing!.feet = 0;
-                else peer.data.clothing!.feet = tank.data.info!;
+                if (peer.data?.clothing!.feet === tank.data.info!) peer.data.clothing!.feet = 0;
+                else peer.data!.clothing!.feet = tank.data.info!;
 
                 break;
               }
               case ClothTypes.FACE: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.face === tank.data.info!) peer.data.clothing!.face = 0;
-                else peer.data.clothing!.face = tank.data.info!;
+                if (peer.data?.clothing!.face === tank.data.info!) peer.data.clothing!.face = 0;
+                else peer.data!.clothing!.face = tank.data.info!;
 
                 break;
               }
@@ -242,41 +246,41 @@ export default class extends Listener<"raw"> {
                   (item) => item.id === tank.data?.info
                 );
 
-                if (peer.data.clothing!.hand === tank.data.info!) peer.data.clothing!.hand = 0;
-                else peer.data.clothing!.hand = tank.data.info!;
+                if (peer.data?.clothing!.hand === tank.data.info!) peer.data.clothing!.hand = 0;
+                else peer.data!.clothing!.hand = tank.data.info!;
 
                 break;
               }
               case ClothTypes.BACK: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.back === tank.data.info!) peer.data.clothing!.back = 0;
-                else peer.data.clothing!.back = tank.data.info!;
+                if (peer.data?.clothing!.back === tank.data.info!) peer.data.clothing!.back = 0;
+                else peer.data!.clothing!.back = tank.data.info!;
 
                 break;
               }
               case ClothTypes.MASK: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.mask === tank.data.info!) peer.data.clothing!.mask = 0;
-                else peer.data.clothing!.mask = tank.data.info!;
+                if (peer.data?.clothing!.mask === tank.data.info!) peer.data.clothing!.mask = 0;
+                else peer.data!.clothing!.mask = tank.data.info!;
 
                 break;
               }
               case ClothTypes.NECKLACE: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.necklace === tank.data.info!)
+                if (peer.data?.clothing!.necklace === tank.data.info!)
                   peer.data.clothing!.necklace = 0;
-                else peer.data.clothing!.necklace = tank.data.info!;
+                else peer.data!.clothing!.necklace = tank.data.info!;
 
                 break;
               }
               case ClothTypes.ANCES: {
                 if (isAnces()) break;
 
-                if (peer.data.clothing!.ances === tank.data.info!) peer.data.clothing!.ances = 0;
-                else peer.data.clothing!.ances = tank.data.info!;
+                if (peer.data?.clothing!.ances === tank.data.info!) peer.data.clothing!.ances = 0;
+                else peer.data!.clothing!.ances = tank.data.info!;
 
                 break;
               }
@@ -289,24 +293,24 @@ export default class extends Listener<"raw"> {
           }
 
           case TankTypes.PEER_MOVE: {
-            if (peer.data.world === "EXIT") break;
-            tank.data.netID = peer.data.netID;
+            if (peer.data?.world === "EXIT") break;
+            tank.data.netID = peer.data?.netID;
 
-            peer.data.x = tank.data.xPos;
-            peer.data.y = tank.data.yPos;
-            peer.data.rotatedLeft = Boolean(tank.data.state! & 0x10);
+            peer.data!.x = tank.data.xPos;
+            peer.data!.y = tank.data.yPos;
+            peer.data!.rotatedLeft = Boolean(tank.data.state! & 0x10);
 
             peer.saveToCache();
             peer.everyPeer((p) => {
-              if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+              if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
                 p.send(tank);
               }
             });
             break;
           }
           case TankTypes.TILE_PUNCH: {
-            const world = peer.hasWorld(peer.data.world)!;
-            tank.data.netID = peer.data.netID;
+            const world = peer.hasWorld(peer.data?.world!)!;
+            tank.data.netID = peer.data?.netID;
 
             // Fist
             if (tank.data.info === 18) {
@@ -323,7 +327,7 @@ export default class extends Listener<"raw"> {
           }
 
           case TankTypes.PEER_COLLECT: {
-            const world = peer.hasWorld(peer.data.world);
+            const world = peer.hasWorld(peer.data?.world!);
             const dropped = world?.data.dropped?.items.find((i) => i.uid === tank.data?.info);
 
             world?.collect(peer, dropped!.uid);
@@ -331,9 +335,9 @@ export default class extends Listener<"raw"> {
           }
 
           case TankTypes.PEER_ENTER_DOOR: {
-            if (peer.data.world === "EXIT") return;
+            if (peer.data?.world === "EXIT") return;
 
-            let world = peer.hasWorld(peer.data.world);
+            let world = peer.hasWorld(peer.data?.world!);
             const pos = tank.data.xPunch! + tank.data.yPunch! * world?.data.width!;
             const block = world?.data.blocks![pos];
 
@@ -341,12 +345,12 @@ export default class extends Listener<"raw"> {
             if (block.fg === 6) return peer.leaveWorld();
 
             const worldDes = block.door?.destination?.split(":")!;
-            if (!worldDes[0]) worldDes[0] = peer.data.world;
+            if (!worldDes[0]) worldDes[0] = peer.data!.world;
 
             const worldName = worldDes[0];
             const id = worldDes[1];
 
-            if (worldName === peer.data.world) {
+            if (worldName === peer.data?.world) {
               let door = world?.data.blocks?.find((b) => b.door && b.door.id === id);
 
               if (!door) door = world?.data.blocks?.find((b) => b.fg === 6);
@@ -360,19 +364,19 @@ export default class extends Listener<"raw"> {
               peer.send(Variant.from("OnZoomCamera", [10000], 1000));
 
               peer.everyPeer((p) => {
-                if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+                if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
                   p.send(
-                    Variant.from({ netID: peer.data.netID }, "OnSetFreezeState", 0),
+                    Variant.from({ netID: peer.data?.netID }, "OnSetFreezeState", 0),
                     Variant.from(
                       {
-                        netID: peer.data.netID
+                        netID: peer.data?.netID
                       },
                       "OnSetPos",
                       [doorX, doorY]
                     ),
                     Variant.from(
                       {
-                        netID: peer.data.netID
+                        netID: peer.data?.netID
                       },
                       "OnPlayPositioned",
                       "audio/door_open.wav"
@@ -391,19 +395,19 @@ export default class extends Listener<"raw"> {
                 world!.data.playerCount!--;
                 peer.everyPeer((p) => {
                   if (
-                    p.data.netID !== peer.data.netID &&
-                    p.data.world === peer.data.world &&
-                    p.data.world !== "EXIT"
+                    p.data?.netID !== peer.data?.netID &&
+                    p.data?.world === peer.data?.world &&
+                    p.data?.world !== "EXIT"
                   ) {
                     p.send(
-                      Variant.from("OnRemove", `netID|${peer.data.netID}`),
+                      Variant.from("OnRemove", `netID|${peer.data?.netID}`),
                       Variant.from(
                         "OnConsoleMessage",
                         `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``
                       ),
                       Variant.from(
                         "OnTalkBubble",
-                        peer.data.netID,
+                        peer.data?.netID!,
                         `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``
                       ),
                       TextPacket.from(

@@ -21,7 +21,7 @@ export default class extends Action {
     const itemID = parseInt(action.itemID);
     const item = base.items.metadata.items.find((v) => v.id === itemID);
 
-    const peerItem = peer.data.inventory?.items.find((v) => v.id === itemID);
+    const peerItem = peer.data?.inventory?.items.find((v) => v.id === itemID);
     let dialog = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(`Drop ${item?.name}`, item?.id!, "big")

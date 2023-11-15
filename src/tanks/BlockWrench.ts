@@ -14,7 +14,7 @@ export function handleWrench(base: BaseServer, tank: TankPacket, peer: Peer, wor
   switch (itemMeta.type) {
     case ActionTypes.SIGN: {
       if (world.data.owner) {
-        if (world.data.owner.id !== peer.data.id_user) return;
+        if (world.data.owner.id !== peer.data?.id_user) return;
       }
       const dialog = new DialogBuilder()
         .defaultColor()
@@ -33,7 +33,7 @@ export function handleWrench(base: BaseServer, tank: TankPacket, peer: Peer, wor
     case ActionTypes.PORTAL:
     case ActionTypes.DOOR: {
       if (world.data.owner) {
-        if (world.data.owner.id !== peer.data.id_user) return;
+        if (world.data.owner.id !== peer.data?.id_user) return;
       }
       const dialog = new DialogBuilder()
         .defaultColor()

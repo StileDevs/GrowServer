@@ -19,21 +19,25 @@ export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, worl
   if (typeof block.damage !== "number" || block.resetStateAt! <= Date.now()) block.damage = 0;
 
   if (world.data.owner) {
-    if (world.data.owner.id !== peer.data.id_user) {
-      if (peer.data.role !== Role.DEVELOPER) {
+    if (world.data.owner.id !== peer.data?.id_user) {
+      if (peer.data?.role !== Role.DEVELOPER) {
         if (itemMeta.id === 242)
           peer.send(
             Variant.from(
               "OnTalkBubble",
-              peer.data.netID,
+              peer.data?.netID!,
               `\`#[\`0\`9World Locked by ${world.data.owner?.displayName}\`#]`
             )
           );
 
         return peer.everyPeer((p) => {
-          if (p.data.world === peer.data.world && p.data.world !== "EXIT")
+          if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT")
             p.send(
-              Variant.from({ netID: peer.data.netID }, "OnPlayPositioned", "audio/punch_locked.wav")
+              Variant.from(
+                { netID: peer.data?.netID },
+                "OnPlayPositioned",
+                "audio/punch_locked.wav"
+              )
             );
         });
       }
@@ -41,12 +45,12 @@ export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, worl
   }
 
   if (itemMeta.id === 8 || itemMeta.id === 6 || itemMeta.id === 3760 || itemMeta.id === 7372) {
-    if (peer.data.role !== Role.DEVELOPER) {
-      peer.send(Variant.from("OnTalkBubble", peer.data.netID, "It's too strong to break."));
+    if (peer.data?.role !== Role.DEVELOPER) {
+      peer.send(Variant.from("OnTalkBubble", peer.data?.netID!, "It's too strong to break."));
       peer.everyPeer((p) => {
-        if (p.data.world === peer.data.world && p.data.world !== "EXIT")
+        if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT")
           p.send(
-            Variant.from({ netID: peer.data.netID }, "OnPlayPositioned", "audio/punch_locked.wav")
+            Variant.from({ netID: peer.data?.netID }, "OnPlayPositioned", "audio/punch_locked.wav")
           );
       });
       return;
@@ -121,9 +125,9 @@ export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, worl
 
   peer.everyPeer((p) => {
     if (
-      p.data.netID !== peer.data.netID &&
-      p.data.world === peer.data.world &&
-      p.data.world !== "EXIT"
+      p.data?.netID !== peer.data?.netID &&
+      p.data?.world === peer.data?.world &&
+      p.data?.world !== "EXIT"
     ) {
       p.send(tank);
     }

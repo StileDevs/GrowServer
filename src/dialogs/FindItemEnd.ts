@@ -24,7 +24,7 @@ export default class extends Dialog {
     }>
   ): void {
     const itemID = parseInt(action.buttonClicked);
-    peer.data.inventory?.items.push({ id: itemID, amount: 200 });
+    peer.data?.inventory?.items.push({ id: itemID, amount: 200 });
     peer.send(
       Variant.from(
         "OnConsoleMessage",

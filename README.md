@@ -49,6 +49,10 @@ To run the development server by:
 $ npm run dev
 ```
 
+## Links
+
+- [Discord Server](https://discord.gg/sGrxfKZY5t)
+
 ## Credits
 
 Give a thumbs to these cool people:
