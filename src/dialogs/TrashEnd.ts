@@ -26,7 +26,7 @@ export default class extends Dialog {
     }>
   ): void {
     const itemID = parseInt(action.itemID);
-    let invenItem = peer.data.inventory?.items.find((item) => item.id === itemID)!;
+    let invenItem = peer.data?.inventory?.items.find((item) => item.id === itemID)!;
     if (!/\d/.test(action.trash_count)) return;
 
     const count = parseInt(action.trash_count);
@@ -34,7 +34,7 @@ export default class extends Dialog {
 
     // Check if inventory amount is empty, then delete it.
     if (invenItem.amount <= 0) {
-      peer.data.inventory!.items! = peer.data.inventory?.items.filter((i) => i.amount !== 0)!;
+      peer.data!.inventory!.items! = peer.data?.inventory?.items.filter((i) => i.amount !== 0)!;
     }
 
     peer.saveToCache();

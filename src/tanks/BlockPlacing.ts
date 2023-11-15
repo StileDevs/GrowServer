@@ -70,8 +70,8 @@ export function handleBlockPlacing(p: Arg): boolean {
 
     case ActionTypes.HEART_MONITOR: {
       p.block.heartMonitor = {
-        name: p.peer.data.tankIDName,
-        user_id: parseInt(p.peer.data.id_user as string)
+        name: p.peer.data!.tankIDName,
+        user_id: parseInt(p.peer.data?.id_user as string)
       };
 
       p.world.place({
@@ -94,12 +94,12 @@ export function handleBlockPlacing(p: Arg): boolean {
       p.block.worldLock = true;
       if (!p.block.lock) {
         p.block.lock = {
-          ownerUserID: p.peer.data.id_user as number
+          ownerUserID: p.peer.data?.id_user as number
         };
       }
       p.world.data.owner = {
-        id: p.peer.data.id_user as number,
-        name: p.peer.data.tankIDName,
+        id: p.peer.data?.id_user as number,
+        name: p.peer.data!.tankIDName,
         displayName: p.peer.name
       };
 
@@ -178,7 +178,7 @@ export function tileUpdate(
   world: World
 ): void {
   peer.everyPeer((p) => {
-    if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+    if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
       p.send(
         TankPacket.from({
           type: TankTypes.TILE_UPDATE,

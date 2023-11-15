@@ -35,24 +35,24 @@ export default class extends Action {
       peer.send(Variant.from("OnConsoleMessage", `\`6/${commandName} ${args.join(" ")}\`\``));
 
       // Cooldown & Ratelimit
-      if (!base.cooldown.get(`${commandName}-netID-${peer.data.netID}`)) {
-        base.cooldown.set(`${commandName}-netID-${peer.data.netID}`, {
+      if (!base.cooldown.get(`${commandName}-netID-${peer.data?.netID}`)) {
+        base.cooldown.set(`${commandName}-netID-${peer.data?.netID}`, {
           limit: 1,
           time: Date.now()
         });
       } else {
         let expireTime =
-          base.cooldown.get(`${commandName}-netID-${peer.data.netID}`)!.time +
+          base.cooldown.get(`${commandName}-netID-${peer.data?.netID}`)!.time +
           base.commands.get(commandName)!.opt.cooldown * 1000;
         let timeLeft = expireTime - Date.now();
         if (
-          base.cooldown.get(`${commandName}-netID-${peer.data.netID}`)!.limit >=
+          base.cooldown.get(`${commandName}-netID-${peer.data?.netID}`)!.limit >=
           base.commands.get(commandName)!.opt.ratelimit
         ) {
           return peer.send(
             Variant.from(
               "OnConsoleMessage",
-              `\`6${peer.data.tankIDName}\`0 you're being ratelimited, please wait \`9${
+              `\`6${peer.data?.tankIDName}\`0 you're being ratelimited, please wait \`9${
                 timeLeft / 1000
               }s\`0`
             )
@@ -60,15 +60,15 @@ export default class extends Action {
         }
       }
 
-      base.cooldown.get(`${commandName}-netID-${peer.data.netID}`)!.limit += 1;
+      base.cooldown.get(`${commandName}-netID-${peer.data?.netID}`)!.limit += 1;
 
       setTimeout(() => {
-        base.cooldown.delete(`${commandName}-netID-${peer.data.netID}`);
+        base.cooldown.delete(`${commandName}-netID-${peer.data?.netID}`);
       }, base.commands.get(commandName)!.opt.cooldown * 1000);
 
       try {
         if (
-          base.commands.get(commandName)?.opt.permission.some((perm) => perm === peer.data.role)
+          base.commands.get(commandName)?.opt.permission.some((perm) => perm === peer.data?.role)
         ) {
           await base.commands.get(commandName)?.execute(base, peer, text, args);
         } else {
@@ -83,12 +83,12 @@ export default class extends Action {
     }
 
     peer.everyPeer((p) => {
-      if (p.data.world === peer.data.world && peer.data.world !== "EXIT") {
+      if (p.data?.world === peer.data?.world && peer.data?.world !== "EXIT") {
         p.send(
-          Variant.from("OnTalkBubble", peer.data.netID, action.text, 0),
+          Variant.from("OnTalkBubble", peer.data?.netID!, action.text, 0),
           Variant.from(
             "OnConsoleMessage",
-            `CP:0_PL:0_OID:_CT:[W]_ <\`w${peer.data.tankIDName}\`\`> ${action.text}`
+            `CP:0_PL:0_OID:_CT:[W]_ <\`w${peer.data?.tankIDName}\`\`> ${action.text}`
           )
         );
       }

@@ -16,6 +16,6 @@ export default class extends Listener<"connect"> {
     const packet = TextPacket.from(0x1);
 
     peer.send(packet);
-    base.cache.users.setSelf(netID, peer.data);
+    base.cache.users.setSelf(netID, peer.data!);
   }
 }

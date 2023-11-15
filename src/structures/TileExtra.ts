@@ -64,7 +64,7 @@ export function HandleTile(
       let flag = 0x0;
 
       // Check if the peer offline/online
-      const targetPeer = base.cache.users.findPeer((p) => p.data.id_user === id);
+      const targetPeer = base.cache.users.findPeer((p) => p.data?.id_user === id);
 
       if (targetPeer) flag |= Flags.FLAGS_OPEN;
       if (block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
