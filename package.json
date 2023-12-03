@@ -1,6 +1,6 @@
 {
   "name": "growserver",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "a growtopia private server",
   "main": "dist/app.js",
   "scripts": {
@@ -9,7 +9,7 @@
     "migrate": "knex migrate:latest",
     "seed": "knex seed:run",
     "dev": "rimraf dist && npm run build && npm start",
-    "setup": "(node scripts/setup.js) && npm run migrate && npm run seed && echo Setup Completed"
+    "install": "(node scripts/setup.js) && npm run migrate && npm run seed && echo \u001b[46mSetup Complete\u001b[0m && echo \u001b[46mCheck out GrowServer github: https://github.com/JadlionHD/GrowServer\u001b[0m"
   },
   "author": "JadlionHD <jadlion.dev@gmail.com>",
   "license": "MIT",
@@ -21,7 +21,7 @@
     "typescript": "^4.9.3"
   },
   "dependencies": {
-    "better-sqlite3": "^8.5.0",
+    "better-sqlite3": "^9.1.1",
     "body-parser": "^1.20.1",
     "chalk": "4.1.1",
     "crypto-js": "^4.1.1",
