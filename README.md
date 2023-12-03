@@ -8,19 +8,13 @@ A Growtopia private server using NodeJS
 
 ## Setup
 
-To setup the server, first install all the packages by
+To setup the server, first install necessary packages & settings by
 
 ```
 $ npm install
 ```
 
-then to setup everything such as database by
-
-```
-$ npm run setup
-```
-
-Congrats setup section done!
+And congrats setup are done, simple as that!
 Now you just need to run the server by
 
 ```
@@ -29,7 +23,7 @@ $ npm run dev
 
 ## Enviroment file
 
-Example for default .env file
+Example for default .env file (Generated automatically)
 
 ```
 ENCRYPT_SECRET=SUPERSECRET # Default encrypt secret
@@ -43,7 +37,7 @@ Database that we currently use is sqlite3, since its easier & light.
 
 ## Starting server
 
-To run the development server by:
+To run the development server by
 
 ```
 $ npm run dev
@@ -57,6 +51,6 @@ $ npm run dev
 
 Give a thumbs to these cool people:
 
-- [Alexander (Syn9673)](https://github.com/Syn9673) with his `Growsockets` module.
+- [Alexander (Syn9673)](https://github.com/Syn9673)
 - [Restart](https://github.com/iRestartz)
 - [Ritshu](https://github.com/Ritshu)
