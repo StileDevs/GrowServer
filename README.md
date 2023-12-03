@@ -1,10 +1,10 @@
 # GrowServer
 
-A Growtopia private server using NodeJS
+A Growtopia private server using Node.js
 
 ## Requirements
 
-- NodeJS v16+
+- Node.js v16+
 
 ## Setup
 
@@ -33,7 +33,8 @@ WEB_ENV=development
 
 ## Database
 
-Database that we currently use is sqlite3, since its easier & light.
+Database that we currently use is SQLite3, since its easier & light.
+And for the SQL query builder we use Knex.js
 
 ## Starting server
 
