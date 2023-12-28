@@ -44,7 +44,7 @@ export default class extends Listener<"raw"> {
       case DataTypes.ACTION: {
         let parsed = parseAction(data);
 
-        console.log({ parsed, dataType });
+        base.log.debug({ parsed, dataType });
 
         // Guest
         if (parsed?.requestedName && !parsed?.tankIDName && !parsed?.tankIDPass)
@@ -157,7 +157,7 @@ export default class extends Listener<"raw"> {
             const action = base.action.get(parsed.action as string);
             action?.handle(base, peer.getSelfCache()!, parsed as ActionType<unknown>);
           } catch (err) {
-            console.log(err);
+            base.log.error(err);
           }
         }
         break;
@@ -171,7 +171,7 @@ export default class extends Listener<"raw"> {
         const tank = TankPacket.fromBuffer(data);
         switch (tank.data?.type) {
           default: {
-            console.log("Unknown tank", tank);
+            base.log.debug("Unknown tank", tank);
             break;
           }
           case TankTypes.PEER_ICON: {

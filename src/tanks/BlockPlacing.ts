@@ -280,7 +280,7 @@ export function handleBlockPlacing(p: Arg): boolean {
     }
 
     default: {
-      console.log("Unknown block placing", { actionType: p.actionType, block: p.block });
+      p.base.log.debug("Unknown block placing", { actionType: p.actionType, block: p.block });
       return false;
       break;
     }
