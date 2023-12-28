@@ -1,12 +1,10 @@
 import fs from "node:fs";
-import { TextPacket, TankPacket, Client } from "growtopia.js";
+import { Client } from "growtopia.js";
 import { WebServer } from "./Webserver";
 import { hashItemsDat } from "../utils/Utils";
 import { Action } from "../abstracts/Action";
 import { ItemsDat } from "growtopia.js";
 import { ItemsDatMeta } from "growtopia.js";
-import { World } from "./World";
-import { Peer } from "./Peer";
 import { Logger } from "./Logger";
 import { Command } from "../abstracts/Command";
 import { CooldownOptions } from "../types/command";
@@ -15,6 +13,17 @@ import { Database } from "../database/db";
 import { Collection } from "./Collection";
 import { PeerDataType } from "../types/peer";
 import { WorldData } from "../types/world";
+import { ActionTypes } from "../utils/enums/Tiles";
+
+interface Lock {
+  id: number;
+  maxTiles: number;
+}
+
+interface Ignore {
+  blockIDsToIgnoreByLock: number[];
+  blockActionTypesToIgnore: number[];
+}
 
 export class BaseServer {
   public server: Client;
@@ -29,6 +38,8 @@ export class BaseServer {
   public cooldown: Map<string, CooldownOptions>;
   public dialogs: Map<string, Dialog>;
   public database;
+  public locks: Lock[];
+  public ignore: Ignore;
 
   constructor() {
     this.server = new Client({ https: { enable: false } });
@@ -47,17 +58,39 @@ export class BaseServer {
     this.cooldown = new Map();
     this.dialogs = new Map();
     this.database = new Database();
+    this.locks = [
+      {
+        id: 202, // Small Lock
+        maxTiles: 10
+      },
+      {
+        id: 204, // Big Lock
+        maxTiles: 48
+      },
+      {
+        id: 206, // Huge Lock
+        maxTiles: 200
+      },
+      {
+        id: 4994, // Builder's Lock
+        maxTiles: 200
+      }
+    ];
+    this.ignore = {
+      blockIDsToIgnoreByLock: [6, 8],
+      blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR]
+    };
   }
 
   public start() {
-    this.#_loadItems().then(() => {
+    this.#_loadItems().then(async () => {
       this.log.ready("Items data ready!");
+      await WebServer(this.log, this.database);
       this.#_loadEvents();
       this.#_loadActions();
       this.#_loadCommands();
       this.#_loadDialogs();
       this.server.listen();
-      WebServer(this.log, this.database);
     });
   }
 

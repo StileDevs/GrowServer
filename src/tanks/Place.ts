@@ -15,20 +15,20 @@ export function handlePlace(tank: TankPacket, peer: Peer, base: BaseServer, worl
   //prettier-ignore
   const isBg = base.items.metadata.items[tankData.info!].type === ActionTypes.BACKGROUND || base.items.metadata.items[tankData.info!].type === ActionTypes.SHEET_MUSIC;
   const placedItem = base.items.metadata.items.find((i) => i.id === tank.data?.info);
+  const mLock = base.locks.find((l) => l.id === placedItem?.id);
+  const mainLock = block.lock
+    ? world.data.blocks![block.lock.ownerX! + block.lock.ownerY! * world.data.width!]
+    : null;
 
   if (!placedItem || !placedItem.id) return;
   if (tankData.info === 18 || tankData.info === 32) return;
 
-  if (block.fg === 242) return;
-
-  const placedWL = world.data.blocks?.find((a) => a.fg === 242);
-  if (placedWL?.fg === block.fg)
-    return peer.send(
-      Variant.from("OnTalkBubble", peer.data?.netID!, `World already locked`),
-      Variant.from("OnConsoleMessage", `World already locked`)
-    );
-
   if (world.data.owner) {
+    // if (placedItem.id === 242 || placedItem.id === 4802) return;
+    if (!mLock && placedItem.type === ActionTypes.LOCK)
+      return peer.send(
+        Variant.from("OnTalkBubble", peer.data?.netID!, `Uhh, world already locked.`, 0, 1)
+      );
     if (world.data.owner.id !== peer.data?.id_user) {
       if (peer.data?.role !== Role.DEVELOPER) {
         return peer.send(
@@ -36,25 +36,16 @@ export function handlePlace(tank: TankPacket, peer: Peer, base: BaseServer, worl
         );
       }
     }
+  } else {
+    if (peer.data?.role !== Role.DEVELOPER) {
+      if (mainLock && mainLock.lock?.ownerUserID !== peer.data?.id_user) {
+        return peer.send(
+          Variant.from({ netID: peer.data?.netID }, "OnPlayPositioned", "audio/punch_locked.wav")
+        );
+      }
+    }
   }
 
-  if (placedItem.id === 242) {
-    peer.everyPeer((pa) => {
-      if (pa.data?.world === peer.data?.world && pa.data?.world !== "EXIT")
-        pa.send(
-          Variant.from(
-            "OnTalkBubble",
-            peer.data?.netID!,
-            `\`3[\`w${world.worldName} \`ohas been World Locked by ${peer.name}\`3]`
-          ),
-          Variant.from(
-            "OnConsoleMessage",
-            `\`3[\`w${world.worldName} \`ohas been World Locked by ${peer.name}\`3]`
-          ),
-          Variant.from({ netID: peer.data?.netID }, "OnPlayPositioned", "audio/use_lock.wav")
-        );
-    });
-  }
   if (
     placedItem.id === 8 ||
     placedItem.id === 6 ||
@@ -81,6 +72,7 @@ export function handlePlace(tank: TankPacket, peer: Peer, base: BaseServer, worl
 
   const placed = handleBlockPlacing({
     actionType: placedItem.type!,
+    flags: placedItem.flags!,
     peer,
     world,
     block,
