@@ -1,5 +1,5 @@
 import express from "express";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import http from "node:http";
 import https from "node:https";
 import { Logger } from "./Logger";
@@ -7,6 +7,7 @@ import bodyparser from "body-parser";
 import rateLimit from "express-rate-limit";
 import path from "node:path";
 import { Database } from "../database/db";
+import decompress from "decompress";
 const app = express();
 
 const options = {
@@ -22,13 +23,25 @@ const apiLimiter = rateLimit({
   legacyHeaders: false // Disable the `X-RateLimit-*` headers
 });
 
-export function WebServer(log: Logger, db: Database) {
+export async function WebServer(log: Logger, db: Database) {
+  if (!existsSync("./assets/cache.zip"))
+    throw new Error(
+      "Could not find 'cache.zip' file, please get one from growtopia 'cache' folder & compress the 'cache' folder into zip file."
+    );
+
+  log.info(`Please wait extracting cache.zip`);
+  await decompress("assets/cache.zip", "assets/cache");
+  log.ready(`Successfully extracting cache.zip`);
+
   app.use(bodyparser.urlencoded({ extended: true }));
   app.use(bodyparser.json());
   app.set("view engine", "ejs");
 
   app.set("views", path.join(__dirname, "../../web/views"));
-  app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache")));
+
+  if (existsSync("./assets/cache/cache"))
+    app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache/cache")));
+  else app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache")));
 
   app.use("/growtopia/server_data.php", (req, res) => {
     res.send(
