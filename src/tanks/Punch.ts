@@ -6,7 +6,7 @@ import { Block } from "../types/world";
 import { Role } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { ActionTypes } from "../utils/enums/Tiles";
-import { tileUpdate } from "./BlockPlacing";
+import { tileUpdate, tileVisualUpdate } from "./BlockPlacing";
 
 /** Handle Punch */
 export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, world: World): void {
@@ -93,14 +93,19 @@ export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, worl
       }
 
       case ActionTypes.LOCK: {
-        // Fix dc sendiri bila menghancurkan wl
-        if (itemMeta.id !== 242) return;
+        if (base.locks.find((l) => l.id === itemMeta.id)) {
+          world.data.blocks?.forEach((b) => {
+            if (b.lock && b.lock.ownerX === block.x && b.lock.ownerY === block.y)
+              b.lock = undefined;
+          });
+        } else {
+          block.worldLock = undefined;
+          block.lock = undefined;
+          world.data.owner = undefined;
 
-        block.worldLock = undefined;
-        block.lock = undefined;
-        world.data.owner = undefined;
-
-        tileUpdate(base, peer, itemMeta.type, block, world);
+          // tileUpdate(base, peer, itemMeta.type, block, world);
+          tileVisualUpdate(peer, block, 0x0, true);
+        }
         break;
       }
     }

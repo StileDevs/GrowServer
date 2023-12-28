@@ -67,10 +67,14 @@ export interface WorldData {
 export interface LockedBlocked {
   ownerFg?: number;
   ownerUserID?: number;
+  ownerName?: string;
   ownerX?: number;
   ownerY?: number;
   isOwner?: boolean;
+  openToPublic?: boolean;
   ignoreEmptyAir?: boolean;
+  onlyAllowBuild?: boolean;
+  adminLimited?: boolean;
   adminIDs?: number[];
 }
 

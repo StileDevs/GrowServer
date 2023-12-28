@@ -88,7 +88,7 @@ export function HandleTile(
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
       buf.writeUint16LE(0x0, 4);
-      buf.writeUint16LE(0x0, 6);
+      buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
 
       buf.writeUint8(ExtraTypes.DISPLAY_BLOCK, 8);
       buf.writeUint32LE(block.dblockID!, 9);
@@ -115,11 +115,12 @@ export function HandleTile(
     }
 
     case ActionTypes.SEED: {
+      let flag = 0x0;
       buf = Buffer.alloc(14);
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
       buf.writeUint16LE(lockPos, 4);
-      buf.writeUint16LE(0x0, 6);
+      buf.writeUint16LE(flag, 6);
       buf.writeUint8(ExtraTypes.SEED, 8);
 
       buf.writeUInt32LE(Math.floor((Date.now() - block.tree?.plantedAt!) / 1000), 9);
@@ -129,11 +130,12 @@ export function HandleTile(
     }
 
     default: {
+      let flag = 0x0;
       buf = Buffer.alloc(8);
 
       buf.writeUInt32LE(block.fg! | (block.bg! << 16));
       buf.writeUint16LE(lockPos, 4);
-      buf.writeUint16LE(Flags.FLAGS_PUBLIC, 6);
+      buf.writeUint16LE(flag, 6);
 
       return buf;
     }

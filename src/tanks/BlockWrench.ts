@@ -28,6 +28,7 @@ export function handleWrench(base: BaseServer, tank: TankPacket, peer: Peer, wor
         .str();
 
       peer.send(Variant.from("OnDialogRequest", dialog));
+      break;
     }
 
     case ActionTypes.PORTAL:
@@ -53,6 +54,66 @@ export function handleWrench(base: BaseServer, tank: TankPacket, peer: Peer, wor
         .str();
 
       peer.send(Variant.from("OnDialogRequest", dialog));
+      break;
+    }
+
+    case ActionTypes.LOCK: {
+      const mLock = base.locks.find((l) => l.id === itemMeta.id);
+
+      if (mLock) {
+        if (block.lock?.ownerUserID !== peer.data?.id_user) return;
+
+        const dialog = new DialogBuilder()
+          .defaultColor()
+          .addLabelWithIcon(`\`wEdit ${itemMeta.name}\`\``, itemMeta.id!, "big")
+          .embed("lockID", mLock.id)
+          .embed("tilex", block.x)
+          .embed("tiley", block.y)
+          .addSmallText("Access list:")
+          // bikin list user disini nanti
+          .addSpacer("small")
+          .addTextBox("Currently, you're the only one with access.")
+          .raw("add_player_picker|playerNetID|`wAdd``|\n")
+          .addCheckbox(
+            "allow_break_build",
+            "Allow anyone to Build and Break",
+            block.lock?.openToPublic ? "selected" : "not_selected"
+          )
+          .addCheckbox(
+            "ignore_empty",
+            "Ignore empty air",
+            block.lock?.ignoreEmptyAir ? "selected" : "not_selected"
+          )
+          .addButton("reapply_lock", "`wRe-apply lock``");
+
+        if (itemMeta.id == 4994) {
+          dialog
+            .addSmallText(
+              `This lock allows Building or Breaking.<CR>(ONLY if "Allow anyone to Build or Break" is checked above)!`
+            )
+            .addSpacer("small")
+            .addSmallText("Leaving this box unchecked only allows Breaking.")
+            .addCheckbox(
+              "build_only",
+              "Only Allow Building!",
+              block.lock?.onlyAllowBuild ? "selected" : "not_selected"
+            )
+            .addSmallText(
+              "People with lock access can both build and break unless you check below. The lock owner can always build and break."
+            )
+            .addCheckbox(
+              "limit_admin",
+              "Admins Are Limited",
+              block.lock?.adminLimited ? "selected" : "not_selected"
+            );
+        }
+
+        dialog.endDialog("area_lock_edit", "Cancel", "OK");
+
+        peer.send(Variant.from("OnDialogRequest", dialog.str()));
+      }
+
+      break;
     }
   }
 }
