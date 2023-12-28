@@ -28,6 +28,7 @@ export function WebServer(log: Logger, db: Database) {
   app.set("view engine", "ejs");
 
   app.set("views", path.join(__dirname, "../../web/views"));
+  app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache")));
 
   app.use("/growtopia/server_data.php", (req, res) => {
     res.send(
