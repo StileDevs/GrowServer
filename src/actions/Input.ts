@@ -77,7 +77,7 @@ export default class extends Action {
           );
         }
       } catch (err) {
-        console.log(err);
+        base.log.error(err);
       }
       return;
     }

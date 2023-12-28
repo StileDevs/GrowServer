@@ -21,7 +21,7 @@ export default class extends Action {
       if (!base.dialogs.has(name)) return;
       base.dialogs.get(name)!.handle(base, peer, action);
     } catch (err) {
-      console.log(err);
+      base.log.error(err);
     }
   }
 }
