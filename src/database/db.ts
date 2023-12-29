@@ -50,7 +50,7 @@ export class Database {
   public async createUser(username: string, password: string) {
     const encPass = encrypt(password);
 
-    let res = await this.knex("users").insert({ name: username, password: encPass, role: "1" });
+    let res = await this.knex("users").insert({ name: username, password: encPass, role: "2" });
 
     if (res.length) return res[0];
     else return undefined;
