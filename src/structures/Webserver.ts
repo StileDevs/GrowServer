@@ -49,18 +49,18 @@ export async function WebServer(log: Logger, db: Database) {
     );
   });
 
-  app.get("/register", (req, res) => {
-    res.render("register.ejs");
-  });
+  // app.get("/register", (req, res) => {
+  //   res.render("register.ejs");
+  // });
 
-  app.post("/api/register", apiLimiter, async (req, res) => {
-    if (req.body && req.body.username && req.body.password) {
-      let result = await db.createUser(req.body.username, req.body.password);
+  // app.post("/api/register", apiLimiter, async (req, res) => {
+  //   if (req.body && req.body.username && req.body.password) {
+  //     let result = await db.createUser(req.body.username, req.body.password);
 
-      if (result) res.send("OK, Successfully creating account");
-      else res.send("Error");
-    }
-  });
+  //     if (result) res.send("OK, Successfully creating account");
+  //     else res.send("Error");
+  //   }
+  // });
 
   if (process.env.WEB_ENV === "production") {
     app.listen(3000, () => {

@@ -11,6 +11,7 @@ import { handlePlace } from "../tanks/Place";
 import { handlePunch } from "../tanks/Punch";
 import { ClothTypes } from "../utils/enums/ItemTypes";
 import { handleWrench } from "../tanks/BlockWrench";
+import { DialogBuilder } from "../utils/builders/DialogBuilder";
 
 export default class extends Listener<"raw"> {
   constructor() {
@@ -18,20 +19,17 @@ export default class extends Listener<"raw"> {
     this.name = "raw";
   }
 
-  private failGuest(peer: Peer) {
-    peer.send(
-      Variant.from(
-        "OnConsoleMessage",
-        "`4Unable to logon:`` Seems like you're on a guest account. Please register an account first from our website."
-      ),
-      TextPacket.from(
-        DataTypes.ACTION,
-        "action|set_url",
-        `url|https://127.0.0.1/register`,
-        "label|`$Create `9new`` Account``"
-      )
-    );
-    peer.disconnect();
+  private sendGuest(peer: Peer, requestedName: string) {
+    let dialog = new DialogBuilder()
+      .defaultColor()
+      .addTextBox("Register account")
+      .addInputBox("username", "Username", requestedName, 20)
+      .raw("\nadd_text_input_password|password|Password||20|")
+      .addInputBox("password", "Password", "", 20)
+      .endDialog("register_end", "", "Create")
+      .str();
+
+    peer.send(Variant.from("OnDialogRequest", dialog));
   }
 
   public async run(base: BaseServer, netID: number, data: Buffer): Promise<void> {
@@ -48,7 +46,7 @@ export default class extends Listener<"raw"> {
 
         // Guest
         if (parsed?.requestedName && !parsed?.tankIDName && !parsed?.tankIDPass)
-          return this.failGuest(peer);
+          return this.sendGuest(peer, (parsed?.requestedName as string) || "");
 
         // Using login & password
         if (parsed?.requestedName && parsed?.tankIDName && parsed?.tankIDPass) {
