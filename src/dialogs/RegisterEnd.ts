@@ -67,7 +67,7 @@ export default class extends Dialog {
       peer.send(Variant.from("OnConsoleMessage", "`2SUCCESS:`` Account has been created"));
       return peer.disconnect();
     } else {
-      dialog.addTextBox("Error, failed to create account");
+      dialog.addTextBox("`4ERROR:`` failed to create account");
       peer.send(Variant.from("OnDialogRequest", dialog.str()));
       return peer.disconnect();
     }
