@@ -36,6 +36,7 @@ export class Database {
       .where({ id_user: data.id_user })
       .update(
         {
+          role: data.role,
           inventory: Buffer.from(JSON.stringify(data.inventory)),
           clothing: Buffer.from(JSON.stringify(data.clothing)),
           gems: data.gems
