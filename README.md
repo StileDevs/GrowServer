@@ -21,6 +21,22 @@ Now you just need to run the server by
 $ npm run dev
 ```
 
+## Growtopia assets cache
+
+Where the heck is `assets/cache.zip` come from? Its basically a growtopia assets file cache that required by items.dat to load the game.
+
+![Example](/assets/ignore/updating_items.png)
+
+Location:
+
+- Windows: `%LOCALAPPDATA%/Growtopia`
+
+Then zip the `cache` folder into zip & put it to `assets/cache.zip`.
+
+### Issue
+
+If you encountered `Updating items...` then disconnected from the server randomly. Update the cache by login to Growtopia's original server & do [this](/#Growtopia-assets-cache) step again.
+
 ## Enviroment file
 
 Example for default .env file (Generated automatically)
