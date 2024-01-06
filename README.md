@@ -35,7 +35,7 @@ Then zip the `cache` folder into zip & put it to `assets/cache.zip`.
 
 ### Issue
 
-If you encountered `Updating items...` then disconnected from the server randomly. Update the cache by login to Growtopia's original server & do [this](/#Growtopia-assets-cache) step again.
+If you encountered `Updating items...` then disconnected from the server randomly. Update the cache by login to Growtopia's original server & do [this](#growtopia-assets-cache) step again.
 
 ## Enviroment file
 
