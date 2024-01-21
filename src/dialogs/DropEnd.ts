@@ -26,35 +26,25 @@ export default class extends Dialog {
     }>
   ): void {
     if (!/\d/.test(action.drop_count) || !/\d/.test(action.itemID)) {
-      return peer.send(
-        Variant.from("OnTalkBubble", peer.data?.netID!, "Uh oh, thats not a valid number")
-      );
+      peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Uh oh, thats not a valid number"));
+      return;
     }
     const itemID = parseInt(action.itemID);
     const count = parseInt(action.drop_count);
     const itemExist = peer.data?.inventory?.items.find((i) => i.id === itemID);
     if (!itemExist || itemExist.amount <= 0) {
-      return peer.send(
-        Variant.from(
-          "OnTalkBubble",
-          peer.data?.netID!,
-          "That item, seems not exist in your inventory"
-        )
-      );
+      peer.send(Variant.from("OnTalkBubble", peer.data.netID, "That item, seems not exist in your inventory"));
+      return;
     }
 
     if (count > itemExist.amount) {
-      return peer.send(Variant.from("OnTalkBubble", peer.data?.netID!, "Really?"));
+      peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Really?"));
+      return;
     }
 
     if (count <= 0) {
-      return peer.send(
-        Variant.from(
-          "OnTalkBubble",
-          peer.data?.netID!,
-          "Nice try. You remind me of myself at that age."
-        )
-      );
+      peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Nice try. You remind me of myself at that age."));
+      return;
     }
 
     peer.drop(itemID, count);

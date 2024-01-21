@@ -4,6 +4,8 @@ import { Peer } from "../structures/Peer";
 import { tileUpdate } from "../tanks/BlockPlacing";
 import { DialogReturnType } from "../types/dialog";
 import { Floodfill } from "../structures/FloodFill";
+import { Block, Lock } from "../types/world";
+import { World } from "../structures/World";
 
 export default class extends Dialog {
   constructor() {
@@ -30,9 +32,9 @@ export default class extends Dialog {
       buttonClicked: string;
     }>
   ): void {
-    const world = peer.hasWorld(peer.data?.world!);
-    const pos = parseInt(action.tilex) + parseInt(action.tiley) * world?.data.width!;
-    const block = world?.data.blocks![pos]!;
+    const world = peer.hasWorld(peer.data.world);
+    const pos = parseInt(action.tilex) + parseInt(action.tiley) * (world?.data.width || 100);
+    const block = world?.data.blocks[pos] as Block;
     const mLock = base.locks.find((l) => l.id === parseInt(action.lockID));
     const itemMeta = base.items.metadata.items.find((i) => i.id === parseInt(action.lockID));
 
@@ -42,10 +44,10 @@ export default class extends Dialog {
     const allowBuildOnly = action.build_only === "1" ? true : false;
     const adminLimitedAccess = action.limit_admin === "1" ? true : false;
 
-    block.lock!.openToPublic = openToPublic;
-    block.lock!.ignoreEmptyAir = ignoreEmpty;
-    block.lock!.onlyAllowBuild = allowBuildOnly;
-    block.lock!.adminLimited = adminLimitedAccess;
+    block.lock.openToPublic = openToPublic;
+    block.lock.ignoreEmptyAir = ignoreEmpty;
+    block.lock.onlyAllowBuild = allowBuildOnly;
+    block.lock.adminLimited = adminLimitedAccess;
 
     if (action.buttonClicked === "reapply_lock") {
       world?.data.blocks?.forEach((b) => {
@@ -54,18 +56,18 @@ export default class extends Dialog {
 
       const algo = new Floodfill({
         s_node: { x: parseInt(action.tilex), y: parseInt(action.tiley) },
-        max: mLock!.maxTiles,
-        width: world?.data.width!,
-        height: world?.data.height!,
-        blocks: world?.data.blocks!,
+        max: (mLock as Lock).maxTiles || 0,
+        width: world?.data.width || 100,
+        height: world?.data.height || 60,
+        blocks: world?.data.blocks as Block[],
         s_block: block,
         base: base,
         noEmptyAir: ignoreEmpty
       });
       algo.exec();
-      algo.apply(world!, peer);
+      algo.apply(world as World, peer);
     }
 
-    tileUpdate(base, peer, itemMeta?.type!, block, world!);
+    tileUpdate(base, peer, itemMeta?.type || 0, block, world as World);
   }
 }

@@ -12,6 +12,8 @@ import { handlePunch } from "../tanks/Punch";
 import { ClothTypes } from "../utils/enums/ItemTypes";
 import { handleWrench } from "../tanks/BlockWrench";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
+import { World } from "../structures/World";
+import { DroppedItem } from "../types/world";
 
 export default class extends Listener<"raw"> {
   constructor() {
@@ -20,70 +22,41 @@ export default class extends Listener<"raw"> {
   }
 
   private sendGuest(peer: Peer, requestedName: string) {
-    let dialog = new DialogBuilder()
-      .defaultColor()
-      .addTextBox("Register account")
-      .addInputBox("username", "Username", requestedName, 20)
-      .raw("\nadd_text_input_password|password|Password||20|")
-      .addInputBox("password", "Password", "", 20)
-      .endDialog("register_end", "", "Create")
-      .str();
+    const dialog = new DialogBuilder().defaultColor().addTextBox("Register account").addInputBox("username", "Username", requestedName, 20).raw("\nadd_text_input_password|password|Password||20|").addInputBox("password", "Password", "", 20).endDialog("register_end", "", "Create").str();
 
     peer.send(Variant.from("OnDialogRequest", dialog));
   }
 
   public async run(base: BaseServer, netID: number, data: Buffer): Promise<void> {
     // prettier-ignore
-    const peer = base.cache.users.has(netID) ? base.cache.users.getSelf(netID)! : new Peer(base, netID);
+    const peer = base.cache.users.has(netID) ? base.cache.users.getSelf(netID) : new Peer(base, netID);
     const dataType = data.readInt32LE();
 
     switch (dataType) {
       case DataTypes.STR:
       case DataTypes.ACTION: {
-        let parsed = parseAction(data);
+        const parsed = parseAction(data);
 
         base.log.debug({ parsed, dataType });
 
         // Guest
-        if (parsed?.requestedName && !parsed?.tankIDName && !parsed?.tankIDPass)
-          return this.sendGuest(peer, (parsed?.requestedName as string) || "");
+        if (parsed?.requestedName && !parsed?.tankIDName && !parsed?.tankIDPass) return this.sendGuest(peer, (parsed?.requestedName as string) || "");
 
         // Using login & password
         if (parsed?.requestedName && parsed?.tankIDName && parsed?.tankIDPass) {
           const username = parsed.tankIDName as string;
           const password = parsed.tankIDPass as string;
           base.database.getUser(username).then((user) => {
-            if (!user || password !== decrypt(user?.password!)) {
-              peer.send(
-                Variant.from(
-                  "OnConsoleMessage",
-                  "`4Failed`` logging in to that account. Please make sure you've provided the correct info."
-                )
-              );
-              peer.send(
-                TextPacket.from(
-                  DataTypes.ACTION,
-                  "action|set_url",
-                  `url||https://127.0.0.1/recover`,
-                  "label|`$Recover your Password``"
-                )
-              );
+            if (!user || password !== decrypt(user?.password)) {
+              peer.send(Variant.from("OnConsoleMessage", "`4Failed`` logging in to that account. Please make sure you've provided the correct info."));
+              peer.send(TextPacket.from(DataTypes.ACTION, "action|set_url", "url||https://127.0.0.1/recover", "label|`$Recover your Password``"));
               return peer.disconnect();
             }
 
             // Check if there's same account is logged in
-            const targetPeer = find(
-              base,
-              base.cache.users,
-              (v) => v.data?.id_user === user.id_user
-            );
+            const targetPeer = find(base, base.cache.users, (v) => v.data?.id_user === user.id_user);
             if (targetPeer) {
-              peer.send(
-                Variant.from(
-                  "OnConsoleMessage",
-                  "`4Already Logged In?`` It seems that this account already logged in by somebody else."
-                )
-              );
+              peer.send(Variant.from("OnConsoleMessage", "`4Already Logged In?`` It seems that this account already logged in by somebody else."));
 
               targetPeer.leaveWorld();
               targetPeer.disconnect();
@@ -128,21 +101,19 @@ export default class extends Listener<"raw"> {
               ances: 0
             };
 
-            peer.data!.tankIDName = user.name;
-            peer.data!.rotatedLeft = false;
+            peer.data.tankIDName = user.name;
+            peer.data.rotatedLeft = false;
             // peer.data.requestedName = parsed.requestedName as string;
-            peer.data!.country = parsed?.country as string;
-            peer.data!.id_user = user.id_user;
-            peer.data!.role = user.role;
-            // prettier-ignore
-            peer.data!.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
-            // prettier-ignore
-            peer.data!.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
-            peer.data!.gems = user.gems ? user.gems : 0;
-            peer.data!.world = "EXIT";
+            peer.data.country = parsed?.country as string;
+            peer.data.id_user = user.id_user;
+            peer.data.role = user.role;
+            peer.data.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
+            peer.data.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
+            peer.data.gems = user.gems ? user.gems : 0;
+            peer.data.world = "EXIT";
 
             // Load Gems
-            peer.send(Variant.from("OnSetBux", peer.data?.gems!));
+            peer.send(Variant.from("OnSetBux", peer.data.gems));
 
             peer.saveToCache();
             peer.saveToDatabase();
@@ -153,7 +124,7 @@ export default class extends Listener<"raw"> {
         if (parsed?.action) {
           try {
             const action = base.action.get(parsed.action as string);
-            action?.handle(base, peer.getSelfCache()!, parsed as ActionType<unknown>);
+            action?.handle(base, peer.getSelfCache(), parsed as ActionType<unknown>);
           } catch (err) {
             base.log.error(err);
           }
@@ -189,96 +160,92 @@ export default class extends Listener<"raw"> {
 
             const isAnces = (): boolean => {
               if (item?.type === ActionTypes.ANCES) {
-                if (peer.data?.clothing!.ances === tank.data?.info!) peer.data!.clothing!.ances = 0;
-                else peer.data!.clothing!.ances = tank.data?.info!;
+                if (peer.data.clothing.ances === tank.data?.info) peer.data.clothing.ances = 0;
+                else peer.data.clothing.ances = tank.data?.info || 0;
                 return true;
-              } else {
-                return false;
               }
+              return false;
             };
 
             switch (item?.bodyPartType) {
               case ClothTypes.HAIR: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.hair === tank.data.info!) peer.data.clothing!.hair = 0;
-                else peer.data!.clothing!.hair = tank.data.info!;
+                if (peer.data.clothing.hair === tank.data.info) peer.data.clothing.hair = 0;
+                else peer.data.clothing.hair = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.SHIRT: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.shirt === tank.data.info!) peer.data.clothing!.shirt = 0;
-                else peer.data!.clothing!.shirt = tank.data.info!;
+                if (peer.data.clothing.shirt === tank.data.info) peer.data.clothing.shirt = 0;
+                else peer.data.clothing.shirt = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.PANTS: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.pants === tank.data.info!) peer.data.clothing!.pants = 0;
-                else peer.data!.clothing!.pants = tank.data.info!;
+                if (peer.data?.clothing.pants === tank.data.info) peer.data.clothing.pants = 0;
+                else peer.data.clothing.pants = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.FEET: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.feet === tank.data.info!) peer.data.clothing!.feet = 0;
-                else peer.data!.clothing!.feet = tank.data.info!;
+                if (peer.data.clothing.feet === tank.data.info) peer.data.clothing.feet = 0;
+                else peer.data.clothing.feet = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.FACE: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.face === tank.data.info!) peer.data.clothing!.face = 0;
-                else peer.data!.clothing!.face = tank.data.info!;
+                if (peer.data.clothing.face === tank.data.info) peer.data.clothing.face = 0;
+                else peer.data.clothing.face = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.HAND: {
                 if (isAnces()) break;
-                const handItem = base.items.metadata.items.find(
-                  (item) => item.id === tank.data?.info
-                );
+                const handItem = base.items.metadata.items.find((item) => item.id === tank.data?.info);
 
-                if (peer.data?.clothing!.hand === tank.data.info!) peer.data.clothing!.hand = 0;
-                else peer.data!.clothing!.hand = tank.data.info!;
+                if (peer.data.clothing.hand === tank.data.info) peer.data.clothing.hand = 0;
+                else peer.data.clothing.hand = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.BACK: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.back === tank.data.info!) peer.data.clothing!.back = 0;
-                else peer.data!.clothing!.back = tank.data.info!;
+                if (peer.data.clothing.back === tank.data.info) peer.data.clothing.back = 0;
+                else peer.data.clothing.back = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.MASK: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.mask === tank.data.info!) peer.data.clothing!.mask = 0;
-                else peer.data!.clothing!.mask = tank.data.info!;
+                if (peer.data.clothing.mask === tank.data.info) peer.data.clothing.mask = 0;
+                else peer.data.clothing.mask = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.NECKLACE: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.necklace === tank.data.info!)
-                  peer.data.clothing!.necklace = 0;
-                else peer.data!.clothing!.necklace = tank.data.info!;
+                if (peer.data?.clothing.necklace === tank.data.info) peer.data.clothing.necklace = 0;
+                else peer.data.clothing.necklace = tank.data.info || 0;
 
                 break;
               }
               case ClothTypes.ANCES: {
                 if (isAnces()) break;
 
-                if (peer.data?.clothing!.ances === tank.data.info!) peer.data.clothing!.ances = 0;
-                else peer.data!.clothing!.ances = tank.data.info!;
+                if (peer.data.clothing.ances === tank.data.info) peer.data.clothing.ances = 0;
+                else peer.data.clothing.ances = tank.data.info || 0;
 
                 break;
               }
@@ -294,9 +261,9 @@ export default class extends Listener<"raw"> {
             if (peer.data?.world === "EXIT") break;
             tank.data.netID = peer.data?.netID;
 
-            peer.data!.x = tank.data.xPos;
-            peer.data!.y = tank.data.yPos;
-            peer.data!.rotatedLeft = Boolean(tank.data.state! & 0x10);
+            peer.data.x = tank.data.xPos;
+            peer.data.y = tank.data.yPos;
+            peer.data.rotatedLeft = Boolean(tank.data.state || 0x0 & 0x10);
 
             peer.saveToCache();
             peer.everyPeer((p) => {
@@ -307,7 +274,7 @@ export default class extends Listener<"raw"> {
             break;
           }
           case TankTypes.TILE_PUNCH: {
-            const world = peer.hasWorld(peer.data?.world!)!;
+            const world = peer.hasWorld(peer.data.world) as World;
             tank.data.netID = peer.data?.netID;
 
             // Fist
@@ -325,25 +292,25 @@ export default class extends Listener<"raw"> {
           }
 
           case TankTypes.PEER_COLLECT: {
-            const world = peer.hasWorld(peer.data?.world!);
-            const dropped = world?.data.dropped?.items.find((i) => i.uid === tank.data?.info);
+            const world = peer.hasWorld(peer.data.world);
+            const dropped = world?.data.dropped?.items.find((i) => i.uid === tank.data?.info) as DroppedItem;
 
-            world?.collect(peer, dropped!.uid);
+            world?.collect(peer, dropped.uid);
             break;
           }
 
           case TankTypes.PEER_ENTER_DOOR: {
             if (peer.data?.world === "EXIT") return;
 
-            let world = peer.hasWorld(peer.data?.world!);
-            const pos = tank.data.xPunch! + tank.data.yPunch! * world?.data.width!;
-            const block = world?.data.blocks![pos];
+            const world = peer.hasWorld(peer.data.world);
+            const pos = (tank.data.xPunch || 0) + (tank.data.yPunch || 0) * (world?.data.width || 100);
+            const block = world?.data.blocks[pos];
 
             if (!block || !block.door) return;
             if (block.fg === 6) return peer.leaveWorld();
 
-            const worldDes = block.door?.destination?.split(":")!;
-            if (!worldDes[0]) worldDes[0] = peer.data!.world;
+            const worldDes = block.door?.destination?.split(":") as string[];
+            if (!worldDes[0]) worldDes[0] = peer.data.world;
 
             const worldName = worldDes[0];
             const id = worldDes[1];
@@ -384,41 +351,23 @@ export default class extends Listener<"raw"> {
               });
             } else {
               if (worldName === "EXIT") return peer.leaveWorld();
-              else {
-                let wrld = peer.hasWorld(worldName);
+              const wrld = peer.hasWorld(worldName);
 
-                let door = wrld?.data.blocks?.find((b) => b.door && b.door.id === id);
-                if (!door) door = wrld?.data.blocks?.find((b) => b.fg === 6);
+              let door = wrld?.data.blocks?.find((b) => b.door && b.door.id === id);
+              if (!door) door = wrld?.data.blocks?.find((b) => b.fg === 6);
 
-                world!.data.playerCount!--;
-                peer.everyPeer((p) => {
-                  if (
-                    p.data?.netID !== peer.data?.netID &&
-                    p.data?.world === peer.data?.world &&
-                    p.data?.world !== "EXIT"
-                  ) {
-                    p.send(
-                      Variant.from("OnRemove", `netID|${peer.data?.netID}`),
-                      Variant.from(
-                        "OnConsoleMessage",
-                        `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``
-                      ),
-                      Variant.from(
-                        "OnTalkBubble",
-                        peer.data?.netID!,
-                        `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``
-                      ),
-                      TextPacket.from(
-                        DataTypes.ACTION,
-                        "action|play_sfx",
-                        `file|audio/door_shut.wav`,
-                        `delayMS|0`
-                      )
-                    );
-                  }
-                });
-                peer.enterWorld(worldName, door?.x, door?.y);
-              }
+              world.data.playerCount ? world.data.playerCount-- : 0;
+              peer.everyPeer((p) => {
+                if (p.data?.netID !== peer.data?.netID && p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
+                  p.send(
+                    Variant.from("OnRemove", `netID|${peer.data?.netID}`),
+                    Variant.from("OnConsoleMessage", `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``),
+                    Variant.from("OnTalkBubble", peer.data.netID, `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``),
+                    TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/door_shut.wav", "delayMS|0")
+                  );
+                }
+              });
+              peer.enterWorld(worldName, door?.x, door?.y);
             }
             break;
           }

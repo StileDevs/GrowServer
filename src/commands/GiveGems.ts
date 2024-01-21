@@ -24,32 +24,21 @@ export default class extends Command {
   }
 
   public async execute(base: BaseServer, peer: Peer, text: string, args: string[]): Promise<void> {
-    if (!args[0]) return peer.send(Variant.from("OnConsoleMessage", `Gems amount are required.`));
-    if (!/\d/.test(args[0]))
-      return peer.send(Variant.from("OnConsoleMessage", `Gems amount are must be a number.`));
+    if (!args[0]) return peer.send(Variant.from("OnConsoleMessage", "Gems amount are required."));
+    if (!/\d/.test(args[0])) return peer.send(Variant.from("OnConsoleMessage", "Gems amount are must be a number."));
     if (args.length > 1) {
-      const targetPeer = find(
-        base,
-        base.cache.users,
-        (user) => user.data?.tankIDName.toLowerCase().includes(args[1].toLowerCase())!
-      );
-      if (!targetPeer)
-        return peer.send(Variant.from("OnConsoleMessage", `Make sure that player is online.`));
+      const targetPeer = find(base, base.cache.users, (user) => (user.data?.tankIDName || "").toLowerCase().includes(args[1].toLowerCase()));
+      if (!targetPeer) return peer.send(Variant.from("OnConsoleMessage", "Make sure that player is online."));
 
       targetPeer.send(Variant.from("OnSetBux", parseInt(args[0])));
-      targetPeer.data!.gems = parseInt(args[0]);
+      targetPeer.data.gems = parseInt(args[0]);
       targetPeer.saveToCache();
       targetPeer.saveToDatabase();
 
-      peer.send(
-        Variant.from(
-          "OnConsoleMessage",
-          `Sucessfully sending \`w${args[0]}\`\` gems to ${targetPeer.name}`
-        )
-      );
+      peer.send(Variant.from("OnConsoleMessage", `Sucessfully sending \`w${args[0]}\`\` gems to ${targetPeer.name}`));
     } else {
       peer.send(Variant.from("OnSetBux", parseInt(args[0])));
-      peer.data!.gems = parseInt(args[0]);
+      peer.data.gems = parseInt(args[0]);
       peer.saveToCache();
       // peer.saveToDatabase();
       peer.send(Variant.from("OnConsoleMessage", `Sucessfully received \`w${args[0]}\`\` gems.`));

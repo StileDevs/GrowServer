@@ -35,7 +35,7 @@ interface FloodFillData {
 
 export class Floodfill {
   public totalNodes: Node[] = [];
-  public count: number = 0;
+  public count = 0;
 
   constructor(public data: FloodFillData) {}
 
@@ -54,16 +54,8 @@ export class Floodfill {
         for (const neighbour of neighbours) {
           const block = this.data.blocks[neighbour.x + neighbour.y * this.data.width];
 
-          const meta = this.data.base.items.metadata.items[block.fg! || block.bg!];
-          if (
-            this.totalNodes.find((n) => n.x === neighbour.x && n.y === neighbour.y) ||
-            block.lock ||
-            block.worldLock ||
-            this.data.base.ignore.blockIDsToIgnoreByLock.includes(meta.id!) ||
-            (this.data.noEmptyAir &&
-              (!meta.id || this.data.base.ignore.blockActionTypesToIgnore.includes(meta.type!)))
-          )
-            continue;
+          const meta = this.data.base.items.metadata.items[block.fg || block.bg];
+          if (this.totalNodes.find((n) => n.x === neighbour.x && n.y === neighbour.y) || block.lock || block.worldLock || this.data.base.ignore.blockIDsToIgnoreByLock.includes(meta.id || 0) || (this.data.noEmptyAir && (!meta.id || this.data.base.ignore.blockActionTypesToIgnore.includes(meta.type || 0)))) continue;
 
           tempNodes.push(neighbour);
           this.totalNodes.push(neighbour);
@@ -83,8 +75,8 @@ export class Floodfill {
     const nodes: Node[] = [];
 
     for (let i = 0; i < directions.length; i++) {
-      const x = node.x + directions[i].x,
-        y = node.y + directions[i].y;
+      const x = node.x + directions[i].x;
+      const y = node.y + directions[i].y;
 
       if (x < 0 || x >= this.data.width || y < 0 || y >= this.data.height) continue;
 
@@ -105,8 +97,8 @@ export class Floodfill {
   public isConnectedToFaces(node: Node) {
     let res = false;
     for (let i = 0; i < 4; i++) {
-      const x = node.x + directions[i].x,
-        y = node.y + directions[i].y;
+      const x = node.x + directions[i].x;
+      const y = node.y + directions[i].y;
 
       if (x < 0 || x >= this.data.width || y < 0 || y >= this.data.height) continue;
 
@@ -123,10 +115,7 @@ export class Floodfill {
 
     this.data.s_block.lock = {
       ownerFg: this.data.s_block.fg,
-      ownerUserID:
-        typeof owner.data?.id_user === "string"
-          ? parseInt(owner.data.id_user)
-          : owner.data?.id_user,
+      ownerUserID: typeof owner.data?.id_user === "string" ? parseInt(owner.data.id_user) : owner.data?.id_user,
       ownerName: owner.name,
       ownerX: this.data.s_block.x,
       ownerY: this.data.s_block.y,
@@ -142,7 +131,7 @@ export class Floodfill {
       if (node.x === this.data.s_block.x && node.y === this.data.s_block.y) continue;
 
       const b_pos = node.x + node.y * this.data.width;
-      const block = world.data.blocks![b_pos];
+      const block = world.data.blocks[b_pos];
 
       block.lock = {
         ownerFg: this.data.s_block.fg,
@@ -172,10 +161,7 @@ export class Floodfill {
 
     owner.everyPeer((pa) => {
       if (pa.data?.world === owner.data?.world && pa.data?.world !== "EXIT") {
-        pa.send(
-          Variant.from({ netID: owner.data?.netID }, "OnPlayPositioned", "audio/use_lock.wav"),
-          tank
-        );
+        pa.send(Variant.from({ netID: owner.data?.netID }, "OnPlayPositioned", "audio/use_lock.wav"), tank);
       }
     });
   }

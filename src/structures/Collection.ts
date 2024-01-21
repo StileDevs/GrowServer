@@ -15,9 +15,9 @@ export class Collection<K, V> extends Map<K, V> {
   }
 
   public getSelf(key: K): Peer {
-    const peerData = this.get(key) as PeerDataType | undefined;
-    let peer = new Peer(this.base, peerData?.netID as number);
-    peer.data = peerData!;
+    const peerData = this.get(key) as PeerDataType;
+    const peer = new Peer(this.base, peerData?.netID as number);
+    peer.data = peerData;
 
     return peer;
   }
@@ -27,9 +27,9 @@ export class Collection<K, V> extends Map<K, V> {
   }
 
   public getWorld(key: K) {
-    const worldData = this.get(key) as WorldData | undefined;
-    let world = new World(this.base, worldData?.name as string);
-    world.data = worldData!;
+    const worldData = this.get(key) as WorldData;
+    const world = new World(this.base, worldData?.name as string);
+    world.data = worldData;
 
     return world;
   }

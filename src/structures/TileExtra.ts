@@ -5,17 +5,9 @@ import { World } from "./World";
 import { BaseServer } from "./BaseServer";
 import { find } from "../utils/Utils";
 
-export function HandleTile(
-  base: BaseServer,
-  block: Block,
-  world: World,
-  actionType?: number
-): Buffer {
+export function HandleTile(base: BaseServer, block: Block, world: World, actionType?: number): Buffer {
   let buf: Buffer;
-  const lockPos =
-    block.lock && !block.lock.isOwner
-      ? block.lock.ownerX! + block.lock.ownerY! * world.data.width!
-      : 0;
+  const lockPos = block.lock && !block.lock.isOwner ? (block.lock.ownerX as number) + (block.lock.ownerY as number) * world.data.width : 0;
 
   switch (actionType) {
     case ActionTypes.PORTAL:
@@ -24,7 +16,7 @@ export function HandleTile(
       const label = block.door?.label || "";
       buf = Buffer.alloc(12 + label.length);
 
-      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUInt32LE(block.fg | (block.bg << 16));
       buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
 
@@ -44,7 +36,7 @@ export function HandleTile(
 
       if (block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
 
-      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUInt32LE(block.fg | (block.bg << 16));
       buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
 
@@ -71,7 +63,7 @@ export function HandleTile(
 
       buf = Buffer.alloc(15 + name.length);
 
-      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUInt32LE(block.fg | (block.bg << 16));
       buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(flag, 6);
 
@@ -86,12 +78,12 @@ export function HandleTile(
     case ActionTypes.DISPLAY_BLOCK: {
       buf = Buffer.alloc(13);
 
-      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUInt32LE(block.fg | (block.bg << 16));
       buf.writeUint16LE(0x0, 4);
       buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
 
       buf.writeUint8(ExtraTypes.DISPLAY_BLOCK, 8);
-      buf.writeUint32LE(block.dblockID!, 9);
+      buf.writeUint32LE(block.dblockID || 0, 9);
 
       return buf;
     }
@@ -102,7 +94,7 @@ export function HandleTile(
       // 0 = admincount
       buf = Buffer.alloc(26 + 4 * 0);
 
-      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUInt32LE(block.fg | (block.bg << 16));
       buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
 
@@ -115,25 +107,25 @@ export function HandleTile(
     }
 
     case ActionTypes.SEED: {
-      let flag = 0x0;
+      const flag = 0x0;
       buf = Buffer.alloc(14);
 
-      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUInt32LE(block.fg | (block.bg << 16));
       buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(flag, 6);
       buf.writeUint8(ExtraTypes.SEED, 8);
 
-      buf.writeUInt32LE(Math.floor((Date.now() - block.tree?.plantedAt!) / 1000), 9);
-      buf.writeUInt8(block.tree?.fruitCount! > 4 ? 4 : block.tree?.fruitCount!, 13);
+      buf.writeUInt32LE(Math.floor((Date.now() - (block.tree?.plantedAt as number)) / 1000), 9);
+      buf.writeUInt8((block.tree?.fruitCount as number) > 4 ? 4 : (block.tree?.fruitCount as number), 13);
 
       return buf;
     }
 
     default: {
-      let flag = 0x0;
+      const flag = 0x0;
       buf = Buffer.alloc(8);
 
-      buf.writeUInt32LE(block.fg! | (block.bg! << 16));
+      buf.writeUInt32LE(block.fg | (block.bg << 16));
       buf.writeUint16LE(lockPos, 4);
       buf.writeUint16LE(flag, 6);
 

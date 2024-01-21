@@ -12,18 +12,8 @@ import { Dialog } from "../abstracts/Dialog";
 import { Database } from "../database/db";
 import { Collection } from "./Collection";
 import { PeerDataType } from "../types/peer";
-import { WorldData } from "../types/world";
+import { Ignore, Lock, WorldData } from "../types/world";
 import { ActionTypes } from "../utils/enums/Tiles";
-
-interface Lock {
-  id: number;
-  maxTiles: number;
-}
-
-interface Ignore {
-  blockIDsToIgnoreByLock: number[];
-  blockActionTypesToIgnore: number[];
-}
 
 export class BaseServer {
   public server: Client;
@@ -96,36 +86,23 @@ export class BaseServer {
 
   #_loadEvents() {
     fs.readdirSync(`${__dirname}/../events`).forEach(async (event) => {
-      let file = (await import(`../events/${event}`)).default;
-      let initFile = new file();
+      const file = (await import(`../events/${event}`)).default;
+      const initFile = new file();
       this.server.on(initFile.name, (...args) => initFile.run(this, ...args));
       this.log.event(`Loaded "${initFile.name}" events`);
     });
   }
 
   async #_loadItems() {
-    let items = await new ItemsDat(fs.readFileSync("./assets/dat/items.dat")).decode();
+    const items = await new ItemsDat(fs.readFileSync("./assets/dat/items.dat")).decode();
 
-    // 1181890091
-    // let tes = items.items.find((v) => v.id === 10000)!;
-    // console.log(tes);
-    // tes.extraFile = "interface/large/news_banner1.rttex";
-    // tes.extraFileHash = 1181890091;
-    // console.log(tes);
-
-    // const encoded = await new ItemsDat().encode(items);
-    // let newItems = await new ItemsDat(encoded).decode();
-
-    // this.items.content = encoded;
-    // this.items.hash = `${hashItemsDat(encoded)}`;
-    // this.items.metadata = newItems;
     this.items.metadata = items;
   }
 
   #_loadActions() {
     fs.readdirSync(`${__dirname}/../actions`).forEach(async (event) => {
-      let file = (await import(`../actions/${event}`)).default;
-      let initFile = new file();
+      const file = (await import(`../actions/${event}`)).default;
+      const initFile = new file();
       this.action.set(initFile.config.eventName, initFile);
       this.log.action(`Loaded "${initFile.config.eventName}" actions`);
     });
@@ -133,8 +110,8 @@ export class BaseServer {
 
   #_loadDialogs() {
     fs.readdirSync(`${__dirname}/../dialogs`).forEach(async (event) => {
-      let file = (await import(`../dialogs/${event}`)).default;
-      let initFile = new file();
+      const file = (await import(`../dialogs/${event}`)).default;
+      const initFile = new file();
       this.dialogs.set(initFile.config.dialogName, initFile);
       this.log.dialog(`Loaded "${initFile.config.dialogName}" dialogs`);
     });
@@ -142,8 +119,8 @@ export class BaseServer {
 
   #_loadCommands() {
     fs.readdirSync(`${__dirname}/../commands`).forEach(async (fileName) => {
-      let file = (await import(`../commands/${fileName}`)).default;
-      let initFile = new file();
+      const file = (await import(`../commands/${fileName}`)).default;
+      const initFile = new file();
       this.commands.set(initFile.opt.name, initFile);
       this.log.command(`Loaded "${initFile.opt.name}" command`);
     });

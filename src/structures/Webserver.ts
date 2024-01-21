@@ -24,14 +24,11 @@ const apiLimiter = rateLimit({
 });
 
 export async function WebServer(log: Logger, db: Database) {
-  if (!existsSync("./assets/cache.zip"))
-    throw new Error(
-      "Could not find 'cache.zip' file, please get one from growtopia 'cache' folder & compress the 'cache' folder into zip file."
-    );
+  if (!existsSync("./assets/cache.zip")) throw new Error("Could not find 'cache.zip' file, please get one from growtopia 'cache' folder & compress the 'cache' folder into zip file.");
 
-  log.info(`Please wait extracting cache.zip`);
+  log.info("Please wait extracting cache.zip");
   await decompress("assets/cache.zip", "assets/cache");
-  log.ready(`Successfully extracting cache.zip`);
+  log.ready("Successfully extracting cache.zip");
 
   app.use(bodyparser.urlencoded({ extended: true }));
   app.use(bodyparser.json());
@@ -39,14 +36,11 @@ export async function WebServer(log: Logger, db: Database) {
 
   app.set("views", path.join(__dirname, "../../web/views"));
 
-  if (existsSync("./assets/cache/cache"))
-    app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache/cache")));
+  if (existsSync("./assets/cache/cache")) app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache/cache")));
   else app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache")));
 
   app.use("/growtopia/server_data.php", (req, res) => {
-    res.send(
-      `server|${process.env.WEB_ADDRESS}\nport|17091\ntype|1\n#maint|Maintenance woi\nmeta|lolwhat\nRTENDMARKERBS1001`
-    );
+    res.send(`server|${process.env.WEB_ADDRESS}\nport|17091\ntype|1\n#maint|Maintenance woi\nmeta|lolwhat\nRTENDMARKERBS1001`);
   });
 
   // app.get("/register", (req, res) => {
@@ -65,22 +59,18 @@ export async function WebServer(log: Logger, db: Database) {
   if (process.env.WEB_ENV === "production") {
     app.listen(3000, () => {
       log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
-      log.info(
-        `To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`
-      );
+      log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`);
     });
   } else if (process.env.WEB_ENV === "development") {
-    let httpServer = http.createServer(app);
-    let httpsServer = https.createServer(options, app);
+    const httpServer = http.createServer(app);
+    const httpsServer = https.createServer(options, app);
 
     httpServer.listen(80);
     httpsServer.listen(443);
 
-    httpsServer.on("listening", function () {
+    httpsServer.on("listening", () => {
       log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
-      log.info(
-        `To register account you need to register at: http://${process.env.WEB_ADDRESS}:80/register`
-      );
+      log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:80/register`);
     });
   }
 }
