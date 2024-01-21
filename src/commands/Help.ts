@@ -25,13 +25,12 @@ export default class extends Command {
 
   public async execute(base: BaseServer, peer: Peer, text: string, args: string[]): Promise<void> {
     if (args.length > 0) {
-      if (!base.commands.has(args[0]))
-        return peer.send(Variant.from("OnConsoleMessage", `It seems that commands doesn't exist.`));
-      let cmd = base.commands.get(args[0]);
+      if (!base.commands.has(args[0])) return peer.send(Variant.from("OnConsoleMessage", `It seems that commands doesn't exist.`));
+      const cmd = base.commands.get(args[0]);
 
-      let dialog = new DialogBuilder()
+      const dialog = new DialogBuilder()
         .defaultColor()
-        .addLabelWithIcon(cmd?.opt.name!, "32", "small")
+        .addLabelWithIcon(cmd?.opt.name || "", "32", "small")
         .addSpacer("small")
         .addSmallText(`Description: ${cmd?.opt.description}`)
         .addSmallText(`Cooldown: ${cmd?.opt.cooldown}`)
@@ -44,10 +43,7 @@ export default class extends Command {
       return peer.send(Variant.from("OnDialogRequest", dialog.str()));
     }
 
-    let dialog = new DialogBuilder()
-      .defaultColor()
-      .addLabelWithIcon("Help", "32", "small")
-      .addSpacer("small");
+    const dialog = new DialogBuilder().defaultColor().addLabelWithIcon("Help", "32", "small").addSpacer("small");
 
     base.commands.forEach((cmd) => {
       dialog.addLabelWithIcon(cmd.opt.usage, "482", "small");

@@ -23,16 +23,16 @@ export class Database {
   }
 
   public async getUser(username: string) {
-    let res = await this.knex.select("*").from<User>("users").where({ name: username });
+    const res = await this.knex.select("*").from<User>("users").where({ name: username });
 
     if (res.length) return res[0];
-    else return undefined;
+    return undefined;
   }
 
   public async saveUser(data: PeerDataType) {
     if (!data.id_user) return;
 
-    let res = await this.knex("users")
+    const res = await this.knex("users")
       .where({ id_user: data.id_user })
       .update(
         {
@@ -45,44 +45,34 @@ export class Database {
       );
 
     if (res.length) return true;
-    else return undefined;
+    return undefined;
   }
 
   public async createUser(username: string, password: string) {
     const encPass = encrypt(password);
 
-    let res = await this.knex("users").insert({ name: username, password: encPass, role: "2" });
+    const res = await this.knex("users").insert({ name: username, password: encPass, role: "2" });
 
     if (res.length) return res[0];
-    else return undefined;
+    return undefined;
   }
 
   public async getWorld(name: string) {
-    let res = await this.knex.select("*").from<WorldData>("worlds").where({ name });
+    const res = await this.knex.select("*").from<WorldData>("worlds").where({ name });
 
     if (res.length) {
       // Parse buffer to json
-      res[0].dropped = res[0].dropped
-        ? JSON.parse(res[0].dropped.toString())
-        : { uid: 0, items: [] };
+      res[0].dropped = res[0].dropped ? JSON.parse(res[0].dropped.toString()) : { uid: 0, items: [] };
 
       return res[0];
-    } else return undefined;
+    }
+    return undefined;
   }
 
-  public async saveWorld({
-    name,
-    ownedBy = null,
-    blockCount,
-    blocks,
-    width,
-    height,
-    owner,
-    dropped
-  }: WorldDB) {
+  public async saveWorld({ name, ownedBy = null, blockCount, blocks, width, height, owner, dropped }: WorldDB) {
     if (!name && !blockCount && !blocks && !width && !height) return;
 
-    let res = await this.knex("worlds").insert({
+    const res = await this.knex("worlds").insert({
       name: name,
       ownedBy: ownedBy ? ownedBy : null,
       blockCount,
@@ -94,22 +84,13 @@ export class Database {
     });
 
     if (res.length) return true;
-    else return undefined;
+    return undefined;
   }
 
-  public async updateWorld({
-    name,
-    ownedBy = null,
-    blockCount,
-    blocks,
-    width,
-    height,
-    owner,
-    dropped
-  }: WorldDB) {
+  public async updateWorld({ name, ownedBy = null, blockCount, blocks, width, height, owner, dropped }: WorldDB) {
     if (!name && !blockCount && !blocks && !width && !height) return;
 
-    let res = await this.knex("worlds")
+    const res = await this.knex("worlds")
       .where({ name })
       .update(
         {
@@ -125,6 +106,6 @@ export class Database {
       );
 
     if (res.length) return res[0];
-    else return undefined;
+    return undefined;
   }
 }

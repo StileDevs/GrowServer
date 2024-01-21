@@ -23,7 +23,7 @@ export default class extends Dialog {
       password: string;
     }>
   ): Promise<void> {
-    let dialog = new DialogBuilder()
+    const dialog = new DialogBuilder()
       .defaultColor()
       .addTextBox("Register account")
       .addInputBox("username", "Username", action.username || "", 20)
@@ -55,21 +55,21 @@ export default class extends Dialog {
     }
 
     const ifUserExist = await base.database.getUser(username);
-    let userExist = ifUserExist?.name.toLowerCase();
+    const userExist = ifUserExist?.name.toLowerCase();
 
     if (username === userExist) {
       dialog.addTextBox("`4ERROR:`` user already exist");
       return peer.send(Variant.from("OnDialogRequest", dialog.str()));
     }
 
-    let result = await base.database.createUser(action.username, action.password);
+    const result = await base.database.createUser(action.username, action.password);
     if (result) {
       peer.send(Variant.from("OnConsoleMessage", "`2SUCCESS:`` Account has been created"));
       return peer.disconnect();
-    } else {
-      dialog.addTextBox("`4ERROR:`` failed to create account");
-      peer.send(Variant.from("OnDialogRequest", dialog.str()));
-      return peer.disconnect();
     }
+
+    dialog.addTextBox("`4ERROR:`` failed to create account");
+    peer.send(Variant.from("OnDialogRequest", dialog.str()));
+    return peer.disconnect();
   }
 }

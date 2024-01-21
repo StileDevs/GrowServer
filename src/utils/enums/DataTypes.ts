@@ -1,6 +1,6 @@
 export enum DataTypes {
   HELLO = 1,
-  STR,
-  ACTION,
-  TANK
+  STR = 2,
+  ACTION = 3,
+  TANK = 4
 }

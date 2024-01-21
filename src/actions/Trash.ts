@@ -13,18 +13,14 @@ export default class extends Action {
     };
   }
 
-  public handle(
-    base: BaseServer,
-    peer: Peer,
-    action: ActionType<{ action: string; itemID: string }>
-  ): void {
+  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string; itemID: string }>): void {
     const itemID = parseInt(action.itemID);
     const item = base.items.metadata.items.find((v) => v.id === itemID);
     const peerItem = peer.data?.inventory?.items.find((v) => v.id === itemID);
 
-    let dialog = new DialogBuilder()
+    const dialog = new DialogBuilder()
       .defaultColor()
-      .addLabelWithIcon(`\`4Trash\`\` ${item?.name}`, item?.id!, "big")
+      .addLabelWithIcon(`\`4Trash\`\` ${item?.name}`, item?.id || 0, "big")
       .addTextBox(`How many to \`4destroy\`\`? (you have ${peerItem?.amount})`)
       .addInputBox("trash_count", "", peerItem?.amount, 5)
       .embed("itemID", itemID)

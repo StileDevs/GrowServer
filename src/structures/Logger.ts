@@ -1,7 +1,6 @@
 import chalk from "chalk";
 
 export class Logger {
-  constructor() {}
   get time() {
     return new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
   }

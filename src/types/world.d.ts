@@ -45,11 +45,11 @@ export interface Dropped {
 }
 
 export interface WorldData {
-  name?: string;
-  width?: number;
-  height?: number;
-  blockCount?: number;
-  blocks?: Block[];
+  name: string;
+  width: number;
+  height: number;
+  blockCount: number;
+  blocks: Block[];
   owner?: {
     name: string;
     displayName: string;
@@ -112,10 +112,10 @@ export interface HeartMonitor {
 }
 
 export interface Block {
-  fg?: number;
-  bg?: number;
-  x?: number;
-  y?: number;
+  fg: number;
+  bg: number;
+  x: number;
+  y: number;
   lock?: LockedBlocked;
   door?: Door;
   sign?: Sign;
@@ -139,4 +139,14 @@ export interface GetBlockArg {
   x: number;
   y: number;
   peer: Peer;
+}
+
+interface Lock {
+  id: number;
+  maxTiles: number;
+}
+
+interface Ignore {
+  blockIDsToIgnoreByLock: number[];
+  blockActionTypesToIgnore: number[];
 }

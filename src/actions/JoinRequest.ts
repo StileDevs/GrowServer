@@ -12,23 +12,15 @@ export default class extends Action {
     };
   }
 
-  public handle(
-    base: BaseServer,
-    peer: Peer,
-    action: ActionType<{ action: string; name: string }>
-  ): void {
+  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string; name: string }>): void {
     const worldName: string = action.name || "";
     if (worldName.length <= 0) {
-      return peer.send(
-        Variant.from("OnFailedToEnterWorld", 1),
-        Variant.from("OnConsoleMessage", "That world name is uhh `9empty``")
-      );
+      peer.send(Variant.from("OnFailedToEnterWorld", 1), Variant.from("OnConsoleMessage", "That world name is uhh `9empty``"));
+      return;
     }
     if (worldName.match(/\W+|_|EXIT/gi)) {
-      return peer.send(
-        Variant.from("OnFailedToEnterWorld", 1),
-        Variant.from("OnConsoleMessage", "That world name is too `9special`` to be entered.")
-      );
+      peer.send(Variant.from("OnFailedToEnterWorld", 1), Variant.from("OnConsoleMessage", "That world name is too `9special`` to be entered."));
+      return;
     }
 
     setTimeout(() => {

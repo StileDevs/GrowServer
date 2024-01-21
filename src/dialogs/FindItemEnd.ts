@@ -25,14 +25,7 @@ export default class extends Dialog {
   ): void {
     const itemID = parseInt(action.buttonClicked);
     peer.data?.inventory?.items.push({ id: itemID, amount: 200 });
-    peer.send(
-      Variant.from(
-        "OnConsoleMessage",
-        `Added \`6${
-          base.items.metadata.items.find((v) => v.id === itemID)?.name
-        }\`\` to your inventory.`
-      )
-    );
+    peer.send(Variant.from("OnConsoleMessage", `Added \`6${base.items.metadata.items.find((v) => v.id === itemID)?.name}\`\` to your inventory.`));
     peer.inventory();
     peer.saveToCache();
     // peer.saveToDatabase();

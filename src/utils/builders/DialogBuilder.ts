@@ -1,6 +1,5 @@
 export class DialogBuilder {
   #str = "";
-  constructor() {}
 
   /**
    * Sets the default color of the dialog
@@ -91,13 +90,7 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addButtonWithIcon(
-    name: string | number,
-    itemID: string | number,
-    text: string,
-    frame = "left",
-    count = 0
-  ): DialogBuilder {
+  public addButtonWithIcon(name: string | number, itemID: string | number, text: string, frame = "left", count = 0): DialogBuilder {
     this.#str += `add_button_with_icon|${name}|${text}|${frame}|${itemID}|${count ? count : ""}\n`;
     return this;
   }
@@ -111,12 +104,7 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addCustomButton(
-    name: string | number,
-    imageLocation: string,
-    image_size = { width: 400, height: 260 },
-    btnWidth = 0.24
-  ): DialogBuilder {
+  public addCustomButton(name: string | number, imageLocation: string, image_size = { width: 400, height: 260 }, btnWidth = 0.24): DialogBuilder {
     this.#str += `add_custom_button|${name}|image:${imageLocation};image_size:${image_size.width},${image_size.height};width:${btnWidth};|\n`;
     return this;
   }
@@ -126,7 +114,7 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
   public addCustomBreak(): DialogBuilder {
-    this.#str += `add_custom_break|\n`;
+    this.#str += "add_custom_break|\n";
     return this;
   }
 
@@ -183,12 +171,7 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addInputBox(
-    name: string = "",
-    text: string = "",
-    cont: string | number = "",
-    size: string | number = 0
-  ): DialogBuilder {
+  public addInputBox(name = "", text = "", cont: string | number = "", size: string | number = 0): DialogBuilder {
     this.#str += `add_text_input|${name}|${text}|${cont}|${size}|\n`;
     return this;
   }

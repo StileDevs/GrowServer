@@ -9,7 +9,7 @@ export default class extends Listener<"disconnect"> {
 
   public run(base: BaseServer, netID: number): void {
     base.log.debug("Peer", netID, "disconnected");
-    let peer = base.cache.users.getSelf(netID);
+    const peer = base.cache.users.getSelf(netID);
     peer?.leaveWorld();
     peer?.saveToDatabase();
 

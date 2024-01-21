@@ -7,7 +7,7 @@ export interface PeerDataType {
   x?: number;
   y?: number;
   world: string;
-  inventory?: {
+  inventory: {
     max: number;
     items: InventoryItems[];
   };
@@ -19,7 +19,7 @@ export interface PeerDataType {
   id_user: string | number;
   role: string;
   gems: number;
-  clothing?: Clothing;
+  clothing: Clothing;
 }
 
 export interface Clothing {

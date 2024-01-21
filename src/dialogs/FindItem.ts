@@ -24,22 +24,16 @@ export default class extends Dialog {
     }>
   ): void {
     const isSeed = parseInt(action.seed_only) ? true : false;
-    let dialog = new DialogBuilder()
-      .defaultColor()
-      .addQuickExit()
-      .addLabelWithIcon("Find the item", "6016", "big")
-      .addSpacer("small");
+    const dialog = new DialogBuilder().defaultColor().addQuickExit().addLabelWithIcon("Find the item", "6016", "big").addSpacer("small");
 
-    const items = base.items.metadata.items.filter((v) =>
-      v.name?.toLowerCase().includes(action.find_item_name.toLowerCase())
-    );
+    const items = base.items.metadata.items.filter((v) => v.name?.toLowerCase().includes(action.find_item_name.toLowerCase()));
     items.forEach((item) => {
+      const itemID = item.id || 0;
+      const itemName = item.name || "";
       if (isSeed) {
-        if (item.id! % 2 === 1)
-          dialog.addButtonWithIcon(item.id!, item.id!, item.name!, "staticBlueFrame", item.id);
+        if (itemID % 2 === 1) dialog.addButtonWithIcon(itemID, itemID, itemName, "staticBlueFrame", item.id);
       } else {
-        if (item.id! % 2 === 0)
-          dialog.addButtonWithIcon(item.id!, item.id!, item.name!, "staticBlueFrame", item.id);
+        if (itemID % 2 === 0) dialog.addButtonWithIcon(itemID, itemID, itemName, "staticBlueFrame", item.id);
       }
     });
 

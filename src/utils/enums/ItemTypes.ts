@@ -1,14 +1,14 @@
 export enum ClothTypes {
-  HAIR,
-  SHIRT,
-  PANTS,
-  FEET,
-  FACE,
-  HAND,
-  BACK,
-  MASK,
-  NECKLACE,
-  ANCES
+  HAIR = 0,
+  SHIRT = 1,
+  PANTS = 2,
+  FEET = 3,
+  FACE = 4,
+  HAND = 5,
+  BACK = 6,
+  MASK = 7,
+  NECKLACE = 8,
+  ANCES = 9
 }
 
 export enum BlockFlags {

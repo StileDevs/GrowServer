@@ -9,17 +9,17 @@ interface DataObject {
 }
 
 export function parseAction(chunk: Buffer): DataObject | undefined {
-  let data: DataObject = {};
+  const data: DataObject = {};
   chunk[chunk.length - 1] = 0;
 
-  let str = chunk.toString("utf-8", 4);
+  const str = chunk.toString("utf-8", 4);
   const lines = str.split("\n");
 
   lines.forEach((line) => {
     if (line.startsWith("|")) line = line.slice(1);
     const info = line.split("|");
 
-    let key = info[0];
+    const key = info[0];
     let val = info[1];
 
     if (key && val) {
@@ -31,11 +31,7 @@ export function parseAction(chunk: Buffer): DataObject | undefined {
   return data;
 }
 
-export function find(
-  base: BaseServer,
-  users: Collection<number, PeerDataType>,
-  func: (user: Peer) => boolean
-) {
+export function find(base: BaseServer, users: Collection<number, PeerDataType>, func: (user: Peer) => boolean) {
   for (const item of users.values()) {
     const peer = users.getSelf(item.netID);
     if (func(peer)) {
@@ -52,10 +48,10 @@ export function hashItemsDat(file: Buffer) {
 }
 
 export function encrypt(data: string): string {
-  return CryptoJS.AES.encrypt(data, process.env.ENCRYPT_SECRET!).toString();
+  return CryptoJS.AES.encrypt(data, process.env.ENCRYPT_SECRET || "").toString();
 }
 export function decrypt(data: string): string {
-  return CryptoJS.AES.decrypt(data, process.env.ENCRYPT_SECRET!).toString(CryptoJS.enc.Utf8);
+  return CryptoJS.AES.decrypt(data, process.env.ENCRYPT_SECRET || "").toString(CryptoJS.enc.Utf8);
 }
 
 export function handleSaveAll(server: BaseServer, dcAll = false) {
@@ -66,7 +62,7 @@ export function handleSaveAll(server: BaseServer, dcAll = false) {
     else {
       let o = 0;
       server.cache.worlds.forEach(async (wrld) => {
-        const world = new World(server, wrld.name!);
+        const world = new World(server, wrld.name);
         if (typeof world.worldName === "string") await world.saveToDatabase();
         else server.log.warn(`Oh no there's undefined (${o}) world, skipping..`);
 
