@@ -6,14 +6,14 @@ import { DialogBuilder } from "../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 
 export default class extends Action {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       eventName: "wrench"
     };
   }
 
-  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string; netID: string }>): void {
+  public handle(peer: Peer, action: ActionType<{ action: string; netID: string }>): void {
     const dialog = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(peer.data?.tankIDName || "", "32", "small")

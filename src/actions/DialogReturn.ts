@@ -4,20 +4,20 @@ import { BaseServer } from "../structures/BaseServer";
 import { ActionType } from "../types/action";
 
 export default class extends Action {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       eventName: "dialog_return"
     };
   }
 
-  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string; dialog_name: string }>): void {
+  public handle(peer: Peer, action: ActionType<{ action: string; dialog_name: string }>): void {
     const name = action.dialog_name;
     try {
-      if (!base.dialogs.has(name)) return;
-      base.dialogs.get(name)?.handle(base, peer, action);
+      if (!this.base.dialogs.has(name)) return;
+      this.base.dialogs.get(name)?.handle(peer, action);
     } catch (err) {
-      base.log.error(err);
+      this.base.log.error(err);
     }
   }
 }

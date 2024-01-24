@@ -2,17 +2,17 @@ import { Listener } from "../abstracts/Listener";
 import { BaseServer } from "../structures/BaseServer";
 
 export default class extends Listener<"disconnect"> {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.name = "disconnect";
   }
 
-  public run(base: BaseServer, netID: number): void {
-    base.log.debug("Peer", netID, "disconnected");
-    const peer = base.cache.users.getSelf(netID);
+  public run(netID: number): void {
+    this.base.log.debug("Peer", netID, "disconnected");
+    const peer = this.base.cache.users.getSelf(netID);
     peer?.leaveWorld();
     peer?.saveToDatabase();
 
-    base.cache.users.delete(netID);
+    this.base.cache.users.delete(netID);
   }
 }

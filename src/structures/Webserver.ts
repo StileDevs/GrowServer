@@ -32,29 +32,23 @@ export async function WebServer(log: Logger, db: Database) {
 
   app.use(bodyparser.urlencoded({ extended: true }));
   app.use(bodyparser.json());
-  app.set("view engine", "ejs");
 
-  app.set("views", path.join(__dirname, "../../web/views"));
-
-  if (existsSync("./assets/cache/cache")) app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache/cache")));
-  else app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache")));
+  if (existsSync("./assets/cache/cache")) {
+    app.use("/growtopia/cache", express.static(path.join(__dirname, "../../../assets/cache/cache")));
+  } else {
+    console.log(path.join(__dirname, "../../../assets/cache"));
+    app.use("/growtopia/cache", express.static(path.join(__dirname, "../../../assets/cache")));
+  }
 
   app.use("/growtopia/server_data.php", (req, res) => {
     res.send(`server|${process.env.WEB_ADDRESS}\nport|17091\ntype|1\n#maint|Maintenance woi\nmeta|lolwhat\nRTENDMARKERBS1001`);
   });
 
-  // app.get("/register", (req, res) => {
-  //   res.render("register.ejs");
-  // });
-
-  // app.post("/api/register", apiLimiter, async (req, res) => {
-  //   if (req.body && req.body.username && req.body.password) {
-  //     let result = await db.createUser(req.body.username, req.body.password);
-
-  //     if (result) res.send("OK, Successfully creating account");
-  //     else res.send("Error");
-  //   }
-  // });
+  app.use((req, res, next) => {
+    log.warn(`Growtopia Client requesting cache: ${req.originalUrl} not found. Redirecting to Growtopia Original CDN...`);
+    res.redirect(`https://ubistatic-a.akamaihd.net/0098/0214956/${req.originalUrl.replace("/growtopia/", "")}`);
+    next();
+  });
 
   if (process.env.WEB_ENV === "production") {
     app.listen(3000, () => {
@@ -70,7 +64,6 @@ export async function WebServer(log: Logger, db: Database) {
 
     httpsServer.on("listening", () => {
       log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
-      log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:80/register`);
     });
   }
 }

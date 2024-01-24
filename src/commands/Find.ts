@@ -10,8 +10,8 @@ import { DataTypes } from "../utils/enums/DataTypes";
 export default class extends Command {
   public opt: CommandOptions;
 
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.opt = {
       name: "find",
       description: "Find some items",
@@ -24,7 +24,7 @@ export default class extends Command {
     };
   }
 
-  public async execute(base: BaseServer, peer: Peer, text: string, args: string[]): Promise<void> {
+  public async execute(peer: Peer, text: string, args: string[]): Promise<void> {
     const dialog = new DialogBuilder().defaultColor().addLabelWithIcon("Find the item", "6016", "big").addCheckbox("seed_only", "Only seed", "not_selected").addInputBox("find_item_name", "", "", 30).addQuickExit().endDialog("find_item", "Cancel", "Find").str();
 
     peer.send(Variant.from("OnDialogRequest", dialog));

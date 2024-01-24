@@ -7,17 +7,17 @@ import { decrypt, find, parseAction } from "../utils/Utils";
 import { Peer } from "../structures/Peer";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { ActionTypes } from "../utils/enums/Tiles";
-import { handlePlace } from "../tanks/Place";
-import { handlePunch } from "../tanks/Punch";
 import { ClothTypes } from "../utils/enums/ItemTypes";
-import { handleWrench } from "../tanks/BlockWrench";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
 import { World } from "../structures/World";
 import { DroppedItem } from "../types/world";
+import { Place } from "../tanks/Place";
+import { Punch } from "../tanks/Punch";
+import { Wrench } from "../tanks/Wrench";
 
 export default class extends Listener<"raw"> {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.name = "raw";
   }
 
@@ -27,9 +27,8 @@ export default class extends Listener<"raw"> {
     peer.send(Variant.from("OnDialogRequest", dialog));
   }
 
-  public async run(base: BaseServer, netID: number, data: Buffer): Promise<void> {
-    // prettier-ignore
-    const peer = base.cache.users.has(netID) ? base.cache.users.getSelf(netID) : new Peer(base, netID);
+  public async run(netID: number, data: Buffer): Promise<void> {
+    const peer = this.base.cache.users.has(netID) ? this.base.cache.users.getSelf(netID) : new Peer(this.base, netID);
     const dataType = data.readInt32LE();
 
     switch (dataType) {
@@ -37,7 +36,7 @@ export default class extends Listener<"raw"> {
       case DataTypes.ACTION: {
         const parsed = parseAction(data);
 
-        base.log.debug({ parsed, dataType });
+        this.base.log.debug({ parsed, dataType });
 
         // Guest
         if (parsed?.requestedName && !parsed?.tankIDName && !parsed?.tankIDPass) return this.sendGuest(peer, (parsed?.requestedName as string) || "");
@@ -46,7 +45,7 @@ export default class extends Listener<"raw"> {
         if (parsed?.requestedName && parsed?.tankIDName && parsed?.tankIDPass) {
           const username = parsed.tankIDName as string;
           const password = parsed.tankIDPass as string;
-          base.database.getUser(username).then((user) => {
+          this.base.database.getUser(username).then((user) => {
             if (!user || password !== decrypt(user?.password)) {
               peer.send(Variant.from("OnConsoleMessage", "`4Failed`` logging in to that account. Please make sure you've provided the correct info."));
               peer.send(TextPacket.from(DataTypes.ACTION, "action|set_url", "url||https://127.0.0.1/recover", "label|`$Recover your Password``"));
@@ -54,7 +53,7 @@ export default class extends Listener<"raw"> {
             }
 
             // Check if there's same account is logged in
-            const targetPeer = find(base, base.cache.users, (v) => v.data?.id_user === user.id_user);
+            const targetPeer = find(this.base, this.base.cache.users, (v) => v.data?.id_user === user.id_user);
             if (targetPeer) {
               peer.send(Variant.from("OnConsoleMessage", "`4Already Logged In?`` It seems that this account already logged in by somebody else."));
 
@@ -64,7 +63,7 @@ export default class extends Listener<"raw"> {
             peer.send(
               Variant.from(
                 "OnSuperMainStartAcceptLogonHrdxs47254722215a",
-                base.items.hash,
+                this.base.items.hash,
                 "www.growtopia1.com",
                 "growtopia/cache/",
                 "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
@@ -123,10 +122,10 @@ export default class extends Listener<"raw"> {
         // Handle actions
         if (parsed?.action) {
           try {
-            const action = base.action.get(parsed.action as string);
-            action?.handle(base, peer.getSelfCache(), parsed as ActionType<unknown>);
+            const action = this.base.action.get(parsed.action as string);
+            action?.handle(peer.getSelfCache(), parsed as ActionType<unknown>);
           } catch (err) {
-            base.log.error(err);
+            this.base.log.error(err);
           }
         }
         break;
@@ -140,7 +139,7 @@ export default class extends Listener<"raw"> {
         const tank = TankPacket.fromBuffer(data);
         switch (tank.data?.type) {
           default: {
-            base.log.debug("Unknown tank", tank);
+            this.base.log.debug("Unknown tank", tank);
             break;
           }
           case TankTypes.PEER_ICON: {
@@ -156,7 +155,7 @@ export default class extends Listener<"raw"> {
 
           case TankTypes.PEER_CLOTH: {
             tank.data.state = peer.data?.rotatedLeft ? 16 : 0;
-            const item = base.items.metadata.items.find((v) => v.id === tank.data?.info);
+            const item = this.base.items.metadata.items.find((v) => v.id === tank.data?.info);
 
             const isAnces = (): boolean => {
               if (item?.type === ActionTypes.ANCES) {
@@ -210,7 +209,7 @@ export default class extends Listener<"raw"> {
               }
               case ClothTypes.HAND: {
                 if (isAnces()) break;
-                const handItem = base.items.metadata.items.find((item) => item.id === tank.data?.info);
+                const handItem = this.base.items.metadata.items.find((item) => item.id === tank.data?.info);
 
                 if (peer.data.clothing.hand === tank.data.info) peer.data.clothing.hand = 0;
                 else peer.data.clothing.hand = tank.data.info || 0;
@@ -263,7 +262,7 @@ export default class extends Listener<"raw"> {
 
             peer.data.x = tank.data.xPos;
             peer.data.y = tank.data.yPos;
-            peer.data.rotatedLeft = Boolean(tank.data.state || 0x0 & 0x10);
+            peer.data.rotatedLeft = Boolean((tank.data.state as number) & 0x10);
 
             peer.saveToCache();
             peer.everyPeer((p) => {
@@ -279,13 +278,16 @@ export default class extends Listener<"raw"> {
 
             // Fist
             if (tank.data.info === 18) {
-              handlePunch(tank, peer, base, world);
+              const punch = new Punch(this.base, peer, tank, world);
+              punch.onPunch();
             } else if (tank.data.info === 32) {
-              handleWrench(base, tank, peer, world);
+              const wrench = new Wrench(this.base, peer, tank, world);
+              wrench.onWrench();
             }
             // Others
             else {
-              handlePlace(tank, peer, base, world);
+              const place = new Place(this.base, peer, tank, world);
+              place.onPlace();
             }
 
             break;

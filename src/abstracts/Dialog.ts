@@ -4,12 +4,14 @@ import { DialogConfig, DialogReturnType } from "../types/dialog";
 
 export abstract class Dialog {
   public config: DialogConfig;
+  public base: BaseServer;
 
-  constructor() {
+  constructor(base: BaseServer) {
+    this.base = base;
     this.config = {
       dialogName: undefined
     };
   }
 
-  public handle(base: BaseServer, peer: Peer, action: DialogReturnType<unknown>) {}
+  public handle(peer: Peer, action: DialogReturnType<unknown>) {}
 }

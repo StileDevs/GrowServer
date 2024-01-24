@@ -1,4 +1,4 @@
-import { Tank, TankPacket, Variant } from "growtopia.js";
+import { ItemDefinition, Tank, TankPacket, Variant } from "growtopia.js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { World } from "../structures/World";
@@ -6,42 +6,87 @@ import { Block } from "../types/world";
 import { Role } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { ActionTypes } from "../utils/enums/Tiles";
-import { tileUpdate, tileVisualUpdate } from "./BlockPlacing";
+import { Place } from "./Place";
 
-/** Handle Punch */
-export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, world: World): void {
-  const tankData = tank.data as Tank;
-  const pos = (tankData.xPunch as number) + (tankData.yPunch as number) * world.data.width;
-  const block = world.data.blocks[pos];
-  const itemMeta = base.items.metadata.items[block.fg || block.bg];
+export class Punch {
+  public base: BaseServer;
+  public peer: Peer;
+  public tank: TankPacket;
+  public world: World;
 
-  if (!itemMeta.id) return;
-  if (typeof block.damage !== "number" || (block.resetStateAt as number) <= Date.now()) block.damage = 0;
+  constructor(base: BaseServer, peer: Peer, tank: TankPacket, world: World) {
+    this.base = base;
+    this.peer = peer;
+    this.tank = tank;
+    this.world = world;
+  }
 
-  if (world.data.owner) {
-    if (world.data.owner.id !== peer.data?.id_user) {
-      if (peer.data?.role !== Role.DEVELOPER) {
-        if (itemMeta.id === 242) peer.send(Variant.from("OnTalkBubble", peer.data.netID, `\`#[\`0\`9World Locked by ${world.data.owner?.displayName}\`#]`));
+  public onPunch() {
+    const tankData = this.tank.data as Tank;
+    const pos = (tankData.xPunch as number) + (tankData.yPunch as number) * this.world.data.width;
+    const block = this.world.data.blocks[pos];
+    const itemMeta = this.base.items.metadata.items[block.fg || block.bg];
 
-        peer.everyPeer((p) => {
-          if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") p.send(Variant.from({ netID: peer.data?.netID }, "OnPlayPositioned", "audio/punch_locked.wav"));
+    if (!itemMeta.id) return;
+    if (typeof block.damage !== "number" || (block.resetStateAt as number) <= Date.now()) block.damage = 0;
+
+    if (this.world.data.owner) {
+      if (this.world.data.owner.id !== this.peer.data?.id_user) {
+        if (this.peer.data?.role !== Role.DEVELOPER) {
+          if (itemMeta.id === 242) this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, `\`#[\`0\`9World Locked by ${this.world.data.owner?.displayName}\`#]`));
+
+          this.peer.everyPeer((p) => {
+            if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") p.send(Variant.from({ netID: this.peer.data?.netID }, "OnPlayPositioned", "audio/punch_locked.wav"));
+          });
+          return;
+        }
+      }
+    }
+
+    if (itemMeta.id === 8 || itemMeta.id === 6 || itemMeta.id === 3760 || itemMeta.id === 7372) {
+      if (this.peer.data?.role !== Role.DEVELOPER) {
+        this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "It's too strong to break."));
+        this.peer.everyPeer((p) => {
+          if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") p.send(Variant.from({ netID: this.peer.data?.netID }, "OnPlayPositioned", "audio/punch_locked.wav"));
         });
         return;
       }
     }
+
+    if (block.damage >= (itemMeta.breakHits as number)) {
+      this.onDestroyed(block, itemMeta, tankData);
+    } else {
+      this.onDamaged(block, itemMeta, tankData);
+    }
+
+    this.peer.send(this.tank);
+
+    this.world.saveToCache();
+
+    this.peer.everyPeer((p) => {
+      if (p.data?.netID !== this.peer.data?.netID && p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") {
+        p.send(this.tank);
+      }
+    });
+    return;
   }
 
-  if (itemMeta.id === 8 || itemMeta.id === 6 || itemMeta.id === 3760 || itemMeta.id === 7372) {
-    if (peer.data?.role !== Role.DEVELOPER) {
-      peer.send(Variant.from("OnTalkBubble", peer.data.netID, "It's too strong to break."));
-      peer.everyPeer((p) => {
-        if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") p.send(Variant.from({ netID: peer.data?.netID }, "OnPlayPositioned", "audio/punch_locked.wav"));
-      });
-      return;
+  private onDamaged(block: Block, itemMeta: ItemDefinition, tankData: Tank) {
+    tankData.type = TankTypes.TILE_DAMAGE;
+    tankData.info = (block.damage as number) + 5;
+
+    block.resetStateAt = Date.now() + (itemMeta.resetStateAfter as number) * 1000;
+    (block.damage as number)++;
+
+    switch (itemMeta.type) {
+      case ActionTypes.SEED: {
+        this.world.harvest(this.peer, block);
+        break;
+      }
     }
   }
 
-  if (block.damage >= (itemMeta.breakHits as number)) {
+  private onDestroyed(block: Block, itemMeta: ItemDefinition, tankData: Tank) {
     block.damage = 0;
     block.resetStateAt = 0;
 
@@ -77,44 +122,22 @@ export function handlePunch(tank: TankPacket, peer: Peer, base: BaseServer, worl
       }
 
       case ActionTypes.LOCK: {
-        if (base.locks.find((l) => l.id === itemMeta.id)) {
-          world.data.blocks?.forEach((b) => {
+        if (this.base.locks.find((l) => l.id === itemMeta.id)) {
+          this.world.data.blocks?.forEach((b) => {
             if (b.lock && b.lock.ownerX === block.x && b.lock.ownerY === block.y) b.lock = undefined;
           });
         } else {
           block.worldLock = undefined;
           block.lock = undefined;
-          world.data.owner = undefined;
+          this.world.data.owner = undefined;
 
           // tileUpdate(base, peer, itemMeta.type, block, world);
-          tileVisualUpdate(peer, block, 0x0, true);
+          Place.tileVisualUpdate(this.peer, block, 0x0, true);
         }
         break;
       }
     }
-  } else {
-    tankData.type = TankTypes.TILE_DAMAGE;
-    tankData.info = block.damage + 5;
-
-    block.resetStateAt = Date.now() + (itemMeta.resetStateAfter as number) * 1000;
-    block.damage++;
-
-    switch (itemMeta.type) {
-      case ActionTypes.SEED: {
-        world.harvest(peer, block);
-        break;
-      }
-    }
   }
-
-  peer.send(tank);
-
-  world.saveToCache();
-
-  peer.everyPeer((p) => {
-    if (p.data?.netID !== peer.data?.netID && p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
-      p.send(tank);
-    }
-  });
-  return;
 }
+
+/** Handle Punch */

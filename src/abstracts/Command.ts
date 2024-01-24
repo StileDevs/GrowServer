@@ -4,8 +4,10 @@ import { CommandOptions } from "../types/command";
 
 export abstract class Command {
   public opt: CommandOptions;
+  public base: BaseServer;
 
-  constructor() {
+  constructor(base: BaseServer) {
+    this.base = base;
     this.opt = {
       name: "",
       description: "",
@@ -18,5 +20,5 @@ export abstract class Command {
     };
   }
 
-  public async execute(base: BaseServer, peer: Peer, text: string, args: string[]): Promise<void> {}
+  public async execute(peer: Peer, text: string, args: string[]): Promise<void> {}
 }

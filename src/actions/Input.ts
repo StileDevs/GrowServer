@@ -5,16 +5,16 @@ import { BaseServer } from "../structures/BaseServer";
 import { ActionType } from "../types/action";
 
 export default class extends Action {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       eventName: "input"
     };
   }
 
-  public getCommand(base: BaseServer, commandName: string) {
+  public getCommand(commandName: string) {
     return (
-      base.commands.get(commandName) || {
+      this.base.commands.get(commandName) || {
         execute: async () => {},
         opt: {
           name: "",
@@ -30,7 +30,7 @@ export default class extends Action {
     );
   }
 
-  public async handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string; text: string }>): Promise<void> {
+  public async handle(peer: Peer, action: ActionType<{ action: string; text: string }>): Promise<void> {
     const text = action.text.trim();
     if (!text || text.replace(/`.|`/g, "").length < 1) return;
 
@@ -38,17 +38,17 @@ export default class extends Action {
       const args = text.slice("/".length).split(" ");
       const commandName = args.shift()?.toLowerCase() || "";
 
-      if (!base.commands.has(commandName)) {
+      if (!this.base.commands.has(commandName)) {
         return peer.send(Variant.from("OnConsoleMessage", "`4Unknown command.`` Enter `$/help`` for a list of valid commands"));
       }
       peer.send(Variant.from("OnConsoleMessage", `\`6/${commandName} ${args.join(" ")}\`\``));
 
       // Cooldown & Ratelimit
-      const cmd = this.getCommand(base, commandName);
+      const cmd = this.getCommand(commandName);
 
-      const cmdCd = base.cooldown.get(`${commandName}-netID-${peer.data?.netID}`);
+      const cmdCd = this.base.cooldown.get(`${commandName}-netID-${peer.data?.netID}`);
       if (!cmdCd) {
-        const cmdSet = base.cooldown.set(`${commandName}-netID-${peer.data?.netID}`, {
+        const cmdSet = this.base.cooldown.set(`${commandName}-netID-${peer.data?.netID}`, {
           limit: 1,
           time: Date.now()
         });
@@ -63,19 +63,19 @@ export default class extends Action {
 
       setTimeout(
         () => {
-          base.cooldown.delete(`${commandName}-netID-${peer.data?.netID}`);
+          this.base.cooldown.delete(`${commandName}-netID-${peer.data?.netID}`);
         },
         cmd.opt.cooldown || 0 * 1000
       );
 
       try {
         if (cmd.opt.permission.some((perm) => perm === peer.data?.role)) {
-          await cmd.execute(base, peer, text, args);
+          await cmd.execute(peer, text, args);
         } else {
           peer.send(Variant.from("OnConsoleMessage", "You dont have permission to use this command."));
         }
       } catch (err) {
-        base.log.error(err);
+        this.base.log.error(err);
       }
       return;
     }

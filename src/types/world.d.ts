@@ -1,4 +1,5 @@
-import { Peer } from "../structures/Peer";
+import type { Peer } from "../structures/Peer";
+import type { World } from "../structures/World";
 
 export interface Place {
   peer: Peer;
@@ -7,6 +8,14 @@ export interface Place {
   id: number;
   isBg?: boolean;
   fruit?: number;
+}
+
+export interface PlacedArg {
+  actionType: number;
+  block: Block;
+  id: number;
+  isBg?: boolean;
+  flags: number;
 }
 
 export interface WorldDB {

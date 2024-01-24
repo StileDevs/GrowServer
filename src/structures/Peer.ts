@@ -136,8 +136,8 @@ export class Peer extends OldPeer<PeerDataType> {
 
     const extra = Math.random() * 6;
 
-    const x = this.data.x || 0 + (this.data.rotatedLeft ? -25 : +25) + extra;
-    const y = this.data.y || 0 + extra - Math.floor(Math.random() * (3 - -1) + -3);
+    const x = (this.data.x as number) + (this.data.rotatedLeft ? -25 : +25) + extra;
+    const y = (this.data.y as number) + extra - Math.floor(Math.random() * (3 - -1) + -3);
 
     world?.drop(this, x, y, id, amount);
   }

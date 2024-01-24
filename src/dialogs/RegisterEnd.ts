@@ -6,15 +6,14 @@ import { DialogReturnType } from "../types/dialog";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
 
 export default class extends Dialog {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       dialogName: "register_end"
     };
   }
 
   public async handle(
-    base: BaseServer,
     peer: Peer,
     action: DialogReturnType<{
       action: string;
@@ -54,7 +53,7 @@ export default class extends Dialog {
       return peer.send(Variant.from("OnDialogRequest", dialog.str()));
     }
 
-    const ifUserExist = await base.database.getUser(username);
+    const ifUserExist = await this.base.database.getUser(username);
     const userExist = ifUserExist?.name.toLowerCase();
 
     if (username === userExist) {
@@ -62,7 +61,7 @@ export default class extends Dialog {
       return peer.send(Variant.from("OnDialogRequest", dialog.str()));
     }
 
-    const result = await base.database.createUser(action.username, action.password);
+    const result = await this.base.database.createUser(action.username, action.password);
     if (result) {
       peer.send(Variant.from("OnConsoleMessage", "`2SUCCESS:`` Account has been created"));
       return peer.disconnect();

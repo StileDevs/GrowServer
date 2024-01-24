@@ -5,14 +5,14 @@ import { Peer } from "../structures/Peer";
 import { ActionType } from "../types/action";
 
 export default class extends Action {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       eventName: "join_request"
     };
   }
 
-  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string; name: string }>): void {
+  public handle(peer: Peer, action: ActionType<{ action: string; name: string }>): void {
     const worldName: string = action.name || "";
     if (worldName.length <= 0) {
       peer.send(Variant.from("OnFailedToEnterWorld", 1), Variant.from("OnConsoleMessage", "That world name is uhh `9empty``"));

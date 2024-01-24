@@ -8,15 +8,14 @@ import { DataTypes } from "../utils/enums/DataTypes";
 import { TankTypes } from "../utils/enums/TankTypes";
 
 export default class extends Dialog {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       dialogName: "trash_end"
     };
   }
 
   public handle(
-    base: BaseServer,
     peer: Peer,
     action: DialogReturnType<{
       action: string;
