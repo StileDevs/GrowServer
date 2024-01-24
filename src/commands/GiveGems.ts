@@ -9,8 +9,8 @@ import { find } from "../utils/Utils";
 export default class extends Command {
   public opt: CommandOptions;
 
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.opt = {
       name: "givegems",
       description: "Give gems to someone or self",
@@ -23,11 +23,11 @@ export default class extends Command {
     };
   }
 
-  public async execute(base: BaseServer, peer: Peer, text: string, args: string[]): Promise<void> {
+  public async execute(peer: Peer, text: string, args: string[]): Promise<void> {
     if (!args[0]) return peer.send(Variant.from("OnConsoleMessage", "Gems amount are required."));
     if (!/\d/.test(args[0])) return peer.send(Variant.from("OnConsoleMessage", "Gems amount are must be a number."));
     if (args.length > 1) {
-      const targetPeer = find(base, base.cache.users, (user) => (user.data?.tankIDName || "").toLowerCase().includes(args[1].toLowerCase()));
+      const targetPeer = find(this.base, this.base.cache.users, (user) => (user.data?.tankIDName || "").toLowerCase().includes(args[1].toLowerCase()));
       if (!targetPeer) return peer.send(Variant.from("OnConsoleMessage", "Make sure that player is online."));
 
       targetPeer.send(Variant.from("OnSetBux", parseInt(args[0])));

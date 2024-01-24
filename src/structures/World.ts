@@ -5,9 +5,9 @@ import { Block, EnterArg, Place, WorldData } from "../types/world";
 import { BaseServer } from "./BaseServer";
 import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
-import { HandleTile } from "./TileExtra";
 import { Peer } from "./Peer";
 import { DataTypes } from "../utils/enums/DataTypes";
+import { Tile } from "./Tile";
 
 export class World {
   public data: WorldData = {
@@ -174,7 +174,7 @@ export class World {
         this.data.blocks?.forEach((block) => {
           const item = this.base.items.metadata.items.find((i) => i.id === block.fg);
 
-          const blockBuf = HandleTile(this.base, block, this, item?.type);
+          const blockBuf = new Tile(this.base, this, block).serialize(item?.type as number);
 
           blockBuf.forEach((b) => blockBytes.push(b));
         });

@@ -87,8 +87,8 @@ export class BaseServer {
   #_loadEvents() {
     fs.readdirSync(`${__dirname}/../events`).forEach(async (event) => {
       const file = (await import(`../events/${event}`)).default;
-      const initFile = new file();
-      this.server.on(initFile.name, (...args) => initFile.run(this, ...args));
+      const initFile = new file(this);
+      this.server.on(initFile.name, (...args) => initFile.run(...args));
       this.log.event(`Loaded "${initFile.name}" events`);
     });
   }
@@ -102,7 +102,7 @@ export class BaseServer {
   #_loadActions() {
     fs.readdirSync(`${__dirname}/../actions`).forEach(async (event) => {
       const file = (await import(`../actions/${event}`)).default;
-      const initFile = new file();
+      const initFile = new file(this);
       this.action.set(initFile.config.eventName, initFile);
       this.log.action(`Loaded "${initFile.config.eventName}" actions`);
     });
@@ -111,7 +111,7 @@ export class BaseServer {
   #_loadDialogs() {
     fs.readdirSync(`${__dirname}/../dialogs`).forEach(async (event) => {
       const file = (await import(`../dialogs/${event}`)).default;
-      const initFile = new file();
+      const initFile = new file(this);
       this.dialogs.set(initFile.config.dialogName, initFile);
       this.log.dialog(`Loaded "${initFile.config.dialogName}" dialogs`);
     });
@@ -120,7 +120,7 @@ export class BaseServer {
   #_loadCommands() {
     fs.readdirSync(`${__dirname}/../commands`).forEach(async (fileName) => {
       const file = (await import(`../commands/${fileName}`)).default;
-      const initFile = new file();
+      const initFile = new file(this);
       this.commands.set(initFile.opt.name, initFile);
       this.log.command(`Loaded "${initFile.opt.name}" command`);
     });

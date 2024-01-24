@@ -2,21 +2,20 @@ import { TankPacket, TextPacket, Variant } from "growtopia.js";
 import { Dialog } from "../abstracts/Dialog";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
-import { tileUpdate } from "../tanks/BlockPlacing";
+import { Place } from "../tanks/Place";
 import { DialogReturnType } from "../types/dialog";
 import { Block } from "../types/world";
 import { World } from "../structures/World";
 
 export default class extends Dialog {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       dialogName: "sign_edit"
     };
   }
 
   public handle(
-    base: BaseServer,
     peer: Peer,
     action: DialogReturnType<{
       action: string;
@@ -28,9 +27,9 @@ export default class extends Dialog {
     }>
   ): void {
     const world = peer.hasWorld(peer.data.world);
-    const pos = parseInt(action.tilex) + parseInt(action.tiley) * (world?.data.width || 100);
+    const pos = parseInt(action.tilex) + parseInt(action.tiley) * (world?.data.width as number);
     const block = world?.data.blocks[pos] as Block;
-    const itemMeta = base.items.metadata.items.find((i) => i.id === parseInt(action.itemID));
+    const itemMeta = this.base.items.metadata.items.find((i) => i.id === parseInt(action.itemID));
 
     if (world?.data.owner) {
       if (world.data.owner.id !== peer.data?.id_user) return;
@@ -40,6 +39,6 @@ export default class extends Dialog {
       label: action.label || ""
     };
 
-    tileUpdate(base, peer, itemMeta?.type || 0, block, world as World);
+    Place.tileUpdate(this.base, peer, itemMeta?.type || 0, block, world as World);
   }
 }

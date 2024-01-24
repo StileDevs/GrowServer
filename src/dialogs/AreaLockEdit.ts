@@ -1,22 +1,21 @@
 import { Dialog } from "../abstracts/Dialog";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
-import { tileUpdate } from "../tanks/BlockPlacing";
+import { Place } from "../tanks/Place";
 import { DialogReturnType } from "../types/dialog";
 import { Floodfill } from "../structures/FloodFill";
 import { Block, Lock } from "../types/world";
 import { World } from "../structures/World";
 
 export default class extends Dialog {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       dialogName: "area_lock_edit"
     };
   }
 
   public handle(
-    base: BaseServer,
     peer: Peer,
     action: DialogReturnType<{
       action: string;
@@ -33,10 +32,10 @@ export default class extends Dialog {
     }>
   ): void {
     const world = peer.hasWorld(peer.data.world);
-    const pos = parseInt(action.tilex) + parseInt(action.tiley) * (world?.data.width || 100);
+    const pos = parseInt(action.tilex) + parseInt(action.tiley) * (world?.data.width as number);
     const block = world?.data.blocks[pos] as Block;
-    const mLock = base.locks.find((l) => l.id === parseInt(action.lockID));
-    const itemMeta = base.items.metadata.items.find((i) => i.id === parseInt(action.lockID));
+    const mLock = this.base.locks.find((l) => l.id === parseInt(action.lockID));
+    const itemMeta = this.base.items.metadata.items.find((i) => i.id === parseInt(action.lockID));
 
     if (block.lock?.ownerUserID !== peer.data?.id_user) return;
     const openToPublic = action.allow_break_build === "1" ? true : false;
@@ -61,13 +60,13 @@ export default class extends Dialog {
         height: world?.data.height || 60,
         blocks: world?.data.blocks as Block[],
         s_block: block,
-        base: base,
+        base: this.base,
         noEmptyAir: ignoreEmpty
       });
       algo.exec();
       algo.apply(world as World, peer);
     }
 
-    tileUpdate(base, peer, itemMeta?.type || 0, block, world as World);
+    Place.tileUpdate(this.base, peer, itemMeta?.type || 0, block, world as World);
   }
 }

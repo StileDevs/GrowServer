@@ -9,8 +9,8 @@ import { Role } from "../utils/Constants";
 export default class extends Command {
   public opt: CommandOptions;
 
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.opt = {
       name: "help",
       description: "Shows every available commands",
@@ -23,10 +23,10 @@ export default class extends Command {
     };
   }
 
-  public async execute(base: BaseServer, peer: Peer, text: string, args: string[]): Promise<void> {
+  public async execute(peer: Peer, text: string, args: string[]): Promise<void> {
     if (args.length > 0) {
-      if (!base.commands.has(args[0])) return peer.send(Variant.from("OnConsoleMessage", `It seems that commands doesn't exist.`));
-      const cmd = base.commands.get(args[0]);
+      if (!this.base.commands.has(args[0])) return peer.send(Variant.from("OnConsoleMessage", `It seems that commands doesn't exist.`));
+      const cmd = this.base.commands.get(args[0]);
 
       const dialog = new DialogBuilder()
         .defaultColor()
@@ -45,7 +45,7 @@ export default class extends Command {
 
     const dialog = new DialogBuilder().defaultColor().addLabelWithIcon("Help", "32", "small").addSpacer("small");
 
-    base.commands.forEach((cmd) => {
+    this.base.commands.forEach((cmd) => {
       dialog.addLabelWithIcon(cmd.opt.usage, "482", "small");
     });
 

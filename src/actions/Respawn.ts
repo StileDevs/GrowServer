@@ -4,14 +4,14 @@ import { BaseServer } from "../structures/BaseServer";
 import { ActionType } from "../types/action";
 
 export default class extends Action {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       eventName: "respawn"
     };
   }
 
-  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string }>): void {
+  public handle(peer: Peer, action: ActionType<{ action: string }>): void {
     peer.respawn();
     // TODO: respawn back to previous checkpoint
   }

@@ -6,15 +6,14 @@ import { DialogReturnType } from "../types/dialog";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
 
 export default class extends Dialog {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       dialogName: "find_item_end"
     };
   }
 
   public handle(
-    base: BaseServer,
     peer: Peer,
     action: DialogReturnType<{
       action: string;
@@ -25,7 +24,7 @@ export default class extends Dialog {
   ): void {
     const itemID = parseInt(action.buttonClicked);
     peer.data?.inventory?.items.push({ id: itemID, amount: 200 });
-    peer.send(Variant.from("OnConsoleMessage", `Added \`6${base.items.metadata.items.find((v) => v.id === itemID)?.name}\`\` to your inventory.`));
+    peer.send(Variant.from("OnConsoleMessage", `Added \`6${this.base.items.metadata.items.find((v) => v.id === itemID)?.name}\`\` to your inventory.`));
     peer.inventory();
     peer.saveToCache();
     // peer.saveToDatabase();

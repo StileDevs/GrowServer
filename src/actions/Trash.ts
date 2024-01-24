@@ -6,16 +6,16 @@ import { DialogBuilder } from "../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 
 export default class extends Action {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       eventName: "trash"
     };
   }
 
-  public handle(base: BaseServer, peer: Peer, action: ActionType<{ action: string; itemID: string }>): void {
+  public handle(peer: Peer, action: ActionType<{ action: string; itemID: string }>): void {
     const itemID = parseInt(action.itemID);
-    const item = base.items.metadata.items.find((v) => v.id === itemID);
+    const item = this.base.items.metadata.items.find((v) => v.id === itemID);
     const peerItem = peer.data?.inventory?.items.find((v) => v.id === itemID);
 
     const dialog = new DialogBuilder()

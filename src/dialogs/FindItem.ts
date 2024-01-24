@@ -6,15 +6,14 @@ import { DialogReturnType } from "../types/dialog";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
 
 export default class extends Dialog {
-  constructor() {
-    super();
+  constructor(base: BaseServer) {
+    super(base);
     this.config = {
       dialogName: "find_item"
     };
   }
 
   public handle(
-    base: BaseServer,
     peer: Peer,
     action: DialogReturnType<{
       action: string;
@@ -26,7 +25,7 @@ export default class extends Dialog {
     const isSeed = parseInt(action.seed_only) ? true : false;
     const dialog = new DialogBuilder().defaultColor().addQuickExit().addLabelWithIcon("Find the item", "6016", "big").addSpacer("small");
 
-    const items = base.items.metadata.items.filter((v) => v.name?.toLowerCase().includes(action.find_item_name.toLowerCase()));
+    const items = this.base.items.metadata.items.filter((v) => v.name?.toLowerCase().includes(action.find_item_name.toLowerCase()));
     items.forEach((item) => {
       const itemID = item.id || 0;
       const itemName = item.name || "";
