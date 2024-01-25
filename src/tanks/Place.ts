@@ -167,7 +167,7 @@ export class Place {
       isBg
     });
 
-    this.peer.removeItemInven(this.tank.data?.info as number, 1);
+    if (placed) this.peer.removeItemInven(this.tank.data?.info as number, 1);
     this.peer.inventory();
     this.peer.saveToCache();
     this.peer.saveToCache();

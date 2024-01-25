@@ -9,10 +9,18 @@ exports.seed = async function (knex) {
   await knex("users").del();
   await knex("users").insert([
     {
-      id_user: 1,
       name: "admin",
       password: encrypt("admin"),
       role: "1",
+      gems: 1000,
+      clothing: null,
+      inventory: null,
+      created_at: null
+    },
+    {
+      name: "admin1",
+      password: encrypt("admin"),
+      role: "2",
       gems: 1000,
       clothing: null,
       inventory: null,

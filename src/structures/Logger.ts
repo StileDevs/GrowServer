@@ -5,6 +5,13 @@ export class Logger {
     return new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
   }
 
+  /**
+   * Print all buffer output.
+   */
+  public printBuf(buf: Buffer) {
+    return buf.toString("hex").match(/../g)?.join(" ");
+  }
+
   public info(...content: unknown[]) {
     console.log(`[${this.time} - INFO    ]`, ...content);
   }
