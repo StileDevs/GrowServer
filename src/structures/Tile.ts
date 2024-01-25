@@ -112,7 +112,7 @@ export class Tile {
         buf.writeUInt16LE(ExtraTypes.LOCK | (0x0 << 8), 8);
         buf.writeUInt32LE(owner, 10);
         buf.writeUInt32LE(0, 14); // admin count
-        buf.writeInt32LE(-1, 18);
+        buf.writeInt32LE(-100, 18);
 
         return buf;
       }
