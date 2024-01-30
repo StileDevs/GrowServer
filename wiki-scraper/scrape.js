@@ -24,7 +24,7 @@ async function writeAll() {
     console.time(`${count}. [${items.items[i].id}] ${items.items[i].name}`);
 
     await axios
-      .get(`https://growtopia.fandom.com/wiki/${encodeURIComponent(items.items[i].name)}`)
+      .get(url)
       .then((res) => {
         const $ = cheerio.load(res.data);
 
