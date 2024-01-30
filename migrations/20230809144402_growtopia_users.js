@@ -9,6 +9,8 @@ exports.up = function (knex) {
     tb.string("password", 255).notNullable();
     tb.string("role", 255).notNullable();
     tb.integer("gems", 11).nullable();
+    tb.integer("level", 11).nullable();
+    tb.integer("exp", 11).nullable();
     tb.binary("clothing").nullable();
     tb.binary("inventory").nullable();
     tb.timestamp("created_at", { useTz: false }).nullable();

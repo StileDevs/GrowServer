@@ -14,6 +14,7 @@ import { Collection } from "./Collection";
 import { PeerDataType } from "../types/peer";
 import { Ignore, Lock, WorldData } from "../types/world";
 import { ActionTypes } from "../utils/enums/Tiles";
+import { WikiItems } from "../types/base";
 
 export class BaseServer {
   public server: Client;
@@ -36,6 +37,7 @@ export class BaseServer {
     this.items = {
       hash: `${hashItemsDat(fs.readFileSync("./assets/dat/items.dat"))}`,
       content: fs.readFileSync("./assets/dat/items.dat"),
+      wiki: JSON.parse(fs.readFileSync("./assets/items_info.json", "utf-8")) as WikiItems[],
       metadata: {} as ItemsDatMeta
     };
     this.action = new Map();

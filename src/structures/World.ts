@@ -221,7 +221,7 @@ export class World {
     peer.data.world = this.worldName;
 
     peer.send(
-      Variant.from({ delay: -1 }, "OnSpawn", `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.id_user}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.data?.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`),
+      Variant.from({ delay: -1 }, "OnSpawn", `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.id_user}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`),
 
       Variant.from(
         {
@@ -243,7 +243,7 @@ export class World {
     peer.everyPeer((p) => {
       if (p.data?.netID !== peer.data?.netID && p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
         p.send(
-          Variant.from({ delay: -1 }, "OnSpawn", `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.id_user}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.data?.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`),
+          Variant.from({ delay: -1 }, "OnSpawn", `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.id_user}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`),
           Variant.from(
             {
               netID: peer.data?.netID
@@ -261,7 +261,7 @@ export class World {
         );
 
         peer.send(
-          Variant.from({ delay: -1 }, "OnSpawn", `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.id_user}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.data?.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`),
+          Variant.from({ delay: -1 }, "OnSpawn", `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.id_user}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`),
           Variant.from(
             {
               netID: p.data?.netID
