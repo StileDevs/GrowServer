@@ -110,6 +110,8 @@ export default class extends Listener<"raw"> {
             peer.data.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
             peer.data.gems = user.gems ? user.gems : 0;
             peer.data.world = "EXIT";
+            peer.data.level = user.level ? user.level : 0;
+            peer.data.exp = user.exp ? user.exp : 0;
 
             // Load Gems
             peer.send(Variant.from("OnSetBux", peer.data.gems));
