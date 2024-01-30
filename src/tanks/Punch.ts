@@ -137,7 +137,6 @@ export class Punch {
 
     const rarity = itemMeta.rarity as number;
     if (rarity <= 998) {
-      console.log("added exp");
       this.peer.addExp(rarity / 5 > 0 ? rarity / 5 : 1);
     }
 
