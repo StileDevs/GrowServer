@@ -20,6 +20,8 @@ export interface PeerDataType {
   role: string;
   gems: number;
   clothing: Clothing;
+  exp: number;
+  level: number;
 }
 
 export interface Clothing {

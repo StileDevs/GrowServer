@@ -39,7 +39,9 @@ export class Database {
           role: data.role,
           inventory: Buffer.from(JSON.stringify(data.inventory)),
           clothing: Buffer.from(JSON.stringify(data.clothing)),
-          gems: data.gems
+          gems: data.gems,
+          level: data.level,
+          exp: data.exp
         },
         []
       );

@@ -7,6 +7,7 @@ import { Role } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { ActionTypes } from "../utils/enums/Tiles";
 import { Place } from "./Place";
+import { Chance } from "chance";
 
 export class Punch {
   public base: BaseServer;
@@ -86,6 +87,42 @@ export class Punch {
     }
   }
 
+  public splitGems(num: number) {
+    const gemValues = {
+      yellow: 1,
+      blue: 5,
+      red: 10,
+      green: 50,
+      purple: 100
+    };
+
+    const values = [];
+
+    for (const [gemName, gemValue] of Object.entries(gemValues).sort((a, b) => b[1] - a[1])) {
+      const maxGems = Math.floor(num / gemValue);
+      values.push(...Array(maxGems).fill(gemValue));
+      num -= maxGems * gemValue;
+      if (num === 0) {
+        break;
+      }
+    }
+
+    return values;
+  }
+
+  public dropRandomGems(min: number, max: number, block: Block) {
+    const randGems = Math.floor(Math.random() * (max - min + 1)) + min;
+    const arrGems = this.splitGems(randGems);
+
+    arrGems.forEach((v) => {
+      const extra = Math.random() * 6;
+
+      const x = (block.x as number) * 32 + extra;
+      const y = (block.y as number) * 32 + extra - Math.floor(Math.random() * (3 - -1) + -3);
+      this.world.drop(this.peer, x, y, 112, v, { tree: true, noSimilar: true });
+    });
+  }
+
   private onDestroyed(block: Block, itemMeta: ItemDefinition, tankData: Tank) {
     block.damage = 0;
     block.resetStateAt = 0;
@@ -97,6 +134,27 @@ export class Punch {
     tankData.info = 18;
 
     block.rotatedLeft = undefined;
+
+    const rarity = itemMeta.rarity as number;
+    if (rarity <= 998) {
+      this.peer.addExp(rarity / 5 > 0 ? rarity / 5 : 1);
+    }
+
+    const wiki = this.base.items.wiki.find((v) => v.id === itemMeta.id);
+    if (wiki?.gemsDrop && typeof wiki.gemsDrop === "string") {
+      if (wiki.gemsDrop === "N/A") {
+        // nothing
+      } else {
+        const [min, max] = wiki.gemsDrop.split("-").map((v) => parseInt(v));
+        const chance = new Chance();
+
+        if (max <= 1 || rarity >= 1) {
+          if (chance.bool({ likelihood: 50 })) this.dropRandomGems(min, max, block);
+        } else if (max <= 5 || rarity >= 10) {
+          if (chance.bool({ likelihood: 90 })) this.dropRandomGems(min, max, block);
+        }
+      }
+    }
 
     switch (itemMeta.type) {
       case ActionTypes.PORTAL:

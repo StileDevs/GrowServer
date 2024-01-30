@@ -193,4 +193,58 @@ export class Peer extends OldPeer<PeerDataType> {
       })
     );
   }
+
+  public get country(): string {
+    switch (this.data.role) {
+      default: {
+        return this.data.country;
+      }
+      case Role.DEVELOPER: {
+        return "rt";
+      }
+    }
+  }
+
+  public countryState() {
+    const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? "maxLevel" : ""}`;
+
+    this.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
+    this.everyPeer((p) => {
+      if (p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") {
+        p.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
+        this.send(Variant.from({ netID: p.data.netID }, "OnCountryState", country(p)));
+      }
+    });
+  }
+
+  public sendEffect(eff: number, ...args: Variant[]) {
+    this.everyPeer((p) => {
+      if (p.data.world === this.data.world && p.data.world !== "EXIT") {
+        p.send(Variant.from("OnParticleEffect", eff, [(this.data.x as number) + 10, (this.data.y as number) + 16]), ...args);
+      }
+    });
+  }
+
+  public addExp(amount: number): void {
+    const required = 100 * (this.data.level * this.data.level + 4);
+
+    this.data.exp += amount;
+
+    if (this.data.level >= 125) {
+      this.data.exp = required;
+      return;
+    }
+
+    if (this.data.exp >= required) {
+      this.data.exp = 0;
+      this.data.level++;
+      this.sendEffect(46);
+      this.everyPeer((p) => {
+        if (p.data.world === this.data.world && p.data.world !== "EXIT") {
+          p.send(Variant.from("OnTalkBubble", this.data.netID, `${this.name} is now level ${this.data.level}!`), Variant.from("OnConsoleMessage", `${this.name} is now level ${this.data.level}!`));
+        }
+      });
+      this.countryState();
+    }
+  }
 }
