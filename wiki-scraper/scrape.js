@@ -28,7 +28,7 @@ async function writeAll() {
       .then((res) => {
         const $ = cheerio.load(res.data);
 
-        const description = $(".card-text").text() || null;
+        const description = $(".card-text").first().text() || null;
         const properties =
           $("#mw-content-text > div > div.gtw-card.item-card > div:nth-child(4)")
             .text()
