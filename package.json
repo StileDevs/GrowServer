@@ -11,6 +11,7 @@
     "lint": "biome lint ./src",
     "iteminfo:fetch": "node wiki-scraper/scrape.js",
     "dev": "rimraf dist && rimraf assets/cache && biome lint ./src && swc ./src -d dist && node -r dotenv/config dist/src/app.js",
+    "dev:nolint": "rimraf dist && rimraf assets/cache && swc ./src -d dist && node -r dotenv/config dist/src/app.js",
     "install": "(node scripts/setup.js) && npm run migrate && npm run seed && npm run finish",
     "finish": "echo \u001b[46mSetup Completed!\u001b[0m && echo \u001b[46mCheck out GrowServer github: https://github.com/JadlionHD/GrowServer\u001b[0m"
   },
