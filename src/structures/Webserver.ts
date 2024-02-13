@@ -46,7 +46,7 @@ export async function WebServer(log: Logger, db: Database) {
 
   app.use((req, res, next) => {
     log.warn(`Growtopia Client requesting cache: ${req.originalUrl} not found. Redirecting to Growtopia Original CDN...`);
-    res.redirect(`https://ubistatic-a.akamaihd.net/0098/0214956/${req.originalUrl.replace("/growtopia/", "")}`);
+    res.redirect(`https://ubistatic-a.akamaihd.net/0098/65364391/${req.originalUrl.replace("/growtopia/", "")}`);
     next();
   });
 
