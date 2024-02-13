@@ -202,6 +202,20 @@ export class Place {
         return true;
       }
 
+      case ActionTypes.STEAMPUNK:
+      case ActionTypes.CHECKPOINT: {
+        this.world.place({
+          peer: this.peer,
+          x: p.block.x,
+          y: p.block.y,
+          isBg: p.isBg,
+          id: p.id
+        });
+
+        this.tileUpdate(p.actionType, p.block);
+        return true;
+      }
+
       case ActionTypes.PORTAL:
       case ActionTypes.DOOR:
       case ActionTypes.MAIN_DOOR: {

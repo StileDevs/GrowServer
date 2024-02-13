@@ -13,7 +13,7 @@ import { World } from "../structures/World";
 import { DroppedItem } from "../types/world";
 import { Place } from "../tanks/Place";
 import { Punch } from "../tanks/Punch";
-import { Wrench } from "../tanks/Wrench";
+import { Player } from "../tanks/Player";
 
 export default class extends Listener<"raw"> {
   constructor(base: BaseServer) {
@@ -67,7 +67,7 @@ export default class extends Listener<"raw"> {
                 "www.growtopia1.com",
                 "growtopia/cache/",
                 "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
-                "proto=200|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
+                "proto=204|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
               ),
               Variant.from("SetHasGrowID", 1, user.name, decrypt(user.password)),
               Variant.from("SetHasAccountSecured", 1)
@@ -260,6 +260,7 @@ export default class extends Listener<"raw"> {
 
           case TankTypes.PEER_MOVE: {
             if (peer.data?.world === "EXIT") break;
+            const world = peer.hasWorld(peer.data.world) as World;
             tank.data.netID = peer.data?.netID;
 
             peer.data.x = tank.data.xPos;
@@ -272,6 +273,9 @@ export default class extends Listener<"raw"> {
                 p.send(tank);
               }
             });
+            
+            const player = new Player(this.base, peer, tank, world);
+            player.onPlayerMove();
             break;
           }
           case TankTypes.TILE_PUNCH: {
@@ -283,8 +287,8 @@ export default class extends Listener<"raw"> {
               const punch = new Punch(this.base, peer, tank, world);
               punch.onPunch();
             } else if (tank.data.info === 32) {
-              const wrench = new Wrench(this.base, peer, tank, world);
-              wrench.onWrench();
+              const player = new Player(this.base, peer, tank, world);
+              player.onTileWrench();
             }
             // Others
             else {

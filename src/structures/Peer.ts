@@ -1,10 +1,12 @@
 import { Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
-import { PeerDataType } from "../types/peer";
+import { CheckPoint, PeerDataType } from "../types/peer";
 import { Role, WORLD_SIZE } from "../utils/Constants";
 import { DataTypes } from "../utils/enums/DataTypes";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { BaseServer } from "./BaseServer";
 import { World } from "./World";
+import { ActionTypes } from "../utils/enums/Tiles";
+import { Block } from "../types/world";
 
 export class Peer extends OldPeer<PeerDataType> {
   public base;
@@ -107,7 +109,23 @@ export class Peer extends OldPeer<PeerDataType> {
 
   public respawn() {
     const world = this.hasWorld(this.data.world);
-    const mainDoor = world?.data.blocks?.find((block) => block.fg === 6);
+    let mainDoor = world?.data.blocks.find((block) => block.fg === 6);
+
+    if (this.data.lastCheckpoint) {
+      const pos = this.data.lastCheckpoint.x + this.data.lastCheckpoint.y * (world?.data.width as number);
+      const block = world?.data.blocks[pos];
+      const itemMeta = this.base.items.metadata.items[(block?.fg as number) || (block?.bg as number)];
+
+      if (itemMeta && itemMeta.type === ActionTypes.CHECKPOINT) {
+        mainDoor = this.data.lastCheckpoint as Block; // only have x,y.
+      } else {
+        this.data.lastCheckpoint = undefined;
+        this.send(Variant.from({ netID: this.data.netID, delay: 0 }, "SetRespawnPos", 0));
+        mainDoor = world?.data.blocks?.find((block) => block.fg === 6);
+      }
+    } else {
+      mainDoor = world?.data.blocks.find((block) => block.fg === 6);
+    }
 
     this.send(
       Variant.from({ netID: this.data.netID }, "OnSetFreezeState", 1),
