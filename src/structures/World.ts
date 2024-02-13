@@ -96,6 +96,8 @@ export class World {
 
   public leave(peer: Peer, sendMenu = true) {
     this.data.playerCount ? this.data.playerCount-- : 0;
+    
+    peer.data.lastCheckpoint = undefined;
 
     peer.send(TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/door_shut.wav", "delayMS|0"));
     peer.everyPeer((p) => {

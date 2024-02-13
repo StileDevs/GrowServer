@@ -22,6 +22,11 @@ export interface PeerDataType {
   clothing: Clothing;
   exp: number;
   level: number;
+  lastCheckpoint?: CheckPoint;
+}
+export interface CheckPoint {
+  x: number;
+  y: number;
 }
 
 export interface Clothing {

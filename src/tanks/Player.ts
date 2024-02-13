@@ -2,10 +2,10 @@ import { Tank, TankPacket, Variant } from "growtopia.js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { World } from "../structures/World";
-import { DialogBuilder } from "../utils/builders/DialogBuilder";
 import { ActionTypes } from "../utils/enums/Tiles";
+import { DialogBuilder } from "../utils/builders/DialogBuilder";
 
-export class Wrench {
+export class Player {
   public base: BaseServer;
   public peer: Peer;
   public tank: TankPacket;
@@ -18,7 +18,36 @@ export class Wrench {
     this.world = world;
   }
 
-  public onWrench() {
+  public onPlayerMove() {
+    const tankData = this.tank.data as Tank;
+    if ((tankData.xPunch as number) > 0 || (tankData.yPunch as number) > 0) return;
+
+    const pos = Math.round((tankData.xPos as number) / 32) + Math.round((tankData.yPos as number) / 32) * (this.world.data.width as number);
+
+    const block = this.world.data.blocks[pos];
+    if (block === undefined) return;
+    const itemMeta = this.base.items.metadata.items[block.fg || block.bg];
+
+    switch (itemMeta.type) {
+      case ActionTypes.CHECKPOINT: {
+        this.peer.send(Variant.from({ netID: this.peer.data.netID, delay: 0 }, "SetRespawnPos", pos));
+        this.peer.data.lastCheckpoint = {
+          x: Math.round((tankData.xPos as number) / 32),
+          y: Math.round((tankData.yPos as number) / 32)
+        };
+        break;
+      }
+
+      case ActionTypes.FOREGROUND: {
+        if (itemMeta.id === 3496 || itemMeta.id === 3270) {
+          // Steam testing
+        }
+        break;
+      }
+    }
+  }
+
+  public onTileWrench() {
     const tankData = this.tank.data as Tank;
     const pos = (tankData.xPunch as number) + (tankData.yPunch as number) * (this.world.data.width as number);
     const block = this.world.data.blocks[pos];
