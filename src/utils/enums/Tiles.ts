@@ -11,8 +11,10 @@ export const Flags = {
   FLAGS_WATER: 0x0400,
   FLAGS_FIRE: 0x1000,
   FLAGS_RED: 0x2000,
-  FLAGS_BLUE: 0x4000,
-  FLAGS_GREEN: 0x8000
+  FLAGS_BLUE: 0x8000,
+  FLAGS_GREEN: 0x4000,
+  FLAGS_YELLOW: 0x6000,
+  FLAGS_PURPLE: 0xa000
 };
 
 export enum ItemCollisionType {
