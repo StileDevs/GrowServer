@@ -12,7 +12,7 @@ export default [
       "@typescript-eslint/no-unused-vars": "off",
       "no-useless-escape": "off",
       "@typescript-eslint/no-duplicate-enum-values": "off",
-      "quotes": [2, "double"]
+      "quotes": "off"
     }
   }
 ];

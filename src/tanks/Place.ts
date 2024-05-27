@@ -1,4 +1,4 @@
-import { Tank, TankPacket, Variant } from "growtopia.js";
+import { ItemDefinition, Tank, TankPacket, Variant } from "growtopia.js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { World } from "../structures/World";
@@ -107,6 +107,70 @@ export class Place {
     }
   }
 
+  public onConsumable(placedItem: ItemDefinition, block: Block) {
+    switch (placedItem.id) {
+      case 1404: {
+        if (this.world.data.owner) {
+          if (this.world.data.owner.id !== this.peer.data.id_user) return false;
+
+          const checkBlock = (pos: number) => this.world.data.blocks![pos];
+          const bedrock = checkBlock(block.x + (block.y + 1) * this.world.data.width);
+          if (checkBlock(block.x + block.y * this.world.data.width).fg || (bedrock.fg && bedrock.fg !== 8)) {
+            this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "There's some block blocking the way", 0, 1));
+            return false;
+          }
+          const oldMainDoor = this.world.data.blocks.find((block) => block.fg === 6) || {
+            x: block.x,
+            y: block.y,
+            fg: block.fg,
+            bg: block.bg
+          };
+          const oldMainBedrock = this.world.data.blocks![oldMainDoor.x + (oldMainDoor.y + 1) * this.world.data.width];
+
+          const newBlock: Block[] = [
+            {
+              x: block.x,
+              y: block.y,
+              fg: 6,
+              bg: block.bg,
+              door: { label: "EXIT", destination: "EXIT" }
+            },
+            {
+              x: block.x,
+              y: block.y + 1,
+              fg: 8,
+              bg: bedrock.bg
+            }
+          ];
+
+          if (oldMainDoor.fg) {
+            oldMainDoor.fg = 0;
+            oldMainDoor.bg = 0;
+            oldMainDoor.door = undefined;
+          }
+          if (oldMainBedrock.fg) {
+            oldMainBedrock.fg = 0;
+            oldMainBedrock.bg = 0;
+          }
+          newBlock.forEach((b) => {
+            this.world.data.blocks[b.x + b.y * this.world.data.width] = b;
+          });
+
+          this.peer.removeItemInven(1404, 1);
+          this.peer.everyPeer((p) => {
+            if (p.data.world === this.peer.data.world && p.data.world !== "EXIT") {
+              p.leaveWorld();
+            }
+          });
+          return true;
+        } else {
+          return false;
+        }
+        break;
+      }
+    }
+  }
+
   public onPlace(): void {
     const tankData = this.tank.data as Tank;
     const pos = (tankData.xPunch as number) + (tankData.yPunch as number) * this.world.data.width;
@@ -157,6 +221,11 @@ export class Place {
         return;
       }
       this.tileUpdate(ActionTypes.DISPLAY_BLOCK, block);
+    }
+
+    if (placedItem.type === ActionTypes.CONSUMABLE) {
+      this.onConsumable(placedItem, block);
+      return;
     }
 
     const placed = this.onPlaced({
@@ -305,7 +374,7 @@ export class Place {
           return true;
         }
         if (this.world.data.blocks?.find((b) => b.lock?.ownerUserID && b.lock.ownerUserID !== this.peer.data?.id_user)) {
-          this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, `Can't put lock, there's other locks around here.`, 0, 1));
+          this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "Can't put lock, there's other locks around here.", 0, 1));
           return false;
         }
 

@@ -10,7 +10,7 @@ export default class extends Listener<"connect"> {
   }
 
   public run(netID: number): void {
-    this.base.log.debug("Peer", netID, "connected.");
+    this.base.log.info("Peer", netID, "connected.");
 
     const peer = new Peer(this.base, netID);
     const packet = TextPacket.from(0x1);

@@ -50,7 +50,7 @@ async function writeAll() {
             .map((e) => e.trim()) || null;
         const info = $("#mw-content-text > div > p:nth-child(3)").text().trim() || null;
         const type = $("table.card-field tr:nth-child(1) > td").text().split(" ").pop() || null;
-        const itemFunction = Array.from($('#mw-content-text > div.mw-parser-output > table[width="600"] > tbody > tr > td').map((i, el) => cheerio.load(el).text().trim() || null)) || null;
+        const itemFunction = Array.from($("#mw-content-text > div.mw-parser-output > table[width=\"600\"] > tbody > tr > td").map((i, el) => cheerio.load(el).text().trim() || null)) || null;
 
         lastItem.push({
           id: items.items[i].id,

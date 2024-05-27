@@ -2,12 +2,12 @@ import express from "express";
 import { readFileSync, existsSync } from "node:fs";
 import http from "node:http";
 import https from "node:https";
-import { Logger } from "./Logger";
-import bodyparser from "body-parser";
 import rateLimit from "express-rate-limit";
 import path from "node:path";
-import { Database } from "../database/db";
-import decompress from "decompress";
+import { BaseServer } from "./BaseServer";
+import axios from "axios";
+import { ApiRouter } from "../routes";
+
 const app = express();
 
 const options = {
@@ -23,37 +23,55 @@ const apiLimiter = rateLimit({
   legacyHeaders: false // Disable the `X-RateLimit-*` headers
 });
 
-export async function WebServer(log: Logger, db: Database) {
+export async function getLatestCdn() {
+  try {
+    const res = await axios.get("https://mari-project.jad.li/api/v1/growtopia/cache/latest");
+    if (res.status !== 200) return { version: 0, uri: "" };
+
+    return res.data as { version: number; uri: string };
+  } catch (e) {
+    return { version: 0, uri: "" };
+  }
+}
+
+export async function WebServer(server: BaseServer) {
   if (!existsSync("./assets/cache.zip")) throw new Error("Could not find 'cache.zip' file, please get one from growtopia 'cache' folder & compress the 'cache' folder into zip file.");
 
-  log.info("Please wait extracting cache.zip");
-  await decompress("assets/cache.zip", "assets/cache");
-  log.ready("Successfully extracting cache.zip");
+  server.log.info("Fetching latest Growtopia Cache");
+  const cdn = await getLatestCdn();
 
-  app.use(bodyparser.urlencoded({ extended: true }));
-  app.use(bodyparser.json());
+  app.set("view engine", "ejs");
+  app.set("views", path.join(__dirname, "../../../website/views"));
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
+  app.use("/public", express.static(path.join(__dirname, "../../../website/public")));
 
   if (existsSync("./assets/cache/cache")) {
     app.use("/growtopia/cache", express.static(path.join(__dirname, "../../../assets/cache/cache")));
   } else {
-    console.log(path.join(__dirname, "../../../assets/cache"));
     app.use("/growtopia/cache", express.static(path.join(__dirname, "../../../assets/cache")));
   }
 
+  app.get("/", (req, res) => {
+    res.render("home");
+  });
+
+  app.use("/api", ApiRouter(server));
   app.use("/growtopia/server_data.php", (req, res) => {
     res.send(`server|${process.env.WEB_ADDRESS}\nport|17091\ntype|1\n#maint|Maintenance woi\nmeta|lolwhat\nRTENDMARKERBS1001`);
   });
 
-  app.use((req, res, next) => {
-    log.warn(`Growtopia Client requesting cache: ${req.originalUrl} not found. Redirecting to Growtopia Original CDN...`);
-    res.redirect(`https://ubistatic-a.akamaihd.net/0098/65364391/${req.originalUrl.replace("/growtopia/", "")}`);
+  app.use("/growtopia/cache*", (req, res, next) => {
+    server.log.warn(`Growtopia Client requesting cache: ${req.originalUrl} not found. Redirecting to Growtopia Original CDN...`);
+    const url = `https://ubistatic-a.akamaihd.net/${cdn.uri}/${req.originalUrl.replace("/growtopia/", "")}`;
+    res.redirect(url);
     next();
   });
 
   if (process.env.WEB_ENV === "production") {
     app.listen(3000, () => {
-      log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
-      log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`);
+      server.log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
+      server.log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`);
     });
   } else if (process.env.WEB_ENV === "development") {
     const httpServer = http.createServer(app);
@@ -63,7 +81,7 @@ export async function WebServer(log: Logger, db: Database) {
     httpsServer.listen(443);
 
     httpsServer.on("listening", () => {
-      log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
+      server.log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
     });
   }
 }

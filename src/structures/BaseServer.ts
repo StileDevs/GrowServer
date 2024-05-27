@@ -15,6 +15,7 @@ import { PeerDataType } from "../types/peer";
 import { Ignore, Lock, WorldData } from "../types/world";
 import { ActionTypes } from "../utils/enums/Tiles";
 import { WikiItems } from "../types/base";
+import decompress from "decompress";
 
 export class BaseServer {
   public server: Client;
@@ -74,19 +75,27 @@ export class BaseServer {
     };
   }
 
-  public start() {
+  public async start() {
+    this.log.info("Please wait extracting cache.zip");
+    await decompress("assets/cache.zip", "assets/cache");
+    this.log.ready("Successfully extracting cache.zip");
+
     this.#_loadItems().then(async () => {
       this.log.ready("Items data ready!");
-      await WebServer(this.log, this.database);
-      this.#_loadEvents();
-      this.#_loadActions();
-      this.#_loadCommands();
-      this.#_loadDialogs();
+      await WebServer(this);
+      await this.#_loadEvents();
+      await this.#_loadActions();
+      this.log.action(`Loaded ${this.action.size} actions`);
+      await this.#_loadCommands();
+      this.log.dialog(`Loaded ${this.commands.size} commands`);
+      await this.#_loadDialogs();
+      this.log.dialog(`Loaded ${this.dialogs.size} dialogs`);
+
       this.server.listen();
     });
   }
 
-  #_loadEvents() {
+  async #_loadEvents() {
     fs.readdirSync(`${__dirname}/../events`).forEach(async (event) => {
       const file = (await import(`../events/${event}`)).default;
       const initFile = new file(this);
@@ -98,33 +107,49 @@ export class BaseServer {
   async #_loadItems() {
     const items = await new ItemsDat(fs.readFileSync("./assets/dat/items.dat")).decode();
 
+    const findItem = (id: number) => items.items.findIndex((v) => v.id === id);
+
+    // id 8900-8902
+    items.items[findItem(8900)].extraFile = "interface/large/banner.rttex";
+    items.items[findItem(8900)].extraFileHash = hashItemsDat(fs.readFileSync("./assets/cache/interface/large/banner.rttex"));
+    items.items[findItem(8902)].extraFile = "interface/large/banner-transparent.rttex";
+    items.items[findItem(8902)].extraFileHash = hashItemsDat(fs.readFileSync("./assets/cache/interface/large/banner-transparent.rttex"));
+
+    const encoded = await new ItemsDat().encode(items);
+    this.items.content = encoded;
+    this.items.hash = `${hashItemsDat(encoded)}`;
+
     this.items.metadata = items;
+
+    // items.items.forEach((v) => {
+    //   if (v.extraFile) {
+    //     console.log(v);
+    //   }
+    // });
+    // this.items.metadata = items;
   }
 
-  #_loadActions() {
-    fs.readdirSync(`${__dirname}/../actions`).forEach(async (event) => {
+  async #_loadActions() {
+    await fs.readdirSync(`${__dirname}/../actions`).forEach(async (event) => {
       const file = (await import(`../actions/${event}`)).default;
       const initFile = new file(this);
       this.action.set(initFile.config.eventName, initFile);
-      this.log.action(`Loaded "${initFile.config.eventName}" actions`);
     });
   }
 
-  #_loadDialogs() {
-    fs.readdirSync(`${__dirname}/../dialogs`).forEach(async (event) => {
+  async #_loadDialogs() {
+    await fs.readdirSync(`${__dirname}/../dialogs`).forEach(async (event) => {
       const file = (await import(`../dialogs/${event}`)).default;
       const initFile = new file(this);
       this.dialogs.set(initFile.config.dialogName, initFile);
-      this.log.dialog(`Loaded "${initFile.config.dialogName}" dialogs`);
     });
   }
 
-  #_loadCommands() {
-    fs.readdirSync(`${__dirname}/../commands`).forEach(async (fileName) => {
+  async #_loadCommands() {
+    await fs.readdirSync(`${__dirname}/../commands`).forEach(async (fileName) => {
       const file = (await import(`../commands/${fileName}`)).default;
       const initFile = new file(this);
       this.commands.set(initFile.opt.name, initFile);
-      this.log.command(`Loaded "${initFile.opt.name}" command`);
     });
   }
 }

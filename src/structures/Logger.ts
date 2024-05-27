@@ -41,7 +41,9 @@ export class Logger {
   }
 
   public debug(...content: unknown[]) {
-    console.log(`[${this.time} - ${chalk.rgb(211, 237, 64)("DEBUG")}   ]`, ...content);
+    if (process.env.DEBUG_MODE === "true") {
+      console.log(`[${this.time} - ${chalk.rgb(211, 237, 64)("DEBUG")}   ]`, ...content);
+    }
   }
 
   public warn(...content: unknown[]) {
