@@ -2,7 +2,7 @@ import { Variant } from "growtopia.js";
 import { Command } from "../abstracts/Command";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
-import { CommandOptions } from "../types/command";
+import { CommandOptions } from "../types";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
 import { Role } from "../utils/Constants";
 

@@ -1,5 +1,5 @@
 import { TankPacket, Variant } from "growtopia.js";
-import { Block } from "../types/world";
+import { Block } from "../types";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { BaseServer } from "./BaseServer";
 import { Peer } from "./Peer";

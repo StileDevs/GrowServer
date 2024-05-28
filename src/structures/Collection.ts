@@ -1,5 +1,4 @@
-import { PeerDataType } from "../types/peer";
-import { WorldData } from "../types/world";
+import { PeerDataType, WorldData } from "../types";
 import { BaseServer } from "./BaseServer";
 import { Peer } from "./Peer";
 import { World } from "./World";

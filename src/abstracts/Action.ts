@@ -1,5 +1,5 @@
 import { Peer } from "../structures/Peer";
-import { ActionConfig, ActionType } from "../types/action";
+import { ActionConfig, ActionType } from "../types";
 import { BaseServer } from "../structures/BaseServer";
 
 export abstract class Action {

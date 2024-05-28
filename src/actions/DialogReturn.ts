@@ -1,7 +1,7 @@
 import { Action } from "../abstracts/Action";
 import { Peer } from "../structures/Peer";
 import { BaseServer } from "../structures/BaseServer";
-import { ActionType } from "../types/action";
+import { ActionType } from "../types";
 
 export default class extends Action {
   constructor(base: BaseServer) {

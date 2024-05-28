@@ -1,6 +1,6 @@
 import { Variant, TankPacket, TextPacket } from "growtopia.js";
 import { Listener } from "../abstracts/Listener";
-import { ActionType } from "../types/action";
+import { ActionType, DroppedItem } from "../types";
 import { BaseServer } from "../structures/BaseServer";
 import { DataTypes } from "../utils/enums/DataTypes";
 import { decrypt, find, parseAction } from "../utils/Utils";
@@ -10,7 +10,6 @@ import { ActionTypes } from "../utils/enums/Tiles";
 import { ClothTypes } from "../utils/enums/ItemTypes";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
 import { World } from "../structures/World";
-import { DroppedItem } from "../types/world";
 import { Place } from "../tanks/Place";
 import { Punch } from "../tanks/Punch";
 import { Player } from "../tanks/Player";

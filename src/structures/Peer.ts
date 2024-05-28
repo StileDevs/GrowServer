@@ -1,12 +1,11 @@
 import { Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
-import { CheckPoint, PeerDataType } from "../types/peer";
+import { PeerDataType, Block } from "../types";
 import { Role, WORLD_SIZE } from "../utils/Constants";
 import { DataTypes } from "../utils/enums/DataTypes";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { BaseServer } from "./BaseServer";
 import { World } from "./World";
 import { ActionTypes } from "../utils/enums/Tiles";
-import { Block } from "../types/world";
 import { manageArray } from "../utils/Utils";
 
 export class Peer extends OldPeer<PeerDataType> {

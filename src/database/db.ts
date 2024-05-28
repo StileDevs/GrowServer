@@ -1,7 +1,5 @@
 import knex from "knex";
-import { User } from "../types/database";
-import { PeerDataType } from "../types/peer";
-import { WorldData, WorldDB } from "../types/world";
+import { User, PeerDataType, WorldData, WorldDB } from "../types";
 import { encrypt } from "../utils/Utils";
 
 export class Database {

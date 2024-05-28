@@ -1,7 +1,7 @@
 import { Action } from "../abstracts/Action";
 import { Peer } from "../structures/Peer";
 import { BaseServer } from "../structures/BaseServer";
-import { ActionType } from "../types/action";
+import { ActionType } from "../types";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 

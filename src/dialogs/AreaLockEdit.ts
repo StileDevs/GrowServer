@@ -2,9 +2,8 @@ import { Dialog } from "../abstracts/Dialog";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { Place } from "../tanks/Place";
-import { DialogReturnType } from "../types/dialog";
+import { DialogReturnType, Block, Lock } from "../types";
 import { Floodfill } from "../structures/FloodFill";
-import { Block, Lock } from "../types/world";
 import { World } from "../structures/World";
 
 export default class extends Dialog {

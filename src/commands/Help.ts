@@ -2,7 +2,7 @@ import { Variant } from "growtopia.js";
 import { Command } from "../abstracts/Command";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
-import { CommandOptions } from "../types/command";
+import { CommandOptions } from "../types";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
 import { Role } from "../utils/Constants";
 
@@ -25,7 +25,7 @@ export default class extends Command {
 
   public async execute(peer: Peer, text: string, args: string[]): Promise<void> {
     if (args.length > 0) {
-      if (!this.base.commands.has(args[0])) return peer.send(Variant.from("OnConsoleMessage", "It seems that commands doesn\'t exist."));
+      if (!this.base.commands.has(args[0])) return peer.send(Variant.from("OnConsoleMessage", "It seems that commands doesn't exist."));
       const cmd = this.base.commands.get(args[0]);
 
       const dialog = new DialogBuilder()

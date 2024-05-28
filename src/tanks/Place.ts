@@ -5,7 +5,7 @@ import { World } from "../structures/World";
 import { Role } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";
 import { ActionTypes } from "../utils/enums/Tiles";
-import { PlacedArg, Block } from "../types/world";
+import { PlacedArg, Block } from "../types";
 import { Floodfill } from "../structures/FloodFill";
 import { BlockFlags } from "../utils/enums/ItemTypes";
 import { Tile } from "../structures/Tile";
