@@ -1,5 +1,5 @@
 import { Tank, TankPacket, TextPacket, Variant } from "growtopia.js";
-import { Block, EnterArg, Place, WorldData } from "../types";
+import type { Block, EnterArg, Place, WorldData } from "../types";
 import { BaseServer } from "./BaseServer";
 import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Constants";
 import { TankTypes } from "../utils/enums/TankTypes";

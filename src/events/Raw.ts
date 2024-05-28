@@ -112,9 +112,19 @@ export default class extends Listener<"raw"> {
             peer.data.level = user.level ? user.level : 0;
             peer.data.exp = user.exp ? user.exp : 0;
             peer.data.lastVisitedWorlds = user.last_visited_worlds ? JSON.parse(user.last_visited_worlds.toString()) : [];
+            peer.data.state = {
+              mod: 0,
+              canWalkInBlocks: false,
+              modsEffect: 0,
+              lava: {
+                damage: 0,
+                resetStateAt: 0
+              }
+            };
 
             // Load Gems
             peer.send(Variant.from("OnSetBux", peer.data.gems));
+            peer.checkModsEffect();
 
             peer.saveToCache();
             peer.saveToDatabase();
@@ -251,6 +261,8 @@ export default class extends Listener<"raw"> {
                 break;
               }
             }
+
+            peer.checkModsEffect(true, tank);
 
             peer.saveToCache();
             peer.saveToDatabase();
