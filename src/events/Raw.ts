@@ -144,7 +144,7 @@ export default class extends Listener<"raw"> {
             this.base.log.debug("Unknown tank", tank);
             break;
           }
-          case TankTypes.PEER_ICON: {
+          case TankTypes.SET_ICON_STATE: {
             tank.data.state = peer.data?.rotatedLeft ? 16 : 0;
 
             peer.everyPeer((p) => {
@@ -155,7 +155,7 @@ export default class extends Listener<"raw"> {
             break;
           }
 
-          case TankTypes.PEER_CLOTH: {
+          case TankTypes.ITEM_ACTIVATE_REQUEST: {
             tank.data.state = peer.data?.rotatedLeft ? 16 : 0;
             const item = this.base.items.metadata.items.find((v) => v.id === tank.data?.info);
 
@@ -258,7 +258,7 @@ export default class extends Listener<"raw"> {
             break;
           }
 
-          case TankTypes.PEER_MOVE: {
+          case TankTypes.STATE: {
             if (peer.data?.world === "EXIT") break;
             const world = peer.hasWorld(peer.data.world) as World;
             tank.data.netID = peer.data?.netID;
@@ -278,7 +278,7 @@ export default class extends Listener<"raw"> {
             player.onPlayerMove();
             break;
           }
-          case TankTypes.TILE_PUNCH: {
+          case TankTypes.TILE_CHANGE_REQUEST: {
             const world = peer.hasWorld(peer.data.world) as World;
             tank.data.netID = peer.data?.netID;
 
@@ -299,7 +299,7 @@ export default class extends Listener<"raw"> {
             break;
           }
 
-          case TankTypes.PEER_COLLECT: {
+          case TankTypes.ITEM_ACTIVATE_OBJECT_REQUEST: {
             const world = peer.hasWorld(peer.data.world);
             const dropped = world?.data.dropped?.items.find((i) => i.uid === tank.data?.info) as DroppedItem;
 
@@ -307,7 +307,7 @@ export default class extends Listener<"raw"> {
             break;
           }
 
-          case TankTypes.PEER_ENTER_DOOR: {
+          case TankTypes.TILE_ACTIVATE_REQUEST: {
             if (peer.data?.world === "EXIT") return;
 
             const world = peer.hasWorld(peer.data.world);

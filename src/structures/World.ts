@@ -73,7 +73,7 @@ export class World {
     peer.everyPeer((p) => {
       if (p.data?.world === this.data.name && p.data?.world !== "EXIT") {
         const packet = TankPacket.from({
-          type: TankTypes.PEER_DROP,
+          type: TankTypes.ITEM_CHANGE_OBJECT,
           netID: peer.data?.netID,
           state,
           info: id,
@@ -177,7 +177,7 @@ ${peer.data.lastVisitedWorlds
     if (typeof y !== "number") y = -1;
 
     const tank = TankPacket.from({
-      type: TankTypes.PEER_WORLD,
+      type: TankTypes.SEND_MAP_DATA,
       state: 8,
       data: () => {
         const HEADER_LENGTH = this.worldName.length + 20;
@@ -371,7 +371,7 @@ ${peer.data.lastVisitedWorlds
 
   public drop(peer: Peer, x: number, y: number, id: number, amount: number, { tree, noSimilar }: { tree?: boolean; noSimilar?: boolean } = {}) {
     const tank = TankPacket.from({
-      type: TankTypes.PEER_DROP,
+      type: TankTypes.ITEM_CHANGE_OBJECT,
       netID: -1,
       targetNetID: tree ? -1 : peer.data?.netID,
       state: 0,
@@ -439,7 +439,7 @@ ${peer.data.lastVisitedWorlds
         p.data?.world !== "EXIT" &&
         p.send(
           TankPacket.from({
-            type: TankTypes.PEER_DROP,
+            type: TankTypes.ITEM_CHANGE_OBJECT,
             netID: peer.data?.netID,
             targetNetID: -1,
             info: uid
@@ -495,7 +495,7 @@ ${peer.data.lastVisitedWorlds
           p.data?.world !== "EXIT" &&
           p.send(
             TankPacket.from({
-              type: TankTypes.TILE_TREE,
+              type: TankTypes.SEND_TILE_TREE_STATE,
               netID: peer.data?.netID,
               targetNetID: -1,
               xPunch: block.x,

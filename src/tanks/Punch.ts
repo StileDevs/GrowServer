@@ -73,7 +73,7 @@ export class Punch {
   }
 
   private onDamaged(block: Block, itemMeta: ItemDefinition, tankData: Tank) {
-    tankData.type = TankTypes.TILE_DAMAGE;
+    tankData.type = TankTypes.TILE_APPLY_DAMAGE;
     tankData.info = (block.damage as number) + 5;
 
     block.resetStateAt = Date.now() + (itemMeta.resetStateAfter as number) * 1000;
@@ -130,7 +130,7 @@ export class Punch {
     if (block.fg) block.fg = 0;
     else if (block.bg) block.bg = 0;
 
-    tankData.type = TankTypes.TILE_PUNCH;
+    tankData.type = TankTypes.TILE_CHANGE_REQUEST;
     tankData.info = 18;
 
     block.rotatedLeft = undefined;

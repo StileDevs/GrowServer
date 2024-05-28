@@ -150,7 +150,7 @@ export class Floodfill {
     world.saveToCache();
 
     const tank = TankPacket.from({
-      type: TankTypes.TILE_APPLY_LOCK,
+      type: TankTypes.SEND_LOCK,
       netID: owner.data?.id_user as number,
       targetNetID: this.data.max,
       info: this.data.s_block.fg,
