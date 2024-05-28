@@ -191,7 +191,7 @@ export class Peer extends OldPeer<PeerDataType> {
 
     this.send(
       TankPacket.from({
-        type: TankTypes.PEER_INVENTORY,
+        type: TankTypes.SEND_INVENTORY_STATE,
         data: () => {
           const buffer = Buffer.alloc(7 + inventory.items.length * 4);
 

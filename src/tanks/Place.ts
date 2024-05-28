@@ -28,7 +28,7 @@ export class Place {
       if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
         p.send(
           TankPacket.from({
-            type: TankTypes.TILE_UPDATE,
+            type: TankTypes.SEND_TILE_UPDATE_DATA,
             xPunch: block.x,
             yPunch: block.y,
             data: () => new Tile(base, world, block).serialize(actionType)
@@ -43,7 +43,7 @@ export class Place {
       if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") {
         p.send(
           TankPacket.from({
-            type: TankTypes.TILE_UPDATE,
+            type: TankTypes.SEND_TILE_UPDATE_DATA,
             xPunch: block.x,
             yPunch: block.y,
             data: () => new Tile(this.base, this.world, block).serialize(actionType)
@@ -55,7 +55,7 @@ export class Place {
 
   public static tileVisualUpdate(peer: Peer, block: Block, visualFlags: number, everyPeer = false) {
     const tank = TankPacket.from({
-      type: TankTypes.TILE_UPDATE,
+      type: TankTypes.SEND_TILE_UPDATE_DATA,
       xPunch: block.x,
       yPunch: block.y,
       data: () => {
@@ -82,7 +82,7 @@ export class Place {
 
   public tileVisualUpdate(block: Block, visualFlags: number, everyPeer = false) {
     const tank = TankPacket.from({
-      type: TankTypes.TILE_UPDATE,
+      type: TankTypes.SEND_TILE_UPDATE_DATA,
       xPunch: block.x,
       yPunch: block.y,
       data: () => {
