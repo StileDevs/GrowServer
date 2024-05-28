@@ -7,6 +7,7 @@ import { BaseServer } from "./BaseServer";
 import { World } from "./World";
 import { ActionTypes } from "../utils/enums/Tiles";
 import { Block } from "../types/world";
+import { manageArray } from "../utils/Utils";
 
 export class Peer extends OldPeer<PeerDataType> {
   public base;
@@ -144,6 +145,8 @@ export class Peer extends OldPeer<PeerDataType> {
     world?.enter(this, { x: x ? x : mainDoor?.x, y: y ? y : mainDoor?.y });
     this.inventory();
     this.sound("audio/door_open.wav");
+
+    this.data.lastVisitedWorlds = manageArray(this.data.lastVisitedWorlds!, 6, worldName);
   }
 
   public drop(id: number, amount: number) {

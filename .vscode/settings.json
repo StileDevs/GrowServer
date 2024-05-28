@@ -4,5 +4,8 @@
 	"editor.tabSize": 2,
 	"editor.defaultFormatter": "biomejs.biome",
 	"editor.formatOnSave": true,
-	"prettier.printWidth": 320
+	"prettier.printWidth": 320,
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	}
 }

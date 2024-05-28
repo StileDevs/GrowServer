@@ -23,6 +23,7 @@ export interface PeerDataType {
   exp: number;
   level: number;
   lastCheckpoint?: CheckPoint;
+  lastVisitedWorlds?: string[];
 }
 export interface CheckPoint {
   x: number;
