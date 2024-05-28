@@ -1,4 +1,4 @@
-import { ListenerEventTypes } from "../types/events";
+import { ListenerEventTypes } from "../types";
 import { BaseServer } from "../structures/BaseServer";
 
 export abstract class Listener<K extends keyof ListenerEventTypes> {

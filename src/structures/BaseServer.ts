@@ -7,14 +7,11 @@ import { ItemsDat } from "growtopia.js";
 import { ItemsDatMeta } from "growtopia.js";
 import { Logger } from "./Logger";
 import { Command } from "../abstracts/Command";
-import { CooldownOptions } from "../types/command";
+import { CooldownOptions, PeerDataType, Ignore, Lock, WorldData, WikiItems } from "../types";
 import { Dialog } from "../abstracts/Dialog";
 import { Database } from "../database/db";
 import { Collection } from "./Collection";
-import { PeerDataType } from "../types/peer";
-import { Ignore, Lock, WorldData } from "../types/world";
 import { ActionTypes } from "../utils/enums/Tiles";
-import { WikiItems } from "../types/base";
 import decompress from "decompress";
 
 export class BaseServer {

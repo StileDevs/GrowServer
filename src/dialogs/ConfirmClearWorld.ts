@@ -1,8 +1,7 @@
 import { Dialog } from "../abstracts/Dialog";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
-import { DialogReturnType } from "../types/dialog";
-import { Block } from "../types/world";
+import { DialogReturnType } from "../types";
 import { ActionTypes } from "../utils/enums/Tiles";
 
 export default class extends Dialog {

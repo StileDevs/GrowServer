@@ -3,7 +3,7 @@ import { Peer } from "../structures/Peer";
 import { Action } from "../abstracts/Action";
 import { BaseServer } from "../structures/BaseServer";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
-import { ActionType } from "../types/action";
+import { ActionType } from "../types";
 import { Color } from "../utils/Utils";
 
 export default class extends Action {

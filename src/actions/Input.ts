@@ -2,7 +2,7 @@ import { Variant } from "growtopia.js";
 import { Peer } from "../structures/Peer";
 import { Action } from "../abstracts/Action";
 import { BaseServer } from "../structures/BaseServer";
-import { ActionType } from "../types/action";
+import { ActionType } from "../types";
 
 export default class extends Action {
   constructor(base: BaseServer) {
@@ -61,12 +61,9 @@ export default class extends Action {
         cmdCd.limit += 1;
       }
 
-      setTimeout(
-        () => {
-          this.base.cooldown.delete(`${commandName}-netID-${peer.data?.netID}`);
-        },
-        cmd.opt.cooldown || 0 * 1000
-      );
+      setTimeout(() => {
+        this.base.cooldown.delete(`${commandName}-netID-${peer.data?.netID}`);
+      }, cmd.opt.cooldown || 0 * 1000);
 
       try {
         if (cmd.opt.permission.some((perm) => perm === peer.data?.role)) {

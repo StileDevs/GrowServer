@@ -1,6 +1,6 @@
 import { Peer } from "../structures/Peer";
 import { BaseServer } from "../structures/BaseServer";
-import { DialogConfig, DialogReturnType } from "../types/dialog";
+import { DialogConfig, DialogReturnType } from "../types";
 
 export abstract class Dialog {
   public config: DialogConfig;

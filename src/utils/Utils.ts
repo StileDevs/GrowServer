@@ -2,7 +2,7 @@ import CryptoJS from "crypto-js";
 import { BaseServer } from "../structures/BaseServer";
 import { Peer } from "../structures/Peer";
 import { Collection } from "../structures/Collection";
-import { PeerDataType } from "../types/peer";
+import { PeerDataType } from "../types";
 import { World } from "../structures/World";
 
 export function parseAction(chunk: Buffer): Record<string, string | number> | undefined {
