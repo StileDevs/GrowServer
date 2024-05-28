@@ -4,6 +4,8 @@ import { Peer } from "../structures/Peer";
 import { World } from "../structures/World";
 import { ActionTypes } from "../utils/enums/Tiles";
 import { DialogBuilder } from "../utils/builders/DialogBuilder";
+import { AbilityType } from "../types";
+import { Ability } from "../utils/enums/Character";
 
 export class Player {
   public base: BaseServer;
@@ -18,7 +20,20 @@ export class Player {
     this.world = world;
   }
 
-  public onPlayerMove() {
+  public static hasAbility(ability: string, abilityType: AbilityType): boolean {
+    switch (abilityType) {
+      case "DOUBLE_JUMP":
+        return Ability.DOUBLE_JUMP.some((k) => ability.includes(k));
+      case "PUNCH_DAMAGE":
+        return Ability.PUNCH_DAMAGE.some((k) => ability.includes(k));
+      case "HARVESTER":
+        return Ability.HARVESTER.some((k) => ability.includes(k));
+      default:
+        return false;
+    }
+  }
+
+  public onPlayerMove(): void {
     const tankData = this.tank.data as Tank;
     if ((tankData.xPunch as number) > 0 || (tankData.yPunch as number) > 0) return;
 
@@ -120,7 +135,7 @@ export class Player {
 
           if (itemMeta.id === 4994) {
             dialog
-              .addSmallText("This lock allows Building or Breaking.<CR>(ONLY if \"Allow anyone to Build or Break\" is checked above)!")
+              .addSmallText('This lock allows Building or Breaking.<CR>(ONLY if "Allow anyone to Build or Break" is checked above)!')
               .addSpacer("small")
               .addSmallText("Leaving this box unchecked only allows Breaking.")
               .addCheckbox("build_only", "Only Allow Building!", block.lock?.onlyAllowBuild ? "selected" : "not_selected")
