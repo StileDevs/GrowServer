@@ -10,20 +10,35 @@ exports.seed = async function (knex) {
   await knex("users").insert([
     {
       name: "admin",
+      display_name: "admin",
       password: encrypt("admin"),
       role: "1",
       gems: 1000,
       clothing: null,
       inventory: null,
+      last_visited_worlds: null,
       created_at: null
     },
     {
-      name: "admin1",
-      password: encrypt("admin"),
+      name: "reimu",
+      display_name: "Reimu",
+      password: encrypt("hakurei"),
       role: "2",
       gems: 1000,
       clothing: null,
       inventory: null,
+      last_visited_worlds: null,
+      created_at: null
+    },
+    {
+      name: "jadlionhd",
+      display_name: "JadlionHD",
+      password: encrypt("admin"),
+      role: "1",
+      gems: 1000,
+      clothing: null,
+      inventory: null,
+      last_visited_worlds: null,
       created_at: null
     }
   ]);

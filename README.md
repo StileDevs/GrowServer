@@ -1,6 +1,5 @@
-# GrowServer
-
-A Growtopia private server using Node.js
+![Example](/assets/ignore/banner.png)
+> A Growtopia private server using Node.js
 
 ## Requirements
 

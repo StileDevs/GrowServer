@@ -45,10 +45,10 @@ export default class extends Listener<"raw"> {
         if (parsed?.requestedName && parsed?.tankIDName && parsed?.tankIDPass) {
           const username = parsed.tankIDName as string;
           const password = parsed.tankIDPass as string;
-          this.base.database.getUser(username).then((user) => {
+          this.base.database.getUser(username.toLowerCase()).then((user) => {
             if (!user || password !== decrypt(user?.password)) {
               peer.send(Variant.from("OnConsoleMessage", "`4Failed`` logging in to that account. Please make sure you've provided the correct info."));
-              peer.send(TextPacket.from(DataTypes.ACTION, "action|set_url", "url||https://127.0.0.1/recover", "label|`$Recover your Password``"));
+              peer.send(TextPacket.from(DataTypes.ACTION, "action|set_url", "url||http://127.0.0.1/recover", "label|`$Recover your Password``"));
               return peer.disconnect();
             }
 
@@ -69,7 +69,7 @@ export default class extends Listener<"raw"> {
                 "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
                 "proto=204|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
               ),
-              Variant.from("SetHasGrowID", 1, user.name, decrypt(user.password)),
+              Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)),
               Variant.from("SetHasAccountSecured", 1)
             );
 
@@ -100,7 +100,7 @@ export default class extends Listener<"raw"> {
               ances: 0
             };
 
-            peer.data.tankIDName = user.name;
+            peer.data.tankIDName = user.display_name;
             peer.data.rotatedLeft = false;
             // peer.data.requestedName = parsed.requestedName as string;
             peer.data.country = parsed?.country as string;
@@ -112,6 +112,7 @@ export default class extends Listener<"raw"> {
             peer.data.world = "EXIT";
             peer.data.level = user.level ? user.level : 0;
             peer.data.exp = user.exp ? user.exp : 0;
+            peer.data.lastVisitedWorlds = user.last_visited_worlds ? JSON.parse(user.last_visited_worlds.toString()) : [];
 
             // Load Gems
             peer.send(Variant.from("OnSetBux", peer.data.gems));
@@ -273,7 +274,7 @@ export default class extends Listener<"raw"> {
                 p.send(tank);
               }
             });
-            
+
             const player = new Player(this.base, peer, tank, world);
             player.onPlayerMove();
             break;

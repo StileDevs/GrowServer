@@ -120,7 +120,7 @@ export class Player {
 
           if (itemMeta.id === 4994) {
             dialog
-              .addSmallText(`This lock allows Building or Breaking.<CR>(ONLY if "Allow anyone to Build or Break" is checked above)!`)
+              .addSmallText("This lock allows Building or Breaking.<CR>(ONLY if \"Allow anyone to Build or Break\" is checked above)!")
               .addSpacer("small")
               .addSmallText("Leaving this box unchecked only allows Breaking.")
               .addCheckbox("build_only", "Only Allow Building!", block.lock?.onlyAllowBuild ? "selected" : "not_selected")
