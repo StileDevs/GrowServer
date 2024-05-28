@@ -7,6 +7,8 @@ import { BaseServer } from "./BaseServer";
 import { World } from "./World";
 import { ActionTypes } from "../utils/enums/Tiles";
 import { manageArray } from "../utils/Utils";
+import { ModsEffects, State } from "../utils/enums/Character";
+import { Player } from "../tanks/Player";
 
 export class Peer extends OldPeer<PeerDataType> {
   public base;
@@ -144,6 +146,7 @@ export class Peer extends OldPeer<PeerDataType> {
     world?.enter(this, { x: x ? x : mainDoor?.x, y: y ? y : mainDoor?.y });
     this.inventory();
     this.sound("audio/door_open.wav");
+    this.checkModsEffect();
 
     this.data.lastVisitedWorlds = manageArray(this.data.lastVisitedWorlds!, 6, worldName);
   }
@@ -243,6 +246,71 @@ export class Peer extends OldPeer<PeerDataType> {
         p.send(Variant.from("OnParticleEffect", eff, [(this.data.x as number) + 10, (this.data.y as number) + 16]), ...args);
       }
     });
+  }
+
+  public sendState(punchID?: number, everyPeer = true) {
+    const tank = TankPacket.from({
+      type: TankTypes.SET_CHARACTER_STATE,
+      netID: this.data.netID,
+      info: this.data.state.mod,
+      xPos: 1200,
+      yPos: 100,
+      xSpeed: 300,
+      ySpeed: 600,
+      xPunch: 0,
+      yPunch: 0,
+      state: 0
+    }).parse() as Buffer;
+
+    tank.writeUint8(punchID || 0x0, 5);
+    tank.writeUint8(0x80, 6);
+    tank.writeUint8(0x80, 7);
+    tank.writeFloatLE(125.0, 20);
+
+    if (this.data.state.modsEffect & ModsEffects.HARVESTER) {
+      tank.writeFloatLE(150, 36);
+      tank.writeFloatLE(1000, 40);
+    }
+
+    this.send(tank);
+    if (everyPeer) {
+      this.everyPeer((p) => {
+        if (p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") {
+          p.send(tank);
+        }
+      });
+    }
+  }
+
+  public checkModsEffect(withMsg = false, tank?: TankPacket) {
+    const world = this.hasWorld(this.data.world);
+    let state = 0x0;
+    let mods_effect = 0x0;
+
+    // Clothing effects
+    Object.keys(this.data.clothing!).forEach((k) => {
+      // @ts-expect-error ignore keys type
+      const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
+      const playMod = itemInfo?.playMod || "";
+
+      if (withMsg && tank) {
+        if (itemInfo?.playMod) {
+          if (itemInfo.id === tank.data?.info) {
+            this.send(Variant.from("OnConsoleMessage", `${itemInfo?.itemFunction[0]} (\`$${itemInfo?.playMod || ""}\`\` mod added)`));
+          }
+        }
+      }
+
+      if (this.data.state.canWalkInBlocks) state |= State.canWalkInBlocks;
+
+      if (Player.hasAbility(playMod, "DOUBLE_JUMP")) state |= State.canDoubleJump;
+      if (Player.hasAbility(playMod, "HARVESTER") || itemInfo?.id === 1966 || itemInfo?.id === 1830 || itemInfo?.id === 9650) mods_effect |= ModsEffects.HARVESTER;
+      if (Player.hasAbility(playMod, "PUNCH_DAMAGE")) mods_effect |= ModsEffects.PUNCH_DAMAGE;
+    });
+
+    this.data.state.mod = state;
+    this.data.state.modsEffect = mods_effect;
+    this.sendState();
   }
 
   public addExp(amount: number): void {

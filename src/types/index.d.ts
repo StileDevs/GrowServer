@@ -7,4 +7,4 @@ export * from "./events";
 export * from "./peer";
 export * from "./world";
 
-export type AbilityType = "DOUBLE_JUMP" | "PUNCH" | "HARVESTER";
+export type AbilityType = "DOUBLE_JUMP" | "PUNCH_DAMAGE" | "HARVESTER";

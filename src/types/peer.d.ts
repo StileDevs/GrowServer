@@ -24,7 +24,19 @@ export interface PeerDataType {
   level: number;
   lastCheckpoint?: CheckPoint;
   lastVisitedWorlds?: string[];
+  state: IState;
 }
+
+export interface IState {
+  mod: number;
+  canWalkInBlocks: boolean;
+  modsEffect: number;
+  lava: {
+    damage: number;
+    resetStateAt: number;
+  };
+}
+
 export interface CheckPoint {
   x: number;
   y: number;
