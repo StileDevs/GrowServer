@@ -14,5 +14,8 @@ export default [
       "@typescript-eslint/no-duplicate-enum-values": "off",
       "quotes": "off"
     }
+  },
+  {
+    ignores: ["dist/*", "scripts/*", "seeds/*", "migrations/*", "wiki-scraper/*"]
   }
 ];
