@@ -25,10 +25,10 @@ export default class extends Dialog {
     const isSeed = parseInt(action.seed_only) ? true : false;
     const dialog = new DialogBuilder().defaultColor().addQuickExit().addLabelWithIcon("Find the item", "6016", "big").addSpacer("small");
 
-    const items = this.base.items.metadata.items.filter((v) => v.name?.toLowerCase().includes(action.find_item_name.toLowerCase()));
+    const items = this.base.items.metadata.items.filter((v) => v.name?.value.toLowerCase().includes(action.find_item_name.toLowerCase()));
     items.forEach((item) => {
       const itemID = item.id || 0;
-      const itemName = item.name || "";
+      const itemName = item.name?.value || "";
       if (isSeed) {
         if (itemID % 2 === 1) dialog.addButtonWithIcon(itemID, itemID, itemName, "staticBlueFrame", item.id);
       } else {

@@ -20,7 +20,7 @@ export default class extends Action {
 
     const dialog = new DialogBuilder()
       .defaultColor()
-      .addLabelWithIcon(`\`4Trash\`\` ${item?.name}`, item?.id || 0, "big")
+      .addLabelWithIcon(`\`4Trash\`\` ${item?.name?.value}`, item?.id || 0, "big")
       .addTextBox(`How many to \`4destroy\`\`? (you have ${peerItem?.amount})`)
       .addInputBox("trash_count", "", peerItem?.amount, 5)
       .embed("itemID", itemID)

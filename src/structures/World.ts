@@ -451,7 +451,7 @@ ${peer.data.lastVisitedWorlds
       if (droppedItem.amount + itemInInv.amount > 200) {
         console.log(droppedItem);
         const extra = droppedItem.amount + itemInInv.amount - 200;
-        peer.send(Variant.from("OnConsoleMessage", `Collected \`w${200 - itemInInv.amount} ${item?.name}`));
+        peer.send(Variant.from("OnConsoleMessage", `Collected \`w${200 - itemInInv.amount} ${item?.name?.value}`));
         itemInInv.amount = 200;
 
         this.drop(peer, droppedItem.x, droppedItem.y, droppedItem.id, extra, {
@@ -461,7 +461,7 @@ ${peer.data.lastVisitedWorlds
       } else {
         if (droppedItem.id !== 112) {
           itemInInv.amount += droppedItem.amount;
-          peer.send(Variant.from("OnConsoleMessage", `Collected \`w${droppedItem.amount} ${item?.name}`));
+          peer.send(Variant.from("OnConsoleMessage", `Collected \`w${droppedItem.amount} ${item?.name?.value}`));
         } else {
           peer.data.gems += droppedItem.amount;
         }
@@ -469,7 +469,7 @@ ${peer.data.lastVisitedWorlds
     } else {
       if (droppedItem.id !== 112) {
         peer.addItemInven(droppedItem.id, droppedItem.amount);
-        peer.send(Variant.from("OnConsoleMessage", `Collected \`w${droppedItem.amount} ${item?.name}`));
+        peer.send(Variant.from("OnConsoleMessage", `Collected \`w${droppedItem.amount} ${item?.name?.value}`));
       } else {
         peer.data.gems += droppedItem.amount;
       }
