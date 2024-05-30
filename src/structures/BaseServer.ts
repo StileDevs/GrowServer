@@ -102,28 +102,21 @@ export class BaseServer {
   }
 
   async #_loadItems() {
-    const items = await new ItemsDat(fs.readFileSync("./assets/dat/items.dat")).decode();
+    const itemsDat = new ItemsDat(fs.readFileSync("./assets/dat/items.dat"));
+    await itemsDat.decode();
 
-    const findItem = (id: number) => items.items.findIndex((v) => v.id === id);
+    const findItem = (id: number) => itemsDat.meta.items.findIndex((v) => v.id === id);
 
     // id 8900-8902
-    items.items[findItem(8900)].extraFile = "interface/large/banner.rttex";
-    items.items[findItem(8900)].extraFileHash = hashItemsDat(fs.readFileSync("./assets/cache/interface/large/banner.rttex"));
-    items.items[findItem(8902)].extraFile = "interface/large/banner-transparent.rttex";
-    items.items[findItem(8902)].extraFileHash = hashItemsDat(fs.readFileSync("./assets/cache/interface/large/banner-transparent.rttex"));
+    itemsDat.meta.items[findItem(8900)].extraFile = { raw: Buffer.from("interface/large/banner.rttex"), value: "interface/large/banner.rttex" };
+    itemsDat.meta.items[findItem(8900)].extraFileHash = hashItemsDat(fs.readFileSync("./assets/cache/interface/large/banner.rttex"));
+    itemsDat.meta.items[findItem(8902)].extraFile = { raw: Buffer.from("interface/large/banner-transparent.rttex"), value: "interface/large/banner-transparent.rttex" };
+    itemsDat.meta.items[findItem(8902)].extraFileHash = hashItemsDat(fs.readFileSync("./assets/cache/interface/large/banner-transparent.rttex"));
 
-    const encoded = await new ItemsDat().encode(items);
-    this.items.content = encoded;
-    this.items.hash = `${hashItemsDat(encoded)}`;
-
-    this.items.metadata = items;
-
-    // items.items.forEach((v) => {
-    //   if (v.extraFile) {
-    //     console.log(v);
-    //   }
-    // });
-    // this.items.metadata = items;
+    await itemsDat.encode();
+    this.items.content = itemsDat.data;
+    this.items.hash = `${hashItemsDat(itemsDat.data)}`;
+    this.items.metadata = itemsDat.meta;
   }
 
   async #_loadActions() {

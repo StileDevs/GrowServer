@@ -32,10 +32,10 @@ export default class extends Command {
       const isSeed = false;
       const dialog = new DialogBuilder().defaultColor().addQuickExit().addLabelWithIcon("Find the item", "6016", "big").addSpacer("small");
 
-      const items = this.base.items.metadata.items.filter((v) => v.name?.toLowerCase().includes(findItemName.toLowerCase()));
+      const items = this.base.items.metadata.items.filter((v) => v.name?.value.toLowerCase().includes(findItemName.toLowerCase()));
       items.forEach((item) => {
         const itemID = item.id || 0;
-        const itemName = item.name || "";
+        const itemName = item.name?.value || "";
         if (isSeed) {
           if (itemID % 2 === 1) dialog.addButtonWithIcon(itemID, itemID, itemName, "staticBlueFrame", item.id);
         } else {

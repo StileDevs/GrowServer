@@ -20,7 +20,7 @@ export default class extends Action {
     const peerItem = peer.data?.inventory?.items.find((v) => v.id === itemID);
     const dialog = new DialogBuilder()
       .defaultColor()
-      .addLabelWithIcon(`Drop ${item?.name}`, item?.id || 0, "big")
+      .addLabelWithIcon(`Drop ${item?.name?.value}`, item?.id || 0, "big")
       .addTextBox("How many to drop?")
       .addInputBox("drop_count", "", peerItem?.amount, 5)
       .embed("itemID", itemID)
