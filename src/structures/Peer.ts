@@ -139,11 +139,11 @@ export class Peer extends OldPeer<PeerDataType> {
     this.sound("audio/teleport.wav", 2000);
   }
 
-  public enterWorld(worldName: string, x?: number, y?: number) {
+  public async enterWorld(worldName: string, x?: number, y?: number) {
     const world = this.hasWorld(worldName);
     const mainDoor = world?.data.blocks?.find((block) => block.fg === 6);
 
-    world?.enter(this, { x: x ? x : mainDoor?.x, y: y ? y : mainDoor?.y });
+    await world?.enter(this, { x: x ? x : mainDoor?.x, y: y ? y : mainDoor?.y });
     this.inventory();
     this.sound("audio/door_open.wav");
     this.checkModsEffect();
@@ -283,12 +283,11 @@ export class Peer extends OldPeer<PeerDataType> {
   }
 
   public checkModsEffect(withMsg = false, tank?: TankPacket) {
-    const world = this.hasWorld(this.data.world);
     let state = 0x0;
     let mods_effect = 0x0;
 
     // Clothing effects
-    Object.keys(this.data.clothing!).forEach((k) => {
+    Object.keys(this.data.clothing).forEach((k) => {
       // @ts-expect-error ignore keys type
       const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
       const playMod = itemInfo?.playMod || "";
