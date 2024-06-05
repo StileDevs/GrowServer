@@ -167,7 +167,47 @@ export default class extends Listener<"raw"> {
 
           case TankTypes.ITEM_ACTIVATE_REQUEST: {
             tank.data.state = peer.data?.rotatedLeft ? 16 : 0;
+            const isItemExist = (id: number) => peer.data.inventory?.items.find((i) => i.id === id);
             const item = this.base.items.metadata.items.find((v) => v.id === tank.data?.info);
+
+            const itemExist = isItemExist(tank.data.info as number);
+            if (!itemExist || itemExist.amount <= 0) break;
+            if (item?.type === ActionTypes.LOCK) {
+              switch (item.id) {
+                case 7188: {
+                  if ((peer.searchItem(1796)?.amount as number) + 100 > 200) {
+                    peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Whoops, you're holding too many Diamond Locks!", 0, 1));
+                  } else {
+                    peer.modifyInventory(1796, 100);
+                    peer.modifyInventory(7188, -1);
+                    peer.send(Variant.from("OnTalkBubble", peer.data.netID, "You shattered a Diamond Lock into 100 Diamond Locks!", 0, 1));
+                  }
+                  break;
+                }
+                case 1796: {
+                  if ((peer.searchItem(242)?.amount as number) + 100 > 200) {
+                    peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Whoops, you're holding too many World Locks!", 0, 1));
+                  } else {
+                    peer.modifyInventory(242, 100);
+                    peer.modifyInventory(1796, -1);
+                    peer.send(Variant.from("OnTalkBubble", peer.data.netID, "You shattered a Diamond Lock into 100 World Locks!", 0, 1));
+                  }
+                  break;
+                }
+                case 242: {
+                  if ((peer.searchItem(242)?.amount as number) < 100) break;
+                  if ((peer.searchItem(1796)?.amount as number) + 1 > 200) {
+                    peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Whoops, you're holding too many Diamond Locks!", 0, 1));
+                  } else {
+                    peer.modifyInventory(1796, 1);
+                    peer.modifyInventory(242, -100);
+                    peer.send(Variant.from("OnTalkBubble", peer.data.netID, "You compressed 100 World Locks into a Diamond Lock!", 0, 1));
+                  }
+                  break;
+                }
+              }
+              break;
+            }
 
             const isAnces = (): boolean => {
               if (item?.type === ActionTypes.ANCES) {
