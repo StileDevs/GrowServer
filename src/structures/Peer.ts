@@ -335,4 +335,25 @@ export class Peer extends OldPeer<PeerDataType> {
       this.countryState();
     }
   }
+
+  public modifyInventory(id: number, amount: number = 1) {
+    const item = this.data.inventory?.items.find((i) => i.id === id);
+
+    if (!item) {
+      if (amount < 0 || amount > 200) return 1;
+      else this.data.inventory?.items.push({ id, amount });
+    } else {
+      if (amount === 0) return item.amount; // return jumlah barang yg di cari yg ada di bp
+      if (item.amount + amount > 200 || item.amount + amount < 0) return 1;
+      else item.amount += amount;
+    }
+
+    this.inventory();
+    this.saveToCache();
+    return 0;
+  }
+
+  public searchItem(id: number) {
+    return this.data.inventory?.items.find((i) => i.id === id);
+  }
 }
