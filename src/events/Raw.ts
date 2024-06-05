@@ -124,7 +124,6 @@ export default class extends Listener<"raw"> {
 
             // Load Gems
             peer.send(Variant.from("OnSetBux", peer.data.gems));
-            peer.checkModsEffect();
 
             peer.saveToCache();
             peer.saveToDatabase();
