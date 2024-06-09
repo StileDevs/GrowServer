@@ -1,9 +1,9 @@
 import CryptoJS from "crypto-js";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { Collection } from "../structures/Collection";
-import { PeerDataType } from "../types";
-import { World } from "../structures/World";
+import type { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import { Collection } from "../structures/Collection.js";
+import type { PeerDataType } from "../types";
+import { World } from "../structures/World.js";
 
 export function parseAction(chunk: Buffer): Record<string, string | number> | undefined {
   const data: Record<string, string | number> = {};

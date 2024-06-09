@@ -1,5 +1,5 @@
 import express, { type Router } from "express";
-import { BaseServer } from "../structures/BaseServer";
+import { BaseServer } from "../structures/BaseServer.js";
 
 const router = express.Router();
 

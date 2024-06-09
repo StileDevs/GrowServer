@@ -1,10 +1,10 @@
-const { encrypt } = require("../scripts/crypto");
+import { encrypt } from "../scripts/crypto.js";
 
 /**
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.seed = async function (knex) {
+const seed = async function (knex) {
   // Deletes ALL existing entries
   await knex("users").del();
   await knex("users").insert([
@@ -43,3 +43,5 @@ exports.seed = async function (knex) {
     }
   ]);
 };
+
+export { seed };

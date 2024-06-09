@@ -1,6 +1,6 @@
-import { BaseServer } from "./structures/BaseServer";
+import { BaseServer } from "./structures/BaseServer.js";
 import fs from "node:fs";
-import { handleSaveAll } from "./utils/Utils";
+import { handleSaveAll } from "./utils/Utils.js";
 
 if (!fs.existsSync("./assets")) throw new Error("Could not find 'assets' folder, please create new one.");
 

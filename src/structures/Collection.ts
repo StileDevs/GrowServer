@@ -1,7 +1,7 @@
-import { PeerDataType, WorldData } from "../types";
-import { BaseServer } from "./BaseServer";
-import { Peer } from "./Peer";
-import { World } from "./World";
+import type { PeerDataType, WorldData } from "../types";
+import { BaseServer } from "./BaseServer.js";
+import { Peer } from "./Peer.js";
+import { World } from "./World.js";
 
 export class Collection<K, V> extends Map<K, V> {
   public base: BaseServer;

@@ -1,11 +1,11 @@
 import { TextPacket, Variant } from "growtopia.js";
-import { Command } from "../abstracts/Command";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { CommandOptions } from "../types";
-import { DialogBuilder } from "../utils/builders/DialogBuilder";
-import { Role } from "../utils/Constants";
-import { DataTypes } from "../utils/enums/DataTypes";
+import { Command } from "../abstracts/Command.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import type { CommandOptions } from "../types";
+import { DialogBuilder } from "../utils/builders/DialogBuilder.js";
+import { Role } from "../utils/Constants.js";
+import { DataTypes } from "../utils/enums/DataTypes.js";
 
 export default class extends Command {
   public opt: CommandOptions;

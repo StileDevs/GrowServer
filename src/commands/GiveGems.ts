@@ -1,10 +1,10 @@
 import { Variant } from "growtopia.js";
-import { Command } from "../abstracts/Command";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { CommandOptions } from "../types";
-import { Role } from "../utils/Constants";
-import { find } from "../utils/Utils";
+import { Command } from "../abstracts/Command.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import type { CommandOptions } from "../types";
+import { Role } from "../utils/Constants.js";
+import { find } from "../utils/Utils.js";
 
 export default class extends Command {
   public opt: CommandOptions;

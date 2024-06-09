@@ -1,7 +1,7 @@
 import { TextPacket } from "growtopia.js";
-import { Listener } from "../abstracts/Listener";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
+import { Listener } from "../abstracts/Listener.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
 
 export default class extends Listener<"connect"> {
   constructor(base: BaseServer) {

@@ -1,10 +1,10 @@
 import { TankPacket, TextPacket, Variant } from "growtopia.js";
-import { Dialog } from "../abstracts/Dialog";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { Place } from "../tanks/Place";
-import { DialogReturnType, Block } from "../types";
-import { World } from "../structures/World";
+import { Dialog } from "../abstracts/Dialog.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import { Place } from "../tanks/Place.js";
+import type { DialogReturnType, Block } from "../types";
+import { World } from "../structures/World.js";
 
 export default class extends Dialog {
   constructor(base: BaseServer) {

@@ -1,8 +1,8 @@
 import { TankPacket, Variant } from "growtopia.js";
-import { Action } from "../abstracts/Action";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { ActionType } from "../types";
+import { Action } from "../abstracts/Action.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import type { ActionType } from "../types";
 
 export default class extends Action {
   constructor(base: BaseServer) {
