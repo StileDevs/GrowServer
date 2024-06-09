@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import { Client } from "growtopia.js";
 import { WebServer } from "./Webserver";
+import { WebSocketServer } from "../websockets/server";
 import { hashItemsDat } from "../utils/Utils";
 import { Action } from "../abstracts/Action";
 import { ItemsDat } from "growtopia.js";
@@ -80,6 +81,7 @@ export class BaseServer {
     this.#_loadItems().then(async () => {
       this.log.ready("Items data ready!");
       await WebServer(this);
+      await WebSocketServer(this);
       await this.#_loadEvents();
       await this.#_loadActions();
       this.log.action(`Loaded ${this.action.size} actions`);
