@@ -1,11 +1,11 @@
 {
-	"prettier.withNodeModules": true,
-	"prettier.trailingComma": "none",
-	"editor.tabSize": 2,
-	"editor.defaultFormatter": "biomejs.biome",
-	"editor.formatOnSave": true,
-	"prettier.printWidth": 320,
-	"[typescript]": {
-		"editor.defaultFormatter": "esbenp.prettier-vscode"
-	}
+  "prettier.withNodeModules": true,
+  "prettier.trailingComma": "none",
+  "editor.tabSize": 2,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "prettier.printWidth": 320,
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode"
+  }
 }

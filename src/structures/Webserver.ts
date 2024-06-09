@@ -40,8 +40,6 @@ export async function WebServer(server: BaseServer) {
   server.log.info("Fetching latest Growtopia Cache");
   const cdn = await getLatestCdn();
 
-  app.set("view engine", "ejs");
-  app.set("views", path.join(__dirname, "../../../website/views"));
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use("/public", express.static(path.join(__dirname, "../../../website/public")));
@@ -52,9 +50,7 @@ export async function WebServer(server: BaseServer) {
     app.use("/growtopia/cache", express.static(path.join(__dirname, "../../../assets/cache")));
   }
 
-  app.get("/", (req, res) => {
-    res.render("home");
-  });
+  app.use("/", express.static(path.join(__dirname, "..", "..", "..", "website", "build")));
 
   app.use("/api", ApiRouter(server));
   app.use("/growtopia/server_data.php", (req, res) => {
@@ -66,6 +62,10 @@ export async function WebServer(server: BaseServer) {
     const url = `https://ubistatic-a.akamaihd.net/${cdn.uri}/${req.originalUrl.replace("/growtopia/", "")}`;
     res.redirect(url);
     next();
+  });
+
+  app.get("/*", (req, res) => {
+    res.sendFile(path.join(__dirname, "..", "..", "..", "website", "build"));
   });
 
   if (process.env.WEB_ENV === "production") {
