@@ -1,13 +1,13 @@
-import { Client, GatewayIntentBits, Message, ActivityType, PresenceUpdateStatus } from 'discord.js';
-import { Command } from "../abstracts/Command";
-import { BaseServer } from "../structures/BaseServer";
-import test from "./DiscordCommands/test";
-import ShutdownServer from "./DiscordCommands/ShutdownServer";
-import { Logger } from './Logger';
+import { Client, GatewayIntentBits, Message, ActivityType, PresenceUpdateStatus } from "discord.js";
+import { Command } from "../abstracts/Command.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import test from "./DiscordCommands/test.js";
+import ShutdownServer from "./DiscordCommands/ShutdownServer.js";
+import { Logger } from "./Logger.js";
 
-type cmdFuc = {
-    [key: string]: (srv: BaseServer, args: string[], msg: Message) => void
-}
+type Commands = {
+  [key: string]: (srv: BaseServer, args: string[], msg: Message) => void;
+};
 
 export class DiscordManager {
   private client: Client;
@@ -24,43 +24,51 @@ export class DiscordManager {
     this.clientId = clientId;
     this.commands = new Map();
     this.server = server;
-    this.prefix = "."
+    this.prefix = ".";
     this.log = new Logger();
 
     this.client.on("ready", () => {
-        this.log.discord("Discord Bot is Ready~");
-        this.client.user?.setPresence({
-            activities: [{
-                 name: `GrowServer!`, 
-                 type: ActivityType.Watching 
-                }],
-            status: PresenceUpdateStatus.DoNotDisturb,
-        });
-    })
+      this.log.discord("Discord Bot is Ready~");
+      this.client.user?.setPresence({
+        activities: [
+          {
+            name: `GrowServer!`,
+            type: ActivityType.Watching
+          }
+        ],
+        status: PresenceUpdateStatus.DoNotDisturb
+      });
+    });
 
-    this.client.on("messageCreate", async msg => {
+    this.client.on("messageCreate", async (msg) => {
+      const message = msg.content;
+      const args = message.split(" ");
+      let command = args[0];
+      args.shift();
 
-        const message = msg.content;
-        const args = message.split(" ");
-        let command = args[0];
-        args.shift();
+      const commands: Commands = {
+        test,
+        shutdown: ShutdownServer
+      };
 
-        const commands: cmdFuc = {
-            "test": test,
-            "shutdown": ShutdownServer
+      if (command.startsWith(this.prefix)) {
+        command = command.replace(this.prefix, "");
+        if (commands[command]) {
+          commands[command](this.server, args, msg);
         }
-
-        if(command.startsWith(this.prefix)) {
-            command = command.replace(this.prefix, "");
-            if(commands[command]) {
-                commands[command](this.server, args, msg);
-            }
-        }
-
-    })
+      }
+    });
   }
 
-    public async start() {
-        await this.client.login(this.token);
+  public async start() {
+    try {
+      this.log.info("Connecting Discord bot...");
+      await this.client.login(this.token);
+    } catch (e) {
+      if (e instanceof Error) {
+        this.log.error("Failed connect because:", e.message);
+        this.log.error("Skipping using discord bot");
+      }
     }
+  }
 }

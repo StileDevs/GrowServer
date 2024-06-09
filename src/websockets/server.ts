@@ -3,7 +3,7 @@ import type { Server } from "ws";
 const Websocket = createRequire(import.meta.url)("ws").Server;
 import { type BaseServer } from "../structures/BaseServer.js";
 
-export function WebSocketServer(base: BaseServer) {
+export async function WebSocketServer(base: BaseServer) {
   const server = new Websocket({ port: 8080 }) as Server;
 
   server.on("connection", (ws, req) => {
