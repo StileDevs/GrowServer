@@ -20,6 +20,10 @@ export class Logger {
     console.log(`[${this.time} - ${chalk.greenBright("READY")}   ]`, ...content);
   }
 
+  public discord(...content: unknown[]) {
+    console.log(`[${this.time} - ${chalk.greenBright("DISCORD")} ]`, ...content);
+  }
+
   public event(...content: unknown[]) {
     console.log(`[${this.time} - ${chalk.blueBright("EVENT")}   ]`, ...content);
   }
