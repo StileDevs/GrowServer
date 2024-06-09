@@ -1,6 +1,6 @@
-import { Peer } from "../structures/Peer";
-import { ActionConfig, ActionType } from "../types";
-import { BaseServer } from "../structures/BaseServer";
+import { Peer } from "../structures/Peer.js";
+import type { ActionConfig, ActionType } from "../types";
+import { BaseServer } from "../structures/BaseServer.js";
 
 export abstract class Action {
   public config: ActionConfig;

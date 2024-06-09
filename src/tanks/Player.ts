@@ -1,11 +1,11 @@
-import { Tank, TankPacket, Variant } from "growtopia.js";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { World } from "../structures/World";
-import { ActionTypes } from "../utils/enums/Tiles";
-import { DialogBuilder } from "../utils/builders/DialogBuilder";
-import { AbilityType } from "../types";
-import { Ability } from "../utils/enums/Character";
+import { type Tank, TankPacket, Variant } from "growtopia.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import { World } from "../structures/World.js";
+import { ActionTypes } from "../utils/enums/Tiles.js";
+import { DialogBuilder } from "../utils/builders/DialogBuilder.js";
+import type { AbilityType } from "../types";
+import { Ability } from "../utils/enums/Character.js";
 
 export class Player {
   public base: BaseServer;

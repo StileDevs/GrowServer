@@ -1,18 +1,18 @@
 import { Variant, TankPacket, TextPacket } from "growtopia.js";
-import { Listener } from "../abstracts/Listener";
-import { ActionType, DroppedItem } from "../types";
-import { BaseServer } from "../structures/BaseServer";
-import { DataTypes } from "../utils/enums/DataTypes";
-import { decrypt, find, parseAction } from "../utils/Utils";
-import { Peer } from "../structures/Peer";
-import { TankTypes } from "../utils/enums/TankTypes";
-import { ActionTypes } from "../utils/enums/Tiles";
-import { ClothTypes } from "../utils/enums/ItemTypes";
-import { DialogBuilder } from "../utils/builders/DialogBuilder";
-import { World } from "../structures/World";
-import { Place } from "../tanks/Place";
-import { Punch } from "../tanks/Punch";
-import { Player } from "../tanks/Player";
+import { Listener } from "../abstracts/Listener.js";
+import type { ActionType, DroppedItem } from "../types";
+import { BaseServer } from "../structures/BaseServer.js";
+import { DataTypes } from "../utils/enums/DataTypes.js";
+import { decrypt, find, parseAction } from "../utils/Utils.js";
+import { Peer } from "../structures/Peer.js";
+import { TankTypes } from "../utils/enums/TankTypes.js";
+import { ActionTypes } from "../utils/enums/Tiles.js";
+import { ClothTypes } from "../utils/enums/ItemTypes.js";
+import { DialogBuilder } from "../utils/builders/DialogBuilder.js";
+import { World } from "../structures/World.js";
+import { Place } from "../tanks/Place.js";
+import { Punch } from "../tanks/Punch.js";
+import { Player } from "../tanks/Player.js";
 
 export default class extends Listener<"raw"> {
   constructor(base: BaseServer) {

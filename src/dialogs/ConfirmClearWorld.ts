@@ -1,8 +1,8 @@
-import { Dialog } from "../abstracts/Dialog";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { DialogReturnType } from "../types";
-import { ActionTypes } from "../utils/enums/Tiles";
+import { Dialog } from "../abstracts/Dialog.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import type { DialogReturnType } from "../types";
+import { ActionTypes } from "../utils/enums/Tiles.js";
 
 export default class extends Dialog {
   constructor(base: BaseServer) {

@@ -1,5 +1,5 @@
-import { Listener } from "../abstracts/Listener";
-import { BaseServer } from "../structures/BaseServer";
+import { Listener } from "../abstracts/Listener.js";
+import { BaseServer } from "../structures/BaseServer.js";
 
 export default class extends Listener<"disconnect"> {
   constructor(base: BaseServer) {

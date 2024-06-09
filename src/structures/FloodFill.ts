@@ -1,9 +1,9 @@
 import { TankPacket, Variant } from "growtopia.js";
-import { Block } from "../types";
-import { TankTypes } from "../utils/enums/TankTypes";
-import { BaseServer } from "./BaseServer";
-import { Peer } from "./Peer";
-import { World } from "./World";
+import type { Block } from "../types";
+import { TankTypes } from "../utils/enums/TankTypes.js";
+import { BaseServer } from "./BaseServer.js";
+import { Peer } from "./Peer.js";
+import { World } from "./World.js";
 
 const directions = [
   { x: 0, y: -1 }, // N

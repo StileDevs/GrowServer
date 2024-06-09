@@ -3,7 +3,7 @@
 /**
  * @type { Object.<string, import("knex").Knex.Config> }
  */
-module.exports = {
+const config = {
   development: {
     client: "better-sqlite3",
     connection: {
@@ -63,3 +63,5 @@ module.exports = {
   //   }
   // }
 };
+
+export default config;
