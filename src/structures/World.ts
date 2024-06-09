@@ -1,11 +1,11 @@
-import { Tank, TankPacket, TextPacket, Variant } from "growtopia.js";
+import { type Tank, TankPacket, TextPacket, Variant } from "growtopia.js";
 import type { Block, EnterArg, Place, WorldData } from "../types";
-import { BaseServer } from "./BaseServer";
-import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Constants";
-import { TankTypes } from "../utils/enums/TankTypes";
-import { Peer } from "./Peer";
-import { DataTypes } from "../utils/enums/DataTypes";
-import { Tile } from "./Tile";
+import { BaseServer } from "./BaseServer.js";
+import { WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../utils/Constants.js";
+import { TankTypes } from "../utils/enums/TankTypes.js";
+import { Peer } from "./Peer.js";
+import { DataTypes } from "../utils/enums/DataTypes.js";
+import { Tile } from "./Tile.js";
 
 export class World {
   public data: WorldData = {

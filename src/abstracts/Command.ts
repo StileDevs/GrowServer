@@ -1,6 +1,6 @@
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { CommandOptions } from "../types";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import type { CommandOptions } from "../types";
 
 export abstract class Command {
   public opt: CommandOptions;

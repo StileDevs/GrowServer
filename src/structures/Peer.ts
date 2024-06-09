@@ -1,14 +1,14 @@
 import { Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
-import { PeerDataType, Block } from "../types";
-import { Role, WORLD_SIZE } from "../utils/Constants";
-import { DataTypes } from "../utils/enums/DataTypes";
-import { TankTypes } from "../utils/enums/TankTypes";
-import { BaseServer } from "./BaseServer";
-import { World } from "./World";
-import { ActionTypes } from "../utils/enums/Tiles";
-import { manageArray } from "../utils/Utils";
-import { ModsEffects, State } from "../utils/enums/Character";
-import { Player } from "../tanks/Player";
+import type { PeerDataType, Block } from "../types";
+import { Role, WORLD_SIZE } from "../utils/Constants.js";
+import { DataTypes } from "../utils/enums/DataTypes.js";
+import { TankTypes } from "../utils/enums/TankTypes.js";
+import { BaseServer } from "./BaseServer.js";
+import { World } from "./World.js";
+import { ActionTypes } from "../utils/enums/Tiles.js";
+import { manageArray } from "../utils/Utils.js";
+import { ModsEffects, State } from "../utils/enums/Character.js";
+import { Player } from "../tanks/Player.js";
 
 export class Peer extends OldPeer<PeerDataType> {
   public base;

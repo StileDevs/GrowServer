@@ -1,12 +1,12 @@
-import { ItemDefinition, Tank, TankPacket, Variant } from "growtopia.js";
-import { BaseServer } from "../structures/BaseServer";
-import { Peer } from "../structures/Peer";
-import { World } from "../structures/World";
-import { Block } from "../types";
-import { Role } from "../utils/Constants";
-import { TankTypes } from "../utils/enums/TankTypes";
-import { ActionTypes } from "../utils/enums/Tiles";
-import { Place } from "./Place";
+import { type ItemDefinition, type Tank, TankPacket, Variant } from "growtopia.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import { Peer } from "../structures/Peer.js";
+import { World } from "../structures/World.js";
+import type { Block } from "../types";
+import { Role } from "../utils/Constants.js";
+import { TankTypes } from "../utils/enums/TankTypes.js";
+import { ActionTypes } from "../utils/enums/Tiles.js";
+import { Place } from "./Place.js";
 import { Chance } from "chance";
 
 export class Punch {

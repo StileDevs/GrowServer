@@ -1,8 +1,8 @@
-import { Action } from "../abstracts/Action";
-import { Peer } from "../structures/Peer";
-import { BaseServer } from "../structures/BaseServer";
-import { ActionType } from "../types";
-import { DialogBuilder } from "../utils/builders/DialogBuilder";
+import { Action } from "../abstracts/Action.js";
+import { Peer } from "../structures/Peer.js";
+import { BaseServer } from "../structures/BaseServer.js";
+import type { ActionType } from "../types";
+import { DialogBuilder } from "../utils/builders/DialogBuilder.js";
 import { Variant } from "growtopia.js";
 
 export default class extends Action {

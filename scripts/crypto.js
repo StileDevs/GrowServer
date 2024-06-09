@@ -1,5 +1,8 @@
-const CryptoJS = require("crypto-js");
-require("dotenv").config();
+"use strict";
+
+import CryptoJS from "crypto-js";
+import { config } from "dotenv";
+config();
 
 /**
  * @param {string} data
@@ -17,7 +20,4 @@ function decrypt(data) {
   return CryptoJS.AES.decrypt(data, process.env.ENCRYPT_SECRET).toString(CryptoJS.enc.Utf8);
 }
 
-module.exports = {
-  encrypt,
-  decrypt
-};
+export { encrypt, decrypt };

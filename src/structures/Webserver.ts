@@ -4,10 +4,12 @@ import http from "node:http";
 import https from "node:https";
 import rateLimit from "express-rate-limit";
 import path from "node:path";
-import { BaseServer } from "./BaseServer";
+import { BaseServer } from "./BaseServer.js";
 import axios from "axios";
-import { ApiRouter } from "../routes";
+import { ApiRouter } from "../routes/index.js";
+import { fileURLToPath } from "url";
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 const options = {
@@ -50,7 +52,7 @@ export async function WebServer(server: BaseServer) {
     app.use("/growtopia/cache", express.static(path.join(__dirname, "../../../assets/cache")));
   }
 
-  app.use("/", express.static(path.join(__dirname, "..", "..", "..", "website", "build")));
+  app.use("/", express.static(path.join(__dirname, "..", "..", "build")));
 
   app.use("/api", ApiRouter(server));
   app.use("/growtopia/server_data.php", (req, res) => {
@@ -65,7 +67,7 @@ export async function WebServer(server: BaseServer) {
   });
 
   app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "..", "..", "website", "build"));
+    res.sendFile(path.join(__dirname, "..", "..", "build"));
   });
 
   if (process.env.WEB_ENV === "production") {

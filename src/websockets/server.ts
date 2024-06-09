@@ -1,8 +1,10 @@
-import { Server } from "ws";
-import { type BaseServer } from "../structures/BaseServer";
+import { createRequire } from "node:module";
+import type { Server } from "ws";
+const Websocket = createRequire(import.meta.url)("ws").Server;
+import { type BaseServer } from "../structures/BaseServer.js";
 
 export function WebSocketServer(base: BaseServer) {
-  const server = new Server({ port: 8080 });
+  const server = new Websocket({ port: 8080 }) as Server;
 
   server.on("connection", (ws, req) => {
     base.log.info(`Client connected`, req.headers["sec-websocket-key"]);

@@ -1,19 +1,23 @@
 import fs from "node:fs";
 import { Client } from "growtopia.js";
-import { WebServer } from "./Webserver";
-import { WebSocketServer } from "../websockets/server";
-import { hashItemsDat } from "../utils/Utils";
-import { Action } from "../abstracts/Action";
+import { WebServer } from "./Webserver.js";
+import { WebSocketServer } from "../websockets/server.js";
+import { hashItemsDat } from "../utils/Utils.js";
+import { Action } from "../abstracts/Action.js";
 import { ItemsDat } from "growtopia.js";
-import { ItemsDatMeta } from "growtopia.js";
-import { Logger } from "./Logger";
-import { Command } from "../abstracts/Command";
-import { CooldownOptions, PeerDataType, Ignore, Lock, WorldData, WikiItems } from "../types";
-import { Dialog } from "../abstracts/Dialog";
-import { Database } from "../database/db";
-import { Collection } from "./Collection";
-import { ActionTypes } from "../utils/enums/Tiles";
+import type { ItemsDatMeta } from "growtopia.js";
+import { Logger } from "./Logger.js";
+import { Command } from "../abstracts/Command.js";
+import type { CooldownOptions, PeerDataType, Ignore, Lock, WorldData, WikiItems } from "../types";
+import { Dialog } from "../abstracts/Dialog.js";
+import { Database } from "../database/db.js";
+import { Collection } from "./Collection.js";
+import { ActionTypes } from "../utils/enums/Tiles.js";
 import decompress from "decompress";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class BaseServer {
   public server: Client;

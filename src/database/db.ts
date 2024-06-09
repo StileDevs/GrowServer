@@ -1,6 +1,6 @@
 import knex from "knex";
-import { User, PeerDataType, WorldData, WorldDB } from "../types";
-import { encrypt } from "../utils/Utils";
+import type { User, PeerDataType, WorldData, WorldDB } from "../types";
+import { encrypt } from "../utils/Utils.js";
 
 export class Database {
   public knex;

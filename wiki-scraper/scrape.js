@@ -1,7 +1,7 @@
-const cheerio = require("cheerio");
-const { readFileSync, writeFileSync } = require("fs");
-const { ItemsDat } = require("growtopia.js");
-const axios = require("axios").default;
+import cheerio from "cheerio";
+import { readFileSync, writeFileSync } from "fs";
+import { ItemsDat } from "growtopia.js";
+import axios from "axios";
 
 const lastItem = JSON.parse(readFileSync("./assets/items_info.json").toString()) || [];
 let count = 1;
@@ -14,14 +14,15 @@ async function writeAll() {
 }
 
 (async () => {
-  const items = await new ItemsDat(readFileSync("./assets/dat/items.dat")).decode();
+  const itemsDat = new ItemsDat(readFileSync("./assets/dat/items.dat"));
+  await itemsDat.decode();
 
   console.log(`Continue last saved ${lastItem.length} items`);
-  for (let i = items.items[lastItem.length].id * 2; i < items.items.length; i++) {
+  for (let i = itemsDat.meta.items[lastItem.length].id * 2; i < itemsDat.meta.items.length; i++) {
     if (i % 2 === 1) continue;
-    const url = `https://growtopia.fandom.com/wiki/${encodeURIComponent(items.items[i].name)}`;
+    const url = `https://growtopia.fandom.com/wiki/${encodeURIComponent(itemsDat.meta.items[i].name.value)}`;
 
-    console.time(`${count}. [${items.items[i].id}] ${items.items[i].name}`);
+    console.time(`${count}. [${itemsDat.meta.items[i].id}] ${itemsDat.meta.items[i].name.value}`);
 
     await axios
       .get(url)
@@ -50,10 +51,10 @@ async function writeAll() {
             .map((e) => e.trim()) || null;
         const info = $("#mw-content-text > div > p:nth-child(3)").text().trim() || null;
         const type = $("table.card-field tr:nth-child(1) > td").text().split(" ").pop() || null;
-        const itemFunction = Array.from($("#mw-content-text > div.mw-parser-output > table[width=\"600\"] > tbody > tr > td").map((i, el) => cheerio.load(el).text().trim() || null)) || null;
+        const itemFunction = Array.from($('#mw-content-text > div.mw-parser-output > table[width="600"] > tbody > tr > td').map((i, el) => cheerio.load(el).text().trim() || null)) || null;
 
         lastItem.push({
-          id: items.items[i].id,
+          id: itemsDat.meta.items[i].id,
           description,
           info,
           properties: properties?.length > 0 ? properties : null,
@@ -72,13 +73,13 @@ async function writeAll() {
           itemFunction,
           splice: splice?.length > 0 ? splice : null
         });
-        console.timeEnd(`${count}. [${items.items[i].id}] ${items.items[i].name}`);
+        console.timeEnd(`${count}. [${itemsDat.meta.items[i].id}] ${itemsDat.meta.items[i].name.value}`);
         count++;
       })
       .catch((err) => {
-        console.log(`err: [${items.items[i].id}] ${items.items[i].name}`, err.code, err.message);
+        console.log(`err: [${itemsDat.meta.items[i].id}] ${itemsDat.meta.items[i].name.value}`, err.code, err.message);
         lastItem.push({
-          id: items.items[i].id,
+          id: itemsDat.meta.items[i].id,
           description: null,
           info: null,
           properties: null,

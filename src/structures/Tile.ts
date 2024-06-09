@@ -1,9 +1,9 @@
-import { Action } from "../abstracts/Action";
-import { ActionTypes, Options, Flags, ExtraTypes } from "../utils/enums/Tiles";
-import { Block } from "../types";
-import { World } from "./World";
-import { BaseServer } from "./BaseServer";
-import { find } from "../utils/Utils";
+import { Action } from "../abstracts/Action.js";
+import { ActionTypes, Options, Flags, ExtraTypes } from "../utils/enums/Tiles.js";
+import type { Block } from "../types";
+import { World } from "./World.js";
+import { BaseServer } from "./BaseServer.js";
+import { find } from "../utils/Utils.js";
 
 export class Tile {
   public base: BaseServer;
