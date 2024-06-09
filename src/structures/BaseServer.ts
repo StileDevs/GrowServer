@@ -88,18 +88,15 @@ export class BaseServer {
       await WebSocketServer(this);
       await this.#_loadEvents();
       await this.#_loadActions();
-      this.log.action(`Loaded ${this.action.size} actions`);
       await this.#_loadCommands();
-      this.log.dialog(`Loaded ${this.commands.size} commands`);
       await this.#_loadDialogs();
-      this.log.dialog(`Loaded ${this.dialogs.size} dialogs`);
 
       this.server.listen();
     });
   }
 
   async #_loadEvents() {
-    fs.readdirSync(`${__dirname}/../events`).forEach(async (event) => {
+    await fs.readdirSync(`${__dirname}/../events`).forEach(async (event) => {
       const file = (await import(`../events/${event}`)).default;
       const initFile = new file(this);
       this.server.on(initFile.name, (...args) => initFile.run(...args));
