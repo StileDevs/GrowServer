@@ -1,6 +1,8 @@
 import { BaseServer } from "./structures/BaseServer.js";
 import fs from "node:fs";
-import { handleSaveAll } from "./utils/Utils.js";
+
+import { handleSaveAll } from "./utils/Utils";
+import { DiscordManager } from "./structures/DiscordManager.js";
 
 if (!fs.existsSync("./assets")) throw new Error("Could not find 'assets' folder, please create new one.");
 
@@ -15,6 +17,15 @@ if (!fs.existsSync("./assets/dat/items.dat")) throw new Error("items.dat not exi
 const server = new BaseServer();
 
 server.start();
+
+const token = process.env.TOKEN;
+const clientId = process.env.CLIENTID;
+
+if (!token) throw new Error('Token is not defined');
+if (!clientId) throw new Error('ClientID is not defined');
+
+const Manager = new DiscordManager(token, clientId, server);
+Manager.start();
 
 process.on("SIGINT", () => handleSaveAll(server, true));
 process.on("SIGQUIT", () => handleSaveAll(server, true));
