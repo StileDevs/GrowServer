@@ -1,13 +1,17 @@
-import { encrypt } from "../scripts/crypto.js";
+"use strict";
 
-/**
- * @param { import("knex").Knex } knex
- * @returns { Promise<void> }
- */
-const seed = async function (knex) {
-  // Deletes ALL existing entries
-  await knex("users").del();
-  await knex("users").insert([
+import { encrypt } from "../scripts/crypto.js";
+import { users, worlds } from "../dist/database/schemas.js";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import DB from "better-sqlite3";
+
+(async () => {
+  const sqlite = new DB("./data/dev.db");
+  const db = drizzle(sqlite);
+  const dateNow = new Date().toISOString().slice(0, 19).replace("T", " ");
+
+  await db.delete(users);
+  await db.insert(users).values([
     {
       name: "admin",
       display_name: "admin",
@@ -17,7 +21,7 @@ const seed = async function (knex) {
       clothing: null,
       inventory: null,
       last_visited_worlds: null,
-      created_at: null
+      created_at: dateNow
     },
     {
       name: "reimu",
@@ -28,7 +32,7 @@ const seed = async function (knex) {
       clothing: null,
       inventory: null,
       last_visited_worlds: null,
-      created_at: null
+      created_at: dateNow
     },
     {
       name: "jadlionhd",
@@ -39,9 +43,7 @@ const seed = async function (knex) {
       clothing: null,
       inventory: null,
       last_visited_worlds: null,
-      created_at: null
+      created_at: dateNow
     }
   ]);
-};
-
-export { seed };
+})();
