@@ -1,9 +1,10 @@
 ![Example](/assets/ignore/banner.png)
+
 > A Growtopia private server using Node.js
 
 ## Requirements
 
-- Node.js v16+
+- Node.js v16+ (Recommended LTS v20)
 
 ## Setup
 
@@ -32,8 +33,8 @@ WEB_ENV=development
 
 ## Database
 
-Database that we currently use is SQLite3, since its easier & light.
-And for the SQL query builder we use Knex.js
+Database that we currently use is SQLite, since its easier & light instead of using JSON.
+And for the ORM we are using [Drizzle-ORM](https://orm.drizzle.team/)
 
 ## Starting server
 
@@ -59,14 +60,14 @@ Then zip the `cache` folder into zip & put it to `assets/cache.zip`.
 
 If you encountered `Updating items...` then disconnected from the server randomly. Update the cache by login to Growtopia's original server & do [this](#growtopia-assets-cache) step again.
 
-
 ## Contributing
+
 Any contributions are welcome.
 
 There's few rules of contributing:
+
 - Code must match the existing code style. Please make sure to run `npm run lint` before submiting a PR.
 - The commit must take review first before merging into `main` branch.
-
 
 ## Links
 
