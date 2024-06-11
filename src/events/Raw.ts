@@ -52,7 +52,7 @@ export default class extends Listener<"raw"> {
             }
 
             // Check if there's same account is logged in
-            const targetPeer = find(this.base, this.base.cache.users, (v) => v.data?.id_user === user.id_user);
+            const targetPeer = find(this.base, this.base.cache.users, (v) => v.data?.id_user === user.id);
             if (targetPeer) {
               peer.send(Variant.from("OnConsoleMessage", "`4Already Logged In?`` It seems that this account already logged in by somebody else."));
 
@@ -103,7 +103,7 @@ export default class extends Listener<"raw"> {
             peer.data.rotatedLeft = false;
             // peer.data.requestedName = parsed.requestedName as string;
             peer.data.country = parsed?.country as string;
-            peer.data.id_user = user.id_user;
+            peer.data.id_user = user.id;
             peer.data.role = user.role;
             peer.data.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
             peer.data.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;

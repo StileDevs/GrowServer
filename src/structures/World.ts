@@ -35,26 +35,32 @@ export class World {
     const wrld = this.getWorldCache(this.worldName);
     const world = await this.base.database.getWorld(this.worldName);
     if (world) {
-      await this.base.database.updateWorld({
+      await this.base.database.saveWorld({
         name: wrld.worldName,
-        ownedBy: wrld.data.owner ? `${wrld.data.owner.id}` : null,
+        ownedBy: wrld.data.owner ? wrld.data.owner.id : null,
         blockCount: wrld.data.blockCount,
         width: wrld.data.width,
         height: wrld.data.height,
         blocks: Buffer.from(JSON.stringify(wrld.data.blocks)),
         owner: wrld.data.owner ? Buffer.from(JSON.stringify(wrld.data.owner)) : null,
-        dropped: Buffer.from(JSON.stringify(wrld.data.dropped))
+        dropped: Buffer.from(JSON.stringify(wrld.data.dropped)),
+        updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+        id: 0, // Ignore this (Satisfies type)
+        created_at: "" // Ignore this (Satisfies type)
       });
     } else {
-      await this.base.database.saveWorld({
+      await this.base.database.createWorld({
         name: wrld.data.name,
-        ownedBy: wrld.data.owner ? `${wrld.data.owner.id}` : null,
+        ownedBy: wrld.data.owner ? wrld.data.owner.id : null,
         blockCount: wrld.data.blockCount,
         width: wrld.data.width,
         height: wrld.data.height,
         blocks: Buffer.from(JSON.stringify(wrld?.data.blocks)),
         owner: wrld.data.owner ? Buffer.from(JSON.stringify(wrld.data.owner)) : null,
-        dropped: Buffer.from(JSON.stringify(wrld.data.dropped))
+        dropped: Buffer.from(JSON.stringify(wrld.data.dropped)),
+        updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+        id: 0, // Ignore this (Satisfies type)
+        created_at: "" // Ignore this (Satisfies type)
       });
     }
   }
@@ -155,11 +161,11 @@ ${peer.data.lastVisitedWorlds
           width: world.width,
           height: world.height,
           blockCount: world.blockCount,
-          blocks: JSON.parse(world.blocks.toString()),
+          blocks: JSON.parse((world.blocks as Buffer).toString()),
           admins: [],
           playerCount: 0,
           jammers: [],
-          dropped: world.dropped,
+          dropped: world.dropped ? JSON.parse(world.dropped.toString()) : { uid: 0, items: [] },
           owner: world.owner ? JSON.parse(world.owner.toString()) : null
         };
       } else {

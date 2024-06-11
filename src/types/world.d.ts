@@ -1,3 +1,4 @@
+import { Worlds } from "../database/schemas";
 import type { Peer } from "../structures/Peer";
 import type { World } from "../structures/World";
 
@@ -18,16 +19,7 @@ export interface PlacedArg {
   flags: number;
 }
 
-export interface WorldDB {
-  name: string;
-  ownedBy?: string | null;
-  blockCount: number;
-  blocks: Buffer;
-  width: number;
-  height: number;
-  owner?: Buffer | null;
-  dropped?: Buffer;
-}
+export type WorldDB = Worlds;
 
 export interface Jammer {
   type: "zombie" | "punch" | "signal";
