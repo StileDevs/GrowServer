@@ -1,27 +1,49 @@
-import { createRequire } from "node:module";
-import type { Server } from "ws";
-const Websocket = createRequire(import.meta.url)("ws").Server;
 import { type BaseServer } from "../structures/BaseServer.js";
+import { BroadcastChannelsType, OpCode } from "../utils/enums/WebSocket.js";
+import { IWebSocketServer } from "./IWebSocketServer.js";
+import { customAlphabet } from "nanoid";
+const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
-export async function WebSocketServer(base: BaseServer) {
-  const server = new Websocket({ port: 8080 }) as Server;
+export class WSServer {
+  public server: IWebSocketServer;
 
-  server.on("connection", (ws, req) => {
-    base.log.info(`Client connected`, req.headers["sec-websocket-key"]);
+  constructor(public base: BaseServer) {
+    this.server = new IWebSocketServer({ port: 8080 });
+  }
 
-    console.log(server.clients);
-    ws.send(JSON.stringify({ op: 0 }));
+  public async start() {
+    this.server.on("connection", (ws, req) => {
+      const uid = customAlphabet(alphabet, 16)();
+      this.base.log.info(`Client connected`, uid);
 
-    ws.on("close", (code, r) => {
-      base.log.info(`Client disconnected code: ${code} | Reason: ${r}`);
+      ws.uid = uid;
+
+      ws.sendHelloPacket();
+
+      ws.on("close", (code, r) => {
+        this.base.log.info(`Client disconnected code: ${code} | Reason: ${r}`);
+      });
+
+      ws.on("message", (data) => {
+        console.log({ data });
+        const type = (data as Buffer).readInt32LE(0);
+
+        switch (type) {
+          case OpCode.BROADCAST_CHANNELS: {
+            const BroadCastType = (data as Buffer).readUInt8(4);
+
+            if (BroadCastType === BroadcastChannelsType.SUPER_BROADCAST) {
+              ws.sendReady();
+            }
+
+            break;
+          }
+        }
+      });
     });
 
-    ws.on("message", (data) => {
-      base.log.info(`Message: ${data.toString()}`);
+    this.server.on("listening", () => {
+      this.base.log.ready("Websocket server ready!");
     });
-  });
-
-  server.on("listening", () => {
-    base.log.ready("Websocket server ready!");
-  });
+  }
 }

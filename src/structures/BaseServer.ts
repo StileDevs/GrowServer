@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { Client } from "growtopia.js";
 import { WebServer } from "./Webserver.js";
-import { WebSocketServer } from "../websockets/server.js";
+import { WSServer } from "../websockets/server.js";
 import { hashItemsDat } from "../utils/Utils.js";
 import { Action } from "../abstracts/Action.js";
 import { ItemsDat } from "growtopia.js";
@@ -85,7 +85,7 @@ export class BaseServer {
     this.#_loadItems().then(async () => {
       this.log.ready("Items data ready!");
       await WebServer(this);
-      await WebSocketServer(this);
+      await new WSServer(this).start();
       await this.#_loadEvents();
       await this.#_loadActions();
       await this.#_loadCommands();
