@@ -13,7 +13,7 @@
     "lint": "eslint lint ./src",
     "iteminfo:fetch": "node wiki-scraper/scrape.js",
     "dev": "rimraf dist && rimraf assets/cache && eslint ./src && tsc && vite build --logLevel silent && node -r dotenv/config dist/app.js",
-    "dev:nolint": "rimraf dist && rimraf assets/cache && tsc && node -r dotenv/config dist/src/app.js",
+    "dev:nolint": "rimraf dist && rimraf assets/cache && tsc && vite build --logLevel silent && node -r dotenv/config dist/app.js",
     "install": "(node scripts/setup.js) && tsc && npm run generate && npm run seed && npm run finish",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
@@ -73,6 +73,7 @@
     "express": "^4.19.2",
     "express-rate-limit": "^7.2.0",
     "growtopia.js": "^1.4.1",
+    "nanoid": "^5.0.7",
     "ws": "^8.17.0"
   }
 }
