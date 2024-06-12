@@ -1,9 +1,10 @@
-export enum OpCode {
-  HELLO,
-  BROADCAST_CHANNELS,
-  READY
-}
+export const OpCode = {
+  HELLO: 1,
+  /** Refer to BroadcastChannelsType */
+  BROADCAST_CHANNELS: 2,
+  READY: 3
+};
 
-export enum BroadcastChannelsType {
-  SUPER_BROADCAST
-}
+export const BroadcastChannelsType = {
+  SUPER_BROADCAST: 1
+};
