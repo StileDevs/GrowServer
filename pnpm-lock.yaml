@@ -50,6 +50,9 @@ importers:
       growtopia.js:
         specifier: ^1.4.1
         version: 1.4.1(encoding@0.1.13)
+      nanoid:
+        specifier: ^5.0.7
+        version: 5.0.7
       ws:
         specifier: ^8.17.0
         version: 8.17.0
