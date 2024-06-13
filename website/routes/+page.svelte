@@ -3,7 +3,7 @@
   import { onMount } from "svelte";
 
   onMount(() => {
-    const ws = new WebSocket("ws://localhost:8080");
+    const ws = new WebSocket("ws://localhost");
 
     /** @param {MessageEvent<Blob>} ev*/
     ws.onmessage = async (ev) => {
