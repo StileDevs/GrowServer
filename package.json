@@ -16,7 +16,7 @@
     "dev:server": "rimraf dist && rimraf assets/cache && eslint ./src && tsc && node -r dotenv/config dist/app.js",
     "dev:nolint": "rimraf dist && rimraf assets/cache && tsc && vite build --logLevel silent && node -r dotenv/config dist/app.js",
     "dev:vite": "vite",
-    "install": "(node scripts/setup.js) && tsc && npm run generate && npm run seed && npm run finish",
+    "install": "(node scripts/setup.js) && tsc && vite build --logLevel silent && npm run generate && npm run seed && npm run finish",
     "check": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./jsconfig.json --watch",
     "finish": "echo \u001b[46mSetup Completed!\u001b[0m && echo \u001b[46mCheck out GrowServer github: https://github.com/JadlionHD/GrowServer\u001b[0m"
