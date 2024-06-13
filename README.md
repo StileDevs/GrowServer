@@ -41,7 +41,7 @@ And for the ORM we are using [Drizzle-ORM](https://orm.drizzle.team/)
 To run the development server by
 
 ```
-$ npm run dev
+$ npm run start
 ```
 
 ## Growtopia assets cache
