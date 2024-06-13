@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import { Client } from "growtopia.js";
 import { WebServer } from "./Webserver.js";
-import { WSServer } from "../websockets/server.js";
 import { hashItemsDat } from "../utils/Utils.js";
 import { Action } from "../abstracts/Action.js";
 import { ItemsDat } from "growtopia.js";
@@ -16,6 +15,7 @@ import { ActionTypes } from "../utils/enums/Tiles.js";
 import decompress from "decompress";
 import path from "path";
 import { fileURLToPath } from "url";
+import axios from "axios";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +34,7 @@ export class BaseServer {
   public database;
   public locks: Lock[];
   public ignore: Ignore;
+  public cdn: { version: number; uri: string };
 
   constructor() {
     this.server = new Client({ https: { enable: false } });
@@ -75,6 +76,7 @@ export class BaseServer {
       blockIDsToIgnoreByLock: [6, 8],
       blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR]
     };
+    this.cdn = { version: 0, uri: "" };
   }
 
   public async start() {
@@ -84,8 +86,10 @@ export class BaseServer {
 
     this.#_loadItems().then(async () => {
       this.log.ready("Items data ready!");
+      this.log.info("Fetching latest Growtopia Cache");
+      this.cdn = await this.getLatestCdn();
+
       await WebServer(this);
-      await new WSServer(this).start();
       await this.#_loadEvents();
       await this.#_loadActions();
       await this.#_loadCommands();
@@ -144,5 +148,16 @@ export class BaseServer {
       const initFile = new file(this);
       this.commands.set(initFile.opt.name, initFile);
     });
+  }
+
+  async getLatestCdn() {
+    try {
+      const res = await axios.get("https://mari-project.jad.li/api/v1/growtopia/cache/latest");
+      if (res.status !== 200) return { version: 0, uri: "" };
+
+      return res.data as { version: number; uri: string };
+    } catch (e) {
+      return { version: 0, uri: "" };
+    }
   }
 }

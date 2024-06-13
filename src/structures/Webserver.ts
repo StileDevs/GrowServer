@@ -5,9 +5,9 @@ import https from "node:https";
 import rateLimit from "express-rate-limit";
 import path from "node:path";
 import { BaseServer } from "./BaseServer.js";
-import axios from "axios";
 import { ApiRouter } from "../routes/index.js";
 import { fileURLToPath } from "url";
+import { WSServer } from "../websockets/server.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -25,22 +25,8 @@ const apiLimiter = rateLimit({
   legacyHeaders: false // Disable the `X-RateLimit-*` headers
 });
 
-export async function getLatestCdn() {
-  try {
-    const res = await axios.get("https://mari-project.jad.li/api/v1/growtopia/cache/latest");
-    if (res.status !== 200) return { version: 0, uri: "" };
-
-    return res.data as { version: number; uri: string };
-  } catch (e) {
-    return { version: 0, uri: "" };
-  }
-}
-
 export async function WebServer(server: BaseServer) {
   if (!existsSync("./assets/cache.zip")) throw new Error("Could not find 'cache.zip' file, please get one from growtopia 'cache' folder & compress the 'cache' folder into zip file.");
-
-  server.log.info("Fetching latest Growtopia Cache");
-  const cdn = await getLatestCdn();
 
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
@@ -61,7 +47,7 @@ export async function WebServer(server: BaseServer) {
 
   app.use("/growtopia/cache*", (req, res, next) => {
     server.log.warn(`Growtopia Client requesting cache: ${req.originalUrl} not found. Redirecting to Growtopia Original CDN...`);
-    const url = `https://ubistatic-a.akamaihd.net/${cdn.uri}/${req.originalUrl.replace("/growtopia/", "")}`;
+    const url = `https://ubistatic-a.akamaihd.net/${server.cdn.uri}/${req.originalUrl.replace("/growtopia/", "")}`;
     res.redirect(url);
     next();
   });
@@ -71,10 +57,13 @@ export async function WebServer(server: BaseServer) {
   });
 
   if (process.env.WEB_ENV === "production") {
-    app.listen(3000, () => {
-      server.log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
-      server.log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`);
-    });
+    await new WSServer(
+      server,
+      app.listen(3000, () => {
+        server.log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
+        server.log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`);
+      })
+    ).start();
   } else if (process.env.WEB_ENV === "development") {
     const httpServer = http.createServer(app);
     const httpsServer = https.createServer(options, app);
@@ -85,5 +74,6 @@ export async function WebServer(server: BaseServer) {
     httpsServer.on("listening", () => {
       server.log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
     });
+    await new WSServer(server, httpServer).start();
   }
 }

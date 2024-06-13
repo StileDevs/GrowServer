@@ -21,9 +21,7 @@ export class IWebSocketServer extends WebSocketServer<typeof IWebSocket> {
   constructor(...params: ConstructorParameters<typeof WebSocketServer>) {
     super({
       WebSocket: IWebSocket,
-      noServer: false,
-      port: 8080,
-      server: undefined,
+      noServer: true,
       ...params
     });
   }
