@@ -57,14 +57,11 @@ export async function WebServer(server: BaseServer) {
   });
 
   if (process.env.WEB_ENV === "production") {
-    await new WSServer(
-      server,
-      app.listen(3000, () => {
-        server.log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
-        server.log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`);
-      })
-    ).start();
-  } else if (process.env.WEB_ENV === "development") {
+    return app.listen(3000, () => {
+      server.log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
+      server.log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`);
+    });
+  } else {
     const httpServer = http.createServer(app);
     const httpsServer = https.createServer(options, app);
 
@@ -74,6 +71,6 @@ export async function WebServer(server: BaseServer) {
     httpsServer.on("listening", () => {
       server.log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
     });
-    await new WSServer(server, httpServer).start();
+    return httpServer;
   }
 }

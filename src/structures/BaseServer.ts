@@ -16,6 +16,8 @@ import decompress from "decompress";
 import path from "path";
 import { fileURLToPath } from "url";
 import axios from "axios";
+import { IWebSocketServer } from "../websockets/IWebSocketServer.js";
+import { WSServer } from "../websockets/server.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -35,6 +37,7 @@ export class BaseServer {
   public locks: Lock[];
   public ignore: Ignore;
   public cdn: { version: number; uri: string };
+  public wss?: WSServer;
 
   constructor() {
     this.server = new Client({ https: { enable: false } });
@@ -89,7 +92,10 @@ export class BaseServer {
       this.log.info("Fetching latest Growtopia Cache");
       this.cdn = await this.getLatestCdn();
 
-      await WebServer(this);
+      const web = await WebServer(this);
+      this.wss = new WSServer(this, web);
+      this.wss.start();
+
       await this.#_loadEvents();
       await this.#_loadActions();
       await this.#_loadCommands();
