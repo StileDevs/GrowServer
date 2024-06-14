@@ -71,6 +71,7 @@
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.31.2",
     "drizzle-zod": "^0.5.1",
+    "embla-carousel-svelte": "^8.1.5",
     "express": "^4.19.2",
     "express-rate-limit": "^7.2.0",
     "growtopia.js": "^1.4.1",
