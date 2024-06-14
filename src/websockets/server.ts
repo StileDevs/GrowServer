@@ -1,6 +1,6 @@
 import { Server } from "http";
 import { type BaseServer } from "../structures/BaseServer.js";
-import { BroadcastChannelsType, OpCode } from "../utils/enums/WebSocket.js";
+import { RequestFlags, OpCode } from "../utils/enums/WebSocket.js";
 import { IWebSocketServer } from "./IWebSocketServer.js";
 import { customAlphabet } from "nanoid";
 const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -40,13 +40,13 @@ export class WSServer {
         const type = (data as Buffer).readInt32LE(0);
 
         switch (type) {
-          case OpCode.BROADCAST_CHANNELS: {
-            const BroadCastType = (data as Buffer).readUInt8(4);
+          case OpCode.REQUEST: {
+            const BroadCastType = (data as Buffer).readUInt32LE(4);
+            console.log({ BroadCastType });
 
-            if (BroadCastType === BroadcastChannelsType.SUPER_BROADCAST) {
-              ws.sendReady();
-            }
+            if (BroadCastType & RequestFlags.SUPER_BROADCAST) ws.flags |= RequestFlags.SUPER_BROADCAST;
 
+            ws.sendReady();
             break;
           }
         }
