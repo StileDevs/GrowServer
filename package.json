@@ -67,7 +67,6 @@
     "cheerio": "^1.0.0-rc.12",
     "crypto-js": "^4.2.0",
     "decompress": "^4.2.1",
-    "discord.js": "^14.15.3",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.31.2",
     "drizzle-zod": "^0.5.1",

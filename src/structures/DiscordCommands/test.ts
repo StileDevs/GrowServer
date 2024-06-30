@@ -2,9 +2,9 @@ import { BaseServer } from "../BaseServer.js";
 import { Peer } from "../Peer.js";
 import { TextPacket, Variant } from "growtopia.js";
 import { DataTypes } from "../../utils/enums/DataTypes.js";
-import { Message } from "discord.js";
+import { Message, type TextableChannel } from "eris";
 
-export default async function test(server: BaseServer, args: string[], msg: Message) {
+export default async function test(server: BaseServer, args: string[], msg: Message<TextableChannel>) {
   const peer = new Peer(server, 0);
 
   peer.everyPeer((p) => {
