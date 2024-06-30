@@ -1,13 +1,11 @@
-import { Client, GatewayIntentBits, Message, ActivityType, PresenceUpdateStatus } from "discord.js";
+import { Client, Constants, Message, type TextableChannel, type PossiblyUncachedTextableChannel } from "eris";
 import { Command } from "../abstracts/Command.js";
 import { BaseServer } from "../structures/BaseServer.js";
 import test from "./DiscordCommands/test.js";
 import ShutdownServer from "./DiscordCommands/ShutdownServer.js";
 import { Logger } from "./Logger.js";
 
-type Commands = {
-  [key: string]: (srv: BaseServer, args: string[], msg: Message) => void;
-};
+type Commands = Record<string, (srv: BaseServer, args: string[], msg: Message<TextableChannel>) => void>;
 
 export class DiscordManager {
   private client: Client;
@@ -19,8 +17,22 @@ export class DiscordManager {
   private log: Logger;
 
   constructor(token: string, clientId: string, server: BaseServer) {
-    this.client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
     this.token = token;
+    this.client = new Client(`Bot ${this.token}`, {
+      intents: ["guilds", "guildMessages", 1 << 15], // 1 << 15 = MessageContent
+      maxShards: "auto",
+      messageLimit: 0,
+      getAllUsers: false,
+      allowedMentions: {
+        everyone: false,
+        roles: true,
+        users: true
+      },
+      disableEvents: {
+        TYPING_START: true,
+        VOICE_STATE_UPDATE: true
+      }
+    });
     this.clientId = clientId;
     this.commands = new Map();
     this.server = server;
@@ -29,15 +41,7 @@ export class DiscordManager {
 
     this.client.on("ready", () => {
       this.log.discord("Discord Bot is Ready~");
-      this.client.user?.setPresence({
-        activities: [
-          {
-            name: `GrowServer!`,
-            type: ActivityType.Watching
-          }
-        ],
-        status: PresenceUpdateStatus.DoNotDisturb
-      });
+      this.client.editStatus("online", { name: `GrowServer!`, type: Constants.ActivityTypes.WATCHING });
     });
 
     this.client.on("messageCreate", async (msg) => {
@@ -54,7 +58,7 @@ export class DiscordManager {
       if (command.startsWith(this.prefix)) {
         command = command.replace(this.prefix, "");
         if (commands[command]) {
-          commands[command](this.server, args, msg);
+          commands[command](this.server, args, msg as Message<TextableChannel>);
         }
       }
     });
@@ -63,7 +67,7 @@ export class DiscordManager {
   public async start() {
     try {
       this.log.info("Connecting Discord bot...");
-      await this.client.login(this.token);
+      await this.client.connect();
     } catch (e) {
       if (e instanceof Error) {
         this.log.error("Failed connect because:", e.message);
