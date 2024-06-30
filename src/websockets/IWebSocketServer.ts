@@ -1,22 +1,5 @@
-import { WebSocketServer, WebSocket as WSC } from "ws";
-import { OpCode } from "../utils/enums/WebSocket.js";
-
-export class IWebSocket extends WSC {
-  public uid!: string;
-  public flags!: number;
-
-  public sendHelloPacket() {
-    const buf = Buffer.alloc(4);
-    buf.writeInt32LE(OpCode.HELLO);
-    this.send(buf);
-  }
-
-  public sendReady() {
-    const buf = Buffer.alloc(4);
-    buf.writeInt32LE(OpCode.READY);
-    this.send(buf);
-  }
-}
+import { WebSocketServer } from "ws";
+import { IWebSocket } from "./IWebsocket.js";
 
 export class IWebSocketServer extends WebSocketServer<typeof IWebSocket> {
   constructor(...params: ConstructorParameters<typeof WebSocketServer>) {
@@ -36,6 +19,7 @@ export class IWebSocketServer extends WebSocketServer<typeof IWebSocket> {
   }
 
   public everyUser(callbackfn: (user: IWebSocket, uid: string) => void): void {
+    this.eventNames;
     this.clients.forEach((ws) => {
       callbackfn(ws, ws.uid);
     });
