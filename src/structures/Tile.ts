@@ -16,7 +16,7 @@ export class Tile {
     this.block = block;
   }
 
-  public serialize(actionType: number) {
+  public serialize(actionType: number): Buffer {
     let buf: Buffer;
     const lockPos = this.block.lock && !this.block.lock.isOwner ? (this.block.lock.ownerX as number) + (this.block.lock.ownerY as number) * this.world.data.width : 0;
 
@@ -113,6 +113,20 @@ export class Tile {
         buf.writeUInt32LE(owner, 10);
         buf.writeUInt32LE(0, 14); // admin count
         buf.writeInt32LE(-100, 18);
+
+        return buf;
+      }
+
+      case ActionTypes.SWITCHEROO: {
+        let flags = 0x0;
+        buf = Buffer.alloc(8);
+
+        if (this.block.toggleable?.open) flags |= Flags.FLAGS_OPEN;
+        if (this.block.toggleable?.public) flags |= Flags.FLAGS_PUBLIC;
+
+        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
+        buf.writeUint16LE(lockPos, 4);
+        buf.writeUint16LE(flags, 6);
 
         return buf;
       }

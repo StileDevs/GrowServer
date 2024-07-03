@@ -16,8 +16,8 @@ import decompress from "decompress";
 import path from "path";
 import { fileURLToPath } from "url";
 import axios from "axios";
-import { IWebSocketServer } from "../websockets/IWebSocketServer.js";
 import { WSServer } from "../websockets/server.js";
+import { Items } from "./Items.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -115,16 +115,15 @@ export class BaseServer {
   }
 
   async #_loadItems() {
-    const itemsDat = new ItemsDat(fs.readFileSync("./assets/dat/items.dat"));
+    let itemsDat = new ItemsDat(fs.readFileSync("./assets/dat/items.dat"));
     await itemsDat.decode();
 
-    const findItem = (id: number) => itemsDat.meta.items.findIndex((v) => v.id === id);
-
-    // id 8900-8902
-    itemsDat.meta.items[findItem(8900)].extraFile = { raw: Buffer.from("interface/large/banner.rttex"), value: "interface/large/banner.rttex" };
-    itemsDat.meta.items[findItem(8900)].extraFileHash = hashItemsDat(fs.readFileSync("./assets/cache/interface/large/banner.rttex"));
-    itemsDat.meta.items[findItem(8902)].extraFile = { raw: Buffer.from("interface/large/banner-transparent.rttex"), value: "interface/large/banner-transparent.rttex" };
-    itemsDat.meta.items[findItem(8902)].extraFileHash = hashItemsDat(fs.readFileSync("./assets/cache/interface/large/banner-transparent.rttex"));
+    try {
+      itemsDat = await Items.loadCustomItems(itemsDat);
+      this.log.info("Loaded custom items");
+    } catch (e) {
+      this.log.error(e);
+    }
 
     await itemsDat.encode();
     this.items.content = itemsDat.data;
