@@ -347,6 +347,21 @@ export class Place {
         return true;
       }
 
+      case ActionTypes.DICE: {
+        p.block.dice = 0;
+
+        this.world.place({
+          peer: this.peer,
+          x: p.block.x,
+          y: p.block.y,
+          isBg: p.isBg,
+          id: p.id
+        });
+
+        this.tileUpdate(p.actionType, p.block);
+        return true;
+      }
+
       case ActionTypes.SWITCHEROO: {
         p.block.toggleable = {
           open: false,

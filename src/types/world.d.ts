@@ -40,6 +40,7 @@ export interface Block {
   tree?: Tree;
   toggleable?: Toggleable;
   mannequin?: Mannequin;
+  dice?: number;
 }
 
 export interface Mannequin {
