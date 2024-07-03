@@ -8,6 +8,7 @@ import { TankTypes } from "../utils/enums/TankTypes.js";
 import { ActionTypes } from "../utils/enums/Tiles.js";
 import { Place } from "./Place.js";
 import { Chance } from "chance";
+import { getWeatherId } from "../utils/builders/WeatherBuilder.js";
 
 export class Punch {
   public base: BaseServer;
@@ -89,6 +90,23 @@ export class Punch {
         Place.tileUpdate(this.base, this.peer, itemMeta?.type || 0, block, this.world);
         if (block.toggleable) block.toggleable.open = !block.toggleable.open;
 
+        break;
+      }
+
+      case ActionTypes.WEATHER_MACHINE: {
+        // block.weather!.enabled = !block.weather!.enabled;
+
+        let weatherId = getWeatherId(itemMeta.id as number);
+        if (this.world.data.weatherId === weatherId) weatherId = 41; // to-do add: world.data.baseWeatherId
+
+        this.world.data.weatherId = weatherId;
+
+        this.peer.everyPeer((p) => {
+          if (this.peer.data.world === p.data.world && p.data.world !== "EXIT") {
+            p.send(Variant.from("OnSetCurrentWeather", this.world.data.weatherId));
+          }
+        });
+        this.world.saveToCache();
         break;
       }
     }
@@ -183,6 +201,23 @@ export class Punch {
 
       case ActionTypes.HEART_MONITOR: {
         block.heartMonitor = undefined;
+        break;
+      }
+
+      case ActionTypes.SWITCHEROO: {
+        block.toggleable = undefined;
+        break;
+      }
+
+      case ActionTypes.WEATHER_MACHINE: {
+        block.toggleable = undefined;
+
+        this.world.data.weatherId = 41;
+        this.peer.everyPeer((p) => {
+          if (this.peer.data.world === p.data.world && p.data.world !== "EXIT") {
+            p.send(Variant.from("OnSetCurrentWeather", this.world.data.weatherId));
+          }
+        });
         break;
       }
 

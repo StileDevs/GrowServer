@@ -301,6 +301,52 @@ export class Place {
         return true;
       }
 
+      case ActionTypes.MANNEQUIN: {
+        p.block.mannequin = {
+          label: "",
+          hairColor: 0,
+          hair: 12288,
+          shirt: 0,
+          pants: 0,
+          feet: 0,
+          face: 0,
+          hand: 0,
+          back: 0,
+          mask: 0,
+          neck: 0
+        };
+
+        this.world.place({
+          peer: this.peer,
+          x: p.block.x,
+          y: p.block.y,
+          isBg: p.isBg,
+          id: p.id
+        });
+
+        this.tileUpdate(p.actionType, p.block);
+
+        return true;
+      }
+
+      case ActionTypes.WEATHER_MACHINE: {
+        p.block.toggleable = {
+          open: false,
+          public: false
+        };
+
+        this.world.place({
+          peer: this.peer,
+          x: p.block.x,
+          y: p.block.y,
+          isBg: p.isBg,
+          id: p.id
+        });
+
+        this.tileUpdate(p.actionType, p.block);
+        return true;
+      }
+
       case ActionTypes.SWITCHEROO: {
         p.block.toggleable = {
           open: false,
