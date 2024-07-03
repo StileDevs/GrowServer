@@ -157,6 +157,17 @@ export class Tile {
         return buf.data;
       }
 
+      case ActionTypes.DICE: {
+        buf = new IBuffer(10);
+
+        this.serializeBlockData(buf, { lockPos, flagTile: Flags.FLAGS_TILEEXTRA });
+
+        buf.writeU8(ExtraTypes.DICE);
+        buf.writeU8(this.block.dice || 0);
+
+        return buf.data;
+      }
+
       case ActionTypes.SEED: {
         const flag = 0x0;
         buf = new IBuffer(14);
