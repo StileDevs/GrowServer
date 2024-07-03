@@ -4,6 +4,7 @@ import type { Block } from "../types";
 import { World } from "./World.js";
 import { BaseServer } from "./BaseServer.js";
 import { find } from "../utils/Utils.js";
+import { IBuffer } from "./IBuffer.js";
 
 export class Tile {
   public base: BaseServer;
@@ -16,8 +17,14 @@ export class Tile {
     this.block = block;
   }
 
+  public serializeBlockData(buf: IBuffer, opts: { lockPos: number; flagTile: number }) {
+    buf.writeU32(this.block.fg | (this.block.bg << 16));
+    buf.writeU16(opts.lockPos);
+    buf.writeU16(opts.flagTile);
+  }
+
   public serialize(actionType: number): Buffer {
-    let buf: Buffer;
+    let buf: IBuffer;
     const lockPos = this.block.lock && !this.block.lock.isOwner ? (this.block.lock.ownerX as number) + (this.block.lock.ownerY as number) * this.world.data.width : 0;
 
     switch (actionType) {
@@ -25,38 +32,33 @@ export class Tile {
       case ActionTypes.DOOR:
       case ActionTypes.MAIN_DOOR: {
         const label = this.block.door?.label || "";
-        buf = Buffer.alloc(12 + label.length);
+        buf = new IBuffer(12 + label.length);
 
-        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
-        buf.writeUint16LE(lockPos, 4);
-        buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
+        this.serializeBlockData(buf, { lockPos, flagTile: Flags.FLAGS_TILEEXTRA });
 
-        buf.writeUint8(ExtraTypes.DOOR, 8);
-        buf.writeUint16LE(label.length, 9);
-        buf.write(label, 11);
+        buf.writeU8(ExtraTypes.DOOR);
+        buf.writeString(label);
         // first param locked/not (0x8/0x0)
-        buf.writeUint8(0x0, 11 + label.length);
+        buf.writeU8(0x0);
 
-        return buf;
+        return buf.data;
       }
 
       case ActionTypes.SIGN: {
         let flag = 0x0;
         const label = this.block.sign?.label || "";
-        buf = Buffer.alloc(15 + label.length);
+        buf = new IBuffer(15 + label.length);
 
+        flag |= Flags.FLAGS_TILEEXTRA;
         if (this.block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
 
-        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
-        buf.writeUint16LE(lockPos, 4);
-        buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
+        this.serializeBlockData(buf, { lockPos, flagTile: flag });
 
-        buf.writeUint8(ExtraTypes.SIGN, 8);
-        buf.writeUint16LE(label.length, 9);
-        buf.write(label, 11);
-        buf.writeInt32LE(-1, 11 + label.length);
+        buf.writeU8(ExtraTypes.SIGN);
+        buf.writeString(label);
+        buf.writeI32(-1);
 
-        return buf;
+        return buf.data;
       }
 
       case ActionTypes.HEART_MONITOR: {
@@ -72,89 +74,106 @@ export class Tile {
         if (targetPeer) flag |= Flags.FLAGS_OPEN;
         if (this.block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
 
-        buf = Buffer.alloc(15 + name.length);
+        buf = new IBuffer(15 + name.length);
 
-        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
-        buf.writeUint16LE(lockPos, 4);
-        buf.writeUint16LE(flag, 6);
+        this.serializeBlockData(buf, { lockPos, flagTile: flag });
 
-        buf.writeUint8(ExtraTypes.HEART_MONITOR, 8);
-        buf.writeUint32LE(id, 9);
-        buf.writeUint16LE(name.length, 13);
-        buf.write(name, 15);
+        buf.writeU8(ExtraTypes.HEART_MONITOR);
+        buf.writeU32(id);
+        buf.writeString(name);
 
-        return buf;
+        return buf.data;
       }
 
       case ActionTypes.DISPLAY_BLOCK: {
-        buf = Buffer.alloc(13);
+        buf = new IBuffer(13);
 
-        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
-        buf.writeUint16LE(0x0, 4);
-        buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
+        this.serializeBlockData(buf, { lockPos, flagTile: Flags.FLAGS_TILEEXTRA });
 
-        buf.writeUint8(ExtraTypes.DISPLAY_BLOCK, 8);
-        buf.writeUint32LE(this.block.dblockID || 0, 9);
+        buf.writeU8(ExtraTypes.DISPLAY_BLOCK);
+        buf.writeU32(this.block.dblockID || 0);
 
-        return buf;
+        return buf.data;
       }
 
       case ActionTypes.LOCK: {
         const owner = (this.block.lock ? this.block.lock.ownerUserID : this.world.data.owner?.id) as number;
 
         // 0 = admincount
-        buf = Buffer.alloc(26 + 4 * 0);
+        buf = new IBuffer(26 + 4 * 0);
 
-        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
-        buf.writeUint16LE(lockPos, 4);
-        buf.writeUint16LE(Flags.FLAGS_TILEEXTRA, 6);
+        this.serializeBlockData(buf, { lockPos, flagTile: Flags.FLAGS_TILEEXTRA });
 
-        buf.writeUInt16LE(ExtraTypes.LOCK | (0x0 << 8), 8);
-        buf.writeUInt32LE(owner, 10);
-        buf.writeUInt32LE(0, 14); // admin count
-        buf.writeInt32LE(-100, 18);
+        buf.writeU16(ExtraTypes.LOCK | (0x0 << 8));
+        buf.writeU32(owner);
+        buf.writeU32(0); // admin count
+        buf.writeI32(-100);
 
-        return buf;
+        return buf.data;
       }
 
       case ActionTypes.SWITCHEROO: {
-        let flags = 0x0;
-        buf = Buffer.alloc(8);
+        let flag = 0x0;
+        buf = new IBuffer(8);
 
-        if (this.block.toggleable?.open) flags |= Flags.FLAGS_OPEN;
-        if (this.block.toggleable?.public) flags |= Flags.FLAGS_PUBLIC;
+        if (this.block.toggleable?.open) flag |= Flags.FLAGS_OPEN;
+        if (this.block.toggleable?.public) flag |= Flags.FLAGS_PUBLIC;
 
-        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
-        buf.writeUint16LE(lockPos, 4);
-        buf.writeUint16LE(flags, 6);
+        this.serializeBlockData(buf, { lockPos, flagTile: flag });
 
-        return buf;
+        return buf.data;
+      }
+
+      case ActionTypes.MANNEQUIN: {
+        let flag = 0x0;
+        const label = this.block.mannequin?.label || "";
+        buf = new IBuffer(34 + label?.length);
+
+        if (this.block.rotatedLeft) flag |= Flags.FLAGS_ROTATED_LEFT;
+
+        this.serializeBlockData(buf, { lockPos, flagTile: flag });
+
+        buf.writeU8(ExtraTypes.MANNEQUIN);
+        buf.writeString(label);
+
+        buf.writeU32(this.block.mannequin?.hairColor || 0); // hair color
+        buf.writeU8(this.block.mannequin?.unknown_u8 || 0); // unknown
+        buf.writeU16(this.block.mannequin?.hair || 0); // hair
+        buf.writeU16(this.block.mannequin?.shirt || 0); // shirt
+        buf.writeU16(this.block.mannequin?.pants || 0); // pants
+        buf.writeU16(this.block.mannequin?.feet || 0); // feet
+        buf.writeU16(this.block.mannequin?.face || 0); // face
+        buf.writeU16(this.block.mannequin?.hand || 0); // hand
+        buf.writeU16(this.block.mannequin?.back || 0); // back
+        buf.writeU16(this.block.mannequin?.mask || 0); // mask
+        buf.writeU16(this.block.mannequin?.neck || 0); // neck
+
+        return buf.data;
+      }
+
+      case ActionTypes.WEATHER_MACHINE: {
+        buf = new IBuffer(8);
+        this.serializeBlockData(buf, { lockPos, flagTile: 0x0 });
+        return buf.data;
       }
 
       case ActionTypes.SEED: {
         const flag = 0x0;
-        buf = Buffer.alloc(14);
+        buf = new IBuffer(14);
 
-        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
-        buf.writeUint16LE(lockPos, 4);
-        buf.writeUint16LE(flag, 6);
-        buf.writeUint8(ExtraTypes.SEED, 8);
+        this.serializeBlockData(buf, { lockPos, flagTile: flag });
 
-        buf.writeUInt32LE(Math.floor((Date.now() - (this.block.tree?.plantedAt as number)) / 1000), 9);
-        buf.writeUInt8((this.block.tree?.fruitCount as number) > 4 ? 4 : (this.block.tree?.fruitCount as number), 13);
+        buf.writeU8(ExtraTypes.SEED);
+        buf.writeU32(Math.floor((Date.now() - (this.block.tree?.plantedAt as number)) / 1000));
+        buf.writeU8((this.block.tree?.fruitCount as number) > 4 ? 4 : (this.block.tree?.fruitCount as number));
 
-        return buf;
+        return buf.data;
       }
 
       default: {
-        const flag = 0x0;
-        buf = Buffer.alloc(8);
-
-        buf.writeUInt32LE(this.block.fg | (this.block.bg << 16));
-        buf.writeUint16LE(lockPos, 4);
-        buf.writeUint16LE(flag, 6);
-
-        return buf;
+        buf = new IBuffer(8);
+        this.serializeBlockData(buf, { lockPos, flagTile: 0x0 });
+        return buf.data;
       }
     }
   }

@@ -28,6 +28,7 @@ export const worlds = sqliteTable("worlds", {
   blockCount: integer("blockCount").notNull(),
   blocks: blob("blocks", { mode: "buffer" }),
   dropped: blob("dropped", { mode: "buffer" }),
+  weather_id: integer("weather_id").default(41),
   created_at: text("created_at").default(sql`(current_timestamp)`),
   updated_at: text("updated_at").default(sql`(current_timestamp)`)
 });

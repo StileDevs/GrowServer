@@ -13,7 +13,8 @@ export class World {
     width: 0,
     height: 0,
     blockCount: 0,
-    blocks: []
+    blocks: [],
+    weatherId: 41
   };
   public worldName;
 
@@ -45,8 +46,9 @@ export class World {
         owner: wrld.data.owner ? Buffer.from(JSON.stringify(wrld.data.owner)) : null,
         dropped: Buffer.from(JSON.stringify(wrld.data.dropped)),
         updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+        weather_id: wrld.data.weatherId,
         id: 0, // Ignore this (Satisfies type)
-        created_at: "" // Ignore this (Satisfies type)
+        created_at: "" // Ignore this (Satisfies type),
       });
     } else {
       await this.base.database.createWorld({
@@ -59,6 +61,7 @@ export class World {
         owner: wrld.data.owner ? Buffer.from(JSON.stringify(wrld.data.owner)) : null,
         dropped: Buffer.from(JSON.stringify(wrld.data.dropped)),
         updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+        weather_id: wrld.data.weatherId,
         id: 0, // Ignore this (Satisfies type)
         created_at: "" // Ignore this (Satisfies type)
       });
@@ -166,7 +169,8 @@ ${peer.data.lastVisitedWorlds
           playerCount: 0,
           jammers: [],
           dropped: world.dropped ? JSON.parse(world.dropped.toString()) : { uid: 0, items: [] },
-          owner: world.owner ? JSON.parse(world.owner.toString()) : null
+          owner: world.owner ? JSON.parse(world.owner.toString()) : null,
+          weatherId: world.weather_id || 41
         };
       } else {
         this.generate(true);
@@ -233,7 +237,7 @@ ${peer.data.lastVisitedWorlds
 
         // Weather
         const weatherData = Buffer.alloc(12);
-        weatherData.writeUint16LE(0); // weather id
+        weatherData.writeUint16LE(this.data.weatherId); // weather id
         weatherData.writeUint16LE(0x1, 2); // on atau off (mungkin)
         weatherData.writeUint32LE(0x0, 4); // ??
         weatherData.writeUint32LE(0x0, 8); // ??
@@ -333,7 +337,8 @@ ${peer.data.lastVisitedWorlds
         // separate (maybe?) to different table
         uid: 0,
         items: []
-      }
+      },
+      weatherId: 41
     };
 
     // starting points

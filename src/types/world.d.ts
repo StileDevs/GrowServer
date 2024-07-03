@@ -39,6 +39,22 @@ export interface Block {
   entrace?: Entrance;
   tree?: Tree;
   toggleable?: Toggleable;
+  mannequin?: Mannequin;
+}
+
+export interface Mannequin {
+  label: string;
+  hairColor: number;
+  unknown_u8?: number;
+  hair: number;
+  shirt: number;
+  pants: number;
+  feet: number;
+  face: number;
+  hand: number;
+  back: number;
+  mask: number;
+  neck: number;
 }
 
 export interface Jammer {
@@ -83,6 +99,7 @@ export interface WorldData {
   invisMusicBlocks?: boolean;
   jammers?: Jammer[];
   dropped?: Dropped;
+  weatherId: number;
 }
 
 export interface LockedBlocked {

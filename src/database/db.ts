@@ -58,7 +58,7 @@ export class Database {
     return undefined;
   }
 
-  public async createWorld({ name, ownedBy = null, blockCount, blocks, width, height, owner, dropped }: WorldDB) {
+  public async createWorld({ name, ownedBy = null, blockCount, blocks, width, height, owner, dropped, weather_id }: WorldDB) {
     if (!name && !blockCount && !blocks && !width && !height) return;
 
     const res = await this.db.insert(worlds).values({
@@ -69,7 +69,8 @@ export class Database {
       height,
       blocks,
       owner,
-      dropped
+      dropped,
+      weather_id
     });
 
     if (res && res.lastInsertRowid) return res.lastInsertRowid;

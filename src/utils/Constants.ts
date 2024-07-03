@@ -3,6 +3,7 @@ export const WORLD_SIZE = {
   HEIGHT: 60
 };
 
+export const STRING_CIPHER_KEY = "PBG892FXX982ABC*";
 export const Y_START_DIRT = 24;
 export const Y_LAVA_START = 50;
 export const Y_END_DIRT = 55;
