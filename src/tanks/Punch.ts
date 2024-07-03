@@ -84,6 +84,13 @@ export class Punch {
         this.world.harvest(this.peer, block);
         break;
       }
+
+      case ActionTypes.SWITCHEROO: {
+        Place.tileUpdate(this.base, this.peer, itemMeta?.type || 0, block, this.world);
+        if (block.toggleable) block.toggleable.open = !block.toggleable.open;
+
+        break;
+      }
     }
   }
 

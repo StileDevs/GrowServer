@@ -21,6 +21,26 @@ export interface PlacedArg {
 
 export type WorldDB = Worlds;
 
+export interface Block {
+  fg: number;
+  bg: number;
+  x: number;
+  y: number;
+  lock?: LockedBlocked;
+  door?: Door;
+  sign?: Sign;
+  heartMonitor?: HeartMonitor;
+  dblockID?: number;
+  damage?: number;
+  resetStateAt?: number;
+  worldLock?: boolean;
+  boombox?: Toggleable;
+  rotatedLeft?: boolean;
+  entrace?: Entrance;
+  tree?: Tree;
+  toggleable?: Toggleable;
+}
+
 export interface Jammer {
   type: "zombie" | "punch" | "signal";
   enabled: boolean;
@@ -90,12 +110,6 @@ export interface Sign {
   label?: string;
 }
 
-export interface Boombox {
-  open?: boolean;
-  public?: boolean;
-  silenced?: boolean;
-}
-
 export interface Entrance {
   open?: boolean;
 }
@@ -112,25 +126,11 @@ export interface HeartMonitor {
   user_id: number;
 }
 
-export interface Block {
-  fg: number;
-  bg: number;
-  x: number;
-  y: number;
-  lock?: LockedBlocked;
-  door?: Door;
-  sign?: Sign;
-  heartMonitor?: HeartMonitor;
-  dblockID?: number;
-  damage?: number;
-  resetStateAt?: number;
-  worldLock?: boolean;
-  boombox?: Boombox;
-  rotatedLeft?: boolean;
-  entrace?: Entrance;
-  tree?: Tree;
+export interface Toggleable {
+  open?: boolean;
+  public?: boolean;
+  silenced?: boolean;
 }
-
 export interface EnterArg {
   x?: number;
   y?: number;
