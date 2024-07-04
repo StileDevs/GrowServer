@@ -4,7 +4,6 @@ import { Action } from "../abstracts/Action.js";
 import { BaseServer } from "../structures/BaseServer.js";
 import { DialogBuilder } from "../utils/builders/DialogBuilder.js";
 import type { ActionType } from "../types";
-import { Color } from "../utils/Utils";
 
 export default class extends Action {
   constructor(base: BaseServer) {

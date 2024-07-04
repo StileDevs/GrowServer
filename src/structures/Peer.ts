@@ -9,6 +9,8 @@ import { ActionTypes } from "../utils/enums/Tiles.js";
 import { manageArray } from "../utils/Utils.js";
 import { ModsEffects, State } from "../utils/enums/Character.js";
 import { Player } from "../tanks/Player.js";
+import { RiftCapeFlags, RiftWingsFlags } from "../utils/enums/ItemTypes.js";
+import { Color } from "./Color.js";
 
 export class Peer extends OldPeer<PeerDataType> {
   public base;
@@ -310,6 +312,41 @@ export class Peer extends OldPeer<PeerDataType> {
     this.data.state.mod = state;
     this.data.state.modsEffect = mods_effect;
     this.sendState();
+    this.addRift();
+  }
+
+  public addRift() {
+    // 10424 rift cape
+    // 11478 rift wing
+
+    let flags = 0;
+    let variantType = "";
+
+    if (this.data.clothing?.back === 10424) {
+      flags |= RiftCapeFlags.CAPE_COLLAR_0;
+      flags |= RiftCapeFlags.OPEN_ON_MOVE_0;
+      flags |= RiftCapeFlags.AURA_0;
+      flags |= RiftCapeFlags.AURA_1;
+      flags |= RiftCapeFlags.AURA_3RD_0;
+      flags |= RiftCapeFlags.AURA_1ST_1;
+      flags |= RiftCapeFlags.TIME_CHANGE;
+      variantType = "OnRiftCape";
+
+      const capeColor = new Color(0, 0, 255).toDecimal();
+      const colarColor = new Color(0, 255, 0).toDecimal();
+
+      this.send(Variant.from({ netID: this.data.netID }, variantType, flags, capeColor, capeColor, colarColor, colarColor, 4));
+    } else if (this.data.clothing?.back === 11478) {
+      // still not working (trying figuring out how this work)
+      flags |= RiftWingsFlags.OPEN_WING_0;
+      flags |= RiftWingsFlags.TIME_CHANGE;
+
+      variantType = "OnRiftWings";
+
+      const capeColor = new Color(0, 0, 255).toDecimal();
+
+      this.send(Variant.from({ netID: this.data.netID }, variantType, flags, capeColor, capeColor, 0, 0, 4));
+    }
   }
 
   public addExp(amount: number): void {
