@@ -1,3 +1,5 @@
+import { NativePeerMethod } from "growtopia.js";
+
 export interface InventoryItems {
   id: number;
   amount: number;
@@ -25,6 +27,7 @@ export interface PeerDataType {
   lastCheckpoint?: CheckPoint;
   lastVisitedWorlds?: string[];
   state: IState;
+  enet: NativePeerMethod;
 }
 
 export interface IState {
