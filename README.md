@@ -44,6 +44,16 @@ To run the development server by
 $ npm run start
 ```
 
+## Development
+
+For the hosts file you can see this example below
+
+```
+127.0.0.1 www.growtopia1.com
+127.0.0.1 www.growtopia2.com
+127.0.0.1 login.growserver.app # New login system for development purposes
+```
+
 ## Growtopia assets cache
 
 Where the heck is `assets/cache.zip` come from? Its basically a growtopia assets file cache that required by items.dat to load the game.
