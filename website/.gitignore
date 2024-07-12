@@ -1,13 +1,3 @@
-.env
-node_modules
-dist
-dist-ssr
-yarn.lock
-data
-assets/cache/
-build
-
-
 # Logs
 logs
 *.log
@@ -17,6 +7,9 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+node_modules
+dist
+dist-ssr
 *.local
 
 # Editor directories and files
