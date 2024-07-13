@@ -8,6 +8,10 @@ assets/cache/
 build
 
 
+# Ignore ssl
+assets/ssl/_wildcard.growserver.app.pem
+assets/ssl/_wildcard.growserver.app-key.pem
+
 # Logs
 logs
 *.log
