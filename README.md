@@ -4,7 +4,7 @@
 
 ## Requirements
 
-- Node.js v16+ (Recommended LTS v20)
+- Node.js v18+ (Recommended LTS v20)
 
 ## Setup
 
@@ -46,6 +46,18 @@ $ npm run start
 
 ## Development
 
+In order to make new login system work you need to install [mkcert](https://github.com/FiloSottile/mkcert) on this [download page](https://github.com/FiloSottile/mkcert/releases) (I'd recommend using Lets encrypt for production only)
+
+### Local CA installation
+
+Install the mkcert local CA by
+
+```
+$ mkcert -install
+```
+
+### Hosts
+
 For the hosts file you can see this example below
 
 ```
@@ -53,22 +65,6 @@ For the hosts file you can see this example below
 127.0.0.1 www.growtopia2.com
 127.0.0.1 login.growserver.app # New login system for development purposes
 ```
-
-## Growtopia assets cache
-
-Where the heck is `assets/cache.zip` come from? Its basically a growtopia assets file cache that required by items.dat to load the game.
-
-![Example](/assets/ignore/updating_items.png)
-
-Location:
-
-- Windows: `%LOCALAPPDATA%/Growtopia`
-
-Then zip the `cache` folder into zip & put it to `assets/cache.zip`.
-
-### Issue
-
-If you encountered `Updating items...` then disconnected from the server randomly. Update the cache by login to Growtopia's original server & do [this](#growtopia-assets-cache) step again.
 
 ## Contributing
 
