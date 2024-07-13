@@ -5,6 +5,7 @@
 ## Requirements
 
 - Node.js v18+ (Recommended LTS v20)
+- [mkcert](https://github.com/FiloSottile/mkcert)
 
 ## Setup
 
@@ -53,7 +54,7 @@ In order to make new login system work you need to install [mkcert](https://gith
 Install the mkcert local CA by
 
 ```
-$ mkcert -install
+$ npm run mkcert:setup
 ```
 
 ### Hosts
