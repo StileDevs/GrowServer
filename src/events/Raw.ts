@@ -66,19 +66,7 @@ export default class extends Listener<"raw"> {
               targetPeer.disconnect();
             }
 
-            peer.send(
-              Variant.from(
-                "OnSuperMainStartAcceptLogonHrdxs47254722215a",
-                this.base.items.hash,
-                "www.growtopia1.com",
-                "growtopia/cache/",
-                "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
-                "proto=204|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
-              ),
-              Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)),
-              Variant.from("SetHasAccountSecured", 1),
-              Variant.from("OnSendToServer", 17091, Math.random() * (1000000 - 10000) + 10000, user.id, `127.0.0.1|0|${customAlphabet("0123456789ABCDEF", 32)()}`, 1, user.display_name)
-            );
+            peer.send(Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)), Variant.from("OnSendToServer", 17091, Math.random() * (1000000 - 10000) + 10000, user.id, `127.0.0.1|0|${customAlphabet("0123456789ABCDEF", 32)()}`, 1, user.display_name));
           }
         }
 
