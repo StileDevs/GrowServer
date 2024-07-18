@@ -3,7 +3,7 @@ import { Listener } from "../abstracts/Listener.js";
 import type { ActionType, DroppedItem } from "../types";
 import { BaseServer } from "../structures/BaseServer.js";
 import { DataTypes } from "../utils/enums/DataTypes.js";
-import { decrypt, find, parseAction } from "../utils/Utils.js";
+import { decrypt, find, parseAction, parseQueryString } from "../utils/Utils.js";
 import { Peer } from "../structures/Peer.js";
 import { TankTypes } from "../utils/enums/TankTypes.js";
 import { ActionTypes } from "../utils/enums/Tiles.js";
@@ -13,18 +13,7 @@ import { World } from "../structures/World.js";
 import { Place } from "../tanks/Place.js";
 import { Punch } from "../tanks/Punch.js";
 import { Player } from "../tanks/Player.js";
-
-function parseQueryString(query: string): { [key: string]: string } {
-  const queryObj: { [key: string]: string } = {};
-  const pairs: string[] = query.split("&");
-
-  pairs.forEach((pair) => {
-    const [key, value] = pair.split("=");
-    queryObj[decodeURIComponent(key)] = decodeURIComponent(value || "");
-  });
-
-  return queryObj;
-}
+import { customAlphabet } from "nanoid";
 
 export default class extends Listener<"raw"> {
   constructor(base: BaseServer) {
@@ -55,101 +44,138 @@ export default class extends Listener<"raw"> {
         //     TextPacket.from(DataTypes.ACTION, "action|set_url", `url|https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/GrowtopiaInstaller.exe`, "label|Download Latest Version")
         //   );
 
-        // Guest
-        // if (parsed?.requestedName && !parsed?.tankIDName && !parsed?.tankIDPass) return this.sendGuest(peer, (parsed?.requestedName as string) || "");
+        if (parsed?.game_version && parsed?.game_version !== this.base.cdn.version)
+          return peer.send(
+            TextPacket.from(DataTypes.ACTION, "action|log", `msg|\`4UPDATE REQUIRED!\`\` : The \`$V${this.base.cdn.version}\`\` update is now available for your device.  Go get it!  You'll need to install it before you can play online.`),
+            TextPacket.from(DataTypes.ACTION, "action|set_url", `url|https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/GrowtopiaInstaller.exe`, "label|Download Latest Version")
+          );
 
-        // Using login & password
         if (parsed?.ltoken) {
           const loginData = parseQueryString(Buffer.from(parsed?.ltoken as string, "base64").toString("utf-8")) as { growId: string; password: string };
           if (loginData?.growId && loginData?.password) {
             const username = loginData.growId;
             const password = loginData.password;
-            console.log({ username, password });
-            this.base.database.getUser(username.toLowerCase()).then((user) => {
-              if (!user || password !== decrypt(user?.password)) {
-                peer.send(Variant.from("OnConsoleMessage", "`4Failed`` logging in to that account. Please make sure you've provided the correct info."));
-                peer.send(TextPacket.from(DataTypes.ACTION, "action|set_url", "url||http://127.0.0.1/recover", "label|`$Recover your Password``"));
-                return peer.disconnect();
-              }
+            const user = await this.base.database.getUser(username.toLowerCase());
 
-              // Check if there's same account is logged in
-              const targetPeer = find(this.base, this.base.cache.users, (v) => v.data?.id_user === user.id);
-              if (targetPeer) {
-                peer.send(Variant.from("OnConsoleMessage", "`4Already Logged In?`` It seems that this account already logged in by somebody else."));
+            if (!user || password !== decrypt(user?.password)) {
+              peer.send(Variant.from("OnConsoleMessage", "`4Failed`` logging in to that account. Please make sure you've provided the correct info."));
+              peer.send(TextPacket.from(DataTypes.ACTION, "action|set_url", "url||http://127.0.0.1/recover", "label|`$Recover your Password``"));
+              return peer.disconnect();
+            }
 
-                targetPeer.leaveWorld();
-                targetPeer.disconnect();
-              }
-              peer.send(
-                Variant.from(
-                  "OnSuperMainStartAcceptLogonHrdxs47254722215a",
-                  this.base.items.hash,
-                  "www.growtopia1.com",
-                  "growtopia/cache/",
-                  "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
-                  "proto=204|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
-                ),
-                Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)),
-                Variant.from("SetHasAccountSecured", 1)
-              );
+            // Check if there's same account is logged in
+            const targetPeer = find(this.base, this.base.cache.users, (v) => v.data?.id_user === user.id);
+            if (targetPeer) {
+              peer.send(Variant.from("OnConsoleMessage", "`4Already Logged In?`` It seems that this account already logged in by somebody else."));
 
-              const defaultInventory = {
-                max: 32,
-                items: [
-                  {
-                    id: 18, // Fist
-                    amount: 1
-                  },
-                  {
-                    id: 32, // Wrench
-                    amount: 1
-                  }
-                ]
-              };
+              targetPeer.leaveWorld();
+              targetPeer.disconnect();
+            }
 
-              const defaultClothing = {
-                hair: 0,
-                shirt: 0,
-                pants: 0,
-                feet: 0,
-                face: 0,
-                hand: 0,
-                back: 0,
-                mask: 0,
-                necklace: 0,
-                ances: 0
-              };
-
-              peer.data.tankIDName = user.display_name;
-              peer.data.rotatedLeft = false;
-              // peer.data.requestedName = parsed.requestedName as string;
-              peer.data.country = parsed?.country as string;
-              peer.data.id_user = user.id;
-              peer.data.role = user.role;
-              peer.data.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
-              peer.data.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
-              peer.data.gems = user.gems ? user.gems : 0;
-              peer.data.world = "EXIT";
-              peer.data.level = user.level ? user.level : 0;
-              peer.data.exp = user.exp ? user.exp : 0;
-              peer.data.lastVisitedWorlds = user.last_visited_worlds ? JSON.parse(user.last_visited_worlds.toString()) : [];
-              peer.data.state = {
-                mod: 0,
-                canWalkInBlocks: false,
-                modsEffect: 0,
-                lava: {
-                  damage: 0,
-                  resetStateAt: 0
-                }
-              };
-
-              // Load Gems
-              peer.send(Variant.from("OnSetBux", peer.data.gems));
-
-              peer.saveToCache();
-              peer.saveToDatabase();
-            });
+            peer.send(
+              Variant.from(
+                "OnSuperMainStartAcceptLogonHrdxs47254722215a",
+                this.base.items.hash,
+                "www.growtopia1.com",
+                "growtopia/cache/",
+                "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
+                "proto=204|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
+              ),
+              Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)),
+              Variant.from("SetHasAccountSecured", 1),
+              Variant.from("OnSendToServer", 17091, Math.random() * (1000000 - 10000) + 10000, user.id, `127.0.0.1|0|${customAlphabet("0123456789ABCDEF", 32)()}`, 1, user.display_name)
+            );
           }
+        }
+
+        // Using login & password
+        if (parsed?.requestedName && parsed?.tankIDName && parsed?.tankIDPass) {
+          const username = parsed.tankIDName as string;
+          const password = parsed.tankIDPass as string;
+
+          const user = await this.base.database.getUser(username.toLowerCase());
+          if (!user || password !== decrypt(user?.password)) {
+            peer.send(Variant.from("OnConsoleMessage", "`4Failed`` logging in to that account. Please make sure you've provided the correct info."));
+            peer.send(TextPacket.from(DataTypes.ACTION, "action|set_url", "url||http://127.0.0.1/recover", "label|`$Recover your Password``"));
+            return peer.disconnect();
+          }
+
+          // Check if there's same account is logged in
+          const targetPeer = find(this.base, this.base.cache.users, (v) => v.data?.id_user === user.id);
+          if (targetPeer) {
+            peer.send(Variant.from("OnConsoleMessage", "`4Already Logged In?`` It seems that this account already logged in by somebody else."));
+
+            targetPeer.leaveWorld();
+            targetPeer.disconnect();
+          }
+          peer.send(
+            Variant.from(
+              "OnSuperMainStartAcceptLogonHrdxs47254722215a",
+              this.base.items.hash,
+              "www.growtopia1.com",
+              "growtopia/cache/",
+              "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
+              "proto=204|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
+            ),
+            Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)),
+            Variant.from("SetHasAccountSecured", 1)
+          );
+
+          const defaultInventory = {
+            max: 32,
+            items: [
+              {
+                id: 18, // Fist
+                amount: 1
+              },
+              {
+                id: 32, // Wrench
+                amount: 1
+              }
+            ]
+          };
+
+          const defaultClothing = {
+            hair: 0,
+            shirt: 0,
+            pants: 0,
+            feet: 0,
+            face: 0,
+            hand: 0,
+            back: 0,
+            mask: 0,
+            necklace: 0,
+            ances: 0
+          };
+
+          peer.data.tankIDName = user.display_name;
+          peer.data.rotatedLeft = false;
+          // peer.data.requestedName = parsed.requestedName as string;
+          peer.data.country = parsed?.country as string;
+          peer.data.id_user = user.id;
+          peer.data.role = user.role;
+          peer.data.inventory = user.inventory?.length ? JSON.parse(user.inventory.toString()) : defaultInventory;
+          peer.data.clothing = user.clothing?.length ? JSON.parse(user.clothing.toString()) : defaultClothing;
+          peer.data.gems = user.gems ? user.gems : 0;
+          peer.data.world = "EXIT";
+          peer.data.level = user.level ? user.level : 0;
+          peer.data.exp = user.exp ? user.exp : 0;
+          peer.data.lastVisitedWorlds = user.last_visited_worlds ? JSON.parse(user.last_visited_worlds.toString()) : [];
+          peer.data.state = {
+            mod: 0,
+            canWalkInBlocks: false,
+            modsEffect: 0,
+            lava: {
+              damage: 0,
+              resetStateAt: 0
+            }
+          };
+
+          // Load Gems
+          peer.send(Variant.from("OnSetBux", peer.data.gems));
+
+          peer.saveToCache();
+          peer.saveToDatabase();
         }
 
         // Handle actions
@@ -453,6 +479,7 @@ export default class extends Listener<"raw"> {
             break;
           }
         }
+
         break;
       }
     }

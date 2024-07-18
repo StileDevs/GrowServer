@@ -79,9 +79,24 @@ export async function WebServer(server: BaseServer) {
   app2.use("/", express.static(path.join(__dirname, "..", "..", "build")));
   app2.use("/player/login/dashboard", (req, res) => {
     const html = readFileSync(path.join(__dirname, "..", "..", "build", "index.html"), "utf8");
-    // console.log(req);
     res.send(html);
   });
+
+  app2.post("/player/growid/checktoken", (req, res, next) => {
+    const token = req.body.refreshToken;
+    if (!token) return res.sendStatus(400);
+
+    res.send(
+      JSON.stringify({
+        status: "success",
+        message: "Account Validated.",
+        token,
+        url: "",
+        accountType: "growtopia"
+      })
+    );
+  });
+
   app2.post("/player/login/validate", (req, res, next) => {
     const token = Buffer.from(`_token=&growId=${req.body.growId || ""}&password=${req.body.password || ""}`).toString("base64");
     res.json({ token });
