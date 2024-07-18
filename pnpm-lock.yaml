@@ -95,6 +95,9 @@ importers:
       better-sqlite3:
         specifier: ^11.1.1
         version: 11.1.2
+      canvas-confetti:
+        specifier: ^1.9.3
+        version: 1.9.3
       chalk:
         specifier: 5.3.0
         version: 5.3.0
@@ -182,9 +185,6 @@ importers:
       react-router-dom:
         specifier: ^6.24.1
         version: 6.24.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      simplex-noise:
-        specifier: ^4.0.2
-        version: 4.0.2
       sonner:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -204,6 +204,9 @@ importers:
       '@types/better-sqlite3':
         specifier: ^7.6.11
         version: 7.6.11
+      '@types/canvas-confetti':
+        specifier: ^1.6.4
+        version: 1.6.4
       '@types/chance':
         specifier: ^1.1.6
         version: 1.1.6
@@ -1748,6 +1751,9 @@ packages:
   '@types/body-parser@1.19.5':
     resolution: {integrity: sha512-fB3Zu92ucau0iQ0JMCFQE7b/dv8Ot07NI3KaZIkIUNXq82k4eBAqUaneXfleGY9JWskeS9y+u0nXMyspcuQrCg==}
 
+  '@types/canvas-confetti@1.6.4':
+    resolution: {integrity: sha512-fNyZ/Fdw/Y92X0vv7B+BD6ysHL4xVU5dJcgzgxLdGbn8O3PezZNIJpml44lKM0nsGur+o/6+NZbZeNTt00U1uA==}
+
   '@types/chance@1.1.6':
     resolution: {integrity: sha512-V+pm3stv1Mvz8fSKJJod6CglNGVqEQ6OyuqitoDkWywEODM/eJd1eSuIp9xt6DrX8BWZ2eDSIzbw1tPCUTvGbQ==}
 
@@ -2049,6 +2055,9 @@ packages:
 
   caniuse-lite@1.0.30001641:
     resolution: {integrity: sha512-Phv5thgl67bHYo1TtMY/MurjkHhV4EDaCosezRXgZ8jzA/Ub+wjxAvbGvjoFENStinwi5kCyOYV3mi5tOGykwA==}
+
+  canvas-confetti@1.9.3:
+    resolution: {integrity: sha512-rFfTURMvmVEX1gyXFgn5QMn81bYk70qa0HLzcIOSVEyl57n6o9ItHeBtUSWdvKAPY0xlvBHno4/v3QPrT83q9g==}
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
@@ -3499,9 +3508,6 @@ packages:
 
   simple-get@4.0.1:
     resolution: {integrity: sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==}
-
-  simplex-noise@4.0.2:
-    resolution: {integrity: sha512-E3c6BbcFcwyxExp5lorMYP3tZqSfs4iHcNzv2mRJIP4xf3G4r77b9YE8ceIt1ntyTu2VFFISunxt2YX9CpAf+w==}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -5106,6 +5112,8 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/node': 20.14.10
 
+  '@types/canvas-confetti@1.6.4': {}
+
   '@types/chance@1.1.6': {}
 
   '@types/connect@3.4.38':
@@ -5474,6 +5482,8 @@ snapshots:
   camelcase-css@2.0.1: {}
 
   caniuse-lite@1.0.30001641: {}
+
+  canvas-confetti@1.9.3: {}
 
   chalk@4.1.2:
     dependencies:
@@ -6947,8 +6957,6 @@ snapshots:
       decompress-response: 6.0.0
       once: 1.4.0
       simple-concat: 1.0.1
-
-  simplex-noise@4.0.2: {}
 
   slash@3.0.0: {}
 

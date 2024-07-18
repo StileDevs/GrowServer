@@ -25,6 +25,7 @@
   "devDependencies": {
     "@eslint/js": "^9.6.0",
     "@types/better-sqlite3": "^7.6.11",
+    "@types/canvas-confetti": "^1.6.4",
     "@types/chance": "^1.1.6",
     "@types/cookie-parser": "^1.4.7",
     "@types/crypto-js": "^4.2.2",
@@ -84,6 +85,7 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "axios": "^1.7.2",
     "better-sqlite3": "^11.1.1",
+    "canvas-confetti": "^1.9.3",
     "chalk": "5.3.0",
     "chance": "^1.1.11",
     "cheerio": "^1.0.0-rc.12",
@@ -113,7 +115,6 @@
     "react-hook-form": "^7.52.1",
     "react-resizable-panels": "^2.0.20",
     "react-router-dom": "^6.24.1",
-    "simplex-noise": "^4.0.2",
     "sonner": "^1.5.0",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.1",
