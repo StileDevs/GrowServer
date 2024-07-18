@@ -67,7 +67,7 @@ export function LoginContent() {
           <>
             <DrawerHeader>
               <DrawerTitle>Login</DrawerTitle>
-              <DrawerDescription>Enter your growId below to create new account</DrawerDescription>
+              <DrawerDescription>Enter your growId below to login account</DrawerDescription>
             </DrawerHeader>
             <div className="grid gap-4 p-4">
               <div className="grid gap-2">

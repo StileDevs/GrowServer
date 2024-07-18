@@ -1,11 +1,8 @@
-import { Navbar } from "@/components/header/navbar";
 import { LoginContent } from "./LoginContent";
 import { useEffect } from "react";
 import { RegisterContent } from "./RegisterContent";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Particles } from "@/components/ui/particles";
 import { LetterPullup } from "@/components/ui/letter-pullup";
-import BlurFade from "@/components/ui/blur-fade";
 
 export function DashboardRoute() {
   useEffect(() => {
