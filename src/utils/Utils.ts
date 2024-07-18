@@ -104,3 +104,15 @@ export function manageArray(arr: string[], length: number, newItem: string): str
 
   return arr;
 }
+
+export function parseQueryString(query: string): { [key: string]: string } {
+  const queryObj: { [key: string]: string } = {};
+  const pairs: string[] = query.split("&");
+
+  pairs.forEach((pair) => {
+    const [key, value] = pair.split("=");
+    queryObj[decodeURIComponent(key)] = decodeURIComponent(value || "");
+  });
+
+  return queryObj;
+}
