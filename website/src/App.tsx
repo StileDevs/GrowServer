@@ -4,7 +4,7 @@ import viteLogo from "/vite.svg";
 import { Routes, Route } from "react-router-dom";
 import "./App.css";
 
-import { LoginRoute } from "./routes/login";
+import { DashboardRoute } from "./routes/player/login/dashboard";
 import { Navbar } from "./components/header/navbar";
 import { ThemeProvider } from "./components/theme-provider";
 import { RootRoute } from "./routes/root";
@@ -14,7 +14,7 @@ export default function App() {
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Routes>
         <Route path="/" element={<RootRoute />} />
-        <Route path="/player/login/dashboard" element={<LoginRoute />} />
+        <Route path="/player/login/dashboard" element={<DashboardRoute />} />
       </Routes>
     </ThemeProvider>
   );
