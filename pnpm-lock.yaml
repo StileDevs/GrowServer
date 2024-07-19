@@ -153,8 +153,8 @@ importers:
         specifier: ^11.3.2
         version: 11.3.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       growtopia.js:
-        specifier: ^1.5.2
-        version: 1.5.2
+        specifier: ^1.5.4
+        version: 1.5.4
       lucide-react:
         specifier: ^0.407.0
         version: 0.407.0(react@18.3.1)
@@ -2718,8 +2718,8 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  growtopia.js@1.5.2:
-    resolution: {integrity: sha512-YO7n9PSBLy/2G/sYsYPz93dGloDYjHr8RYRglUkdBLTIgc8MY2AtG/mKghqhsYRFnIEdwjtZERsmNeSHsF1OPA==}
+  growtopia.js@1.5.4:
+    resolution: {integrity: sha512-5ei+q/4lgxWKSjJXg0/v51JA4tqsj2YojANBYXYDqQAX6Mnl7wrw4rOlY7P0/TpU0OptuY+r7kreA+sF/96qjw==}
 
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
@@ -6175,7 +6175,7 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  growtopia.js@1.5.2:
+  growtopia.js@1.5.4:
     dependencies:
       '@types/express': 4.17.21
       '@types/node': 20.14.10
