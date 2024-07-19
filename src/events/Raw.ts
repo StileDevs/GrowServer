@@ -66,7 +66,9 @@ export default class extends Listener<"raw"> {
               targetPeer.disconnect();
             }
 
-            peer.send(Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)), Variant.from("OnSendToServer", 17091, Math.random() * (1000000 - 10000) + 10000, user.id, `127.0.0.1|0|${customAlphabet("0123456789ABCDEF", 32)()}`, 1, user.display_name));
+            const conf = this.base.config.webserver;
+            const randPort = conf.ports[Math.floor(Math.random() * conf.ports.length)];
+            peer.send(Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)), Variant.from("OnSendToServer", randPort, Math.random() * (1000000 - 10000) + 10000, user.id, `${conf.address}|0|${customAlphabet("0123456789ABCDEF", 32)()}`, 1, user.display_name));
           }
         }
 

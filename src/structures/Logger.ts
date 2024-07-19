@@ -1,6 +1,9 @@
 import chalk from "chalk";
+import type { BaseServer } from "./BaseServer";
 
 export class Logger {
+  constructor(public base: BaseServer) {}
+
   get time() {
     return new Date().toLocaleString("en-US", { timeZone: "Asia/Jakarta" });
   }
@@ -45,7 +48,7 @@ export class Logger {
   }
 
   public debug(...content: unknown[]) {
-    if (process.env.DEBUG_MODE === "true") {
+    if (this.base.config.debugMode) {
       console.log(`[${this.time} - ${chalk.rgb(211, 237, 64)("DEBUG")}   ]`, ...content);
     }
   }

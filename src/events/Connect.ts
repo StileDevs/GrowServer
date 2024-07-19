@@ -10,9 +10,12 @@ export default class extends Listener<"connect"> {
   }
 
   public run(netID: number): void {
-    this.base.log.info("Peer", netID, "connected.");
-
     const peer = new Peer(this.base, netID);
+
+    const peerAddr = peer.data.enet.getAddress();
+
+    this.base.log.info("Peer", netID, `[/${peerAddr.address}:${peerAddr.port}] connected.`);
+
     const packet = TextPacket.from(0x1);
 
     peer.send(packet);

@@ -52,13 +52,14 @@ export async function WebServer(server: BaseServer) {
   app.use("/api", ApiRouter(server));
   app.use("/growtopia/server_data.php", (req, res) => {
     let str = "";
+    const conf = server.config.webserver;
 
-    if (server.cdn.version === req.body.version) str += `server|${process.env.WEB_ADDRESS}\n`;
+    if (server.cdn.version === req.body.version) str += `server|${conf.address}\n`;
     else {
       str += `error|1000|Update is now available for your device.  Go get it!  You'll need to install it before you can play online.\nurl|${req.body.platform === "0" ? "https://growtopiagame.com/Growtopia-Installer.exe" : "market://details?id=com.rtsoft.growtopia"}\n`;
     }
-
-    str += `port|17091\nloginurl|login.growserver.app:8080\ntype|1\n#maint|Maintenance woi\nmeta|lolwhat\nRTENDMARKERBS1001`;
+    const randPort = conf.ports[Math.floor(Math.random() * conf.ports.length)];
+    str += `port|${randPort}\nloginurl|${conf.loginUrl}\ntype|1\n${conf.maintenance.enable ? "maint" : "#maint"}|${conf.maintenance.message}\nmeta|ignoremeta\nRTENDMARKERBS1001`;
     res.send(str);
   });
   app.use("/growtopia/cache*", (req, res, next) => {
@@ -115,10 +116,9 @@ export async function WebServer(server: BaseServer) {
     );
   });
 
-  if (process.env.WEB_ENV === "production") {
+  if (!server.config.webserver.development) {
     return app.listen(3000, () => {
       server.log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
-      server.log.info(`To register account you need to register at: http://${process.env.WEB_ADDRESS}:3000/register`);
     });
   } else {
     const httpServer = http.createServer(app);
