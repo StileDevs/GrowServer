@@ -3,7 +3,6 @@ import { Command } from "../abstracts/Command.js";
 import { BaseServer } from "../structures/BaseServer.js";
 import test from "./DiscordCommands/test.js";
 import ShutdownServer from "./DiscordCommands/ShutdownServer.js";
-import { Logger } from "./Logger.js";
 
 type Commands = Record<string, (srv: BaseServer, args: string[], msg: Message<TextableChannel>) => void>;
 
@@ -14,7 +13,6 @@ export class DiscordManager {
   private commands: Map<string, Command>;
   private server: BaseServer;
   private prefix: string;
-  private log: Logger;
 
   constructor(token: string, clientId: string, server: BaseServer) {
     this.token = token;
@@ -37,10 +35,9 @@ export class DiscordManager {
     this.commands = new Map();
     this.server = server;
     this.prefix = ".";
-    this.log = new Logger();
 
     this.client.on("ready", () => {
-      this.log.discord("Discord Bot is Ready~");
+      this.server.log.discord("Discord Bot is Ready~");
       this.client.editStatus("online", { name: `GrowServer!`, type: Constants.ActivityTypes.WATCHING });
     });
 
@@ -66,12 +63,12 @@ export class DiscordManager {
 
   public async start() {
     try {
-      this.log.info("Connecting Discord bot...");
+      this.server.log.info("Connecting Discord bot...");
       await this.client.connect();
     } catch (e) {
       if (e instanceof Error) {
-        this.log.error("Failed connect because:", e.message);
-        this.log.error("Skipping using discord bot");
+        this.server.log.error("Failed connect because:", e.message);
+        this.server.log.error("Skipping using discord bot");
       }
     }
   }

@@ -18,10 +18,12 @@ import { fileURLToPath } from "url";
 import axios from "axios";
 import { WSServer } from "../websockets/server.js";
 import { Items } from "./Items.js";
+import { Config } from "../config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export class BaseServer {
+  public config: typeof Config;
   public server: Client;
   public items;
   public action: Map<string, Action>;
@@ -40,6 +42,7 @@ export class BaseServer {
   public wss?: WSServer;
 
   constructor() {
+    this.config = Config;
     this.server = new Client({ https: { enable: false } });
     this.items = {
       hash: `${hashItemsDat(fs.readFileSync("./assets/dat/items.dat"))}`,
@@ -52,7 +55,7 @@ export class BaseServer {
       users: new Collection(this),
       worlds: new Collection(this)
     };
-    this.log = new Logger();
+    this.log = new Logger(this);
     this.commands = new Map();
     this.cooldown = new Map();
     this.dialogs = new Map();

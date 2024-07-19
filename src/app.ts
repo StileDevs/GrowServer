@@ -14,14 +14,11 @@ if (!fs.existsSync("./assets/ssl/server.key")) throw new Error("assets/ssl/serve
 
 if (!fs.existsSync("./assets/dat/items.dat")) throw new Error("items.dat not exist on 'assets/dat/items.dat'");
 
-const token = process.env.DISCORD_BOT_TOKEN as string;
-const clientId = process.env.DISCORD_BOT_TOKEN_CLIENTID as string;
-
 const server = new BaseServer();
 
 server.start();
 
-const Manager = new DiscordManager(token, clientId, server);
+const Manager = new DiscordManager(server.config.discord.clientToken, server.config.discord.clientId, server);
 Manager.start();
 
 process.on("SIGINT", () => handleSaveAll(server, true));
