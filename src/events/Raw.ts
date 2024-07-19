@@ -97,7 +97,7 @@ export default class extends Listener<"raw"> {
               "www.growtopia1.com",
               "growtopia/cache/",
               "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
-              "proto=204|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
+              "proto=209|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
             ),
             Variant.from("SetHasGrowID", 1, user.display_name, decrypt(user.password)),
             Variant.from("SetHasAccountSecured", 1)
@@ -183,6 +183,12 @@ export default class extends Listener<"raw"> {
             this.base.log.debug("Unknown tank", tank);
             break;
           }
+
+          case TankTypes.DISCONNECT: {
+            peer.disconnect("now");
+            break;
+          }
+
           case TankTypes.SET_ICON_STATE: {
             tank.data.state = peer.data?.rotatedLeft ? 16 : 0;
 

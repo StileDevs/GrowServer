@@ -39,12 +39,12 @@ export async function WebServer(server: BaseServer) {
 
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
-  app.use("/public", express.static(path.join(__dirname, "../../../website/public")));
+  app.use("/public", express.static(path.join(__dirname, "../../website/public")));
 
   if (existsSync("./assets/cache/cache")) {
-    app.use("/growtopia/cache", express.static(path.join(__dirname, "../../../assets/cache/cache")));
+    app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache/cache")));
   } else {
-    app.use("/growtopia/cache", express.static(path.join(__dirname, "../../../assets/cache")));
+    app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache")));
   }
 
   app.use("/", express.static(path.join(__dirname, "..", "..", "build")));
@@ -104,7 +104,6 @@ export async function WebServer(server: BaseServer) {
 
   app2.get("/player/growid/login/validate", (req, res, next) => {
     const token = req.query.token;
-    console.log(res.getHeaders());
     res.send(
       JSON.stringify({
         status: "success",
