@@ -118,7 +118,7 @@ export async function WebServer(server: BaseServer) {
 
   if (!server.config.webserver.development) {
     return app.listen(3000, () => {
-      server.log.ready(`Starting development web server on: http://${process.env.WEB_ADDRESS}:3000`);
+      server.log.ready(`Starting development web server on: http://${server.config.webserver.address}:3000`);
     });
   } else {
     const httpServer = http.createServer(app);
