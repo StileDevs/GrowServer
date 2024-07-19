@@ -130,10 +130,10 @@ export async function WebServer(server: BaseServer) {
     httpsServerLogin.listen(8080);
 
     httpsServer.on("listening", () => {
-      server.log.ready(`Starting web server on: http://${process.env.WEB_ADDRESS}:80`);
+      server.log.ready(`Starting web server on: http://${server.config.webserver.address}:80`);
     });
     httpsServerLogin.on("listening", () => {
-      server.log.ready(`Starting login server on: https://login.growserver.app:8080`);
+      server.log.ready(`Starting login server on: https://${server.config.webserver.loginUrl}`);
     });
     return httpServer;
   }
