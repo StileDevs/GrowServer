@@ -187,7 +187,7 @@ export default class extends Listener<"raw"> {
           }
 
           case TankTypes.DISCONNECT: {
-            peer.disconnect("now");
+            peer.disconnect();
             break;
           }
 
