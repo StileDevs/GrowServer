@@ -74,16 +74,12 @@ export async function WebServer(server: BaseServer) {
   });
 
   // New Login Sytem
-  app2.use(express.urlencoded({ extended: true }));
-  app2.use(express.json());
-  app2.use("/public", express.static(path.join(__dirname, "../../../website/public")));
-  app2.use("/", express.static(path.join(__dirname, "..", "..", "build")));
-  app2.use("/player/login/dashboard", (req, res) => {
+  app.post("/player/login/dashboard", (req, res) => {
     const html = readFileSync(path.join(__dirname, "..", "..", "build", "index.html"), "utf8");
     res.send(html);
   });
 
-  app2.post("/player/growid/checktoken", (req, res, next) => {
+  app.post("/player/growid/checktoken", (req, res, next) => {
     const token = req.body.refreshToken;
     if (!token) return res.sendStatus(400);
 
@@ -98,12 +94,12 @@ export async function WebServer(server: BaseServer) {
     );
   });
 
-  app2.post("/player/login/validate", (req, res, next) => {
+  app.post("/player/login/validate", (req, res, next) => {
     const token = Buffer.from(`_token=&growId=${req.body.growId || ""}&password=${req.body.password || ""}`).toString("base64");
     res.json({ token });
   });
 
-  app2.get("/player/growid/login/validate", (req, res, next) => {
+  app.get("/player/growid/login/validate", (req, res, next) => {
     const token = req.query.token;
     res.send(
       JSON.stringify({
@@ -117,17 +113,13 @@ export async function WebServer(server: BaseServer) {
   });
 
   if (!server.config.webserver.development) {
-    app2.listen(8080, () => {
-      server.log.ready(`Starting login production web server on: http://${server.config.webserver.loginUrl}:8080`);
-    });
-
     return app.listen(3000, () => {
       server.log.ready(`Starting production web server on: http://${server.config.webserver.address}:3000`);
     });
   } else {
     const httpServer = http.createServer(app);
     const httpsServer = https.createServer(options, app);
-    const httpsServerLogin = https.createServer(options2, app2);
+    const httpsServerLogin = https.createServer(options2, app);
 
     httpServer.listen(80);
     httpsServer.listen(443);
