@@ -21,12 +21,6 @@ export default class extends Listener<"raw"> {
     this.name = "raw";
   }
 
-  private sendGuest(peer: Peer, requestedName: string) {
-    const dialog = new DialogBuilder().defaultColor().addTextBox("Register account").addInputBox("username", "Username", requestedName, 20).raw("\nadd_text_input_password|password|Password||20|").addInputBox("password", "Password", "", 20).endDialog("register_end", "", "Create").str();
-
-    peer.send(Variant.from("OnDialogRequest", dialog));
-  }
-
   public async run(netID: number, data: Buffer): Promise<void> {
     const peer = this.base.cache.users.has(netID) ? this.base.cache.users.getSelf(netID) : new Peer(this.base, netID);
     const dataType = data.readInt32LE();
@@ -390,9 +384,9 @@ export default class extends Listener<"raw"> {
 
           case TankTypes.ITEM_ACTIVATE_OBJECT_REQUEST: {
             const world = peer.hasWorld(peer.data.world);
-            const dropped = world?.data.dropped?.items.find((i) => i.uid === tank.data?.info) as DroppedItem;
+            const dropped = world?.data.dropped?.items.find((i) => i.uid === tank.data?.info);
 
-            world?.collect(peer, dropped.uid);
+            if (dropped) world?.collect(peer, dropped.uid);
             break;
           }
 
@@ -457,7 +451,7 @@ export default class extends Listener<"raw"> {
               peer.everyPeer((p) => {
                 if (p.data?.netID !== peer.data?.netID && p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
                   p.send(
-                    Variant.from("OnRemove", `netID|${peer.data?.netID}`),
+                    Variant.from("OnRemove", `netID|${peer.data?.netID}`, `pId|${peer.data?.id_user}`),
                     Variant.from("OnConsoleMessage", `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``),
                     Variant.from("OnTalkBubble", peer.data.netID, `\`5<${peer.name}\`\` left, \`w${world?.data.playerCount}\`\` others here\`5>\`\``),
                     TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/door_shut.wav", "delayMS|0")
