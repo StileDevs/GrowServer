@@ -107,7 +107,7 @@ export class World {
     peer.everyPeer((p) => {
       if (p.data?.netID !== peer.data?.netID && p.data?.world !== "EXIT" && p.data?.world === peer.data?.world)
         p.send(
-          Variant.from("OnRemove", `netID|${peer.data?.netID}`),
+          Variant.from("OnRemove", `netID|${peer.data?.netID}`, `pId|${peer.data?.id_user}`),
           Variant.from("OnConsoleMessage", `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``),
           Variant.from("OnTalkBubble", peer.data.netID, `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``),
           TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/door_shut.wav", "delayMS|0")
