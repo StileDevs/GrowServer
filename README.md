@@ -37,6 +37,14 @@ WEB_ENV=development
 Database that we currently use is SQLite, since its easier & light instead of using JSON.
 And for the ORM we are using [Drizzle-ORM](https://orm.drizzle.team/)
 
+To view the database you can run this command below:
+
+```
+$ npm run studio
+```
+
+and access it on here https://local.drizzle.studio/
+
 ## Starting server
 
 To run the development server by
