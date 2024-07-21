@@ -7,11 +7,10 @@ import path from "node:path";
 import { BaseServer } from "./BaseServer.js";
 import { ApiRouter } from "../routes/index.js";
 import { fileURLToPath } from "url";
-import { WSServer } from "../websockets/server.js";
+import { PlayerRouter } from "../routes/player/index.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
-const app2 = express();
 
 const options = {
   key: readFileSync("./assets/ssl/server.key"),
@@ -21,10 +20,6 @@ const options2 = {
   key: readFileSync("./assets/ssl/_wildcard.growserver.app-key.pem"),
   cert: readFileSync("./assets/ssl/_wildcard.growserver.app.pem")
 };
-// const options = {
-//   key: readFileSync("./assets/ssl/localhost-key.pem"),
-//   cert: readFileSync("./assets/ssl/localhost.pem")
-// };
 
 const apiLimiter = rateLimit({
   windowMs: 10800000, // 3 hour
@@ -50,6 +45,10 @@ export async function WebServer(server: BaseServer) {
   app.use("/", express.static(path.join(__dirname, "..", "..", "build")));
 
   app.use("/api", ApiRouter(server));
+
+  // New Login Sytem
+  app.use("/player", PlayerRouter(server));
+
   app.use("/growtopia/server_data.php", (req, res) => {
     let str = "";
     const conf = server.config.webserver;
@@ -71,45 +70,6 @@ export async function WebServer(server: BaseServer) {
 
   app.get("/*", (req, res) => {
     res.sendFile(path.join(__dirname, "..", "..", "build"));
-  });
-
-  // New Login Sytem
-  app.post("/player/login/dashboard", (req, res) => {
-    const html = readFileSync(path.join(__dirname, "..", "..", "build", "index.html"), "utf8");
-    res.send(html);
-  });
-
-  app.post("/player/growid/checktoken", (req, res, next) => {
-    const token = req.body.refreshToken;
-    if (!token) return res.sendStatus(400);
-
-    res.send(
-      JSON.stringify({
-        status: "success",
-        message: "Account Validated.",
-        token,
-        url: "",
-        accountType: "growtopia"
-      })
-    );
-  });
-
-  app.post("/player/login/validate", (req, res, next) => {
-    const token = Buffer.from(`_token=&growId=${req.body.growId || ""}&password=${req.body.password || ""}`).toString("base64");
-    res.json({ token });
-  });
-
-  app.get("/player/growid/login/validate", (req, res, next) => {
-    const token = req.query.token;
-    res.send(
-      JSON.stringify({
-        status: "success",
-        message: "Account Validated.",
-        token,
-        url: "",
-        accountType: "growtopia"
-      })
-    );
   });
 
   if (!server.config.webserver.development) {

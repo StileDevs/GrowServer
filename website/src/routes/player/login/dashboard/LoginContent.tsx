@@ -1,43 +1,73 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { ChangeEvent, useRef, useState } from "react";
-import { toast } from "sonner";
+import { useRef, useState } from "react";
 import axios from "axios";
-import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+import { Drawer, DrawerClose, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import BlurFade from "@/components/ui/blur-fade";
 import { Confetti, ConfettiRef } from "@/components/ui/confetti";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { useToast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/toaster";
+
+const formSchema = z.object({
+  growId: z
+    .string()
+    .min(5, {
+      message: "GrowID must be at least 5 characters."
+    })
+    .max(20, {
+      message: "GrowID are too long."
+    })
+    .refine((v) => !/[!@#$%^&*(),.?":{}|<> ]/.test(v), {
+      message: "GrowID are containing special characters."
+    }),
+  password: z.string().min(5, {
+    message: "Password must contains at least 5 characters long."
+  })
+});
 
 export function LoginContent() {
+  const { toast } = useToast();
+
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState(false);
   const confettiRef = useRef<ConfettiRef>(null);
 
-  const [data, setData] = useState({
-    growId: "",
-    password: ""
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      growId: "",
+      password: ""
+    }
   });
 
-  const changeLogin = (e: ChangeEvent<HTMLInputElement>) => {
-    setData({ ...data, [e.target.name]: e.target.value });
-  };
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      const res = await axios.post("/player/login/validate", {
+        growId: data.growId,
+        password: data.password
+      });
 
-  const submitData = async () => {
-    const res = await axios.post("/player/login/validate", {
-      growId: data.growId,
-      password: data.password
-    });
+      if (res.status !== 200) throw new Error("Failed to validate");
 
-    if (res.status !== 200) return toast("Failed to validate");
+      setDone(true);
 
-    setDone(true);
-
-    setTimeout(() => {
-      setOpen(false);
-    }, 3000);
-    setTimeout(() => {
-      window.location.href = `/player/growid/login/validate?token=${res.data.token}`;
-    }, 3500);
+      setTimeout(() => {
+        setOpen(false);
+      }, 3000);
+      setTimeout(() => {
+        window.location.href = `/player/growid/login/validate?token=${res.data.token}`;
+      }, 3500);
+    } catch (e) {
+      toast({
+        variant: "destructive",
+        title: "Failed to validate",
+        duration: 2000
+      });
+    }
   };
 
   return (
@@ -69,28 +99,47 @@ export function LoginContent() {
               <DrawerTitle>Login</DrawerTitle>
               <DrawerDescription>Enter your growId below to login account</DrawerDescription>
             </DrawerHeader>
-            <div className="grid gap-4 p-4">
-              <div className="grid gap-2">
-                <Label htmlFor="growId">GrowID</Label>
-                <Input autoComplete="off" id="growId" type="text" name="growId" placeholder="Your growid" required onChange={changeLogin} />
-              </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                </div>
-                <Input id="password" type="password" name="password" required onChange={changeLogin} />
-              </div>
-            </div>
-            <DrawerFooter>
-              <Button type="submit" className="w-full" onSubmit={() => submitData()} onClick={() => submitData()}>
-                Login
-              </Button>
+            <div className="grid gap-4 px-4">
+              <Toaster />
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                  <FormField
+                    control={form.control}
+                    name="growId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>GrowID</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Username" autoComplete="off" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Password</FormLabel>
+                        <FormControl>
+                          <Input placeholder="********" type="password" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" className="w-full">
+                    Login
+                  </Button>
+                </form>
+              </Form>
               <DrawerClose>
                 <Button variant="outline" className="w-full">
                   Cancel
                 </Button>
               </DrawerClose>
-            </DrawerFooter>
+            </div>
           </>
         )}
       </DrawerContent>
