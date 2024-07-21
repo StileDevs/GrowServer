@@ -1,4 +1,4 @@
-import type { BaseServer } from "src/structures/BaseServer.js";
+import type { BaseServer } from "../../structures/BaseServer.js";
 import { Router } from "express";
 import { readFileSync } from "fs";
 import path from "path";
