@@ -35,13 +35,15 @@ export class WSServer {
         this.base.log.info(`Client disconnected code: ${code} | Reason: ${r}`);
       });
 
-      ws.on("message", (data) => {
+      ws.on("message", (data: Buffer) => {
+        if (data.length < 4) return;
         console.log({ data });
-        const type = (data as Buffer).readInt32LE(0);
+
+        const type = data.readInt32LE(0);
 
         switch (type) {
           case OpCode.REQUEST: {
-            const BroadCastType = (data as Buffer).readUInt32LE(4);
+            const BroadCastType = data.readUInt32LE(4);
             console.log({ BroadCastType });
 
             if (BroadCastType & RequestFlags.SUPER_BROADCAST) ws.flags |= RequestFlags.SUPER_BROADCAST;
