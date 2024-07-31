@@ -67,7 +67,7 @@ export default class extends Listener<"raw"> {
         }
 
         // Using login & password
-        if (parsed?.requestedName && parsed?.tankIDName && parsed?.tankIDPass) {
+        if (parsed?.tankIDName && parsed?.tankIDPass) {
           const username = parsed.tankIDName as string;
           const password = parsed.tankIDPass as string;
 
