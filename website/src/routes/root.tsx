@@ -4,7 +4,7 @@ export function RootRoute() {
   return (
     <>
       <Navbar />
-      Hello world
+      Welcome to GrowServer
     </>
   );
 }
