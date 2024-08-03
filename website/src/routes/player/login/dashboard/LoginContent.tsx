@@ -80,10 +80,10 @@ export function LoginContent() {
         </DrawerTrigger>
       </BlurFade>
 
-      <DrawerContent>
+      <DrawerContent className="h-[90vh] max-h-[90vh] sm:h-[85vh] sm:max-h-[85vh] md:h-auto">
         {done ? (
-          <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-background md:shadow-xl">
-            <span className="text-4xl font-bold">Success! 🎉</span>
+          <div className="relative flex h-[300px] sm:h-[400px] md:h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-background md:shadow-xl">
+            <span className="text-2xl sm:text-3xl md:text-4xl font-bold">Success! 🎉</span>
 
             <Confetti
               ref={confettiRef}
@@ -96,13 +96,12 @@ export function LoginContent() {
         ) : (
           <>
             <DrawerHeader>
-              <DrawerTitle>Login</DrawerTitle>
-              <DrawerDescription>Enter your growId below to login account</DrawerDescription>
+              <DrawerTitle className="text-lg sm:text-xl md:text-2xl">Login with your GrowID</DrawerTitle>
             </DrawerHeader>
             <div className="grid gap-4 px-4">
               <Toaster />
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6 md:space-y-8">
                   <FormField
                     control={form.control}
                     name="growId"

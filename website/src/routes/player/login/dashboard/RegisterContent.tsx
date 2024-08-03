@@ -94,8 +94,8 @@ export function RegisterContent() {
           </div>
         </DrawerTrigger>
       </BlurFade>
-
-      <DrawerContent>
+  
+      <DrawerContent className="h-[100vh] max-h-[100vh] sm:h-[90vh] sm:max-h-[90vh] md:h-auto overflow-y-auto pb-6">
         {done ? (
           <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-background md:shadow-xl">
             <span className="text-4xl font-bold">Success to create new account! 🎉</span>
@@ -111,23 +111,22 @@ export function RegisterContent() {
         ) : (
           <>
             <DrawerHeader>
-              <DrawerTitle>Register</DrawerTitle>
-              <DrawerDescription>Create a brand new GrowServer account</DrawerDescription>
+              <DrawerTitle className="text-lg">Register your account</DrawerTitle>
             </DrawerHeader>
-            <div className="grid gap-4 px-4">
+            <div className="grid gap-2 px-4 pb-4">
               <Toaster />
               <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
                     control={form.control}
                     name="growId"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>GrowID</FormLabel>
+                        <FormLabel className="text-sm">GrowID</FormLabel>
                         <FormControl>
-                          <Input placeholder="Username" autoComplete="off" {...field} />
+                          <Input className="h-8 text-sm" placeholder="Username" autoComplete="off" {...field} />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs" />
                       </FormItem>
                     )}
                   />
@@ -138,7 +137,7 @@ export function RegisterContent() {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input placeholder="********" type="password" {...field} />
+                        <Input className="h-8 text-sm" placeholder="********" type="password" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -151,26 +150,26 @@ export function RegisterContent() {
                       <FormItem>
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
-                          <Input placeholder="********" type="password" {...field} />
+                          <Input className="h-8 text-sm" placeholder="********" type="password" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                   <Button type="submit" className="w-full">
-                    Sign Up
-                  </Button>
-                </form>
-              </Form>
-              <DrawerClose>
-                <Button variant="outline" className="w-full">
-                  Cancel
+                  Sign Up
                 </Button>
-              </DrawerClose>
-            </div>
-          </>
-        )}
-      </DrawerContent>
-    </Drawer>
-  );
+              </form>
+            </Form>
+            <DrawerClose className="mt-2">
+              <Button variant="outline" className="w-full">
+                Cancel
+              </Button>
+            </DrawerClose>
+          </div>
+        </>
+      )}
+    </DrawerContent>
+  </Drawer>
+);
 }
