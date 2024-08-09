@@ -139,7 +139,7 @@ export class Punch {
         };
 
         // Update block visual
-        Place.tileVisualUpdate(this.peer, block, 0x0, true);
+        Place.tileUpdate(this.base, this.peer, itemMeta.type, block, this.world);
         break;
       }
     }
