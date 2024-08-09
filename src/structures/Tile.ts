@@ -181,6 +181,18 @@ export class Tile {
         return buf.data;
       }
 
+      case ActionTypes.PROVIDER: {
+        buf = new IBuffer(13);
+        const date = this.block.provider?.date || 0;
+        const timePassed = Math.floor((Date.now() - date) / 1000);
+
+        this.serializeBlockData(buf, { lockPos, flagTile: 0x0 });
+
+        buf.writeU8(ExtraTypes.PROVIDER);
+        buf.writeU32(timePassed);
+        return buf.data;
+      }
+
       default: {
         buf = new IBuffer(8);
         this.serializeBlockData(buf, { lockPos, flagTile: 0x0 });

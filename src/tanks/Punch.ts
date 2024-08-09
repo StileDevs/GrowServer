@@ -126,6 +126,19 @@ export class Punch {
         this.tank = TankPacket.fromBuffer(diceTank);
         break;
       }
+
+      case ActionTypes.PROVIDER: {
+        // Make a if statement that check if the block ready to punch (passed time must be in seconds format)
+        // for example chicken is 24 hour, then its should be 86400 seconds
+        const date = block.provider?.date || 0;
+        const timePassed = Math.floor((Date.now() - date) / 1000);
+
+        // Reset date
+        block.provider = {
+          date: Date.now()
+        };
+        break;
+      }
     }
   }
 
@@ -251,6 +264,11 @@ export class Punch {
           // tileUpdate(base, peer, itemMeta.type, block, world);
           Place.tileVisualUpdate(this.peer, block, 0x0, true);
         }
+        break;
+      }
+
+      case ActionTypes.PROVIDER: {
+        block.provider = undefined;
         break;
       }
     }
