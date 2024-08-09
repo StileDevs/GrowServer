@@ -137,6 +137,9 @@ export class Punch {
         block.provider = {
           date: Date.now()
         };
+
+        // Update block visual
+        Place.tileVisualUpdate(this.peer, block, 0x0, true);
         break;
       }
     }
