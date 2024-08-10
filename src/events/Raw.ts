@@ -14,6 +14,7 @@ import { Place } from "../tanks/Place.js";
 import { Punch } from "../tanks/Punch.js";
 import { Player } from "../tanks/Player.js";
 import { customAlphabet } from "nanoid";
+import { Config } from "../config.js";
 
 export default class extends Listener<"raw"> {
   constructor(base: BaseServer) {
@@ -32,7 +33,7 @@ export default class extends Listener<"raw"> {
 
         this.base.log.debug({ parsed, dataType });
 
-        if (parsed?.game_version && parsed?.game_version !== this.base.cdn.version)
+        if (parsed?.game_version && parsed?.game_version !== this.base.cdn.version && !Config.bypassVersionCheck)
           return peer.send(
             TextPacket.from(DataTypes.ACTION, "action|log", `msg|\`4UPDATE REQUIRED!\`\` : The \`$V${this.base.cdn.version}\`\` update is now available for your device.  Go get it!  You'll need to install it before you can play online.`),
             TextPacket.from(DataTypes.ACTION, "action|set_url", `url|https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/GrowtopiaInstaller.exe`, "label|Download Latest Version")

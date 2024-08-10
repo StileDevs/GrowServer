@@ -1,5 +1,6 @@
 export const Config = {
   debugMode: false,
+  bypassVersionCheck: false,
   passwordEncryptionKey: process.env.ENCRYPT_SECRET || "SUPERSECRET",
   discord: {
     ownerId: "",
