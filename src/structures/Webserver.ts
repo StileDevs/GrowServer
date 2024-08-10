@@ -53,7 +53,7 @@ export async function WebServer(server: BaseServer) {
     let str = "";
     const conf = server.config.webserver;
 
-    if (server.cdn.version === req.body.version) str += `server|${conf.address}\n`;
+    if (server.cdn.version === req.body.version || server.config.bypassVersionCheck) str += `server|${conf.address}\n`;
     else {
       str += `error|1000|Update is now available for your device.  Go get it!  You'll need to install it before you can play online.\nurl|${req.body.platform === "0" ? "https://growtopiagame.com/Growtopia-Installer.exe" : "market://details?id=com.rtsoft.growtopia"}\n`;
     }
