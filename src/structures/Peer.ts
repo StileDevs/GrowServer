@@ -220,11 +220,11 @@ export class Peer extends OldPeer<PeerDataType> {
     this.send(TextPacket.from(DataTypes.ACTION, "action|play_sfx", `file|${file}`, `delayMS|${delay}`));
   }
 
-  public leaveWorld(sendMenu: boolean = true) {
+  public leaveWorld() {
     if (!this.data.world) return;
 
     const world = this.hasWorld(this.data.world);
-    world?.leave(this, sendMenu);
+    world?.leave(this);
   }
 
   public get name(): string {
@@ -415,8 +415,8 @@ export class Peer extends OldPeer<PeerDataType> {
       info: this.data.state.mod,
       xPos: 1200,
       yPos: 200,
-      xSpeed: 250,
-      ySpeed: 700,
+      xSpeed: 300,
+      ySpeed: 600,
       xPunch: 0,
       yPunch: 0,
       state: 0
@@ -432,8 +432,6 @@ export class Peer extends OldPeer<PeerDataType> {
       tank.writeFloatLE(1000, 40);
     }
 
-    if (this.hasPlaymod("speedy")) tank.writeFloatLE(310, 36);
-
     this.send(tank);
     if (everyPeer) {
       this.everyPeer((p) => {
@@ -442,43 +440,6 @@ export class Peer extends OldPeer<PeerDataType> {
         }
       });
     }
-  }
-
-  private hasPlaymod(name: string): number {
-    const active_playmods = [];
-    Object.keys(this.data.clothing).forEach((k) => {
-      // @ts-expect-error ignore keys type
-      const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
-      const playMod = itemInfo?.playMod || "";
-      active_playmods.push(playMod);
-    });
-    if (this.data.state.canWalkInBlocks) active_playmods.push("Ghost in the Shell");
-    for (let i = 0; i < active_playmods.length; i++) {
-      if (active_playmods[i].length === 0) continue;
-      if (active_playmods[i].toLowerCase().includes(name.toLowerCase())) return 1;
-    }
-    return 0;
-  }
-
-  private formState() {
-    let state = 0x0;
-    let mods_effect = 0x0;
-    state |= this.hasPlaymod("Ghost in the Shell") << 0;
-    if (Ability.DOUBLE_JUMP.some((k) => this.hasPlaymod(k))) state |= State.canDoubleJump;
-    state |= this.hasPlaymod("The One Ring") << 2;
-	  state |= this.hasPlaymod("Mark of Growganoth") << 4;
-	  state |= this.hasPlaymod("Halo!") << 7;
-	  state |= this.hasPlaymod("duct tape") << 13;
-    state |= this.hasPlaymod("Irradiated") << 19;
-
-    this.data.state.mod = state;
-
-    if (this.hasPlaymod("Putt putt putt")) mods_effect |= ModsEffects.HARVESTER;
-    if (Ability.PUNCH_DAMAGE.some((k) => this.hasPlaymod(k))) mods_effect |= ModsEffects.PUNCH_DAMAGE;
-
-    this.data.state.modsEffect = mods_effect;
-    this.sendState();
-    this.addRift();
   }
 
   public checkModsEffect(withMsg = false, tank?: TankPacket) {
