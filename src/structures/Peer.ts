@@ -314,16 +314,17 @@ export class Peer extends OldPeer<PeerDataType> {
     world?.drop(this, x, y, id, amount);
   }
 
-  public addItemInven(id: number, amount = 1) {
+  public addItemInven(id: number, amount = 1, drop: boolean = false) {
     const item = this.data.inventory.items.find((i) => i.id === id);
 
     if (!item) {
       this.data.inventory.items.push({ id, amount });
+      if (!drop) this.modifyInventory(id, amount);
     }
     else if (item.amount < 200) {
       if (item.amount + amount > 200) item.amount = 200;
       else item.amount += amount;
-      this.modifyInventory(id, amount);
+      if (!drop) this.modifyInventory(id, amount);
     }
 
     // this.inventory();
