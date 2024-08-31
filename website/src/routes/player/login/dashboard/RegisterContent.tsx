@@ -94,8 +94,8 @@ export function RegisterContent() {
           </div>
         </DrawerTrigger>
       </BlurFade>
-  
-      <DrawerContent className="h-[100vh] max-h-[100vh] sm:h-[90vh] sm:max-h-[90vh] md:h-auto overflow-y-auto pb-6">
+
+      <DrawerContent className="h-[100vh] max-h-[100vh] sm:h-[90vh] sm:max-h-[90vh] md:h-auto pb-6">
         {done ? (
           <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-background md:shadow-xl">
             <span className="text-4xl font-bold">Success to create new account! 🎉</span>
@@ -137,7 +137,7 @@ export function RegisterContent() {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                        <Input className="h-8 text-sm" placeholder="********" type="password" {...field} />
+                          <Input className="h-8 text-sm" placeholder="********" type="password" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -157,19 +157,19 @@ export function RegisterContent() {
                     )}
                   />
                   <Button type="submit" className="w-full">
-                  Sign Up
+                    Sign Up
+                  </Button>
+                </form>
+              </Form>
+              <DrawerClose className="mt-2">
+                <Button variant="outline" className="w-full">
+                  Cancel
                 </Button>
-              </form>
-            </Form>
-            <DrawerClose className="mt-2">
-              <Button variant="outline" className="w-full">
-                Cancel
-              </Button>
-            </DrawerClose>
-          </div>
-        </>
-      )}
-    </DrawerContent>
-  </Drawer>
-);
+              </DrawerClose>
+            </div>
+          </>
+        )}
+      </DrawerContent>
+    </Drawer>
+  );
 }

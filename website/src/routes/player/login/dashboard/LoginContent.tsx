@@ -80,7 +80,7 @@ export function LoginContent() {
         </DrawerTrigger>
       </BlurFade>
 
-      <DrawerContent className="h-[90vh] max-h-[90vh] sm:h-[85vh] sm:max-h-[85vh] md:h-auto">
+      <DrawerContent className="h-[90vh] max-h-[90vh] sm:h-[85vh] sm:max-h-[85vh] md:h-auto pb-6">
         {done ? (
           <div className="relative flex h-[300px] sm:h-[400px] md:h-[500px] w-full flex-col items-center justify-center overflow-hidden rounded-lg border bg-background md:shadow-xl">
             <span className="text-2xl sm:text-3xl md:text-4xl font-bold">Success! 🎉</span>
