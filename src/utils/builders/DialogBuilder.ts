@@ -83,6 +83,24 @@ export class DialogBuilder {
   }
 
   /**
+   * Adds a button
+   * @param {string} name The name of the button
+   * @param {string} title The text in the button
+   * @param {string} image The rttex image of the button
+   * @param {string} description The description of item being purchased
+   * @param {object} imagepos The position of the image
+   * @param {string | number} cost The cost of the item
+   * @returns {DialogBuilder}
+   */
+
+  public addStoreButton(name: string, title: string, description: string, image: string = "", imagepos: { x: number, y: number } = { x: 0, y: 0} , cost: string | number = ""): DialogBuilder {
+        
+    this.#str += `add_button|${name}|${title}|${image}|${description}|${imagepos.x}|${imagepos.y}|${cost}|\n`;
+    
+    return this;
+}
+
+  /**
    * Adds a button with icon.
    * @param {string | number} name The name of the button
    * @param {string | number} itemID The button icon using itemID
