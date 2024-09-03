@@ -479,7 +479,7 @@ ${peer.data.lastVisitedWorlds
       }
     } else {
       if (droppedItem.id !== 112) {
-        peer.addItemInven(droppedItem.id, droppedItem.amount);
+        peer.addItemInven(droppedItem.id, droppedItem.amount, true);
         peer.send(Variant.from("OnConsoleMessage", `Collected \`w${droppedItem.amount} ${item?.name?.value}`));
       } else {
         peer.data.gems += droppedItem.amount;

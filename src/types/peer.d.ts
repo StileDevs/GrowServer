@@ -46,6 +46,7 @@ export interface CheckPoint {
 }
 
 export interface Clothing {
+  [key: string]: number;
   hair: number;
   shirt: number;
   pants: number;
