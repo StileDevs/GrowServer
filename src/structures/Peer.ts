@@ -1,6 +1,6 @@
 import { ItemDefinition, Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
 import type { PeerDataType, Block } from "../types";
-import { Role, WORLD_SIZE } from "../utils/Constants.js";
+import { clothMap, Role, WORLD_SIZE } from "../utils/Constants.js";
 import { DataTypes } from "../utils/enums/DataTypes.js";
 import { TankTypes } from "../utils/enums/TankTypes.js";
 import { BaseServer } from "./BaseServer.js";
@@ -55,7 +55,7 @@ export class Peer extends OldPeer<PeerDataType> {
     });
   }
 
-  public equip_clothes(itemID: number) {
+  public equipClothes(itemID: number) {
     if (!this.searchItem(itemID)) return;
 
     const isAnces = (item: ItemDefinition): boolean => {
@@ -66,135 +66,52 @@ export class Peer extends OldPeer<PeerDataType> {
       return false;
     };
 
-    if (this.data.clothing.hair === itemID || this.data.clothing.shirt === itemID
-        || this.data.clothing.ances === itemID || this.data.clothing.back === itemID
-        || this.data.clothing.face === itemID || this.data.clothing.feet === itemID
-        || this.data.clothing.hand === itemID || this.data.clothing.mask === itemID
-        || this.data.clothing.necklace === itemID || this.data.clothing.pants === itemID
-    ) this.unequip(itemID);
+    if (Object.values(this.data.clothing).includes(itemID)) this.unequipClothes(itemID);
     else {
       const item = this.base.items.metadata.items[itemID];
       if (!isAnces(item)) {
-        switch (item?.bodyPartType) {
-          case ClothTypes.ANCES: {
-            this.data.clothing.ances = itemID;
-            break;
-          }
-          case ClothTypes.BACK: {
-            this.data.clothing.back = itemID;
-            break;
-          }
-          case ClothTypes.FACE: {
-            this.data.clothing.face = itemID;
-            break;
-          }
-          case ClothTypes.FEET: {
-            this.data.clothing.feet = itemID;
-            break;
-          }
-          case ClothTypes.HAIR: {
-            this.data.clothing.hair = itemID;
-            break;
-          }
-          case ClothTypes.HAND: {
-            this.data.clothing.hand = itemID;
-            break;
-          }
-          case ClothTypes.MASK: {
-            this.data.clothing.mask = itemID;
-            break;
-          }
-          case ClothTypes.NECKLACE: {
-            this.data.clothing.necklace = itemID;
-            break;
-          }
-          case ClothTypes.PANTS: {
-            this.data.clothing.pants = itemID;
-            break;
-          }
-          case ClothTypes.SHIRT: {
-            this.data.clothing.shirt = itemID;
-            break;
-          }
+        const clothKey = clothMap[item?.bodyPartType as ClothTypes];
+
+        if (clothKey) {
+          this.data.clothing[clothKey] = itemID;
         }
       }
       const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
       if (itemInfo?.itemFunction[0]) {
         this.send(Variant.from("OnConsoleMessage", `${itemInfo.itemFunction[0]} (${itemInfo.playMod} added)`));
-
       }
       this.formState();
       this.sendClothes();
-      this.send(
-        TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0")
-      );
+      this.send(TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0"));
     }
   }
 
-  public unequip(itemID: number) {
+  public unequipClothes(itemID: number) {
     const item = this.base.items.metadata.items[itemID];
 
     let unequiped: boolean = false;
 
     const isAnces = (item: ItemDefinition): boolean => {
       if (item?.type === ActionTypes.ANCES) {
-        if (this.data.clothing.ances === itemID) this.data.clothing.ances = 0, unequiped = true;
+        if (this.data.clothing.ances === itemID) (this.data.clothing.ances = 0), (unequiped = true);
         return true;
       }
       return false;
     };
 
     if (!isAnces(item)) {
-      switch (item?.bodyPartType) {
-        case ClothTypes.HAIR: {
-          if (this.data.clothing.hair === itemID) this.data.clothing.hair = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.SHIRT: {
-          if (this.data.clothing.shirt === itemID) this.data.clothing.shirt = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.PANTS: {
-          if (this.data.clothing.pants === itemID) this.data.clothing.pants = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.FEET: {
-          if (this.data.clothing.feet === itemID) this.data.clothing.feet = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.FACE: {
-          if (this.data.clothing.face === itemID) this.data.clothing.face = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.HAND: {
-          if (this.data.clothing.hand === itemID) this.data.clothing.hand = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.BACK: {
-          if (this.data.clothing.back === itemID) this.data.clothing.back = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.MASK: {
-          if (this.data.clothing.mask === itemID) this.data.clothing.mask = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.NECKLACE: {
-          if (this.data.clothing.necklace === itemID) this.data.clothing.necklace = 0, unequiped = true;
-          break;
-        }
-        case ClothTypes.ANCES: {
-          if (this.data.clothing.ances === itemID) this.data.clothing.ances = 0, unequiped = true;
-          break;
-        }
+      const clothKey = clothMap[item?.bodyPartType as ClothTypes];
+
+      if (clothKey) {
+        this.data.clothing[clothKey] = 0;
+        unequiped = true;
       }
     }
 
     if (unequiped) {
       this.formState();
       this.sendClothes();
-      this.send(
-        TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0")
-      );
+      this.send(TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0"));
     }
     const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
     if (unequiped && itemInfo?.itemFunction[1]) {
@@ -320,8 +237,7 @@ export class Peer extends OldPeer<PeerDataType> {
     if (!item) {
       this.data.inventory.items.push({ id, amount });
       if (!drop) this.modifyInventory(id, amount);
-    }
-    else if (item.amount < 200) {
+    } else if (item.amount < 200) {
       if (item.amount + amount > 200) item.amount = 200;
       else item.amount += amount;
       if (!drop) this.modifyInventory(id, amount);
@@ -339,7 +255,7 @@ export class Peer extends OldPeer<PeerDataType> {
       if (item.amount < 1) {
         this.data.inventory.items = this.data.inventory.items.filter((i) => i.id !== id);
         if (this.base.items.metadata.items[id].bodyPartType !== undefined) {
-          this.unequip(id);
+          this.unequipClothes(id);
         }
       }
     }
@@ -412,7 +328,6 @@ export class Peer extends OldPeer<PeerDataType> {
   private hasPlaymod(name: string): boolean {
     const active_playmods = [];
     Object.keys(this.data.clothing).forEach((k) => {
-      // @ts-expect-error ignore keys type
       const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
       const playMod = itemInfo?.playMod || "";
       active_playmods.push(playMod);
@@ -437,9 +352,9 @@ export class Peer extends OldPeer<PeerDataType> {
     state |= (this.hasPlaymod("Ghost in the Shell") ? 1 : 0) << 0;
     if (Ability.DOUBLE_JUMP.some((k) => this.hasPlaymod(k))) state |= State.canDoubleJump;
     state |= (this.hasPlaymod("The One Ring") ? 1 : 0) << 2;
-	  state |= (this.hasPlaymod("Mark of Growganoth") ? 1 : 0) << 4;
-	  state |= (this.hasPlaymod("Halo!") ? 1 : 0) << 7;
-	  state |= (this.hasPlaymod("duct tape") ? 1 : 0) << 13;
+    state |= (this.hasPlaymod("Mark of Growganoth") ? 1 : 0) << 4;
+    state |= (this.hasPlaymod("Halo!") ? 1 : 0) << 7;
+    state |= (this.hasPlaymod("duct tape") ? 1 : 0) << 13;
     state |= (this.hasPlaymod("Irradiated") ? 1 : 0) << 19;
 
     this.data.state.mod = state;
@@ -492,7 +407,6 @@ export class Peer extends OldPeer<PeerDataType> {
 
     // Clothing effects
     Object.keys(this.data.clothing).forEach((k) => {
-      // @ts-expect-error ignore keys type
       const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
       const playMod = itemInfo?.playMod || "";
 
@@ -583,7 +497,7 @@ export class Peer extends OldPeer<PeerDataType> {
         type: TankTypes.MODIFY_ITEM_INVENTORY,
         info: id,
         buildRange: amount < 0 ? amount * -1 : undefined,
-        punchRange: amount < 0 ? undefined : amount,
+        punchRange: amount < 0 ? undefined : amount
       }).parse() as Buffer;
 
       this.send(tank);
