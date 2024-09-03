@@ -1,6 +1,6 @@
 import { ItemDefinition, Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
 import type { PeerDataType, Block } from "../types";
-import { clothMap, Role, WORLD_SIZE } from "../utils/Constants.js";
+import { CLOTH_MAP, Role, WORLD_SIZE } from "../utils/Constants.js";
 import { DataTypes } from "../utils/enums/DataTypes.js";
 import { TankTypes } from "../utils/enums/TankTypes.js";
 import { BaseServer } from "./BaseServer.js";
@@ -70,7 +70,7 @@ export class Peer extends OldPeer<PeerDataType> {
     else {
       const item = this.base.items.metadata.items[itemID];
       if (!isAnces(item)) {
-        const clothKey = clothMap[item?.bodyPartType as ClothTypes];
+        const clothKey = CLOTH_MAP[item?.bodyPartType as ClothTypes];
 
         if (clothKey) {
           this.data.clothing[clothKey] = itemID;
@@ -100,7 +100,7 @@ export class Peer extends OldPeer<PeerDataType> {
     };
 
     if (!isAnces(item)) {
-      const clothKey = clothMap[item?.bodyPartType as ClothTypes];
+      const clothKey = CLOTH_MAP[item?.bodyPartType as ClothTypes];
 
       if (clothKey) {
         this.data.clothing[clothKey] = 0;

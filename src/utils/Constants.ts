@@ -16,7 +16,7 @@ export const Role = {
   SUPPORTER: "3"
 };
 
-export const clothMap: { [key in ClothTypes]: string } = {
+export const CLOTH_MAP: { [key in ClothTypes]: string } = {
   [ClothTypes.ANCES]: "ances",
   [ClothTypes.BACK]: "back",
   [ClothTypes.FACE]: "face",
