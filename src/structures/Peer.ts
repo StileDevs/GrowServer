@@ -409,6 +409,49 @@ export class Peer extends OldPeer<PeerDataType> {
     });
   }
 
+  private hasPlaymod(name: string): boolean {
+    const active_playmods = [];
+    Object.keys(this.data.clothing).forEach((k) => {
+      // @ts-expect-error ignore keys type
+      const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
+      const playMod = itemInfo?.playMod || "";
+      active_playmods.push(playMod);
+    });
+
+    if (this.data.state.canWalkInBlocks) active_playmods.push("Ghost in the Shell");
+
+    for (let i = 0; i < active_playmods.length; i++) {
+      if (active_playmods[i].length === 0) continue;
+
+      if (active_playmods[i].toLowerCase().includes(name.toLowerCase())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private formState() {
+    let state = 0x0;
+    let mods_effect = 0x0;
+    state |= (this.hasPlaymod("Ghost in the Shell") ? 1 : 0) << 0;
+    if (Ability.DOUBLE_JUMP.some((k) => this.hasPlaymod(k))) state |= State.canDoubleJump;
+    state |= (this.hasPlaymod("The One Ring") ? 1 : 0) << 2;
+	  state |= (this.hasPlaymod("Mark of Growganoth") ? 1 : 0) << 4;
+	  state |= (this.hasPlaymod("Halo!") ? 1 : 0) << 7;
+	  state |= (this.hasPlaymod("duct tape") ? 1 : 0) << 13;
+    state |= (this.hasPlaymod("Irradiated") ? 1 : 0) << 19;
+
+    this.data.state.mod = state;
+
+    if (this.hasPlaymod("Putt putt putt")) mods_effect |= ModsEffects.HARVESTER;
+    if (Ability.PUNCH_DAMAGE.some((k) => this.hasPlaymod(k))) mods_effect |= ModsEffects.PUNCH_DAMAGE;
+
+    this.data.state.modsEffect = mods_effect;
+    this.sendState();
+    this.addRift();
+  }
+
   public sendState(punchID?: number, everyPeer = true) {
     const tank = TankPacket.from({
       type: TankTypes.SET_CHARACTER_STATE,
