@@ -209,9 +209,9 @@ export default class extends Listener<"raw"> {
                   if ((peer.searchItem(1796)?.amount as number) + 100 > 200) {
                     peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Whoops, you're holding too many Diamond Locks!", 0, 1));
                   } else {
-                    peer.modifyInventory(1796, 100);
-                    peer.modifyInventory(7188, -1);
-                    peer.send(Variant.from("OnTalkBubble", peer.data.netID, "You shattered a Diamond Lock into 100 Diamond Locks!", 0, 1));
+                    peer.addItemInven(1796, 100);
+                    peer.removeItemInven(7188, 1);
+                    peer.send(Variant.from("OnTalkBubble", peer.data.netID, "You shattered a Blue Gem Lock into 100 Diamond Locks!", 0, 1));
                   }
                   break;
                 }
@@ -219,8 +219,8 @@ export default class extends Listener<"raw"> {
                   if ((peer.searchItem(242)?.amount as number) + 100 > 200) {
                     peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Whoops, you're holding too many World Locks!", 0, 1));
                   } else {
-                    peer.modifyInventory(242, 100);
-                    peer.modifyInventory(1796, -1);
+                    peer.addItemInven(242, 100);
+                    peer.removeItemInven(1796, 1);
                     peer.send(Variant.from("OnTalkBubble", peer.data.netID, "You shattered a Diamond Lock into 100 World Locks!", 0, 1));
                   }
                   break;
@@ -230,8 +230,8 @@ export default class extends Listener<"raw"> {
                   if ((peer.searchItem(1796)?.amount as number) + 1 > 200) {
                     peer.send(Variant.from("OnTalkBubble", peer.data.netID, "Whoops, you're holding too many Diamond Locks!", 0, 1));
                   } else {
-                    peer.modifyInventory(1796, 1);
-                    peer.modifyInventory(242, -100);
+                    peer.addItemInven(1796, 1);
+                    peer.removeItemInven(242, 100);
                     peer.send(Variant.from("OnTalkBubble", peer.data.netID, "You compressed 100 World Locks into a Diamond Lock!", 0, 1));
                   }
                   break;
