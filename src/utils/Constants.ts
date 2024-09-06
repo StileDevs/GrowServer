@@ -1,4 +1,4 @@
-import { ClothTypes } from "./enums/ItemTypes";
+import { ClothTypes } from "./enums/ItemTypes.js";
 
 export const WORLD_SIZE = {
   WIDTH: 100,

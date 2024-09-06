@@ -40,7 +40,7 @@ export function PlayerRouter(server: BaseServer) {
   });
 
   router.post("/login/dashboard", (req, res) => {
-    const html = readFileSync(path.join(__dirname, "..", "..", "..", "build", "index.html"), "utf8");
+    const html = readFileSync(path.join(__dirname, "..", "..", "..", "assets", "website", "index.html"), "utf8");
     res.send(html);
   });
 
