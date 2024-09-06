@@ -1,15 +1,15 @@
-import { Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
+import { ItemDefinition, Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
 import type { PeerDataType, Block } from "../types";
-import { Role, WORLD_SIZE } from "../utils/Constants.js";
+import { CLOTH_MAP, Role, WORLD_SIZE } from "../utils/Constants.js";
 import { DataTypes } from "../utils/enums/DataTypes.js";
 import { TankTypes } from "../utils/enums/TankTypes.js";
 import { BaseServer } from "./BaseServer.js";
 import { World } from "./World.js";
 import { ActionTypes } from "../utils/enums/Tiles.js";
 import { manageArray } from "../utils/Utils.js";
-import { ModsEffects, State } from "../utils/enums/Character.js";
+import { Ability, ModsEffects, State } from "../utils/enums/Character.js";
 import { Player } from "../tanks/Player.js";
-import { RiftCapeFlags, RiftWingsFlags } from "../utils/enums/ItemTypes.js";
+import { ClothTypes, RiftCapeFlags, RiftWingsFlags } from "../utils/enums/ItemTypes.js";
 import { Color } from "./Color.js";
 
 export class Peer extends OldPeer<PeerDataType> {
@@ -53,6 +53,70 @@ export class Peer extends OldPeer<PeerDataType> {
         );
       }
     });
+  }
+
+  public equipClothes(itemID: number) {
+    if (!this.searchItem(itemID)) return;
+
+    const isAnces = (item: ItemDefinition): boolean => {
+      if (item?.type === ActionTypes.ANCES) {
+        this.data.clothing.ances = itemID;
+        return true;
+      }
+      return false;
+    };
+
+    if (Object.values(this.data.clothing).includes(itemID)) this.unequipClothes(itemID);
+    else {
+      const item = this.base.items.metadata.items[itemID];
+      if (!isAnces(item)) {
+        const clothKey = CLOTH_MAP[item?.bodyPartType as ClothTypes];
+
+        if (clothKey) {
+          this.data.clothing[clothKey] = itemID;
+        }
+      }
+      const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
+      if (itemInfo?.itemFunction[0]) {
+        this.send(Variant.from("OnConsoleMessage", `${itemInfo.itemFunction[0]} (${itemInfo.playMod} added)`));
+      }
+      this.formState();
+      this.sendClothes();
+      this.send(TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0"));
+    }
+  }
+
+  public unequipClothes(itemID: number) {
+    const item = this.base.items.metadata.items[itemID];
+
+    let unequiped: boolean = false;
+
+    const isAnces = (item: ItemDefinition): boolean => {
+      if (item?.type === ActionTypes.ANCES) {
+        if (this.data.clothing.ances === itemID) (this.data.clothing.ances = 0), (unequiped = true);
+        return true;
+      }
+      return false;
+    };
+
+    if (!isAnces(item)) {
+      const clothKey = CLOTH_MAP[item?.bodyPartType as ClothTypes];
+
+      if (clothKey) {
+        this.data.clothing[clothKey] = 0;
+        unequiped = true;
+      }
+    }
+
+    if (unequiped) {
+      this.formState();
+      this.sendClothes();
+      this.send(TextPacket.from(DataTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0"));
+    }
+    const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
+    if (unequiped && itemInfo?.itemFunction[1]) {
+      this.send(Variant.from("OnConsoleMessage", `${itemInfo.itemFunction[1]} (${itemInfo.playMod} removed)`));
+    }
   }
 
   /** Extended version of setDataToCache */
@@ -167,11 +231,17 @@ export class Peer extends OldPeer<PeerDataType> {
     world?.drop(this, x, y, id, amount);
   }
 
-  public addItemInven(id: number, amount = 1) {
+  public addItemInven(id: number, amount = 1, drop: boolean = false) {
     const item = this.data.inventory.items.find((i) => i.id === id);
 
-    if (!item) this.data.inventory.items.push({ id, amount });
-    else if (item.amount < 200) item.amount += amount;
+    if (!item) {
+      this.data.inventory.items.push({ id, amount });
+      if (!drop) this.modifyInventory(id, amount);
+    } else if (item.amount < 200) {
+      if (item.amount + amount > 200) item.amount = 200;
+      else item.amount += amount;
+      if (!drop) this.modifyInventory(id, amount);
+    }
 
     // this.inventory();
     this.saveToCache();
@@ -184,8 +254,13 @@ export class Peer extends OldPeer<PeerDataType> {
       item.amount -= amount;
       if (item.amount < 1) {
         this.data.inventory.items = this.data.inventory.items.filter((i) => i.id !== id);
+        if (this.base.items.metadata.items[id].bodyPartType !== undefined) {
+          this.unequipClothes(id);
+        }
       }
     }
+
+    this.modifyInventory(id, -amount);
 
     // this.inventory();
     this.saveToCache();
@@ -250,13 +325,55 @@ export class Peer extends OldPeer<PeerDataType> {
     });
   }
 
+  private hasPlaymod(name: string): boolean {
+    const active_playmods = [];
+    Object.keys(this.data.clothing).forEach((k) => {
+      const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
+      const playMod = itemInfo?.playMod || "";
+      active_playmods.push(playMod);
+    });
+
+    if (this.data.state.canWalkInBlocks) active_playmods.push("Ghost in the Shell");
+
+    for (let i = 0; i < active_playmods.length; i++) {
+      if (active_playmods[i].length === 0) continue;
+
+      if (active_playmods[i].toLowerCase().includes(name.toLowerCase())) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private formState() {
+    let state = 0x0;
+    let mods_effect = 0x0;
+    state |= (this.hasPlaymod("Ghost in the Shell") ? 1 : 0) << 0;
+    if (Ability.DOUBLE_JUMP.some((k) => this.hasPlaymod(k))) state |= State.canDoubleJump;
+    state |= (this.hasPlaymod("The One Ring") ? 1 : 0) << 2;
+    state |= (this.hasPlaymod("Mark of Growganoth") ? 1 : 0) << 4;
+    state |= (this.hasPlaymod("Halo!") ? 1 : 0) << 7;
+    state |= (this.hasPlaymod("duct tape") ? 1 : 0) << 13;
+    state |= (this.hasPlaymod("Irradiated") ? 1 : 0) << 19;
+
+    this.data.state.mod = state;
+
+    if (this.hasPlaymod("Putt putt putt")) mods_effect |= ModsEffects.HARVESTER;
+    if (Ability.PUNCH_DAMAGE.some((k) => this.hasPlaymod(k))) mods_effect |= ModsEffects.PUNCH_DAMAGE;
+
+    this.data.state.modsEffect = mods_effect;
+    this.sendState();
+    this.addRift();
+  }
+
   public sendState(punchID?: number, everyPeer = true) {
     const tank = TankPacket.from({
       type: TankTypes.SET_CHARACTER_STATE,
       netID: this.data.netID,
       info: this.data.state.mod,
       xPos: 1200,
-      yPos: 100,
+      yPos: 200,
       xSpeed: 300,
       ySpeed: 600,
       xPunch: 0,
@@ -290,7 +407,6 @@ export class Peer extends OldPeer<PeerDataType> {
 
     // Clothing effects
     Object.keys(this.data.clothing).forEach((k) => {
-      // @ts-expect-error ignore keys type
       const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
       const playMod = itemInfo?.playMod || "";
 
@@ -373,18 +489,20 @@ export class Peer extends OldPeer<PeerDataType> {
   }
 
   public modifyInventory(id: number, amount: number = 1) {
-    const item = this.data.inventory?.items.find((i) => i.id === id);
+    if (amount > 200 || id <= 0 || id === 112) return;
 
-    if (!item) {
-      if (amount < 0 || amount > 200) return 1;
-      else this.data.inventory?.items.push({ id, amount });
-    } else {
-      if (amount === 0) return item.amount; // return jumlah barang yg di cari yg ada di bp
-      if (item.amount + amount > 200 || item.amount + amount < 0) return 1;
-      else item.amount += amount;
+    if (this.data.inventory?.items.find((i) => i.id === id)?.amount !== 0) {
+      const tank = TankPacket.from({
+        packetType: 4,
+        type: TankTypes.MODIFY_ITEM_INVENTORY,
+        info: id,
+        buildRange: amount < 0 ? amount * -1 : undefined,
+        punchRange: amount < 0 ? undefined : amount
+      }).parse() as Buffer;
+
+      this.send(tank);
     }
 
-    this.inventory();
     this.saveToCache();
     return 0;
   }

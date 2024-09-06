@@ -42,7 +42,7 @@ export async function WebServer(server: BaseServer) {
     app.use("/growtopia/cache", express.static(path.join(__dirname, "../../assets/cache")));
   }
 
-  app.use("/", express.static(path.join(__dirname, "..", "..", "build")));
+  app.use("/", express.static(path.join(__dirname, "..", "..", "assets", "website")));
 
   app.use("/api", ApiRouter(server));
 
@@ -69,7 +69,7 @@ export async function WebServer(server: BaseServer) {
   });
 
   app.get("/*", (req, res) => {
-    res.sendFile(path.join(__dirname, "..", "..", "build"));
+    res.sendFile(path.join(__dirname, "..", "..", "assets", "website"));
   });
 
   if (!server.config.webserver.development) {
