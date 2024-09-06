@@ -28,8 +28,7 @@ Example for default .env file (Generated automatically)
 
 ```
 ENCRYPT_SECRET=SUPERSECRET # Default encrypt secret
-WEB_ADDRESS=127.0.0.1
-WEB_ENV=development
+DISCORD_BOT_TOKEN=Tokxxxxxxxen
 ```
 
 ## Database
