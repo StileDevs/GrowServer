@@ -17,6 +17,7 @@
     "dev:nolint": "rimraf dist && rimraf assets/cache && tsc && node -r dotenv/config dist/app.js",
     "mkcert:setup": "mkcert -install && cd assets/ssl && mkcert *.growserver.app",
     "install": "(node scripts/setup.js) && tsc && npm run generate && npm run seed && npm run mkcert:setup && npm run finish",
+    "update": "node scripts/update.js",
     "finish": "echo \u001b[46mSetup Completed!\u001b[0m && echo \u001b[46mCheck out GrowServer github: https://github.com/JadlionHD/GrowServer\u001b[0m"
   },
   "author": "JadlionHD <jadlion.dev@gmail.com>",
