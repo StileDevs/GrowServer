@@ -1,26 +1,46 @@
-import { BaseServer } from "./structures/BaseServer.js";
-import fs from "node:fs";
+import consola from "consola";
+import fs from "fs/promises";
+import { Client } from "growtopia.js";
+import { type Plugin } from "../types";
 
-import { handleSaveAll } from "./utils/Utils.js";
-import { DiscordManager } from "./structures/DiscordManager.js";
+const client = new Client({
+  enet: {
+    ip: "0.0.0.0"
+  }
+});
 
-if (!fs.existsSync("./assets")) throw new Error("Could not find 'assets' folder, please create new one.");
+const loadedPlugins: Plugin[] = [];
 
-if (!fs.existsSync("./assets/ssl")) throw new Error("SSL certificate are required for https web server.");
+client.on("ready", async () => {
+  consola.info(`ENet server: port ${client.config.enet?.port} on ${client.config.enet?.ip} and Https server: port ${client.config.https?.httpsPort} on ${client.config.https?.ip}`);
 
-if (!fs.existsSync("./assets/ssl/server.crt")) throw new Error("'assets/ssl/server.crt' are required for https web server.");
+  const pluginDir = await fs.readdir("./plugins");
 
-if (!fs.existsSync("./assets/ssl/server.key")) throw new Error("assets/ssl/server.key are required for https web server.");
+  pluginDir.forEach(async (v) => {
+    try {
+      const { Plugin } = await import(`../plugins/${v}`);
+      const plugin = new Plugin();
 
-if (!fs.existsSync("./assets/dat/items.dat")) throw new Error("items.dat not exist on 'assets/dat/items.dat'");
+      plugin.init(client);
 
-const server = new BaseServer();
+      consola.info(`Loaded ${v} plugin`);
 
-server.start();
+      loadedPlugins.push(plugin);
+    } catch (e) {
+      consola.error(`Oh no, something wrong when load plugin ${v}`, e);
+      process.exit(1);
+    }
+  });
+});
 
-const Manager = new DiscordManager(server.config.discord.clientToken, server.config.discord.clientId, server);
-Manager.start();
+client.on("error", (err) => {
+  consola.error("Something wrong with growserver", err);
+});
 
-process.on("SIGINT", () => handleSaveAll(server, true));
-process.on("SIGQUIT", () => handleSaveAll(server, true));
-process.on("SIGTERM", () => handleSaveAll(server, true));
+client.on("connect", (netID) => loadedPlugins.forEach((v) => v.onConnect(netID)));
+
+client.on("disconnect", (netID) => loadedPlugins.forEach((v) => v.onDisconnect(netID)));
+
+client.on("raw", (netID, data) => loadedPlugins.forEach((v) => v.onRaw(netID, data)));
+
+client.listen();
