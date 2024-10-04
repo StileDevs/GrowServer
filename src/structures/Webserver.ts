@@ -30,8 +30,6 @@ const apiLimiter = rateLimit({
 });
 
 export async function WebServer(server: BaseServer) {
-  if (!existsSync("./assets/cache.zip")) throw new Error("Could not find 'cache.zip' file, please get one from growtopia 'cache' folder & compress the 'cache' folder into zip file.");
-
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use("/public", express.static(path.join(__dirname, "../../website/public")));
