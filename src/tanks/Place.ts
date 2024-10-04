@@ -541,6 +541,24 @@ export class Place {
         return true;
       }
 
+      case ActionTypes.PROVIDER: {
+        p.block.provider = {
+          date: Date.now()
+        };
+
+        this.world.place({
+          peer: this.peer,
+          x: p.block.x,
+          y: p.block.y,
+          isBg: p.isBg,
+          id: p.id
+        });
+
+        this.tileUpdate(p.actionType, p.block);
+
+        return true;
+      }
+
       default: {
         this.base.log.debug("Unknown block placing", { actionType: p.actionType, block: p.block });
         return false;
