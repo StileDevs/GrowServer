@@ -86,9 +86,7 @@ export class BaseServer {
   }
 
   public async start() {
-    this.log.info("Please wait extracting cache.zip");
-    await decompress("assets/cache.zip", "assets/cache");
-    this.log.ready("Successfully extracting cache.zip");
+
 
     this.#_loadItems().then(async () => {
       this.log.ready("Items data ready!");
