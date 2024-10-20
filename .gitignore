@@ -7,7 +7,9 @@ data
 assets/website/
 assets/build.zip
 build
-
+.cache
+data.db
+data
 
 # Ignore ssl
 assets/ssl/_wildcard.growserver.app.pem
