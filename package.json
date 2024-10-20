@@ -5,18 +5,42 @@
   "main": "dist/app.js",
   "type": "module",
   "scripts": {
-    "dev": "tsc && node dist/app.js"
+    "test": "nr build && node dist/app.js",
+    "generate": "drizzle-kit push --config=drizzle.config.ts",
+    "seed": "node scripts/seeds.js",
+    "studio": "drizzle-kit studio",
+    "build": "tsup",
+    "install": "(node scripts/setup.js) && nr build && nr generate && nr seed"
   },
   "keywords": [],
   "author": "JadlionHD <jadlion.dev@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@antfu/ni": "^0.23.0",
+    "@hono/node-server": "^1.13.1",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^11.4.0",
     "consola": "^3.2.3",
-    "growtopia.js": "latest",
-    "undici": "^6.19.8"
+    "decompress": "^4.2.1",
+    "dotenv": "^16.4.5",
+    "drizzle-orm": "^0.31.2",
+    "drizzle-zod": "^0.5.1",
+    "growtopia.js": "^1.6.2",
+    "hono": "^4.6.3",
+    "jsonwebtoken": "^9.0.2",
+    "nanoid": "^5.0.7",
+    "undici": "^6.19.8",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/decompress": "^4.2.7",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.5.5",
+    "drizzle-kit": "^0.22.8",
+    "tsup": "^8.3.0",
+    "type-fest": "^4.26.1",
     "typescript": "^5.6.2"
   },
   "engines": {

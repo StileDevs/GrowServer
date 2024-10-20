@@ -1,0 +1,13 @@
+import { PeerData } from "./peer";
+import { WorldData } from "./world";
+import { Collection } from "../utils/Collection.js";
+
+export interface CDNContent {
+  version: string;
+  uri: string;
+}
+
+export interface Cache {
+  peers: Collection<number, PeerData>;
+  worlds: Collection<string, WorldData>;
+}

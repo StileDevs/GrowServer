@@ -1,0 +1,15 @@
+{
+  "web": {
+    "development": true,
+    "address": "127.0.0.1",
+    "ports": [17091],
+    "loginUrl": "login.growserver.app:8080",
+    "maintenance": {
+      "enable": false,
+      "message": "Maintenance Woi"
+    }
+  },
+  "server": {
+    "bypassVersionCheck": true
+  }
+}
