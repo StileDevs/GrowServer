@@ -17,21 +17,22 @@ export async function Web() {
 
   app.use(logg((str, ...rest) => consola.log(str, ...rest)));
 
-  // const from = join(__dirname, "..", "..", "..");
-  // const to = join(__dirname, "..", ".cache", "website");
-  // const root = relative(from, to);
+  const from = join(__dirname, "..");
+  const to = join(__dirname, "..", "assets", "cache");
+  const root = relative(from, to);
 
-  // app.use(
-  //   "/*",
-  //   serveStatic({
-  //     root
-  //   })
-  // );
-  // app.get("/", (ctx) =>
-  //   ctx.json({
-  //     message: "Hello world"
-  //   })
-  // );
+  app.use(
+    "/growtopia/cache",
+    serveStatic({
+      root
+    })
+  );
+
+  app.get("/", (ctx) =>
+    ctx.json({
+      message: "Hello world"
+    })
+  );
 
   app.all("/growtopia/server_data.php", (ctx) => {
     let str = "";
@@ -65,7 +66,30 @@ export async function Web() {
     );
   });
 
-  app.all("/player/login/dashboard", (ctx) => {
+  app.post("/player/growid/checktoken", async (ctx) => {
+    try {
+      const formData = await ctx.req.formData();
+      const refreshToken = formData.get("refreshToken") as string;
+
+      if (!refreshToken) throw new Error("Unauthorized");
+
+      jwt.verify(refreshToken, process.env.JWT_SECRET as string);
+
+      return ctx.html(
+        JSON.stringify({
+          status: "success",
+          message: "Account Validated.",
+          token: refreshToken,
+          url: "",
+          accountType: "growtopia"
+        })
+      );
+    } catch (e) {
+      return ctx.body("Unauthorized", 401);
+    }
+  });
+
+  app.post("/player/login/dashboard", (ctx) => {
     const html = readFileSync(join(__dirname, "..", "assets", "website", "login.html"), "utf-8");
     return ctx.html(html);
   });

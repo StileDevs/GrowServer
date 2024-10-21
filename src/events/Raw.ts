@@ -3,8 +3,10 @@ import { Base } from "../core/Base.js";
 import { Peer } from "../core/Peer.js";
 import consola from "consola";
 import { parseAction } from "../utils/Utils";
-import { ActionPacket } from "../network/Action.js";
-import { StrPacket } from "../network/Str.js";
+import { IActionPacket } from "../network/Action.js";
+import { ITextPacket } from "../network/Text.js";
+import { ITankPacket } from "../network/Tank.js";
+import { Variant } from "growtopia.js";
 
 export class RawListener {
   constructor(public base: Base) {
@@ -16,13 +18,20 @@ export class RawListener {
     const type = chunk.readInt32LE();
 
     switch (type) {
-      case PacketType.STR: {
-        new StrPacket(this.base, peer, chunk).execute();
+      case PacketType.STR:
+      case PacketType.ACTION: {
+        new ITextPacket(this.base, peer, chunk).execute();
+        new IActionPacket(this.base, peer, chunk).execute();
         break;
       }
 
-      case PacketType.ACTION: {
-        new ActionPacket(this.base, peer, chunk).execute();
+      case PacketType.TANK: {
+        if (chunk.length < 60) {
+          peer.send(Variant.from("OnConsoleMessage", "Received invalid tank packet."));
+          return peer.disconnect();
+        }
+
+        new ITankPacket(this.base, peer, chunk).execute();
         break;
       }
 
