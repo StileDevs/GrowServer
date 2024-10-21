@@ -94,3 +94,9 @@ export function parseAction(chunk: Buffer): Record<string, string | number> {
 
   return data;
 }
+
+export function hashItemsDat(file: Buffer) {
+  let hash = 0x55555555;
+  file.forEach((x) => (hash = (hash >>> 27) + (hash << 5) + x));
+  return hash;
+}

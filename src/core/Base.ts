@@ -1,7 +1,7 @@
-import { Client } from "growtopia.js";
+import { Client, ItemsDatMeta } from "growtopia.js";
 import { Web } from "./Web.js";
-import { downloadMkcert, setupMkcert } from "../utils/Utils.js";
-import { dirname, join } from "path";
+import { downloadMkcert, hashItemsDat, setupMkcert } from "../utils/Utils.js";
+import { dirname, join, relative } from "path";
 import { fileURLToPath } from "url";
 import { ConnectListener } from "../events/Connect.js";
 import { type PackageJson } from "type-fest";
@@ -17,6 +17,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export class Base {
   public server: Client;
+  public items;
   public package: PackageJson;
   public config: Record<string, any>;
   public cdn: CDNContent;
@@ -29,6 +30,12 @@ export class Base {
         ip: "0.0.0.0"
       }
     });
+    this.items = {
+      hash: `${hashItemsDat(fs.readFileSync(join(__dirname, "..", "assets", "dat", "items.dat")))}`,
+      content: fs.readFileSync(join(__dirname, "..", "assets", "dat", "items.dat")),
+      // wiki: JSON.parse(fs.readFileSync("./assets/items_info.json", "utf-8")) as WikiItems[],
+      metadata: {} as ItemsDatMeta
+    };
     this.package = JSON.parse(fs.readFileSync(join(__dirname, "..", "package.json"), "utf-8"));
     this.config = JSON.parse(fs.readFileSync(join(__dirname, "..", "config.json"), "utf-8"));
     this.cdn = { version: "", uri: "0000/0000" };
@@ -36,6 +43,7 @@ export class Base {
       peers: new Collection(),
       worlds: new Collection()
     };
+
     this.database = new Database();
     consola.level = 4;
   }

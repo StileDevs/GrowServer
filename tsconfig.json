@@ -19,6 +19,8 @@
     "noEmitOnError": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
     "types": []
   },
   "exclude": ["node_modules", "./node_modules", "./node_modules/**/*"],
