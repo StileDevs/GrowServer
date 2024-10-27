@@ -1,6 +1,7 @@
 "use strict";
 
 import { players } from "../dist/database/schemas/Player.js";
+import { worlds } from "../dist/database/schemas/World.js";
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import DB from "better-sqlite3";
 import bcrypt from "bcryptjs";

@@ -1,6 +1,7 @@
 import { type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { eq } from "drizzle-orm";
 import { worlds, type Worlds } from "../schemas/World.js";
+import { WorldData } from "../../types/world.js";
 
 export class WorldDB {
   constructor(private db: BetterSQLite3Database<Record<string, never>>) {}
@@ -12,42 +13,40 @@ export class WorldDB {
     return undefined;
   }
 
-  public async set(data: Worlds) {
-    if (!data.name && !data.blockCount && !data.blocks && !data.width && !data.height) return 0;
+  public async set(data: WorldData) {
+    if (!data.name && !data.blocks && !data.width && !data.height) return 0;
 
-    // const res = await this.db.insert(worlds).values({
-    //   name: data.name,
-    //   ownedBy: data.ownedBy,
-    //   blockCount: data.blockCount,
-    //   width: data.width,
-    //   height: data.height,
-    //   blocks: data.blocks,
-    //   owner: data.owner,
-    //   dropped: data.dropped,
-    //   weather_id: data.weather_id
-    // });
-    const res = await this.db.insert(worlds).values(data);
+    const res = await this.db.insert(worlds).values({
+      name: data.name,
+      ownedBy: data.owner ? data.owner.id : null,
+      width: data.width,
+      height: data.height,
+      blocks: Buffer.from(JSON.stringify(data.blocks)),
+      owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
+      dropped: Buffer.from(JSON.stringify(data.dropped)),
+      updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+      weather_id: data.weatherId
+    });
 
     if (res && res.lastInsertRowid) return res.lastInsertRowid;
     return 0;
   }
 
-  public async save(data: Worlds) {
-    if (!data.name && !data.blockCount && !data.blocks && !data.width && !data.height) return false;
+  public async save(data: WorldData) {
+    if (!data.name && !data.blocks && !data.width && !data.height) return false;
 
     const res = await this.db
       .update(worlds)
-      // .set({
-      //   ownedBy,
-      //   blockCount,
-      //   width,
-      //   height,
-      //   blocks,
-      //   owner,
-      //   dropped,
-      //   updated_at
-      // })
-      .set(data)
+      .set({
+        ownedBy: data.owner ? data.owner.id : null,
+        width: data.width,
+        height: data.height,
+        blocks: Buffer.from(JSON.stringify(data.blocks)),
+        owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
+        dropped: Buffer.from(JSON.stringify(data.dropped)),
+        updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+        weather_id: data.weatherId
+      })
       .where(eq(worlds.name, data.name))
       .returning({ id: worlds.id });
 

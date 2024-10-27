@@ -1,4 +1,4 @@
-import { PacketType } from "../Constants.js";
+import { PacketTypes } from "../Constants.js";
 import { Base } from "../core/Base.js";
 import { Peer } from "../core/Peer.js";
 import consola from "consola";
@@ -18,14 +18,14 @@ export class RawListener {
     const type = chunk.readInt32LE();
 
     switch (type) {
-      case PacketType.STR:
-      case PacketType.ACTION: {
+      case PacketTypes.STR:
+      case PacketTypes.ACTION: {
         new ITextPacket(this.base, peer, chunk).execute();
         new IActionPacket(this.base, peer, chunk).execute();
         break;
       }
 
-      case PacketType.TANK: {
+      case PacketTypes.TANK: {
         if (chunk.length < 60) {
           peer.send(Variant.from("OnConsoleMessage", "Received invalid tank packet."));
           return peer.disconnect();

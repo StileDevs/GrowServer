@@ -9,7 +9,6 @@ export const worlds = sqliteTable("worlds", {
   owner: blob("owner", { mode: "buffer" }),
   width: integer("width").notNull(),
   height: integer("height").notNull(),
-  blockCount: integer("blockCount").notNull(),
   blocks: blob("blocks", { mode: "buffer" }),
   dropped: blob("dropped", { mode: "buffer" }),
   weather_id: integer("weather_id").default(41),

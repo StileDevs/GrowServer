@@ -1,7 +1,7 @@
 import { defineConfig, type Options } from "tsup";
 
 let config: Options = {
-  entry: ["src/app.ts"],
+  entry: ["src/**/*"],
   outDir: "dist",
   splitting: true,
   sourcemap: false,

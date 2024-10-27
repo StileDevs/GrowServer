@@ -2,7 +2,7 @@ import { TextPacket, Variant } from "growtopia.js";
 import { Base } from "../core/Base.js";
 import { Peer } from "../core/Peer.js";
 import { parseAction } from "../utils/Utils.js";
-import { PacketType } from "../Constants.js";
+import { PacketTypes } from "../Constants.js";
 import consola from "consola";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -32,14 +32,14 @@ export class ITextPacket {
   private async checkVersion() {
     if (this.obj.game_version && this.obj.game_version !== this.base.cdn.version && !this.base.config.server.bypassVersionCheck)
       return this.peer.send(
-        TextPacket.from(PacketType.ACTION, "action|log", `msg|\`4UPDATE REQUIRED!\`\` : The \`$V${this.base.cdn.version}\`\` update is now available for your device.  Go get it!  You'll need to install it before you can play online.`),
-        TextPacket.from(PacketType.ACTION, "action|set_url", `url|https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/GrowtopiaInstaller.exe`, "label|Download Latest Version")
+        TextPacket.from(PacketTypes.ACTION, "action|log", `msg|\`4UPDATE REQUIRED!\`\` : The \`$V${this.base.cdn.version}\`\` update is now available for your device.  Go get it!  You'll need to install it before you can play online.`),
+        TextPacket.from(PacketTypes.ACTION, "action|set_url", `url|https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/GrowtopiaInstaller.exe`, "label|Download Latest Version")
       );
   }
 
   private async invalidInfoResponse() {
     this.peer.send(Variant.from("OnConsoleMessage", "`4Failed`` logging in to that account. Please make sure you've provided the correct info."));
-    this.peer.send(TextPacket.from(PacketType.ACTION, "action|set_url", "url||http://127.0.0.1/recover", "label|`$Recover your Password``"));
+    this.peer.send(TextPacket.from(PacketTypes.ACTION, "action|set_url", "url||http://127.0.0.1/recover", "label|`$Recover your Password``"));
     this.peer.disconnect();
   }
 
@@ -76,7 +76,7 @@ export class ITextPacket {
         const targetPeer = new Peer(this.base, targetPeerId.netID);
         this.peer.send(Variant.from("OnConsoleMessage", "`4Already Logged In?`` It seems that this account already logged in by somebody else."));
 
-        // targetPeer.leaveWorld();
+        targetPeer.leaveWorld();
         targetPeer.disconnect();
       }
 
@@ -105,7 +105,7 @@ export class ITextPacket {
         const targetPeer = new Peer(this.base, targetPeerId.netID);
         this.peer.send(Variant.from("OnConsoleMessage", "`4Already Logged In?`` It seems that this account already logged in by somebody else."));
 
-        // targetPeer.leaveWorld();
+        targetPeer.leaveWorld();
         targetPeer.disconnect();
       }
 
@@ -113,6 +113,61 @@ export class ITextPacket {
       const randPort = conf.ports[Math.floor(Math.random() * conf.ports.length)];
       this.sendSuperMain();
       this.peer.send(Variant.from("SetHasGrowID", 1, player.display_name, password));
+
+      const defaultInventory = {
+        max: 32,
+        items: [
+          {
+            id: 18, // Fist
+            amount: 1
+          },
+          {
+            id: 32, // Wrench
+            amount: 1
+          }
+        ]
+      };
+
+      const defaultClothing = {
+        hair: 0,
+        shirt: 0,
+        pants: 0,
+        feet: 0,
+        face: 0,
+        hand: 0,
+        back: 0,
+        mask: 0,
+        necklace: 0,
+        ances: 0
+      };
+
+      this.peer.data.tankIDName = player.display_name;
+      this.peer.data.rotatedLeft = false;
+      this.peer.data.country = this.obj.country as string;
+      this.peer.data.id_user = player.id;
+      this.peer.data.role = player.role;
+      this.peer.data.inventory = player.inventory?.length ? JSON.parse(player.inventory.toString()) : defaultInventory;
+      this.peer.data.clothing = player.clothing?.length ? JSON.parse(player.clothing.toString()) : defaultClothing;
+      this.peer.data.gems = player.gems ? player.gems : 0;
+      this.peer.data.world = "EXIT";
+      this.peer.data.level = player.level ? player.level : 0;
+      this.peer.data.exp = player.exp ? player.exp : 0;
+      this.peer.data.lastVisitedWorlds = player.last_visited_worlds ? JSON.parse(player.last_visited_worlds.toString()) : [];
+      this.peer.data.state = {
+        mod: 0,
+        canWalkInBlocks: false,
+        modsEffect: 0,
+        lava: {
+          damage: 0,
+          resetStateAt: 0
+        }
+      };
+
+      // Load Gems
+      this.peer.send(Variant.from("OnSetBux", this.peer.data.gems));
+
+      this.peer.saveToCache();
+      this.peer.saveToDatabase();
     } catch (e) {
       consola.error(e);
       return await this.invalidInfoResponse();
