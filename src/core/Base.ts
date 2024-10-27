@@ -1,4 +1,4 @@
-import { Client, ItemsDatMeta } from "growtopia.js";
+import { Client, ItemsDat, ItemsDatMeta } from "growtopia.js";
 import { Web } from "./Web.js";
 import { downloadMkcert, hashItemsDat, setupMkcert } from "../utils/Utils.js";
 import { dirname, join, relative } from "path";
@@ -56,6 +56,7 @@ export class Base {
 
     consola.log(`🔔 Starting ENet server ${this.server.config.enet?.port}`);
     this.server.listen();
+    await this.loadItems();
     await this.loadEvents();
   }
 
@@ -67,5 +68,22 @@ export class Base {
     this.server.on("connect", (netID) => connect.run(netID));
     this.server.on("disconnect", (netID) => disconnect.run(netID));
     this.server.on("raw", (netID, data) => raw.run(netID, data));
+  }
+
+  private async loadItems() {
+    let itemsDat = new ItemsDat(fs.readFileSync(join(__dirname, "..", "assets", "dat", "items.dat")));
+    await itemsDat.decode();
+
+    // try {
+    //   itemsDat = await Items.loadCustomItems(itemsDat);
+    //   this.log.info("Loaded custom items");
+    // } catch (e) {
+    //   this.log.error(e);
+    // }
+
+    await itemsDat.encode();
+    this.items.content = itemsDat.data;
+    this.items.hash = `${hashItemsDat(itemsDat.data)}`;
+    this.items.metadata = itemsDat.meta;
   }
 }

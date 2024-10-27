@@ -100,3 +100,18 @@ export function hashItemsDat(file: Buffer) {
   file.forEach((x) => (hash = (hash >>> 27) + (hash << 5) + x));
   return hash;
 }
+
+export function manageArray(arr: string[], length: number, newItem: string): string[] {
+  if (arr.length > length) {
+    arr.shift();
+  }
+
+  const existingIndex = arr.indexOf(newItem);
+  if (existingIndex !== -1) {
+    arr.splice(existingIndex, 1);
+  }
+
+  arr.push(newItem);
+
+  return arr;
+}

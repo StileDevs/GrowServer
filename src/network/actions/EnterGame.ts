@@ -1,12 +1,13 @@
-import { Variant, TankPacket } from "growtopia.js";
+import { Variant } from "growtopia.js";
 import { Base } from "../../core/Base.js";
 import { Peer } from "../../core/Peer.js";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder.js";
+import { type NonEmptyObject } from "type-fest";
 
 export class EnterGame {
   constructor(public base: Base) {}
 
-  public async execute(peer: Peer, action: Record<string, { action: string }>): Promise<void> {
+  public async execute(peer: Peer, action: NonEmptyObject<{ action: string }>): Promise<void> {
     const tes = new DialogBuilder().defaultColor().addLabelWithIcon("`wThe GrowServer Gazette``", "5016", "big").addSpacer("small").raw("add_image_button||interface/large/banner-transparent.rttex|bannerlayout|||\n").addTextBox("Welcome to GrowServer").addQuickExit().endDialog("gazzette_end", "Cancel", "Ok").str();
     peer.send(
       Variant.from(
@@ -34,7 +35,7 @@ ${peer.data.lastVisitedWorlds
   .join("\n")}
 `
       ),
-      Variant.from("OnConsoleMessage", `Welcome ${peer.data.tankIDName} Where would you like to go?`),
+      Variant.from("OnConsoleMessage", `Welcome ${peer.name} Where would you like to go?`),
       Variant.from({ delay: 100 }, "OnDialogRequest", tes)
     );
   }

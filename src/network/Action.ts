@@ -27,7 +27,7 @@ export class IActionPacket {
       const action = new Class(this.base);
       await action.execute(this.peer, this.obj);
     } catch (e) {
-      consola.error(e);
+      consola.warn(e);
     }
   }
 }

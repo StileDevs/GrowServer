@@ -63,7 +63,6 @@ export interface WorldData {
   name: string;
   width: number;
   height: number;
-  blockCount: number;
   blocks: Block[];
   owner?: WorldOwnerData;
   admins?: number[];
