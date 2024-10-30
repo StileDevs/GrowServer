@@ -330,3 +330,27 @@ export enum ActionTypes {
   KRANKENS_BLOCK = 141,
   FRIENDS_ENTRANCE = 142
 }
+
+export const LOCKS = [
+  {
+    id: 202, // Small Lock
+    maxTiles: 10
+  },
+  {
+    id: 204, // Big Lock
+    maxTiles: 48
+  },
+  {
+    id: 206, // Huge Lock
+    maxTiles: 200
+  },
+  {
+    id: 4994, // Builder's Lock
+    maxTiles: 200
+  }
+];
+
+export const Tileignore = {
+  blockIDsToIgnoreByLock: [6, 8],
+  blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR]
+};
