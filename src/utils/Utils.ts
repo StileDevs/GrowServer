@@ -5,7 +5,7 @@ import { request } from "undici";
 import consola from "consola";
 import { execSync } from "child_process";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = process.cwd();
 const MKCERT_URL = "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";
 
 const mkcertObj: Record<string, string> = {
@@ -49,24 +49,23 @@ export async function downloadMkcert() {
   const checkPlatform = `${process.platform}-${process.arch}`;
   const name = process.platform === "darwin" || process.platform === "linux" ? "mkcert" : "mkcert.exe";
 
-  if (!existsSync(join(__dirname, "..", ".cache", "bin"))) mkdirSync(join(__dirname, "..", ".cache", "bin"), { recursive: true });
+  if (!existsSync(join(__dirname, ".cache", "bin"))) mkdirSync(join(__dirname, ".cache", "bin"), { recursive: true });
   else return;
 
   consola.info("Downloading mkcert");
-  await downloadFile(mkcertObj[checkPlatform], join(__dirname, "..", ".cache", "bin", name));
+  await downloadFile(mkcertObj[checkPlatform], join(__dirname, ".cache", "bin", name));
 }
 
 export async function setupMkcert() {
-  const rootDir = join(__dirname, "..");
   const name = process.platform === "darwin" || process.platform === "linux" ? "mkcert" : "mkcert.exe";
-  const mkcertExecuteable = join(rootDir, ".cache", "bin", name);
+  const mkcertExecuteable = join(__dirname, ".cache", "bin", name);
 
-  if (!existsSync(join(__dirname, "..", ".cache", "ssl"))) mkdirSync(join(__dirname, "..", ".cache", "ssl"), { recursive: true });
+  if (!existsSync(join(__dirname, ".cache", "ssl"))) mkdirSync(join(__dirname, ".cache", "ssl"), { recursive: true });
   else return;
 
   consola.info("Setup mkcert certificate");
   try {
-    execSync(`${mkcertExecuteable} -install && cd ${join(rootDir, ".cache", "ssl")} && ${mkcertExecuteable} *.growserver.app`, { stdio: "ignore" });
+    execSync(`${mkcertExecuteable} -install && cd ${join(__dirname, ".cache", "ssl")} && ${mkcertExecuteable} *.growserver.app`, { stdio: "ignore" });
   } catch (e) {
     consola.error("Something wrong when setup mkcert", e);
   }

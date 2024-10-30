@@ -4,22 +4,20 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { serve } from "@hono/node-server";
 import { createServer } from "https";
 import { readFileSync } from "fs";
-import { dirname, join, relative } from "path";
-import { fileURLToPath } from "url";
+import { join, relative } from "path";
 import consola from "consola";
 import jwt from "jsonwebtoken";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const conf = JSON.parse(readFileSync(join(__dirname, "..", "config.json"), "utf-8"));
+const __dirname = process.cwd();
+const conf = JSON.parse(readFileSync(join(__dirname, "config.json"), "utf-8"));
 
 export async function Web() {
   const app = new Hono();
 
   app.use(logg((str, ...rest) => consola.log(str, ...rest)));
 
-  const from = join(__dirname, "..");
-  const to = join(__dirname, "..", "assets", "cache");
-  const root = relative(from, to);
+  const to = join(__dirname, "assets", "cache");
+  const root = relative(__dirname, to);
 
   app.use(
     "/growtopia/cache",
@@ -90,7 +88,7 @@ export async function Web() {
   });
 
   app.post("/player/login/dashboard", (ctx) => {
-    const html = readFileSync(join(__dirname, "..", "assets", "website", "login.html"), "utf-8");
+    const html = readFileSync(join(__dirname, "assets", "website", "login.html"), "utf-8");
     return ctx.html(html);
   });
 
@@ -110,8 +108,8 @@ export async function Web() {
       port: 443,
       createServer,
       serverOptions: {
-        key: readFileSync(join(__dirname, "..", "assets", "ssl", "server.key")),
-        cert: readFileSync(join(__dirname, "..", "assets", "ssl", "server.crt"))
+        key: readFileSync(join(__dirname, "assets", "ssl", "server.key")),
+        cert: readFileSync(join(__dirname, "assets", "ssl", "server.crt"))
       }
     },
     (info) => {
@@ -125,8 +123,8 @@ export async function Web() {
       port: 8080,
       createServer,
       serverOptions: {
-        key: readFileSync(join(__dirname, "..", ".cache", "ssl", "_wildcard.growserver.app-key.pem")),
-        cert: readFileSync(join(__dirname, "..", ".cache", "ssl", "_wildcard.growserver.app.pem"))
+        key: readFileSync(join(__dirname, ".cache", "ssl", "_wildcard.growserver.app-key.pem")),
+        cert: readFileSync(join(__dirname, ".cache", "ssl", "_wildcard.growserver.app.pem"))
       }
     },
     (info) => {

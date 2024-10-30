@@ -1,8 +1,7 @@
 import { Client, ItemsDat, ItemsDatMeta } from "growtopia.js";
 import { Web } from "./Web.js";
 import { downloadMkcert, hashItemsDat, setupMkcert } from "../utils/Utils.js";
-import { dirname, join, relative } from "path";
-import { fileURLToPath } from "url";
+import { join } from "path";
 import { ConnectListener } from "../events/Connect.js";
 import { type PackageJson } from "type-fest";
 import { DisconnectListener } from "../events/Disconnect.js";
@@ -13,7 +12,7 @@ import { Cache, CDNContent } from "../types";
 import { Collection } from "../utils/Collection.js";
 import { Database } from "../database/Database.js";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const __dirname = process.cwd();
 
 export class Base {
   public server: Client;
@@ -31,13 +30,13 @@ export class Base {
       }
     });
     this.items = {
-      hash: `${hashItemsDat(fs.readFileSync(join(__dirname, "..", "assets", "dat", "items.dat")))}`,
-      content: fs.readFileSync(join(__dirname, "..", "assets", "dat", "items.dat")),
+      hash: `${hashItemsDat(fs.readFileSync(join(__dirname, "assets", "dat", "items.dat")))}`,
+      content: fs.readFileSync(join(__dirname, "assets", "dat", "items.dat")),
       // wiki: JSON.parse(fs.readFileSync("./assets/items_info.json", "utf-8")) as WikiItems[],
       metadata: {} as ItemsDatMeta
     };
-    this.package = JSON.parse(fs.readFileSync(join(__dirname, "..", "package.json"), "utf-8"));
-    this.config = JSON.parse(fs.readFileSync(join(__dirname, "..", "config.json"), "utf-8"));
+    this.package = JSON.parse(fs.readFileSync(join(__dirname, "package.json"), "utf-8"));
+    this.config = JSON.parse(fs.readFileSync(join(__dirname, "config.json"), "utf-8"));
     this.cdn = { version: "", uri: "0000/0000" };
     this.cache = {
       peers: new Collection(),
@@ -71,7 +70,7 @@ export class Base {
   }
 
   private async loadItems() {
-    let itemsDat = new ItemsDat(fs.readFileSync(join(__dirname, "..", "assets", "dat", "items.dat")));
+    let itemsDat = new ItemsDat(fs.readFileSync(join(__dirname, "assets", "dat", "items.dat")));
     await itemsDat.decode();
 
     // try {
