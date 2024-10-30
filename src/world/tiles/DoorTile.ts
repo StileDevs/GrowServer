@@ -12,7 +12,6 @@ export class DoorTile extends Tile {
   constructor(public world: World, public block: Block, public alloc = 12) {
     super(world, block, alloc);
 
-    console.log("bef alloc", this.alloc);
     this.label = this.block.door?.label || "";
     this.alloc += this.label.length;
 
