@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "nr build && node dist/app.js",
+    "dev": "tsx ./src/app.ts",
     "generate": "drizzle-kit push --config=drizzle.config.ts",
     "seed": "node scripts/seeds.js",
     "studio": "drizzle-kit studio",
