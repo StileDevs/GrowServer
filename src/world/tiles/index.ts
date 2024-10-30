@@ -9,7 +9,7 @@ import { World } from "../../core/World.js";
 import { Block } from "../../types";
 import consola from "consola";
 
-const TileMap: Record<string, Class<Tile>> = {
+const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.DOOR]: DoorTile,
   [ActionTypes.MAIN_DOOR]: DoorTile,
   [ActionTypes.PORTAL]: DoorTile,
