@@ -5,18 +5,20 @@ import { EnterGame } from "./EnterGame.js";
 import { QuitToExit } from "./QuitToExit.js";
 import { Quit } from "./Quit.js";
 import { JoinRequest } from "./JoinRequest.js";
+import { DialogReturn } from "./DialogReturn.js";
+import { Input } from "./Input.js";
 
-const ActionMap: Record<
+export const ActionMap: Record<
   string,
   Class<{
-    execute: (peer: Peer, action: NonEmptyObject<any>) => Promise<void>;
+    execute: (action: NonEmptyObject<any>) => Promise<void>;
   }>
 > = {
   ["refresh_item_data"]: RefreshItemData,
   ["enter_game"]: EnterGame,
   ["quit_to_exit"]: QuitToExit,
   ["quit"]: Quit,
-  ["join_request"]: JoinRequest
+  ["join_request"]: JoinRequest,
+  ["dialog_return"]: DialogReturn,
+  ["input"]: Input
 };
-
-export { ActionMap };

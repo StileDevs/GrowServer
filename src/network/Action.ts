@@ -24,8 +24,8 @@ export class IActionPacket {
 
       if (!Class) throw new Error(`No Action class found with action name ${actionType}`);
 
-      const action = new Class(this.base);
-      await action.execute(this.peer, this.obj);
+      const action = new Class(this.base, this.peer);
+      await action.execute(this.obj);
     } catch (e) {
       consola.warn(e);
     }

@@ -5,11 +5,11 @@ import { DialogBuilder } from "../../utils/builders/DialogBuilder.js";
 import { type NonEmptyObject } from "type-fest";
 
 export class EnterGame {
-  constructor(public base: Base) {}
+  constructor(public base: Base, public peer: Peer) {}
 
-  public async execute(peer: Peer, action: NonEmptyObject<{ action: string }>): Promise<void> {
+  public async execute(action: NonEmptyObject<{ action: string }>): Promise<void> {
     const tes = new DialogBuilder().defaultColor().addLabelWithIcon("`wThe GrowServer Gazette``", "5016", "big").addSpacer("small").raw("add_image_button||interface/large/banner-transparent.rttex|bannerlayout|||\n").addTextBox("Welcome to GrowServer").addQuickExit().endDialog("gazzette_end", "Cancel", "Ok").str();
-    peer.send(
+    this.peer.send(
       Variant.from(
         "OnRequestWorldSelectMenu",
         `
@@ -26,7 +26,7 @@ ${Array.from(this.base.cache.worlds.values())
   })
   .join("\n")}
 add_heading|Recently Visited Worlds<CR>|
-${peer.data.lastVisitedWorlds
+${this.peer.data.lastVisitedWorlds
   ?.reverse()
   .map((v) => {
     const count = this.base.cache.worlds.get(v)?.playerCount || 0;
@@ -35,7 +35,7 @@ ${peer.data.lastVisitedWorlds
   .join("\n")}
 `
       ),
-      Variant.from("OnConsoleMessage", `Welcome ${peer.name} Where would you like to go?`),
+      Variant.from("OnConsoleMessage", `Welcome ${this.peer.name} Where would you like to go?`),
       Variant.from({ delay: 100 }, "OnDialogRequest", tes)
     );
   }
