@@ -40,7 +40,8 @@ export class Base {
     this.cdn = { version: "", uri: "0000/0000" };
     this.cache = {
       peers: new Collection(),
-      worlds: new Collection()
+      worlds: new Collection(),
+      cooldown: new Collection()
     };
 
     this.database = new Database();

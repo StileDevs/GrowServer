@@ -1,13 +1,12 @@
 import { Base } from "../core/Base.js";
 import { Peer } from "../core/Peer.js";
-import type { CommandOptions } from "../types";
+import type { CommandOptions } from "../types/commands";
 
-export abstract class Command {
+export class Command {
   public opt: CommandOptions;
 
-  constructor(public base: Base) {
+  constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     this.opt = {
-      name: "",
       description: "",
       cooldown: 1,
       ratelimit: 1,
@@ -18,5 +17,5 @@ export abstract class Command {
     };
   }
 
-  public async execute(peer: Peer, text: string, args: string[]): Promise<void> {}
+  public async execute(): Promise<void> {}
 }

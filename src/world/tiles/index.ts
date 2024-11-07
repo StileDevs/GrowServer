@@ -20,7 +20,6 @@ const tileParse = async (actionType: number, world: World, block: Block) => {
   try {
     let Class = TileMap[actionType];
 
-    // if (actionType === 13) console.log(Class);
     if (!Class) Class = NormalTile;
 
     const tile = new Class(world, block);

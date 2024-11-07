@@ -45,7 +45,7 @@ export class TileChangeReq {
       this.sendLockSound();
       return;
     }
-    this.sendLockSound();
+
     if ((this.block.damage as number) >= (this.itemMeta.breakHits as number)) {
       this.onFistDestroyed();
     } else {
