@@ -1,5 +1,5 @@
 import { type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import { eq } from "drizzle-orm";
+import { eq, exists, sql } from "drizzle-orm";
 import { worlds, type Worlds } from "../schemas/World";
 import { WorldData } from "../../types/world";
 
@@ -7,10 +7,21 @@ export class WorldDB {
   constructor(private db: BetterSQLite3Database<Record<string, never>>) {}
 
   public async get(name: string) {
-    const res = await this.db.select().from(worlds).where(eq(worlds.name, name));
+    const res = await this.db.select().from(worlds).where(eq(worlds.name, name)).limit(1).execute();
 
     if (res.length) return res[0];
     return undefined;
+  }
+
+  public async has(name: string) {
+    const res = await this.db
+      .select({ count: sql`count(*)` })
+      .from(worlds)
+      .where(eq(worlds.name, name))
+      .limit(1)
+      .execute();
+
+    return (res[0].count as number) > 0;
   }
 
   public async set(data: WorldData) {
