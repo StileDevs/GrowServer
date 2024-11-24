@@ -1,11 +1,11 @@
-import { PacketTypes } from "../Constants.js";
-import { Base } from "../core/Base.js";
-import { Peer } from "../core/Peer.js";
+import { PacketTypes } from "../Constants";
+import { Base } from "../core/Base";
+import { Peer } from "../core/Peer";
 import consola from "consola";
 import { parseAction } from "../utils/Utils";
-import { IActionPacket } from "../network/Action.js";
-import { ITextPacket } from "../network/Text.js";
-import { ITankPacket } from "../network/Tank.js";
+import { IActionPacket } from "../network/Action";
+import { ITextPacket } from "../network/Text";
+import { ITankPacket } from "../network/Tank";
 import { Variant } from "growtopia.js";
 
 export class RawListener {
@@ -13,7 +13,7 @@ export class RawListener {
     consola.log('🦀 Listening ENet "raw" event');
   }
 
-  public run(netID: number, chunk: Buffer): void {
+  public run(netID: number, channelID: number, chunk: Buffer): void {
     const peer = new Peer(this.base, netID);
     const type = chunk.readInt32LE();
 

@@ -1,8 +1,8 @@
-import { TileExtraTypes, TileFlags } from "../../Constants.js";
-import type { World } from "../../core/World.js";
+import { TileExtraTypes, TileFlags } from "../../Constants";
+import type { World } from "../../core/World";
 import type { Block } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer.js";
-import { Tile } from "../Tile.js";
+import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { Tile } from "../Tile";
 
 export class DoorTile extends Tile {
   public data: ExtendBuffer;

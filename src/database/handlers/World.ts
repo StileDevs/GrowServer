@@ -1,7 +1,7 @@
 import { type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { eq } from "drizzle-orm";
-import { worlds, type Worlds } from "../schemas/World.js";
-import { WorldData } from "../../types/world.js";
+import { worlds, type Worlds } from "../schemas/World";
+import { WorldData } from "../../types/world";
 
 export class WorldDB {
   constructor(private db: BetterSQLite3Database<Record<string, never>>) {}

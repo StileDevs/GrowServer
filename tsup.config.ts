@@ -8,8 +8,8 @@ let config: Options = {
   bundle: true,
   clean: true,
   dts: false,
-  target: "node20",
-  format: "esm",
+  target: "es2022",
+  format: "cjs",
   loader: {
     ".key": "copy",
     ".crt": "copy",

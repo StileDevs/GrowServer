@@ -1,6 +1,6 @@
 import { type NonEmptyObject, type Class } from "type-fest";
-import { TankTypes } from "../../Constants.js";
-import { TileChangeReq } from "./TileChangeReq.js";
+import { TankTypes } from "../../Constants";
+import { TileChangeReq } from "./TileChangeReq";
 
 export const TankMap: Record<
   number,

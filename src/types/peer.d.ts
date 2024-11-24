@@ -1,6 +1,5 @@
-import { type NativePeerMethod } from "growtopia.js";
-
 export interface PeerData {
+  channelID: number;
   x?: number;
   y?: number;
   world: string;
@@ -19,7 +18,6 @@ export interface PeerData {
   lastCheckpoint?: CheckPoint;
   lastVisitedWorlds?: string[];
   state: PeerState;
-  enet: NativePeerMethod;
 }
 
 export interface PeerState {

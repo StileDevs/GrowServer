@@ -1,6 +1,6 @@
 import { type NonEmptyObject } from "type-fest";
-import { Base } from "../../core/Base.js";
-import { Peer } from "../../core/Peer.js";
+import { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
 import consola from "consola";
 
 export class GazzetteEnd {

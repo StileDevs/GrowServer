@@ -1,9 +1,9 @@
 import { type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import { eq } from "drizzle-orm";
-import { players } from "../schemas/Player.js";
+import { players } from "../schemas/Player";
 import bcrypt from "bcryptjs";
-import { ROLE } from "../../Constants.js";
-import { PeerData } from "../../types/peer.js";
+import { ROLE } from "../../Constants";
+import { PeerData } from "../../types/peer";
 
 export class PlayerDB {
   constructor(private db: BetterSQLite3Database<Record<string, never>>) {}

@@ -1,12 +1,12 @@
 import { type NonEmptyObject, type Class } from "type-fest";
-import { RefreshItemData } from "./RefreshItemData.js";
-import { Peer } from "../../core/Peer.js";
-import { EnterGame } from "./EnterGame.js";
-import { QuitToExit } from "./QuitToExit.js";
-import { Quit } from "./Quit.js";
-import { JoinRequest } from "./JoinRequest.js";
-import { DialogReturn } from "./DialogReturn.js";
-import { Input } from "./Input.js";
+import { RefreshItemData } from "./RefreshItemData";
+import { Peer } from "../../core/Peer";
+import { EnterGame } from "./EnterGame";
+import { QuitToExit } from "./QuitToExit";
+import { Quit } from "./Quit";
+import { JoinRequest } from "./JoinRequest";
+import { DialogReturn } from "./DialogReturn";
+import { Input } from "./Input";
 
 export const ActionMap: Record<
   string,

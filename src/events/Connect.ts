@@ -10,9 +10,9 @@ export class ConnectListener {
 
   public run(netID: number): void {
     const peer = new Peer(this.base, netID);
-    const peerAddr = peer.data.enet.getAddress();
+    const peerAddr = peer.enet;
 
-    consola.log(`➕ Peer ${netID} [/${peerAddr.address}:${peerAddr.port}] connected`);
+    consola.log(`➕ Peer ${netID} [/${peerAddr.ip}:${peerAddr.port}] connected`);
     this.base.cache.peers.set(netID, peer.data);
 
     peer.send(TextPacket.from(0x1));

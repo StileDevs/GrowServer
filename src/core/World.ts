@@ -1,8 +1,8 @@
 import { TankPacket, TextPacket, Variant } from "growtopia.js";
 import { Block, WorldData } from "../types";
-import { Base } from "./Base.js";
-import { PacketTypes, TankTypes, WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../Constants.js";
-import { Peer } from "./Peer.js";
+import { Base } from "./Base";
+import { PacketTypes, TankTypes, WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../Constants";
+import { Peer } from "./Peer";
 import { tileParse } from "../world/tiles";
 
 export class World {
@@ -113,6 +113,36 @@ ${peer.data.lastVisitedWorlds
         this.generate(true);
       }
     } else this.data = this.base.cache.worlds.get(this.worldName) as WorldData;
+  }
+
+  public async place(peer: Peer, x: number, y: number, id: number, isBg: boolean, fruitCount?: number) {
+    let state = 0x8;
+
+    const block = this.data.blocks[x + y * this.data.width];
+    block[isBg ? "bg" : "fg"] = id;
+
+    if (peer.data?.rotatedLeft) {
+      state |= 0x10;
+      block.rotatedLeft = true;
+    }
+
+    peer.every((p) => {
+      if (p.data?.world === this.data.name && p.data?.world !== "EXIT") {
+        const packet = TankPacket.from({
+          type: TankTypes.ITEM_CHANGE_OBJECT,
+          netID: peer.data?.netID,
+          state,
+          info: id,
+          xPunch: x,
+          yPunch: y
+        });
+
+        const buffer = packet.parse() as Buffer;
+
+        buffer[7] = fruitCount || 0;
+        p.send(buffer);
+      }
+    });
   }
 
   public async enter(peer: Peer, x: number, y: number) {

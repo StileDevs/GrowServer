@@ -1,6 +1,7 @@
 import type { Class, NonEmptyObject } from "type-fest";
-import { Ping } from "./Ping.js";
+import { Ping } from "./Ping";
 import type { CommandOptions } from "../../types/commands";
+import { Find } from "./Find";
 
 export const CommandMap: Record<
   string,
@@ -9,5 +10,6 @@ export const CommandMap: Record<
     opt: CommandOptions;
   }>
 > = {
-  ["ping"]: Ping
+  ["ping"]: Ping,
+  ["find"]: Find
 };

@@ -1,5 +1,7 @@
 import type { Class } from "type-fest";
-import { GazzetteEnd } from "./GazetteEnd.js";
+import { GazzetteEnd } from "./GazetteEnd";
+import { FindItem } from "./FindItem";
+import { FindItemEnd } from "./FindItemEnd";
 
 export const DialogMap: Record<
   string,
@@ -7,5 +9,7 @@ export const DialogMap: Record<
     execute: () => Promise<void>;
   }>
 > = {
-  ["gazzette_end"]: GazzetteEnd
+  ["gazzette_end"]: GazzetteEnd,
+  ["find_item"]: FindItem,
+  ["find_item_end"]: FindItemEnd
 };

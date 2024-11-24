@@ -1,6 +1,6 @@
 import { PeerData } from "./peer";
 import { WorldData } from "./world";
-import { Collection } from "../utils/Collection.js";
+import { Collection } from "../utils/Collection";
 import { CooldownOptions } from "./commands";
 
 export interface CDNContent {

@@ -1,19 +1,20 @@
 import { Block, PeerData } from "../types";
 import { Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
-import { Base } from "./Base.js";
-import { World } from "./World.js";
-import { ActionTypes, PacketTypes, ROLE, TankTypes } from "../Constants.js";
-import { manageArray } from "../utils/Utils.js";
+import { Base } from "./Base";
+import { World } from "./World";
+import { ActionTypes, PacketTypes, ROLE, TankTypes } from "../Constants";
+import { manageArray } from "../utils/Utils";
 
 export class Peer extends OldPeer<PeerData> {
   public base;
-  constructor(base: Base, netID: number) {
-    super(base.server, netID);
+  constructor(base: Base, netID: number, channelID = 0) {
+    super(base.server, netID, channelID);
     this.base = base;
 
     const data = this.base.cache.peers.get(netID);
     if (data)
       this.data = {
+        channelID,
         x: data.x,
         y: data.y,
         world: data.world,
@@ -31,9 +32,7 @@ export class Peer extends OldPeer<PeerData> {
         level: data.level,
         lastCheckpoint: data.lastCheckpoint,
         lastVisitedWorlds: data.lastVisitedWorlds,
-        state: data.state,
-        // @ts-expect-error
-        enet: this.client._client.getPeer(netID)
+        state: data.state
       };
   }
 
@@ -170,5 +169,51 @@ export class Peer extends OldPeer<PeerData> {
     this.sound("audio/door_open.wav");
 
     this.data.lastVisitedWorlds = manageArray(this.data.lastVisitedWorlds!, 6, worldName);
+  }
+
+  /**
+   * Used to make a visual modifying inventory
+   */
+  public modifyInventory(id: number, amount: number = 1) {
+    if (amount > 200 || id <= 0 || id === 112) return;
+
+    if (this.data.inventory?.items.find((i) => i.id === id)?.amount !== 0) {
+      const tank = TankPacket.from({
+        packetType: 4,
+        type: TankTypes.MODIFY_ITEM_INVENTORY,
+        info: id,
+        buildRange: amount < 0 ? amount * -1 : undefined,
+        punchRange: amount < 0 ? undefined : amount
+      }).parse() as Buffer;
+
+      this.send(tank);
+    }
+
+    this.saveToCache();
+    return 0;
+  }
+
+  /**
+   * Used to remove a item from inventory cache
+   */
+  public modifyItemInventory(id: number, amount: number = 1) {
+    if (amount > 200 || id <= 0 || id === 112) return;
+    const item = this.data.inventory.items.find((i) => i.id === id);
+
+    if (item) {
+      item.amount += amount;
+      if (item.amount < 1) {
+        this.data.inventory.items = this.data.inventory.items.filter((i) => i.id !== id);
+        // if (this.base.items.metadata.items[id].bodyPartType !== undefined) {
+        // this.unequipClothes(id);
+        // }
+      }
+    }
+    this.modifyInventory(id, -amount);
+    this.saveToCache();
+  }
+
+  public searchItem(id: number) {
+    return this.data.inventory?.items.find((i) => i.id === id);
   }
 }

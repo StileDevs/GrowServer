@@ -1,10 +1,10 @@
 import consola from "consola";
-import { Peer } from "../core/Peer.js";
-import { Base } from "../core/Base.js";
-import { parseAction } from "../utils/Utils.js";
-import { Collection } from "../utils/Collection.js";
+import { Peer } from "../core/Peer";
+import { Base } from "../core/Base";
+import { parseAction } from "../utils/Utils";
+import { Collection } from "../utils/Collection";
 import { readdirSync } from "fs";
-import { ActionMap } from "./actions/index.js";
+import { ActionMap } from "./actions/index";
 
 export class IActionPacket {
   public obj: Record<string, string | number>;

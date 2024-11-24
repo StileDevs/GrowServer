@@ -1,7 +1,7 @@
-import type { World } from "../../core/World.js";
+import type { World } from "../../core/World";
 import type { Block } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer.js";
-import { Tile } from "../Tile.js";
+import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { Tile } from "../Tile";
 
 export class NormalTile extends Tile {
   public data: ExtendBuffer;
