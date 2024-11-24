@@ -31,9 +31,7 @@ export class World {
   }
 
   public async saveToDatabase() {
-    const world = this.base.cache.worlds.get(this.worldName);
-
-    if (world) return await this.base.database.worlds.save(this.data);
+    if (await this.base.database.worlds.has(this.worldName)) return await this.base.database.worlds.save(this.data);
     else return await this.base.database.worlds.set(this.data);
   }
 

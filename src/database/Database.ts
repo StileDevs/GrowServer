@@ -10,7 +10,7 @@ export class Database {
 
   constructor() {
     const sqlite = new DB("./data/data.db");
-    this.db = drizzle(sqlite);
+    this.db = drizzle(sqlite, { logger: false });
 
     this.players = new PlayerDB(this.db);
     this.worlds = new WorldDB(this.db);

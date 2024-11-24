@@ -1,5 +1,5 @@
 import { type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { players } from "../schemas/Player";
 import bcrypt from "bcryptjs";
 import { ROLE } from "../../Constants";
@@ -9,10 +9,21 @@ export class PlayerDB {
   constructor(private db: BetterSQLite3Database<Record<string, never>>) {}
 
   public async get(name: string) {
-    const res = await this.db.select().from(players).where(eq(players.name, name));
+    const res = await this.db.select().from(players).where(eq(players.name, name)).limit(1).execute();
 
     if (res.length) return res[0];
     return undefined;
+  }
+
+  public async has(name: string) {
+    const res = await this.db
+      .select({ count: sql`count(*)` })
+      .from(players)
+      .where(eq(players.name, name))
+      .limit(1)
+      .execute();
+
+    return (res[0].count as number) > 0;
   }
 
   public async set(name: string, password: string) {
