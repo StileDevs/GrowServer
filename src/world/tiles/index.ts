@@ -1,11 +1,11 @@
 import type { Class } from "type-fest";
-import { ActionTypes } from "../../Constants.js";
-import { DoorTile } from "./DoorTile.js";
-import { NormalTile } from "./NormalTile.js";
-import { SignTile } from "./SignTile.js";
-import { Tile } from "../Tile.js";
-import { Peer } from "../../core/Peer.js";
-import { World } from "../../core/World.js";
+import { ActionTypes } from "../../Constants";
+import { DoorTile } from "./DoorTile";
+import { NormalTile } from "./NormalTile";
+import { SignTile } from "./SignTile";
+import { Tile } from "../Tile";
+import { Peer } from "../../core/Peer";
+import { World } from "../../core/World";
 import { Block } from "../../types";
 import consola from "consola";
 

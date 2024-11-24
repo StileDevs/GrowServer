@@ -1,8 +1,8 @@
 import { type NonEmptyObject } from "type-fest";
-import { Base } from "../../core/Base.js";
-import { Peer } from "../../core/Peer.js";
+import { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
 import consola from "consola";
-import { CommandMap } from "../../command/cmds/index.js";
+import { CommandMap } from "../../command/cmds/index";
 import { Variant } from "growtopia.js";
 
 export class Input {
@@ -20,7 +20,7 @@ export class Input {
         let Class = CommandMap[commandName];
 
         if (!Class) throw new Error(`No Command class found with command name ${commandName}`);
-        const cmd = new Class(this.base, this.peer, action);
+        const cmd = new Class(this.base, this.peer, text, args);
 
         const cmdCd = this.base.cache.cooldown.get(`${commandName}-netID-${this.peer.data?.netID}`);
         if (!cmdCd)

@@ -1,10 +1,10 @@
 "use strict";
 
-import { players } from "../dist/database/schemas/Player.js";
-import { worlds } from "../dist/database/schemas/World.js";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import DB from "better-sqlite3";
-import bcrypt from "bcryptjs";
+const { players } = require("../dist/database/schemas/Player");
+const { worlds } = require("../dist/database/schemas/World");
+const { drizzle } = require("drizzle-orm/better-sqlite3");
+const DB = require("better-sqlite3");
+const bcrypt = require("bcryptjs");
 
 /**
  * @param {string} password

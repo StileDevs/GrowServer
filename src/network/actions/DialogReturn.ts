@@ -1,7 +1,7 @@
 import { type NonEmptyObject } from "type-fest";
-import { Base } from "../../core/Base.js";
-import { Peer } from "../../core/Peer.js";
-import { DialogMap } from "../dialogs/index.js";
+import { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
+import { DialogMap } from "../dialogs/index";
 import consola from "consola";
 
 export class DialogReturn {

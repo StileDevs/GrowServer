@@ -1,6 +1,6 @@
 "use strict";
 
-import fs from "fs";
+const fs = require("fs");
 
 function init() {
   setupEnv();

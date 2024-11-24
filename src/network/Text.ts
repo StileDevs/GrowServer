@@ -1,8 +1,8 @@
 import { TextPacket, Variant } from "growtopia.js";
-import { Base } from "../core/Base.js";
-import { Peer } from "../core/Peer.js";
-import { parseAction } from "../utils/Utils.js";
-import { PacketTypes } from "../Constants.js";
+import { Base } from "../core/Base";
+import { Peer } from "../core/Peer";
+import { parseAction } from "../utils/Utils";
+import { PacketTypes } from "../Constants";
 import consola from "consola";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";

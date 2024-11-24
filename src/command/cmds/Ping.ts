@@ -1,7 +1,7 @@
-import { Command } from "../Command.js";
-import { Base } from "../../core/Base.js";
-import { Peer } from "../../core/Peer.js";
-import { ROLE } from "../../Constants.js";
+import { Command } from "../Command";
+import { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
+import { ROLE } from "../../Constants";
 import { Variant } from "growtopia.js";
 
 export class Ping extends Command {

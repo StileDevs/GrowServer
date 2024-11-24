@@ -1,7 +1,7 @@
 import { Variant, TankPacket } from "growtopia.js";
-import { TankTypes } from "../../Constants.js";
-import { Base } from "../../core/Base.js";
-import { Peer } from "../../core/Peer.js";
+import { TankTypes } from "../../Constants";
+import { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
 import { NonEmptyObject } from "type-fest";
 
 export class RefreshItemData {

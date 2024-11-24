@@ -1,5 +1,5 @@
 import { StringOptions } from "growtopia.js";
-import { STRING_CIPHER_KEY } from "../Constants.js";
+import { STRING_CIPHER_KEY } from "../Constants";
 
 export class ExtendBuffer {
   public data: Buffer;

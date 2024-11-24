@@ -1,16 +1,18 @@
 import { Client, ItemsDat, ItemsDatMeta } from "growtopia.js";
-import { Web } from "./Web.js";
-import { downloadMkcert, hashItemsDat, setupMkcert } from "../utils/Utils.js";
+import { Web } from "./Web";
+import { downloadMkcert, hashItemsDat, setupMkcert } from "../utils/Utils";
 import { join } from "path";
-import { ConnectListener } from "../events/Connect.js";
+import { ConnectListener } from "../events/Connect";
 import { type PackageJson } from "type-fest";
-import { DisconnectListener } from "../events/Disconnect.js";
+import { DisconnectListener } from "../events/Disconnect";
 import { RawListener } from "../events/Raw";
 import consola from "consola";
 import fs from "fs";
 import { Cache, CDNContent } from "../types";
-import { Collection } from "../utils/Collection.js";
-import { Database } from "../database/Database.js";
+import { Collection } from "../utils/Collection";
+import { Database } from "../database/Database";
+import { Peer } from "./Peer";
+import { World } from "./World";
 
 const __dirname = process.cwd();
 
@@ -67,7 +69,7 @@ export class Base {
 
     this.server.on("connect", (netID) => connect.run(netID));
     this.server.on("disconnect", (netID) => disconnect.run(netID));
-    this.server.on("raw", (netID, data) => raw.run(netID, data));
+    this.server.on("raw", (netID, channelID, data) => raw.run(netID, channelID, data));
   }
 
   private async loadItems() {
@@ -85,5 +87,45 @@ export class Base {
     this.items.content = itemsDat.data;
     this.items.hash = `${hashItemsDat(itemsDat.data)}`;
     this.items.metadata = itemsDat.meta;
+  }
+
+  public async saveAll(disconnectAll = false) {
+    consola.info(`Saving ${this.cache.peers.size} peers & ${this.cache.worlds.size} worlds`);
+
+    this.saveWorlds();
+    this.savePlayers(disconnectAll);
+  }
+
+  public async saveWorlds() {
+    if (this.cache.worlds.size === 0) process.exit();
+    else {
+      let o = 0;
+      this.cache.worlds.forEach(async (wrld) => {
+        const world = new World(this, wrld.name);
+        if (typeof world.worldName === "string") await world.saveToDatabase();
+        else consola.warn(`Oh no there's undefined (${o}) world, skipping..`);
+
+        o += 1;
+        if (o === this.cache.worlds.size) process.exit();
+      });
+    }
+  }
+
+  public async savePlayers(disconenctAll: boolean) {
+    if (this.cache.peers.size === 0) process.exit();
+    else {
+      let i = 0;
+      this.cache.peers.forEach(async (p) => {
+        const player = new Peer(this, p.netID);
+        await player.saveToDatabase();
+        if (disconenctAll) {
+          player.disconnect("now");
+        } else {
+          // send onconsolemessage for auto saving
+        }
+        i += 1;
+        if (i === this.cache.peers.size) this.saveWorlds();
+      });
+    }
   }
 }

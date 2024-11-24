@@ -1,7 +1,7 @@
 import { Variant } from "growtopia.js";
-import { Base } from "../../core/Base.js";
-import { Peer } from "../../core/Peer.js";
-import { DialogBuilder } from "../../utils/builders/DialogBuilder.js";
+import { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
+import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { type NonEmptyObject } from "type-fest";
 
 export class EnterGame {

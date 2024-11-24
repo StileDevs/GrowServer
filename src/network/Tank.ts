@@ -1,10 +1,10 @@
 import consola from "consola";
-import { Peer } from "../core/Peer.js";
-import { Base } from "../core/Base.js";
+import { Peer } from "../core/Peer";
+import { Base } from "../core/Base";
 import { TankPacket } from "growtopia.js";
-import { TankTypes } from "../Constants.js";
-import { World } from "../core/World.js";
-import { TankMap } from "./tanks/index.js";
+import { TankTypes } from "../Constants";
+import { World } from "../core/World";
+import { TankMap } from "./tanks/index";
 
 export class ITankPacket {
   public tank;
@@ -24,7 +24,7 @@ export class ITankPacket {
       const type = this.tank.data?.type as number;
       let Class = TankMap[type];
 
-      if (!Class) throw new Error(`No TankPacket class fopund with type ${TankTypes[type]} (${type})`);
+      if (!Class) throw new Error(`No TankPacket class found with type ${TankTypes[type]} (${type})`);
 
       const tnk = new Class(this.base, this.peer, this.tank, world);
       await tnk.execute();

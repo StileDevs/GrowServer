@@ -1,5 +1,5 @@
-import { Base } from "../core/Base.js";
-import { Peer } from "../core/Peer.js";
+import { Base } from "../core/Base";
+import { Peer } from "../core/Peer";
 import type { CommandOptions } from "../types/commands";
 
 export class Command {

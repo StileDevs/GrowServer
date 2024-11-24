@@ -1,7 +1,7 @@
 import { ItemDefinition, Tank, TankPacket, Variant } from "growtopia.js";
-import { Base } from "../../core/Base.js";
-import { Peer } from "../../core/Peer.js";
-import { World } from "../../core/World.js";
+import { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
+import { World } from "../../core/World";
 import { Block } from "../../types";
 
 export class TileUpdateData {

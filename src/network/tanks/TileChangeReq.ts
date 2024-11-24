@@ -1,11 +1,12 @@
 import { ItemDefinition, Tank, TankPacket, Variant } from "growtopia.js";
-import { Base } from "../../core/Base.js";
-import { Peer } from "../../core/Peer.js";
-import { World } from "../../core/World.js";
+import { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
+import { World } from "../../core/World";
 import { Block } from "../../types";
-import { ActionTypes, LOCKS, ROLE, TankTypes } from "../../Constants.js";
-import { tileParse } from "../../world/tiles/index.js";
-import { getWeatherId } from "../../utils/WeatherIds.js";
+import { ActionTypes, BlockFlags, LOCKS, ROLE, TankTypes } from "../../Constants";
+import { tileParse } from "../../world/tiles/index";
+import { getWeatherId } from "../../utils/WeatherIds";
+import consola from "consola";
 
 export class TileChangeReq {
   private pos: number;
@@ -31,8 +32,93 @@ export class TileChangeReq {
     }
     // Others
     else {
-      // const place = new Place(this.base, peer, tank, world);
-      // place.onPlace();
+      this.onPlace();
+    }
+  }
+
+  private checkOwner() {
+    if (this.world.data.owner) {
+      if (this.world.data.owner.id !== this.peer.data?.id_user) return false;
+      if (this.peer.data?.role !== ROLE.DEVELOPER) return false;
+
+      if (this.itemMeta.id === 242) {
+        this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, `\`#[\`0\`9World Locked by ${this.world.data.owner?.displayName}\`#]`));
+        return false;
+      }
+
+      return true;
+    } else return true;
+  }
+
+  private async onPlace() {
+    const placedItem = this.base.items.metadata.items.find((i) => i.id === this.tank.data?.info);
+    const mLock = LOCKS.find((l) => l.id === placedItem?.id);
+    const mainLock = this.block.lock ? this.world.data.blocks[(this.block.lock.ownerX as number) + (this.block.lock.ownerY as number) * this.world.data.width] : null;
+
+    if (!placedItem || !placedItem.id) return;
+    if (this.tank.data?.info === 18 || this.tank.data?.info === 32) return;
+
+    if (this.world.data.owner) {
+      if (!mLock && placedItem.type === ActionTypes.LOCK) {
+        this.sendLockSound();
+        return;
+      }
+      if (this.world.data.owner.id !== this.peer.data?.id_user) {
+        if (this.peer.data?.role !== ROLE.DEVELOPER) {
+          this.sendLockSound();
+          return;
+        }
+      }
+    } else {
+      if (this.peer.data?.role !== ROLE.DEVELOPER) {
+        if (mainLock && mainLock.lock?.ownerUserID !== this.peer.data?.id_user) {
+          this.sendLockSound();
+          return;
+        }
+      }
+    }
+
+    if (this.unbreakableBlocks.includes(placedItem.id) && this.peer.data?.role !== ROLE.DEVELOPER) {
+      this.sendLockSound();
+      return;
+    }
+
+    const placed = await this.onPlaced(placedItem);
+
+    if (placed) this.peer.modifyItemInventory(this.tank.data?.info as number, -1);
+    this.peer.inventory();
+    this.peer.saveToCache();
+    return;
+  }
+
+  private async onPlaced(placedItem: ItemDefinition) {
+    const flags = placedItem.flags as number;
+    const actionType = placedItem.type as number;
+    const isBg = this.base.items.metadata.items[this.tank.data?.info as number].type === ActionTypes.BACKGROUND || this.base.items.metadata.items[this.tank.data?.info as number].type === ActionTypes.SHEET_MUSIC;
+
+    if (this.block.fg === 2946 && actionType !== ActionTypes.DISPLAY_BLOCK) return false;
+
+    if (this.block.fg && flags & BlockFlags.WRENCHABLE) return false;
+    if (this.block.fg && !this.block.bg) return false;
+    if (this.block.fg && actionType === ActionTypes.PLATFORM) return false;
+
+    const placeBlock = (fruit?: number) => this.world.place(this.peer, this.block.x, this.block.y, placedItem.id as number, isBg, fruit);
+    switch (actionType) {
+      case ActionTypes.SHEET_MUSIC:
+      case ActionTypes.BEDROCK:
+      case ActionTypes.LAVA:
+      case ActionTypes.PLATFORM:
+      case ActionTypes.FOREGROUND:
+      case ActionTypes.BACKGROUND: {
+        placeBlock();
+        this.tileUpdate();
+        return true;
+      }
+
+      default: {
+        consola.debug("Unknown block placing", this.block, placedItem);
+        return false;
+      }
     }
   }
 
@@ -59,20 +145,6 @@ export class TileChangeReq {
         p.send(this.tank);
       }
     });
-  }
-
-  private checkOwner() {
-    if (this.world.data.owner) {
-      if (this.world.data.owner.id !== this.peer.data?.id_user) return false;
-      if (this.peer.data?.role !== ROLE.DEVELOPER) return false;
-
-      if (this.itemMeta.id === 242) {
-        this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, `\`#[\`0\`9World Locked by ${this.world.data.owner?.displayName}\`#]`));
-        return false;
-      }
-
-      return true;
-    } else return true;
   }
 
   private onFistDestroyed() {
