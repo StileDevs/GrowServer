@@ -35,3 +35,5 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+items_info_new.json
