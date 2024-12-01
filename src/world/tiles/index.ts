@@ -4,16 +4,17 @@ import { DoorTile } from "./DoorTile";
 import { NormalTile } from "./NormalTile";
 import { SignTile } from "./SignTile";
 import { Tile } from "../Tile";
-import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
 import { Block } from "../../types";
 import consola from "consola";
+import { LockTile } from "./LockTile";
 
 const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.DOOR]: DoorTile,
   [ActionTypes.MAIN_DOOR]: DoorTile,
   [ActionTypes.PORTAL]: DoorTile,
-  [ActionTypes.SIGN]: SignTile
+  [ActionTypes.SIGN]: SignTile,
+  [ActionTypes.LOCK]: LockTile
 };
 
 const tileParse = async (actionType: number, world: World, block: Block) => {
