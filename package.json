@@ -20,8 +20,8 @@
   "dependencies": {
     "@antfu/ni": "^0.23.0",
     "@hono/node-server": "^1.13.1",
+    "@libsql/client": "^0.14.0",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^11.4.0",
     "consola": "^3.2.3",
     "decompress": "^4.2.1",
     "dotenv": "^16.4.5",
@@ -38,7 +38,6 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
-    "@types/better-sqlite3": "^7.6.11",
     "@types/bun": "^1.1.14",
     "@types/decompress": "^4.2.7",
     "@types/jsonwebtoken": "^9.0.7",
