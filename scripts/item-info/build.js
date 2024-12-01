@@ -5,10 +5,12 @@ const { readFileSync, writeFileSync } = require("fs");
 const { get_item_pages } = require("./scraper");
 const { pages_to_items } = require("./parser");
 const { join } = require("path");
+const consola = require("consola");
 
 const ITEMS_DAT_PATH = join(__dirname, "..", "..", "assets", "dat", "items.dat");
 
 async function build(split) {
+  consola.info(`Fetching items info ${split} part`);
   const items_dat = new ItemsDat(readFileSync(ITEMS_DAT_PATH));
   await items_dat.decode();
 

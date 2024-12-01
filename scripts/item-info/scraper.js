@@ -1,4 +1,5 @@
 "use strict";
+const consola = require("consola");
 
 async function split_item_list(item_list, split) {
   const sublist_size = Math.ceil(item_list.length / split);
@@ -17,13 +18,13 @@ async function get_item_pages(item_list, split) {
   const tasks = sublists.map((sublist, i) => post_request(sublist, i + 1));
   const results = await Promise.all(tasks);
 
-  console.log("post requests done");
+  consola.success("fetching items info complete.");
 
   return results;
 }
 
 async function post_request(item_list, count) {
-  console.log(`started post request ${count}`);
+  consola.log(`ItemsInfo part ${count}, starting post request`);
 
   const post_data = new URLSearchParams({
     title: "Special:Export",
@@ -31,11 +32,15 @@ async function post_request(item_list, count) {
     curonly: 1
   });
 
-  const res = await fetchWiki(post_data);
+  const [res, status] = await fetchWiki(post_data);
 
-  console.log(res[1]);
+  if (res !== null) {
+    consola.success(`ItemsInfo part ${count}, status: ${status}`);
+  } else {
+    consola.error(`ItemsInfo part ${count}, status: ${status}`);
+  }
 
-  return res[0];
+  return res;
 }
 
 module.exports = {
