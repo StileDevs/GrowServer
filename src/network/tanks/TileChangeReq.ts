@@ -7,6 +7,7 @@ import { ActionTypes, BlockFlags, LOCKS, ROLE, TankTypes } from "../../Constants
 import { tileParse } from "../../world/tiles/index";
 import { getWeatherId } from "../../utils/WeatherIds";
 import consola from "consola";
+import { Floodfill } from "../../utils/FloodFill";
 
 export class TileChangeReq {
   private pos: number;
@@ -41,7 +42,7 @@ export class TileChangeReq {
       if (this.world.data.owner.id !== this.peer.data?.id_user) return false;
       if (this.peer.data?.role !== ROLE.DEVELOPER) return false;
 
-      if (this.itemMeta.id === 242) {
+      if (this.itemMeta.id === 242 && this.world.data.owner.id !== this.peer.data?.id_user) {
         this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, `\`#[\`0\`9World Locked by ${this.world.data.owner?.displayName}\`#]`));
         return false;
       }
@@ -111,7 +112,92 @@ export class TileChangeReq {
       case ActionTypes.FOREGROUND:
       case ActionTypes.BACKGROUND: {
         placeBlock();
-        this.tileUpdate();
+        this.tileUpdate(placedItem.type as number);
+        return true;
+      }
+
+      case ActionTypes.PORTAL:
+      case ActionTypes.DOOR:
+      case ActionTypes.MAIN_DOOR: {
+        this.block.door = {
+          label: "",
+          destination: "",
+          id: "",
+          locked: false
+        };
+        placeBlock();
+        this.tileUpdate(placedItem.type as number);
+        return true;
+      }
+
+      case ActionTypes.LOCK: {
+        const mLock = LOCKS.find((l) => l.id === placedItem.id);
+
+        if (mLock) {
+          if (this.block.lock) {
+            this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "This area is `4already locked``", 0, 1));
+            return false;
+          }
+
+          if (typeof this.world.data.owner?.id === "number" && this.world.data.owner.id !== this.peer.data?.id_user) {
+            this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "The tile owner `2allows`` public building but `4not`` for this specific block.", 0, 1));
+            return false;
+          }
+
+          this.world.place(this.peer, this.block.x, this.block.y, placedItem.id as number, isBg);
+
+          const algo = new Floodfill({
+            s_node: { x: this.block.x, y: this.block.y },
+            max: mLock.maxTiles,
+            width: this.world.data.width,
+            height: this.world.data.height,
+            blocks: this.world.data.blocks,
+            s_block: this.block,
+            base: this.base,
+            noEmptyAir: false
+          });
+
+          algo.exec();
+          algo.apply(this.world, this.peer);
+          this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "Area locked.", 0, 1));
+
+          return true;
+        }
+        if (this.world.data.blocks?.find((b) => b.lock?.ownerUserID && b.lock.ownerUserID !== this.peer.data?.id_user)) {
+          this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "Can't put lock, there's other locks around here.", 0, 1));
+          return false;
+        }
+
+        if (this.block.x === 0 && this.block.y === 0) {
+          this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "You `4cannot`` place locks over here!", 0, 1));
+          return false;
+        }
+
+        this.block.worldLock = true;
+        if (!this.block.lock) {
+          this.block.lock = {
+            ownerUserID: this.peer.data?.id_user as number
+          };
+        }
+        this.world.data.owner = {
+          id: this.peer.data?.id_user as number,
+          name: this.peer.data?.tankIDName as string,
+          displayName: this.peer.name
+        };
+
+        this.world.data.bpm = 100;
+
+        this.peer.every((pa) => {
+          if (pa.data?.world === this.peer.data?.world && pa.data?.world !== "EXIT")
+            pa.send(
+              Variant.from("OnTalkBubble", this.peer.data.netID, `\`3[\`w${this.world.worldName} \`ohas been World Locked by ${this.peer.name}\`3]`),
+              Variant.from("OnConsoleMessage", `\`3[\`w${this.world.worldName} \`ohas been World Locked by ${this.peer.name}\`3]`),
+              Variant.from({ netID: this.peer.data?.netID }, "OnPlayPositioned", "audio/use_lock.wav")
+            );
+        });
+
+        placeBlock();
+        this.tileUpdate(placedItem.type as number);
         return true;
       }
 
@@ -125,6 +211,7 @@ export class TileChangeReq {
   private async onFist() {
     if (!this.itemMeta.id) return;
     if (!this.checkOwner()) return this.sendLockSound();
+    if (typeof this.block.damage !== "number" || (this.block.resetStateAt as number) <= Date.now()) this.block.damage = 0;
 
     if (this.unbreakableBlocks.includes(this.itemMeta.id) && this.peer.data?.role !== ROLE.DEVELOPER) {
       this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "It's too strong to break."));
@@ -148,6 +235,9 @@ export class TileChangeReq {
   }
 
   private onFistDestroyed() {
+    const placedItem = this.base.items.metadata.items.find((i) => i.id === this.tank.data?.info);
+    if (!placedItem || !placedItem.id) return;
+
     this.block.damage = 0;
     this.block.resetStateAt = 0;
 
@@ -209,7 +299,7 @@ export class TileChangeReq {
           this.block.lock = undefined;
           this.world.data.owner = undefined;
 
-          this.tileUpdate();
+          this.tileUpdate(placedItem.type as number);
         }
         break;
       }
@@ -217,11 +307,13 @@ export class TileChangeReq {
   }
 
   private onFistDamaged() {
+    const placedItem = this.base.items.metadata.items.find((i) => i.id === this.tank.data?.info);
+    if (!placedItem || !placedItem.id) return;
+
     (this.tank.data as Tank).type = TankTypes.TILE_APPLY_DAMAGE;
     (this.tank.data as Tank).info = (this.block.damage as number) + 5;
 
     this.block.resetStateAt = Date.now() + (this.itemMeta.resetStateAfter as number) * 1000;
-    if (Number.isNaN(this.block.damage)) this.block.damage = 0;
     // satisfies type
     (this.block.damage as number) += 1;
 
@@ -232,7 +324,7 @@ export class TileChangeReq {
       }
 
       case ActionTypes.SWITCHEROO: {
-        this.tileUpdate();
+        this.tileUpdate(placedItem.type as number);
         if (this.block.toggleable) this.block.toggleable.open = !this.block.toggleable.open;
 
         break;
@@ -279,8 +371,9 @@ export class TileChangeReq {
     });
   }
 
-  private async tileUpdate() {
-    const data = await tileParse(this.itemMeta.type as number, this.world, this.block);
+  private async tileUpdate(type: number) {
+    const data = await tileParse(type, this.world, this.block);
+
     this.peer.every((p) => {
       if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") {
         p.send(
