@@ -8,7 +8,7 @@ import { DisconnectListener } from "../events/Disconnect";
 import { RawListener } from "../events/Raw";
 import consola from "consola";
 import fs from "fs";
-import { Cache, CDNContent } from "../types";
+import { Cache, CDNContent, ItemsInfo } from "../types";
 import { Collection } from "../utils/Collection";
 import { Database } from "../database/Database";
 import { Peer } from "./Peer";
@@ -35,7 +35,8 @@ export class Base {
       hash: `${hashItemsDat(fs.readFileSync(join(__dirname, "assets", "dat", "items.dat")))}`,
       content: fs.readFileSync(join(__dirname, "assets", "dat", "items.dat")),
       // wiki: JSON.parse(fs.readFileSync("./assets/items_info.json", "utf-8")) as WikiItems[],
-      metadata: {} as ItemsDatMeta
+      metadata: {} as ItemsDatMeta,
+      wiki: [] as ItemsInfo[]
     };
     this.package = JSON.parse(fs.readFileSync(join(__dirname, "package.json"), "utf-8"));
     this.config = JSON.parse(fs.readFileSync(join(__dirname, "config.json"), "utf-8"));
@@ -87,6 +88,7 @@ export class Base {
     this.items.content = itemsDat.data;
     this.items.hash = `${hashItemsDat(itemsDat.data)}`;
     this.items.metadata = itemsDat.meta;
+    this.items.wiki = JSON.parse(fs.readFileSync(join(__dirname, "assets", "items_info_new.json"), "utf-8")) as ItemsInfo[];
   }
 
   public async saveAll(disconnectAll = false) {

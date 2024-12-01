@@ -13,3 +13,20 @@ export interface Cache {
   worlds: Collection<string, WorldData>;
   cooldown: Collection<string, CooldownOptions>;
 }
+
+export interface ItemsInfo {
+  name: string;
+  desc: string;
+  recipe?: Recipe;
+  func?: ItemInfoFunc;
+  chi?: "earth" | "wind" | "fire" | "water";
+}
+
+export interface ItemInfoFunc {
+  add: string;
+  rem: string;
+}
+
+export interface Recipe {
+  splice: number[];
+}
