@@ -7,6 +7,8 @@ import { Quit } from "./Quit";
 import { JoinRequest } from "./JoinRequest";
 import { DialogReturn } from "./DialogReturn";
 import { Input } from "./Input";
+import { Respawn } from "./Respawn";
+import { RespawnSpike } from "./RespawnSpike";
 
 export const ActionMap: Record<
   string,
@@ -20,5 +22,7 @@ export const ActionMap: Record<
   ["quit"]: Quit,
   ["join_request"]: JoinRequest,
   ["dialog_return"]: DialogReturn,
-  ["input"]: Input
+  ["input"]: Input,
+  ["respawn"]: Respawn,
+  ["respawn_spike"]: RespawnSpike
 };
