@@ -1,4 +1,4 @@
-import { type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { type LibSQLDatabase } from "drizzle-orm/libsql";
 import { eq, sql } from "drizzle-orm";
 import { players } from "../schemas/Player";
 import bcrypt from "bcryptjs";
@@ -6,7 +6,7 @@ import { ROLE } from "../../Constants";
 import { PeerData } from "../../types/peer";
 
 export class PlayerDB {
-  constructor(private db: BetterSQLite3Database<Record<string, never>>) {}
+  constructor(private db: LibSQLDatabase<Record<string, never>>) {}
 
   public async get(name: string) {
     const res = await this.db.select().from(players).where(eq(players.name, name)).limit(1).execute();

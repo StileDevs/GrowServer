@@ -2,8 +2,8 @@
 
 const { players } = require("../dist/database/schemas/Player");
 const { worlds } = require("../dist/database/schemas/World");
-const { drizzle } = require("drizzle-orm/better-sqlite3");
-const DB = require("better-sqlite3");
+const { drizzle } = require("drizzle-orm/libsql");
+const { createClient } = require("@libsql/client");
 const bcrypt = require("bcryptjs");
 
 /**
@@ -16,7 +16,9 @@ async function hash(password) {
 }
 
 (async () => {
-  const sqlite = new DB("./data/data.db");
+  const sqlite = createClient({
+    url: `file:data/data.db`
+  });
   const db = drizzle(sqlite);
   const dateNow = new Date().toISOString().slice(0, 19).replace("T", " ");
 

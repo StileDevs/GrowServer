@@ -1,10 +1,10 @@
-import { type BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
+import { type LibSQLDatabase } from "drizzle-orm/libsql";
 import { eq, exists, sql } from "drizzle-orm";
 import { worlds, type Worlds } from "../schemas/World";
 import { WorldData } from "../../types/world";
 
 export class WorldDB {
-  constructor(private db: BetterSQLite3Database<Record<string, never>>) {}
+  constructor(private db: LibSQLDatabase<Record<string, never>>) {}
 
   public async get(name: string) {
     const res = await this.db.select().from(worlds).where(eq(worlds.name, name)).limit(1).execute();
