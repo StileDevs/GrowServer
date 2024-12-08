@@ -32,7 +32,7 @@ async function parse_xml_page(page) {
 }
 
 function parse_item_data(item_name, page_text) {
-  let item_data = { name: item_name, recipe: {}, func: {} };
+  let item_data = { id: template_parser.item_list.find((v) => v.name === item_name), name: item_name, recipe: {}, func: {} };
   const parsed_wiki = parse(page_text); // parses wikitext to a nodelist where you can easily filter templates
 
   for (const template of parsed_wiki.templates) {
