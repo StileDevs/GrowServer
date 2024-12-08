@@ -346,4 +346,143 @@ ${peer.data.lastVisitedWorlds
     this.data = data;
     if (cache) this.saveToCache();
   }
+
+  public drop(peer: Peer, x: number, y: number, id: number, amount: number, { tree, noSimilar }: { tree?: boolean; noSimilar?: boolean } = {}) {
+    const tank = TankPacket.from({
+      type: TankTypes.ITEM_CHANGE_OBJECT,
+      netID: -1,
+      targetNetID: tree ? -1 : peer.data?.netID,
+      state: 0,
+      info: id,
+      xPos: x,
+      yPos: y
+    });
+
+    const position = Math.trunc(x / 32) + Math.trunc(y / 32) * this.data.width;
+    const block = this.data.blocks[position];
+
+    const similarDrops = noSimilar ? null : this.data.dropped?.items.filter((i) => i.id === id && block.x === i.block.x && block.y === i.block.y).sort((a, b) => a.amount - b.amount);
+
+    const similarDrop = Array.isArray(similarDrops) ? similarDrops[0] : null;
+
+    if (similarDrop && similarDrop.amount < 200) {
+      if (similarDrop.amount + amount > 200) {
+        const extra = similarDrop.amount + amount - 200;
+
+        amount = 0;
+        similarDrop.amount = 200;
+
+        this.drop(peer, x, y, id, extra, { tree: true });
+      }
+
+      tank.data!.netID = -3;
+      tank.data!.targetNetID = similarDrop.uid;
+
+      tank.data!.xPos = similarDrop.x;
+      tank.data!.yPos = similarDrop.y;
+
+      amount += similarDrop.amount;
+
+      similarDrop.amount = amount;
+    } else
+      this.data.dropped?.items.push({
+        id,
+        amount,
+        x,
+        y,
+        uid: ++this.data.dropped.uid,
+        block: { x: block.x, y: block.y }
+      });
+
+    const buffer = tank.parse() as Buffer;
+    buffer.writeFloatLE(amount, 20);
+
+    peer.every((p) => p.data?.world === peer.data?.world && p.data?.world !== "EXIT" && p.send(buffer));
+
+    this.saveToCache();
+  }
+
+  public collect(peer: Peer, uid: number) {
+    const droppedItem = this.data.dropped?.items.find((i) => i.uid === uid);
+    if (!droppedItem) return;
+    const item = this.base.items.metadata.items.find((i) => i.id === droppedItem.id);
+
+    const itemInInv = peer.data.inventory.items.find((i) => i.id === droppedItem.id);
+
+    if ((!itemInInv && peer.data.inventory.items.length >= peer.data.inventory.max) || (itemInInv && itemInInv.amount >= 200)) return;
+
+    peer.every(
+      (p) =>
+        p.data?.world === peer.data?.world &&
+        p.data?.world !== "EXIT" &&
+        p.send(
+          TankPacket.from({
+            type: TankTypes.ITEM_CHANGE_OBJECT,
+            netID: peer.data?.netID,
+            targetNetID: -1,
+            info: uid
+          })
+        )
+    );
+
+    if (itemInInv) {
+      if (droppedItem.amount + itemInInv.amount > 200) {
+        console.log(droppedItem);
+        const extra = droppedItem.amount + itemInInv.amount - 200;
+        peer.send(Variant.from("OnConsoleMessage", `Collected \`w${200 - itemInInv.amount} ${item?.name}`));
+        itemInInv.amount = 200;
+
+        this.drop(peer, droppedItem.x, droppedItem.y, droppedItem.id, extra, {
+          noSimilar: true,
+          tree: true
+        });
+      } else {
+        if (droppedItem.id !== 112) {
+          itemInInv.amount += droppedItem.amount;
+          peer.send(Variant.from("OnConsoleMessage", `Collected \`w${droppedItem.amount} ${item?.name}`));
+        } else {
+          peer.data.gems += droppedItem.amount;
+        }
+      }
+    } else {
+      if (droppedItem.id !== 112) {
+        peer.modifyItemInventory(droppedItem.id, droppedItem.amount);
+        peer.send(Variant.from("OnConsoleMessage", `Collected \`w${droppedItem.amount} ${item?.name}`));
+      } else {
+        peer.data.gems += droppedItem.amount;
+      }
+    }
+
+    this.data.dropped!.items = this.data.dropped!.items.filter((i) => i.uid !== droppedItem.uid);
+
+    peer.saveToCache();
+    this.saveToCache();
+  }
+
+  public harvest(peer: Peer, block: Block) {
+    if (block.tree && Date.now() >= block.tree.fullyGrownAt) {
+      this.drop(peer, block.x * 32 + Math.floor(Math.random() * 16), block.y * 32 + Math.floor(Math.random() * 16), block.tree.fruit, block.tree.fruitCount, { tree: true });
+
+      block.tree = undefined;
+      block.fg = 0x0;
+
+      peer.every(
+        (p) =>
+          p.data?.world === peer.data?.world &&
+          p.data?.world !== "EXIT" &&
+          p.send(
+            TankPacket.from({
+              type: TankTypes.SEND_TILE_TREE_STATE,
+              netID: peer.data?.netID,
+              targetNetID: -1,
+              xPunch: block.x,
+              yPunch: block.y
+            })
+          )
+      );
+
+      return true;
+    }
+    return false;
+  }
 }

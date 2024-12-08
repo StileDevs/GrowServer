@@ -1,8 +1,8 @@
 import { Block, PeerData } from "../types";
-import { Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
+import { ItemDefinition, Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
 import { Base } from "./Base";
 import { World } from "./World";
-import { ActionTypes, PacketTypes, ROLE, TankTypes } from "../Constants";
+import { ActionTypes, CLOTH_MAP, ClothTypes, PacketTypes, ROLE, TankTypes } from "../Constants";
 import { manageArray } from "../utils/Utils";
 
 export class Peer extends OldPeer<PeerData> {
@@ -215,5 +215,103 @@ export class Peer extends OldPeer<PeerData> {
 
   public searchItem(id: number) {
     return this.data.inventory?.items.find((i) => i.id === id);
+  }
+
+  public sendClothes() {
+    this.send(
+      Variant.from(
+        {
+          netID: this.data.netID
+        },
+        "OnSetClothing",
+        [this.data.clothing.hair, this.data.clothing.shirt, this.data.clothing.pants],
+        [this.data.clothing.feet, this.data.clothing.face, this.data.clothing.hand],
+        [this.data.clothing.back, this.data.clothing.mask, this.data.clothing.necklace],
+        0x8295c3ff,
+        [this.data.clothing.ances, 0.0, 0.0]
+      )
+    );
+
+    this.every((p) => {
+      if (p.data?.world === this.data.world && p.data?.netID !== this.data.netID && p.data?.world !== "EXIT") {
+        p.send(
+          Variant.from(
+            {
+              netID: this.data.netID
+            },
+            "OnSetClothing",
+            [this.data.clothing.hair, this.data.clothing.shirt, this.data.clothing.pants],
+            [this.data.clothing.feet, this.data.clothing.face, this.data.clothing.hand],
+            [this.data.clothing.back, this.data.clothing.mask, this.data.clothing.necklace],
+            0x8295c3ff,
+            [this.data.clothing.ances, 0.0, 0.0]
+          )
+        );
+      }
+    });
+  }
+
+  public equipClothes(itemID: number) {
+    if (!this.searchItem(itemID)) return;
+
+    const isAnces = (item: ItemDefinition): boolean => {
+      if (item?.type === ActionTypes.ANCES) {
+        this.data.clothing.ances = itemID;
+        return true;
+      }
+      return false;
+    };
+
+    if (Object.values(this.data.clothing).includes(itemID)) this.unequipClothes(itemID);
+    else {
+      const item = this.base.items.metadata.items[itemID];
+      if (!isAnces(item)) {
+        const clothKey = CLOTH_MAP[item?.bodyPartType as ClothTypes];
+
+        if (clothKey) {
+          this.data.clothing[clothKey] = itemID;
+        }
+      }
+      const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
+      if (!!itemInfo?.func?.add) {
+        this.send(Variant.from("OnConsoleMessage", itemInfo.func.add));
+      }
+      // this.formState();
+      this.sendClothes();
+      this.send(TextPacket.from(PacketTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0"));
+    }
+  }
+
+  public unequipClothes(itemID: number) {
+    const item = this.base.items.metadata.items[itemID];
+
+    let unequiped: boolean = false;
+
+    const isAnces = (item: ItemDefinition): boolean => {
+      if (item?.type === ActionTypes.ANCES) {
+        if (this.data.clothing.ances === itemID) (this.data.clothing.ances = 0), (unequiped = true);
+        return true;
+      }
+      return false;
+    };
+
+    if (!isAnces(item)) {
+      const clothKey = CLOTH_MAP[item?.bodyPartType as ClothTypes];
+
+      if (clothKey) {
+        this.data.clothing[clothKey] = 0;
+        unequiped = true;
+      }
+    }
+
+    if (unequiped) {
+      // this.formState();
+      this.sendClothes();
+      this.send(TextPacket.from(PacketTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0"));
+    }
+    const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
+    if (!!itemInfo?.func?.rem) {
+      this.send(Variant.from("OnConsoleMessage", itemInfo.func.rem));
+    }
   }
 }
