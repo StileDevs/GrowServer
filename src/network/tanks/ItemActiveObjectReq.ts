@@ -6,13 +6,9 @@ import { Block } from "../../types";
 
 export class ItemActiveObjectReq {
   private pos: number;
-  private block: Block;
-  private itemMeta: ItemDefinition;
 
   constructor(public base: Base, public peer: Peer, public tank: TankPacket, public world: World) {
     this.pos = (this.tank.data?.xPunch as number) + (this.tank.data?.yPunch as number) * this.world.data.width;
-    this.block = this.world.data.blocks[this.pos];
-    this.itemMeta = this.base.items.metadata.items[this.block.fg || this.block.bg];
   }
 
   public async execute() {

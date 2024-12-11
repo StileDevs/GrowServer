@@ -208,11 +208,12 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   /**
-   * Used to remove a item from inventory cache
+   * Used to add/remove a item from inventory cache
    */
   public modifyItemInventory(id: number, amount: number = 1) {
     if (amount > 200 || id <= 0 || id === 112) return;
     const item = this.data.inventory.items.find((i) => i.id === id);
+    console.log({ amount, id });
 
     if (item) {
       item.amount += amount;
