@@ -9,6 +9,7 @@ import { DialogReturn } from "./DialogReturn";
 import { Input } from "./Input";
 import { Respawn } from "./Respawn";
 import { RespawnSpike } from "./RespawnSpike";
+import { Drop } from "./Drop";
 
 export const ActionMap: Record<
   string,
@@ -24,5 +25,6 @@ export const ActionMap: Record<
   ["dialog_return"]: DialogReturn,
   ["input"]: Input,
   ["respawn"]: Respawn,
-  ["respawn_spike"]: RespawnSpike
+  ["respawn_spike"]: RespawnSpike,
+  ["drop"]: Drop
 };

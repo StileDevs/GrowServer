@@ -8,6 +8,7 @@ import { tileParse } from "../../world/tiles/index";
 import { getWeatherId } from "../../utils/WeatherIds";
 import consola from "consola";
 import { Floodfill } from "../../utils/FloodFill";
+import { Tile } from "../../world/Tile";
 
 export class TileChangeReq {
   private pos: number;
@@ -112,7 +113,7 @@ export class TileChangeReq {
       case ActionTypes.FOREGROUND:
       case ActionTypes.BACKGROUND: {
         placeBlock();
-        this.tileUpdate(placedItem.type as number);
+        Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
         return true;
       }
 
@@ -126,7 +127,8 @@ export class TileChangeReq {
           locked: false
         };
         placeBlock();
-        this.tileUpdate(placedItem.type as number);
+        Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
+
         return true;
       }
 
@@ -197,7 +199,7 @@ export class TileChangeReq {
         });
 
         placeBlock();
-        this.tileUpdate(placedItem.type as number);
+        Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
         return true;
       }
 
@@ -299,7 +301,7 @@ export class TileChangeReq {
           this.block.lock = undefined;
           this.world.data.owner = undefined;
 
-          this.tileUpdate(placedItem.type as number);
+          Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
         }
         break;
       }
@@ -324,7 +326,7 @@ export class TileChangeReq {
       }
 
       case ActionTypes.SWITCHEROO: {
-        this.tileUpdate(placedItem.type as number);
+        Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
         if (this.block.toggleable) this.block.toggleable.open = !this.block.toggleable.open;
 
         break;
@@ -368,23 +370,6 @@ export class TileChangeReq {
   private sendLockSound() {
     this.peer.every((p) => {
       if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") p.send(Variant.from({ netID: this.peer.data?.netID }, "OnPlayPositioned", "audio/punch_locked.wav"));
-    });
-  }
-
-  private async tileUpdate(type: number) {
-    const data = await tileParse(type, this.world, this.block);
-
-    this.peer.every((p) => {
-      if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") {
-        p.send(
-          TankPacket.from({
-            type: TankTypes.SEND_TILE_UPDATE_DATA,
-            xPunch: this.block.x,
-            yPunch: this.block.y,
-            data: () => data
-          })
-        );
-      }
     });
   }
 }

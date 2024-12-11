@@ -109,6 +109,20 @@ export class Peer extends OldPeer<PeerData> {
     this.sound("audio/teleport.wav", 2000);
   }
 
+  public drop(id: number, amount: number) {
+    if (this.data.world === "EXIT") return;
+
+    const world = this.currentWorld();
+    // world.getFromCache();
+
+    const extra = Math.random() * 6;
+
+    const x = (this.data.x as number) + (this.data.rotatedLeft ? -25 : +25) + extra;
+    const y = (this.data.y as number) + extra - Math.floor(Math.random() * (3 - -1) + -3);
+
+    world?.drop(this, x, y, id, amount);
+  }
+
   public inventory() {
     const inventory = this.data.inventory;
 
