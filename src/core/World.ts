@@ -427,7 +427,6 @@ ${peer.data.lastVisitedWorlds
 
     if (itemInInv) {
       if (droppedItem.amount + itemInInv.amount > 200) {
-        console.log(droppedItem);
         const extra = droppedItem.amount + itemInInv.amount - 200;
         peer.send(Variant.from("OnConsoleMessage", `Collected \`w${200 - itemInInv.amount} ${item?.name}`));
         itemInInv.amount = 200;
