@@ -8,17 +8,14 @@ import { ActionTypes } from "../../Constants";
 export class State {
   private pos: number;
   private block: Block;
-  private itemMeta: ItemDefinition;
 
   constructor(public base: Base, public peer: Peer, public tank: TankPacket, public world: World) {
     this.pos = (this.tank.data?.xPunch as number) + (this.tank.data?.yPunch as number) * this.world.data.width;
     this.block = this.world.data.blocks[this.pos];
-    this.itemMeta = this.base.items.metadata.items[this.block.fg || this.block.bg];
   }
 
   public async execute() {
     if (this.peer.data.world === "EXIT") return;
-    const world = this.peer.currentWorld() as World;
     this.tank.data!.netID = this.peer.data.netID;
 
     this.peer.data.x = this.tank.data?.xPos;
@@ -37,16 +34,13 @@ export class State {
 
   private async onPlayerMove() {
     if ((this.tank.data?.xPunch as number) > 0 || (this.tank.data?.yPunch as number) > 0) return;
+    if (this.block === undefined) return;
 
-    const pos = Math.round((this.tank.data?.xPos as number) / 32) + Math.round((this.tank.data?.yPos as number) / 32) * (this.world.data.width as number);
-
-    const block = this.world.data.blocks[pos];
-    if (block === undefined) return;
-    const itemMeta = this.base.items.metadata.items[block.fg || block.bg];
+    const itemMeta = this.base.items.metadata.items[this.block.fg || this.block.bg];
 
     switch (itemMeta.type) {
       case ActionTypes.CHECKPOINT: {
-        this.peer.send(Variant.from({ netID: this.peer.data.netID, delay: 0 }, "SetRespawnPos", pos));
+        this.peer.send(Variant.from({ netID: this.peer.data.netID, delay: 0 }, "SetRespawnPos", this.pos));
         this.peer.data.lastCheckpoint = {
           x: Math.round((this.tank.data?.xPos as number) / 32),
           y: Math.round((this.tank.data?.yPos as number) / 32)

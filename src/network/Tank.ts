@@ -17,7 +17,6 @@ export class ITankPacket {
     const tankType = this.tank.data?.type as number;
     const world = new World(this.base, this.peer.data.world);
 
-    if (this.tank.data?.type === 0) return;
     consola.debug(`[DEBUG] Receive tank packet of ${TankTypes[tankType]}:\n`, this.tank);
 
     try {

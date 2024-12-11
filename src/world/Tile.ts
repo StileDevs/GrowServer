@@ -1,6 +1,10 @@
+import { TankPacket } from "growtopia.js";
+import type { Peer } from "../core/Peer";
 import type { World } from "../core/World";
 import type { Block } from "../types";
 import { ExtendBuffer } from "../utils/ExtendBuffer";
+import { tileParse } from "./tiles";
+import { TankTypes } from "../Constants";
 
 export abstract class Tile {
   public abstract data: ExtendBuffer;
@@ -31,5 +35,22 @@ export abstract class Tile {
 
   public async parse() {
     return this.data.data;
+  }
+
+  public static async tileUpdate(peer: Peer, world: World, block: Block, type: number) {
+    const data = await tileParse(type, world, block);
+
+    peer.every((p) => {
+      if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
+        p.send(
+          TankPacket.from({
+            type: TankTypes.SEND_TILE_UPDATE_DATA,
+            xPunch: block.x,
+            yPunch: block.y,
+            data: () => data
+          })
+        );
+      }
+    });
   }
 }
