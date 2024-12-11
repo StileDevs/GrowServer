@@ -213,18 +213,19 @@ export class Peer extends OldPeer<PeerData> {
   public modifyItemInventory(id: number, amount: number = 1) {
     if (amount > 200 || id <= 0 || id === 112) return;
     const item = this.data.inventory.items.find((i) => i.id === id);
-    console.log({ amount, id });
 
     if (item) {
       item.amount += amount;
       if (item.amount < 1) {
         this.data.inventory.items = this.data.inventory.items.filter((i) => i.id !== id);
-        // if (this.base.items.metadata.items[id].bodyPartType !== undefined) {
-        // this.unequipClothes(id);
-        // }
+        if (this.base.items.metadata.items[id].bodyPartType !== undefined) {
+          this.unequipClothes(id);
+        }
       }
+    } else {
+      this.data.inventory.items.push({ id, amount });
     }
-    this.modifyInventory(id, -amount);
+    this.modifyInventory(id, amount);
     this.saveToCache();
   }
 
