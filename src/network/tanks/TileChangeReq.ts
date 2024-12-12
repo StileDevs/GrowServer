@@ -245,6 +245,13 @@ export class TileChangeReq {
         return true;
       }
 
+      case ActionTypes.DICE: {
+        this.block.dice = 0;
+        placeBlock();
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
+        return true;
+      }
+
       case ActionTypes.WEATHER_MACHINE:
       case ActionTypes.SWITCHEROO: {
         this.block.toggleable = {
