@@ -4,26 +4,29 @@ import { DoorTile } from "./DoorTile";
 import { NormalTile } from "./NormalTile";
 import { SignTile } from "./SignTile";
 import { Tile } from "../Tile";
-import { World } from "../../core/World";
-import { Block } from "../../types";
+import type { World } from "../../core/World";
+import type { Block } from "../../types";
 import consola from "consola";
 import { LockTile } from "./LockTile";
+import type { Base } from "../../core/Base";
+import { HeartMonitorTile } from "./HeartMonitorTile";
 
 const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.DOOR]: DoorTile,
   [ActionTypes.MAIN_DOOR]: DoorTile,
   [ActionTypes.PORTAL]: DoorTile,
   [ActionTypes.SIGN]: SignTile,
-  [ActionTypes.LOCK]: LockTile
+  [ActionTypes.LOCK]: LockTile,
+  [ActionTypes.HEART_MONITOR]: HeartMonitorTile
 };
 
-const tileParse = async (actionType: number, world: World, block: Block) => {
+const tileParse = async (actionType: number, base: Base, world: World, block: Block) => {
   try {
     let Class = TileMap[actionType];
 
     if (!Class) Class = NormalTile;
 
-    const tile = new Class(world, block);
+    const tile = new Class(base, world, block);
     await tile.init();
     const val = await tile.parse();
     return val;
@@ -32,7 +35,7 @@ const tileParse = async (actionType: number, world: World, block: Block) => {
 
     const Class = NormalTile;
 
-    const tile = new Class(world, block);
+    const tile = new Class(base, world, block);
     await tile.init();
     const val = await tile.parse();
     return val;

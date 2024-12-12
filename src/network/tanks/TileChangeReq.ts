@@ -4,7 +4,6 @@ import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
 import { Block } from "../../types";
 import { ActionTypes, BlockFlags, LOCKS, ROLE, TankTypes } from "../../Constants";
-import { tileParse } from "../../world/tiles/index";
 import { getWeatherId } from "../../utils/WeatherIds";
 import consola from "consola";
 import { Floodfill } from "../../utils/FloodFill";
@@ -199,7 +198,7 @@ export class TileChangeReq {
       case ActionTypes.FOREGROUND:
       case ActionTypes.BACKGROUND: {
         placeBlock();
-        Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
         return true;
       }
 
@@ -213,9 +212,19 @@ export class TileChangeReq {
           locked: false
         };
         placeBlock();
-        Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
 
         return true;
+      }
+
+      case ActionTypes.HEART_MONITOR: {
+        this.block.heartMonitor = {
+          name: this.peer.data.tankIDName,
+          userID: parseInt(this.peer.data.id_user as string)
+        };
+        placeBlock();
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
+        break;
       }
 
       case ActionTypes.LOCK: {
@@ -285,7 +294,7 @@ export class TileChangeReq {
         });
 
         placeBlock();
-        Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
         return true;
       }
 
@@ -387,7 +396,7 @@ export class TileChangeReq {
           this.block.lock = undefined;
           this.world.data.owner = undefined;
 
-          Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
+          Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
         }
         break;
       }
@@ -412,7 +421,7 @@ export class TileChangeReq {
       }
 
       case ActionTypes.SWITCHEROO: {
-        Tile.tileUpdate(this.peer, this.world, this.block, placedItem.type as number);
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
         if (this.block.toggleable) this.block.toggleable.open = !this.block.toggleable.open;
 
         break;

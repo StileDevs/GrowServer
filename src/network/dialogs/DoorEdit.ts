@@ -44,6 +44,6 @@ export class DoorEdit {
       id: this.action.id?.toUpperCase() || ""
     };
 
-    Tile.tileUpdate(this.peer, this.world, this.block, this.itemMeta.type || 0);
+    Tile.tileUpdate(this.base, this.peer, this.world, this.block, this.itemMeta.type || 0);
   }
 }
