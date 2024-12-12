@@ -38,7 +38,7 @@ export class DropEnd {
     }
 
     this.peer.drop(itemID, count);
-    this.peer.modifyItemInventory(itemID, -count);
+    this.peer.removeItemInven(itemID, count);
     this.peer.inventory();
     this.peer.sendClothes();
   }

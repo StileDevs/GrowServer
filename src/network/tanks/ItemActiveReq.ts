@@ -27,8 +27,8 @@ export class ItemActiveReq {
           if ((this.peer.searchItem(1796)?.amount as number) + 100 > 200) {
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "Whoops, you're holding too many Diamond Locks!", 0, 1));
           } else {
-            this.peer.modifyItemInventory(1796, 100);
-            this.peer.modifyItemInventory(7188, -1);
+            this.peer.addItemInven(1796, 100);
+            this.peer.removeItemInven(7188, 1);
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "You shattered a Blue Gem Lock into 100 Diamond Locks!", 0, 1));
           }
           break;
@@ -37,8 +37,8 @@ export class ItemActiveReq {
           if ((this.peer.searchItem(242)?.amount as number) + 100 > 200) {
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "Whoops, you're holding too many World Locks!", 0, 1));
           } else {
-            this.peer.modifyItemInventory(242, 100);
-            this.peer.modifyItemInventory(1796, -1);
+            this.peer.addItemInven(242, 100);
+            this.peer.removeItemInven(1796, -1);
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "You shattered a Diamond Lock into 100 World Locks!", 0, 1));
           }
           break;
@@ -48,8 +48,8 @@ export class ItemActiveReq {
           if ((this.peer.searchItem(1796)?.amount as number) + 1 > 200) {
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "Whoops, you're holding too many Diamond Locks!", 0, 1));
           } else {
-            this.peer.modifyItemInventory(1796, 1);
-            this.peer.modifyItemInventory(242, -100);
+            this.peer.addItemInven(1796, 1);
+            this.peer.removeItemInven(242, -100);
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "You compressed 100 World Locks into a Diamond Lock!", 0, 1));
           }
           break;
