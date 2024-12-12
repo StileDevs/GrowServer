@@ -12,6 +12,7 @@ import type { Base } from "../../core/Base";
 import { HeartMonitorTile } from "./HeartMonitorTile";
 import { DisplayBlockTile } from "./DisplayBlockTile";
 import { SwitcherOO } from "./SwitcheROO";
+import { WeatherTile } from "./WeatherTile";
 
 const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.DOOR]: DoorTile,
@@ -21,7 +22,8 @@ const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.LOCK]: LockTile,
   [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
   [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
-  [ActionTypes.SWITCHEROO]: SwitcherOO
+  [ActionTypes.SWITCHEROO]: SwitcherOO,
+  [ActionTypes.WEATHER_MACHINE]: WeatherTile
 };
 
 const tileParse = async (actionType: number, base: Base, world: World, block: Block) => {

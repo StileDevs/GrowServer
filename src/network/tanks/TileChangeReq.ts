@@ -245,6 +245,7 @@ export class TileChangeReq {
         return true;
       }
 
+      case ActionTypes.WEATHER_MACHINE:
       case ActionTypes.SWITCHEROO: {
         this.block.toggleable = {
           open: false,
