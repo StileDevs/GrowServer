@@ -245,6 +245,16 @@ export class TileChangeReq {
         return true;
       }
 
+      case ActionTypes.SWITCHEROO: {
+        this.block.toggleable = {
+          open: false,
+          public: false
+        };
+        placeBlock();
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
+        return true;
+      }
+
       case ActionTypes.LOCK: {
         const mLock = LOCKS.find((l) => l.id === placedItem.id);
 
@@ -434,13 +444,13 @@ export class TileChangeReq {
 
     switch (this.itemMeta.type) {
       case ActionTypes.SEED: {
-        // this.world.harvest(this.peer, block);
+        this.world.harvest(this.peer, this.block);
         break;
       }
 
       case ActionTypes.SWITCHEROO: {
-        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
         if (this.block.toggleable) this.block.toggleable.open = !this.block.toggleable.open;
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, this.itemMeta.type as number);
 
         break;
       }
