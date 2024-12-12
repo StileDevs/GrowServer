@@ -170,12 +170,23 @@ export class TileChangeReq {
       return;
     }
 
+    if (this.block.fg === 2946) this.displayBlockPlace();
+
     const placed = await this.onPlaced(placedItem);
 
     if (placed) this.peer.removeItemInven(this.tank.data?.info as number, 1);
     this.peer.inventory();
     this.peer.saveToCache();
     return;
+  }
+
+  private async displayBlockPlace() {
+    const placedItem = this.base.items.metadata.items.find((i) => i.id === this.tank.data?.info);
+
+    this.block.dblockID = placedItem?.id;
+
+    this.peer.removeItemInven(this.tank.data?.info as number, 1);
+    await Tile.tileUpdate(this.base, this.peer, this.world, this.block, ActionTypes.DISPLAY_BLOCK);
   }
 
   private async onPlaced(placedItem: ItemDefinition) {
@@ -224,7 +235,14 @@ export class TileChangeReq {
         };
         placeBlock();
         Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
-        break;
+        return true;
+      }
+
+      case ActionTypes.DISPLAY_BLOCK: {
+        this.block.dblockID = 0;
+        placeBlock();
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
+        return true;
       }
 
       case ActionTypes.LOCK: {
