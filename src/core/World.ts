@@ -4,6 +4,7 @@ import { Base } from "./Base";
 import { PacketTypes, TankTypes, WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../Constants";
 import { Peer } from "./Peer";
 import { tileParse } from "../world/tiles";
+import { Default } from "../world/generation/Default";
 
 export class World {
   public data: WorldData;
@@ -108,7 +109,7 @@ ${peer.data.lastVisitedWorlds
           weatherId: world.weather_id || 41
         };
       } else {
-        this.generate(true);
+        await this.generate(true);
       }
     } else this.data = this.base.cache.worlds.get(this.worldName) as WorldData;
   }
@@ -285,65 +286,12 @@ ${peer.data.lastVisitedWorlds
     peer.saveToCache();
   }
 
-  // We'll using this to generate new world (for now)
-  public generate(cache?: boolean) {
+  public async generate(cache?: boolean) {
     if (!this.worldName) throw new Error("World name required.");
-    const width = WORLD_SIZE.WIDTH;
-    const height = WORLD_SIZE.HEIGHT;
-    const blockCount = height * width;
+    const worldGen = new Default(this.worldName);
 
-    const data: WorldData = {
-      name: this.worldName,
-      width,
-      height,
-      blocks: [],
-      admins: [], // separate to different table
-      playerCount: 0,
-      jammers: [], // separate to different table
-      dropped: {
-        // separate (maybe?) to different table
-        uid: 0,
-        items: []
-      },
-      weatherId: 41
-    };
-
-    // starting points
-    let x = 0;
-    let y = 0;
-    // main door location
-    const mainDoorPosition = Math.floor(Math.random() * width);
-
-    for (let i = 0; i < blockCount; i++) {
-      // increase y axis, reset back to 0
-      if (x >= width) {
-        y++;
-        x = 0;
-      }
-
-      const block: Block = {
-        x,
-        y,
-        fg: 0,
-        bg: 0
-      };
-
-      if (block.y === Y_START_DIRT - 1 && block.x === mainDoorPosition) {
-        block.fg = 6;
-        block.door = {
-          label: "EXIT",
-          destination: "EXIT"
-        };
-      } else if (block.y >= Y_START_DIRT) {
-        block.fg = block.x === mainDoorPosition && block.y === Y_START_DIRT ? 8 : block.y < Y_END_DIRT ? (block.y >= Y_LAVA_START ? (Math.random() > 0.2 ? (Math.random() > 0.1 ? 2 : 10) : 4) : Math.random() > 0.01 ? 2 : 10) : 8;
-        block.bg = 14;
-      }
-
-      data.blocks.push(block);
-
-      x++;
-    }
-    this.data = data;
+    await worldGen.generate();
+    this.data = worldGen.data;
     if (cache) this.saveToCache();
   }
 
