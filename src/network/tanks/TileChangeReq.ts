@@ -9,6 +9,7 @@ import { getWeatherId } from "../../utils/WeatherIds";
 import consola from "consola";
 import { Floodfill } from "../../utils/FloodFill";
 import { Tile } from "../../world/Tile";
+import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 
 export class TileChangeReq {
   private pos: number;
@@ -29,8 +30,7 @@ export class TileChangeReq {
     if (this.tank.data?.info === 18) {
       this.onFist();
     } else if (this.tank.data?.info === 32) {
-      // const player = new Player(this.base, peer, tank, world);
-      // player.onTileWrench();
+      this.onTileWrench();
     }
     // Others
     else {
@@ -50,6 +50,92 @@ export class TileChangeReq {
 
       return true;
     } else return true;
+  }
+
+  private async onTileWrench() {
+    switch (this.itemMeta.type) {
+      case ActionTypes.SIGN: {
+        if (this.world.data.owner) {
+          if (this.world.data.owner.id !== this.peer.data?.id_user) return;
+        }
+        const dialog = new DialogBuilder()
+          .defaultColor()
+          .addLabelWithIcon(`\`wEdit ${this.itemMeta.name}\`\``, this.itemMeta.id as number, "big")
+          .addTextBox("What would you like to write on this sign?")
+          .addInputBox("label", "", this.block.sign?.label, 100)
+          .embed("tilex", this.block.x)
+          .embed("tiley", this.block.y)
+          .embed("itemID", this.itemMeta.id)
+          .endDialog("sign_edit", "Cancel", "OK")
+          .str();
+
+        this.peer.send(Variant.from("OnDialogRequest", dialog));
+        break;
+      }
+
+      case ActionTypes.PORTAL:
+      case ActionTypes.DOOR: {
+        if (this.world.data.owner) {
+          if (this.world.data.owner.id !== this.peer.data?.id_user) return;
+        }
+        const dialog = new DialogBuilder()
+          .defaultColor()
+          .addLabelWithIcon(`\`wEdit ${this.itemMeta.name}\`\``, this.itemMeta.id as number, "big")
+          .addInputBox("label", "Label", this.block.door?.label, 100)
+          .addInputBox("target", "Destination", this.block.door?.destination, 24)
+          .addSmallText("Enter a Destination in this format: `2WORLDNAME:ID``")
+          .addSmallText("Leave `2WORLDNAME`` blank (:ID) to go to the door with `2ID`` in the `2Current World``.")
+          .addInputBox("id", "ID", this.block.door?.id, 11)
+          .addSmallText("Set a unique `2ID`` to target this door as a Destination from another!")
+          .embed("tilex", this.block.x)
+          .embed("tiley", this.block.y)
+          .embed("itemID", this.itemMeta.id)
+          .endDialog("door_edit", "Cancel", "OK")
+          .str();
+
+        this.peer.send(Variant.from("OnDialogRequest", dialog));
+        break;
+      }
+
+      case ActionTypes.LOCK: {
+        const mLock = LOCKS.find((l) => l.id === this.itemMeta.id);
+
+        if (mLock) {
+          if (this.block.lock?.ownerUserID !== this.peer.data?.id_user) return;
+
+          const dialog = new DialogBuilder()
+            .defaultColor()
+            .addLabelWithIcon(`\`wEdit ${this.itemMeta.name}\`\``, this.itemMeta.id as number, "big")
+            .embed("lockID", mLock.id)
+            .embed("tilex", this.block.x)
+            .embed("tiley", this.block.y)
+            .addSmallText("Access list:")
+            // bikin list user disini nanti
+            .addSpacer("small")
+            .addTextBox("Currently, you're the only one with access.")
+            .raw("add_player_picker|playerNetID|`wAdd``|\n")
+            .addCheckbox("allow_break_build", "Allow anyone to Build and Break", this.block.lock?.openToPublic ? "selected" : "not_selected")
+            .addCheckbox("ignore_empty", "Ignore empty air", this.block.lock?.ignoreEmptyAir ? "selected" : "not_selected")
+            .addButton("reapply_lock", "`wRe-apply lock``");
+
+          if (this.itemMeta.id === 4994) {
+            dialog
+              .addSmallText('This lock allows Building or Breaking.<CR>(ONLY if "Allow anyone to Build or Break" is checked above)!')
+              .addSpacer("small")
+              .addSmallText("Leaving this box unchecked only allows Breaking.")
+              .addCheckbox("build_only", "Only Allow Building!", this.block.lock?.onlyAllowBuild ? "selected" : "not_selected")
+              .addSmallText("People with lock access can both build and break unless you check below. The lock owner can always build and break.")
+              .addCheckbox("limit_admin", "Admins Are Limited", this.block.lock?.adminLimited ? "selected" : "not_selected");
+          }
+
+          dialog.endDialog("area_lock_edit", "Cancel", "OK");
+
+          this.peer.send(Variant.from("OnDialogRequest", dialog.str()));
+        }
+
+        break;
+      }
+    }
   }
 
   private async onPlace() {
@@ -87,7 +173,7 @@ export class TileChangeReq {
 
     const placed = await this.onPlaced(placedItem);
 
-    if (placed) this.peer.modifyItemInventory(this.tank.data?.info as number, -1);
+    if (placed) this.peer.removeItemInven(this.tank.data?.info as number, 1);
     this.peer.inventory();
     this.peer.saveToCache();
     return;

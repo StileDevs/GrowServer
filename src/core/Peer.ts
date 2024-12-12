@@ -207,25 +207,38 @@ export class Peer extends OldPeer<PeerData> {
     return 0;
   }
 
-  /**
-   * Used to add/remove a item from inventory cache
-   */
-  public modifyItemInventory(id: number, amount: number = 1) {
-    if (amount > 200 || id <= 0 || id === 112) return;
+  public addItemInven(id: number, amount = 1, drop: boolean = false) {
+    const item = this.data.inventory.items.find((i) => i.id === id);
+
+    if (!item) {
+      this.data.inventory.items.push({ id, amount });
+      if (!drop) this.modifyInventory(id, amount);
+    } else if (item.amount < 200) {
+      if (item.amount + amount > 200) item.amount = 200;
+      else item.amount += amount;
+      if (!drop) this.modifyInventory(id, amount);
+    }
+
+    // this.inventory();
+    this.saveToCache();
+  }
+
+  public removeItemInven(id: number, amount = 1) {
     const item = this.data.inventory.items.find((i) => i.id === id);
 
     if (item) {
-      item.amount += amount;
+      item.amount -= amount;
       if (item.amount < 1) {
         this.data.inventory.items = this.data.inventory.items.filter((i) => i.id !== id);
-        if (this.base.items.metadata.items[id].bodyPartType !== undefined) {
+        if (this.base.items.metadata.items[id].type === ActionTypes.CLOTHES) {
           this.unequipClothes(id);
         }
       }
-    } else {
-      this.data.inventory.items.push({ id, amount });
     }
-    this.modifyInventory(id, amount);
+
+    this.modifyInventory(id, -amount);
+
+    // this.inventory();
     this.saveToCache();
   }
 

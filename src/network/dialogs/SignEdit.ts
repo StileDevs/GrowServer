@@ -1,14 +1,12 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { LOCKS } from "../../Constants";
 import { Block, Lock } from "../../types";
-import { Floodfill } from "../../utils/FloodFill";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
 import { ItemDefinition } from "growtopia.js";
 
-export class DoorEdit {
+export class SignEdit {
   private world: World;
   private pos: number;
   private block: Block;
@@ -23,8 +21,6 @@ export class DoorEdit {
       tiley: string;
       itemID: string;
       label?: string;
-      target?: string;
-      id?: string;
     }>
   ) {
     this.world = this.peer.currentWorld()!;
@@ -38,10 +34,8 @@ export class DoorEdit {
       if (this.world.data.owner.id !== this.peer.data?.id_user) return;
     }
 
-    this.block.door = {
-      label: this.action.label || "",
-      destination: this.action.target?.toUpperCase() || "",
-      id: this.action.id?.toUpperCase() || ""
+    this.block.sign = {
+      label: this.action.label || ""
     };
 
     Tile.tileUpdate(this.peer, this.world, this.block, this.itemMeta.type || 0);

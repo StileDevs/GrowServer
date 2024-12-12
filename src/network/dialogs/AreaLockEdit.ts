@@ -40,6 +40,7 @@ export class AreaLockEdit {
     const mLock = LOCKS.find((l) => l.id === parseInt(this.action.lockID));
 
     if (this.block.lock?.ownerUserID !== this.peer.data?.id_user) return;
+
     const openToPublic = this.action.allow_break_build === "1" ? true : false;
     const ignoreEmpty = this.action.ignore_empty === "1" ? true : false;
     const allowBuildOnly = this.action.build_only === "1" ? true : false;
