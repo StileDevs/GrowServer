@@ -10,6 +10,7 @@ import consola from "consola";
 import { LockTile } from "./LockTile";
 import type { Base } from "../../core/Base";
 import { HeartMonitorTile } from "./HeartMonitorTile";
+import { DisplayBlockTile } from "./DisplayBlockTile";
 
 const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.DOOR]: DoorTile,
@@ -17,7 +18,8 @@ const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.PORTAL]: DoorTile,
   [ActionTypes.SIGN]: SignTile,
   [ActionTypes.LOCK]: LockTile,
-  [ActionTypes.HEART_MONITOR]: HeartMonitorTile
+  [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
+  [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile
 };
 
 const tileParse = async (actionType: number, base: Base, world: World, block: Block) => {
