@@ -334,6 +334,26 @@ export class TileChangeReq {
         return true;
       }
 
+      case ActionTypes.SEED: {
+        if (this.block.fg !== 0) return false;
+
+        const id = placedItem?.id!;
+        const item = this.base.items.metadata.items[id];
+        const fruitCount = Math.floor(Math.random() * 10 * (1 - (item.rarity || 0) / 1000)) + 1;
+        const now = Date.now();
+
+        this.block.tree = {
+          fruit: id - 1,
+          fruitCount,
+          fullyGrownAt: now + (item.growTime || 0) * 1000,
+          plantedAt: now
+        };
+
+        placeBlock(fruitCount > 4 ? 4 : fruitCount);
+        Tile.tileUpdate(this.base, this.peer, this.world, this.block, placedItem.type as number);
+        break;
+      }
+
       default: {
         consola.debug("Unknown block placing", this.block, placedItem);
         return false;
