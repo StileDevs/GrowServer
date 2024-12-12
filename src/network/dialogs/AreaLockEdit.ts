@@ -70,6 +70,6 @@ export class AreaLockEdit {
       algo.apply(this.world, this.peer);
     }
 
-    Tile.tileUpdate(this.peer, this.world, this.block, this.itemMeta.type as number);
+    Tile.tileUpdate(this.base, this.peer, this.world, this.block, this.itemMeta.type as number);
   }
 }

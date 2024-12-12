@@ -173,7 +173,7 @@ ${peer.data.lastVisitedWorlds
 
       // const blockBuf = new Tile(this.base, this, block).serialize(item?.type as number);
       const type = item?.type as number;
-      const blockBuf = await tileParse(type, this, block);
+      const blockBuf = await tileParse(type, this.base, this, block);
 
       blockBuf.forEach((b) => blockBytes.push(b));
     }

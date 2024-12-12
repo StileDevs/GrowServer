@@ -38,6 +38,6 @@ export class SignEdit {
       label: this.action.label || ""
     };
 
-    Tile.tileUpdate(this.peer, this.world, this.block, this.itemMeta.type || 0);
+    Tile.tileUpdate(this.base, this.peer, this.world, this.block, this.itemMeta.type || 0);
   }
 }

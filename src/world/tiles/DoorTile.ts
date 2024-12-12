@@ -1,4 +1,5 @@
 import { TileExtraTypes, TileFlags } from "../../Constants";
+import type { Base } from "../../core/Base";
 import type { World } from "../../core/World";
 import type { Block } from "../../types";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
@@ -9,8 +10,8 @@ export class DoorTile extends Tile {
   public extraType = TileExtraTypes.DOOR;
   private label: string;
 
-  constructor(public world: World, public block: Block, public alloc = 12) {
-    super(world, block, alloc);
+  constructor(public base: Base, public world: World, public block: Block, public alloc = 12) {
+    super(base, world, block, alloc);
 
     this.label = this.block.door?.label || "";
     this.alloc += this.label.length;
