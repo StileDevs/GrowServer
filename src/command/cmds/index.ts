@@ -2,6 +2,9 @@ import type { Class, NonEmptyObject } from "type-fest";
 import { Ping } from "./Ping";
 import type { CommandOptions } from "../../types/commands";
 import { Find } from "./Find";
+import { Sb } from "./Sb";
+import { Help } from "./Help";
+import { ClearWorld } from "./ClearWorld";
 
 export const CommandMap: Record<
   string,
@@ -11,5 +14,8 @@ export const CommandMap: Record<
   }>
 > = {
   ["ping"]: Ping,
-  ["find"]: Find
+  ["find"]: Find,
+  ["sb"]: Sb,
+  ["help"]: Help,
+  ["clearworld"]: ClearWorld
 };
