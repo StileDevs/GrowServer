@@ -7,7 +7,9 @@ data
 assets/website/
 assets/build.zip
 build
-
+.cache
+data.db
+data
 
 # Ignore ssl
 assets/ssl/_wildcard.growserver.app.pem
@@ -25,7 +27,6 @@ lerna-debug.log*
 *.local
 
 # Editor directories and files
-.vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -34,3 +35,5 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+items_info_new.json

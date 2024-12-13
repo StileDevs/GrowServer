@@ -93,12 +93,11 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addStoreButton(name: string, title: string, description: string, image: string = "", imagepos: { x: number, y: number } = { x: 0, y: 0} , cost: string | number = ""): DialogBuilder {
-        
+  public addStoreButton(name: string, title: string, description: string, image: string = "", imagepos: { x: number; y: number } = { x: 0, y: 0 }, cost: string | number = ""): DialogBuilder {
     this.#str += `add_button|${name}|${title}|${image}|${description}|${imagepos.x}|${imagepos.y}|${cost}|\n`;
-    
+
     return this;
-}
+  }
 
   /**
    * Adds a button with icon.

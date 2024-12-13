@@ -1,21 +1,33 @@
 "use strict";
 
-import { encrypt } from "../scripts/crypto.js";
-import { users, worlds } from "../dist/database/schemas.js";
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import DB from "better-sqlite3";
+const { players } = require("../dist/database/schemas/Player");
+const { worlds } = require("../dist/database/schemas/World");
+const { drizzle } = require("drizzle-orm/libsql");
+const { createClient } = require("@libsql/client");
+const bcrypt = require("bcryptjs");
+
+/**
+ * @param {string} password
+ */
+async function hash(password) {
+  const salt = await bcrypt.genSalt(10);
+
+  return await bcrypt.hash(password, salt);
+}
 
 (async () => {
-  const sqlite = new DB("./data/dev.db");
+  const sqlite = createClient({
+    url: `file:data/data.db`
+  });
   const db = drizzle(sqlite);
   const dateNow = new Date().toISOString().slice(0, 19).replace("T", " ");
 
-  await db.delete(users);
-  await db.insert(users).values([
+  await db.delete(players);
+  await db.insert(players).values([
     {
       name: "admin",
       display_name: "admin",
-      password: encrypt("admin"),
+      password: await hash("admin"),
       role: "1",
       gems: 1000,
       clothing: null,
@@ -26,7 +38,7 @@ import DB from "better-sqlite3";
     {
       name: "reimu",
       display_name: "Reimu",
-      password: encrypt("hakurei"),
+      password: await hash("hakurei"),
       role: "2",
       gems: 1000,
       clothing: null,
@@ -37,7 +49,7 @@ import DB from "better-sqlite3";
     {
       name: "jadlionhd",
       display_name: "JadlionHD",
-      password: encrypt("admin"),
+      password: await hash("admin"),
       role: "1",
       gems: 1000,
       clothing: null,

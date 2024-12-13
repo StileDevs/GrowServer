@@ -1,26 +1,11 @@
-import { BaseServer } from "./structures/BaseServer.js";
-import fs from "node:fs";
+import { Base } from "./core/Base";
+import dotenv from "dotenv";
 
-import { handleSaveAll } from "./utils/Utils.js";
-import { DiscordManager } from "./structures/DiscordManager.js";
+dotenv.config();
 
-if (!fs.existsSync("./assets")) throw new Error("Could not find 'assets' folder, please create new one.");
-
-if (!fs.existsSync("./assets/ssl")) throw new Error("SSL certificate are required for https web server.");
-
-if (!fs.existsSync("./assets/ssl/server.crt")) throw new Error("'assets/ssl/server.crt' are required for https web server.");
-
-if (!fs.existsSync("./assets/ssl/server.key")) throw new Error("assets/ssl/server.key are required for https web server.");
-
-if (!fs.existsSync("./assets/dat/items.dat")) throw new Error("items.dat not exist on 'assets/dat/items.dat'");
-
-const server = new BaseServer();
-
+const server = new Base();
 server.start();
 
-const Manager = new DiscordManager(server.config.discord.clientToken, server.config.discord.clientId, server);
-Manager.start();
-
-process.on("SIGINT", () => handleSaveAll(server, true));
-process.on("SIGQUIT", () => handleSaveAll(server, true));
-process.on("SIGTERM", () => handleSaveAll(server, true));
+process.on("SIGINT", () => server.saveAll(true));
+process.on("SIGQUIT", () => server.saveAll(true));
+process.on("SIGTERM", () => server.saveAll(true));

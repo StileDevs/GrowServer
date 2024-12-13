@@ -1,26 +1,3 @@
-import { Worlds } from "../database/schemas";
-import type { Peer } from "../structures/Peer";
-import type { World } from "../structures/World";
-
-export interface Place {
-  peer: Peer;
-  x: number;
-  y: number;
-  id: number;
-  isBg?: boolean;
-  fruit?: number;
-}
-
-export interface PlacedArg {
-  actionType: number;
-  block: Block;
-  id: number;
-  isBg?: boolean;
-  flags: number;
-}
-
-export type WorldDB = Worlds;
-
 export interface Block {
   fg: number;
   bg: number;
@@ -91,13 +68,8 @@ export interface WorldData {
   name: string;
   width: number;
   height: number;
-  blockCount: number;
   blocks: Block[];
-  owner?: {
-    name: string;
-    displayName: string;
-    id: number;
-  };
+  owner?: WorldOwnerData;
   admins?: number[];
   playerCount?: number;
   bpm?: number;
@@ -106,6 +78,11 @@ export interface WorldData {
   jammers?: Jammer[];
   dropped?: Dropped;
   weatherId: number;
+}
+export interface WorldOwnerData {
+  name: string;
+  displayName: string;
+  id: number;
 }
 
 export interface LockedBlocked {
@@ -146,7 +123,7 @@ export interface Tree {
 
 export interface HeartMonitor {
   name: string;
-  user_id: number;
+  userID: number;
 }
 
 export interface Toggleable {
@@ -154,23 +131,18 @@ export interface Toggleable {
   public?: boolean;
   silenced?: boolean;
 }
+
 export interface EnterArg {
   x?: number;
   y?: number;
 }
 
-export interface GetBlockArg {
-  x: number;
-  y: number;
-  peer: Peer;
-}
-
-interface Lock {
+export interface Lock {
   id: number;
   maxTiles: number;
 }
 
-interface Ignore {
+export interface Ignore {
   blockIDsToIgnoreByLock: number[];
   blockActionTypesToIgnore: number[];
 }

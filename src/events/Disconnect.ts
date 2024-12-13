@@ -1,18 +1,16 @@
-import { Listener } from "../abstracts/Listener.js";
-import { BaseServer } from "../structures/BaseServer.js";
+import { Base } from "../core/Base";
+import { Peer } from "../core/Peer";
+import consola from "consola";
 
-export default class extends Listener<"disconnect"> {
-  constructor(base: BaseServer) {
-    super(base);
-    this.name = "disconnect";
+export class DisconnectListener {
+  constructor(public base: Base) {
+    consola.log('🦀 Listening ENet "disconnect" event');
   }
 
   public run(netID: number): void {
-    this.base.log.info("Peer", netID, "disconnected");
-    const peer = this.base.cache.users.getSelf(netID);
-    peer?.leaveWorld();
-    peer?.saveToDatabase();
+    const peer = new Peer(this.base, netID);
 
-    this.base.cache.users.delete(netID);
+    consola.log(`➖ Peer ${netID} disconnected`);
+    this.base.cache.peers.delete(netID);
   }
 }

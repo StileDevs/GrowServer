@@ -1,11 +1,9 @@
 "use strict";
 
-import fs from "fs";
-import { downloadWebsiteBuild } from "./utils.js";
+const fs = require("fs");
 
 function init() {
   setupEnv();
-  downloadWebsiteBuild();
 }
 
 function setupEnv() {
@@ -14,7 +12,7 @@ function setupEnv() {
   }
 
   if (!fs.existsSync("./.env")) {
-    fs.writeFileSync("./.env", "ENCRYPT_SECRET=SUPERSECRET # Default encrypt secret\nDISCORD_BOT_TOKEN=Tokxxxxxxxen");
+    fs.writeFileSync("./.env", "JWT_SECRET=SuperSecretDoNotShareToAnyoneElse\nDISCORD_BOT_TOKEN=Tokxxxxxxxen");
   }
 }
 

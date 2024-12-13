@@ -1,24 +1,20 @@
 import { TextPacket } from "growtopia.js";
-import { Listener } from "../abstracts/Listener.js";
-import { BaseServer } from "../structures/BaseServer.js";
-import { Peer } from "../structures/Peer.js";
+import { Base } from "../core/Base";
+import { Peer } from "../core/Peer";
+import consola from "consola";
 
-export default class extends Listener<"connect"> {
-  constructor(base: BaseServer) {
-    super(base);
-    this.name = "connect";
+export class ConnectListener {
+  constructor(public base: Base) {
+    consola.log('🦀 Listening ENet "connect" event');
   }
 
   public run(netID: number): void {
     const peer = new Peer(this.base, netID);
+    const peerAddr = peer.enet;
 
-    const peerAddr = peer.data.enet.getAddress();
+    consola.log(`➕ Peer ${netID} [/${peerAddr.ip}:${peerAddr.port}] connected`);
+    this.base.cache.peers.set(netID, peer.data);
 
-    this.base.log.info("Peer", netID, `[/${peerAddr.address}:${peerAddr.port}] connected.`);
-
-    const packet = TextPacket.from(0x1);
-
-    peer.send(packet);
-    this.base.cache.users.setSelf(netID, peer.data);
+    peer.send(TextPacket.from(0x1));
   }
 }

@@ -1,18 +1,9 @@
-import { NativePeerMethod } from "growtopia.js";
-
-export interface InventoryItems {
-  id: number;
-  amount: number;
-}
-
-export interface PeerDataType {
+export interface PeerData {
+  channelID: number;
   x?: number;
   y?: number;
   world: string;
-  inventory: {
-    max: number;
-    items: InventoryItems[];
-  };
+  inventory: Inventory;
   rotatedLeft: boolean;
   requestedName: string;
   tankIDName: string;
@@ -26,18 +17,29 @@ export interface PeerDataType {
   level: number;
   lastCheckpoint?: CheckPoint;
   lastVisitedWorlds?: string[];
-  state: IState;
-  enet: NativePeerMethod;
+  state: PeerState;
 }
 
-export interface IState {
+export interface PeerState {
   mod: number;
   canWalkInBlocks: boolean;
   modsEffect: number;
-  lava: {
-    damage: number;
-    resetStateAt: number;
-  };
+  lava: LavaState;
+}
+
+export interface LavaState {
+  damage: number;
+  resetStateAt: number;
+}
+
+export interface Inventory {
+  max: number;
+  items: InventoryItems[];
+}
+
+export interface InventoryItems {
+  id: number;
+  amount: number;
 }
 
 export interface CheckPoint {
@@ -47,13 +49,13 @@ export interface CheckPoint {
 
 export interface Clothing {
   [key: string]: number;
-  hair: number;
   shirt: number;
   pants: number;
   feet: number;
   face: number;
   hand: number;
   back: number;
+  hair: number;
   mask: number;
   necklace: number;
   ances: number;
