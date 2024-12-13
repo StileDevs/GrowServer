@@ -41,6 +41,11 @@ export interface Block {
   toggleable?: Toggleable;
   mannequin?: Mannequin;
   dice?: number;
+  provider?: Provider;
+}
+
+export interface Provider {
+  date: number;
 }
 
 export interface Mannequin {
