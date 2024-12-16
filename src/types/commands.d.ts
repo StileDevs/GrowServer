@@ -1,4 +1,5 @@
 export interface CommandOptions {
+  command: string[];
   description: string;
   /** Cooldown command per seconds. */
   cooldown: number;

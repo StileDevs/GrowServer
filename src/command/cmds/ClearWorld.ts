@@ -9,10 +9,11 @@ export class ClearWorld extends Command {
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     super(base, peer, text, args);
     this.opt = {
+      command: ["clearworld"],
       description: "Clear a world",
       cooldown: 60 * 10,
       ratelimit: 1,
-      category: "Basic",
+      category: "`oBasic",
       usage: "/clearworld",
       example: [],
       permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
