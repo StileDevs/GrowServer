@@ -7,6 +7,7 @@ export class Command {
 
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     this.opt = {
+      command: [],
       description: "",
       cooldown: 1,
       ratelimit: 1,
