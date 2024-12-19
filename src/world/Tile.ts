@@ -7,18 +7,20 @@ import { ExtendBuffer } from "../utils/ExtendBuffer";
 import { tileParse } from "./tiles";
 import { TankTypes } from "../Constants";
 
-export abstract class Tile {
-  public abstract data: ExtendBuffer;
+export class Tile {
+  public data: ExtendBuffer;
   public lockPos: number;
   public flags: number;
 
   constructor(public base: Base, public world: World, public block: Block, public alloc = 8) {
     this.lockPos = this.block.lock && !this.block.lock.isOwner ? (this.block.lock.ownerX as number) + (this.block.lock.ownerY as number) * this.world.data.width : 0;
     this.flags = 0x0;
+    this.data = new ExtendBuffer(this.alloc);
   }
 
-  public abstract serialize(): Promise<void>;
-  public abstract setFlags(): Promise<void>;
+  public async serialize(): Promise<void> {}
+
+  public async setFlags(): Promise<void> {}
 
   private async serializeBlockData(lockPos: number, flags: number) {
     this.data.writeU32(this.block.fg | (this.block.bg << 16));

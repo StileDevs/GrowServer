@@ -15,7 +15,7 @@ import { Peer } from "./Peer";
 import { World } from "./World";
 import { TextPacket } from "growtopia.js";
 import { PacketTypes } from "../Constants";
-const __dirname = process.cwd();
+__dirname = process.cwd();
 
 export class Base {
   public server: Client;

@@ -8,7 +8,7 @@ import { join, relative } from "path";
 import consola from "consola";
 import jwt from "jsonwebtoken";
 
-const __dirname = process.cwd();
+__dirname = process.cwd();
 const conf = JSON.parse(readFileSync(join(__dirname, "config.json"), "utf-8"));
 
 export async function Web() {

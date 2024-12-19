@@ -4,12 +4,12 @@
   "description": "a growtopia private server",
   "main": "dist/app.js",
   "scripts": {
-    "test": "nr build && (node dist/app.js || bun run dist/app.js)",
+    "test": "nr build && (node dist/src/app.js || bun run dist/src/app.js)",
     "dev": "tsx ./src/app.ts",
     "generate": "drizzle-kit push --config=drizzle.config.ts",
     "seed": "node scripts/seeds.js || bun run scripts/seeds.js",
     "studio": "drizzle-kit studio",
-    "build": "tsup",
+    "build": "rimraf dist && tsc",
     "setup": "node scripts/setup.js || bun run scripts/setup.js",
     "iteminfo": "node scripts/item-info/build.js || bun run scripts/item-info/build.js",
     "install": "nr setup && nr build && nr generate && nr seed && nr iteminfo"
@@ -43,7 +43,7 @@
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.5.5",
     "drizzle-kit": "^0.22.8",
-    "tsup": "^8.3.0",
+    "rimraf": "5.0.10",
     "tsx": "^4.19.2",
     "type-fest": "^4.26.1",
     "typescript": "^5.6.2"

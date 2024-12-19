@@ -6,7 +6,7 @@ import consola from "consola";
 import { execSync } from "child_process";
 import net from "net";
 
-const __dirname = process.cwd();
+__dirname = process.cwd();
 const MKCERT_URL = "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";
 
 const mkcertObj: Record<string, string> = {

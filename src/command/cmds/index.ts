@@ -1,10 +1,7 @@
 import { readdirSync } from "fs";
-import { join } from "path";
+import { join, relative } from "path";
 import type { Class } from "type-fest";
 import type { CommandOptions } from "../../types/commands";
-
-// Dynamic command loading
-const commandFiles = readdirSync(__dirname).filter((file) => file.endsWith(".ts") && file !== "index.ts");
 
 export const CommandMap: Record<
   string,
@@ -14,16 +11,14 @@ export const CommandMap: Record<
   }>
 > = {};
 
-// Load each command file
-for (const file of commandFiles) {
-  const commandModule = require(`./${file}`);
-  const CommandClass = Object.values(commandModule)[0] as any;
+const loadCommands = async () => {
+  const commandFiles = readdirSync(__dirname).filter((file) => (file.endsWith(".ts") || file.endsWith(".js")) && !file.endsWith(".d.ts") && file !== "index.ts");
+  for (const file of commandFiles) {
+    const commandName = file.split(".")[0];
+    const path = relative(__dirname, join(__dirname, file));
 
-  // Create temporary instance to access opt
-  const tempInstance = new CommandClass(null, null, "", []);
-
-  // Register each command alias
-  for (const cmd of tempInstance.opt.command) {
-    CommandMap[cmd] = CommandClass;
+    CommandMap[commandName] = await import(`./${path}`);
   }
-}
+};
+
+loadCommands().catch(console.error);
