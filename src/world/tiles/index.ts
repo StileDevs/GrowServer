@@ -11,7 +11,7 @@ import { LockTile } from "./LockTile";
 import type { Base } from "../../core/Base";
 import { HeartMonitorTile } from "./HeartMonitorTile";
 import { DisplayBlockTile } from "./DisplayBlockTile";
-import { SwitcherOO } from "./SwitcheROO";
+import { SwitcheROO } from "./SwitcheROO";
 import { WeatherTile } from "./WeatherTile";
 import { DiceTile } from "./DiceTile";
 import { SeedTile } from "./SeedTile";
@@ -24,7 +24,7 @@ const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.LOCK]: LockTile,
   [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
   [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
-  [ActionTypes.SWITCHEROO]: SwitcherOO,
+  [ActionTypes.SWITCHEROO]: SwitcheROO,
   [ActionTypes.WEATHER_MACHINE]: WeatherTile,
   [ActionTypes.DICE]: DiceTile,
   [ActionTypes.SEED]: SeedTile

@@ -5,7 +5,7 @@ import type { Block } from "../../types";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { Tile } from "../Tile";
 
-export class SwitcherOO extends Tile {
+export class SwitcheROO extends Tile {
   public data: ExtendBuffer;
 
   constructor(public base: Base, public world: World, public block: Block, public alloc = 8) {

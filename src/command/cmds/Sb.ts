@@ -8,10 +8,11 @@ export class Sb extends Command {
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     super(base, peer, text, args);
     this.opt = {
+      command: ["sb"],
       description: "Broadcast a message to everyone",
       cooldown: 5,
       ratelimit: 1,
-      category: "Basic",
+      category: "`oBasic",
       usage: "/sb <message>",
       example: ["/sb hello"],
       permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]

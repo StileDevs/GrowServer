@@ -9,10 +9,11 @@ export class Find extends Command {
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     super(base, peer, text, args);
     this.opt = {
+      command: ["find"],
       description: "Find some items",
       cooldown: 5,
       ratelimit: 5,
-      category: "Basic",
+      category: "`oBasic",
       usage: "/find <item_name?>",
       example: ["/find", "/find dirt"],
       permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]

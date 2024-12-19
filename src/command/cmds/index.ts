@@ -1,10 +1,7 @@
-import type { Class, NonEmptyObject } from "type-fest";
-import { Ping } from "./Ping";
+import { readdirSync } from "fs";
+import { join, relative } from "path";
+import type { Class } from "type-fest";
 import type { CommandOptions } from "../../types/commands";
-import { Find } from "./Find";
-import { Sb } from "./Sb";
-import { Help } from "./Help";
-import { ClearWorld } from "./ClearWorld";
 
 export const CommandMap: Record<
   string,
@@ -12,10 +9,16 @@ export const CommandMap: Record<
     execute: () => Promise<void>;
     opt: CommandOptions;
   }>
-> = {
-  ["ping"]: Ping,
-  ["find"]: Find,
-  ["sb"]: Sb,
-  ["help"]: Help,
-  ["clearworld"]: ClearWorld
+> = {};
+
+const loadCommands = async () => {
+  const commandFiles = readdirSync(__dirname).filter((file) => (file.endsWith(".ts") || file.endsWith(".js")) && !file.endsWith(".d.ts") && file !== "index.ts");
+  for (const file of commandFiles) {
+    const commandName = file.split(".")[0];
+    const path = relative(__dirname, join(__dirname, file));
+
+    CommandMap[commandName] = await import(`./${path}`);
+  }
 };
+
+loadCommands().catch(console.error);

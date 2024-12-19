@@ -4,8 +4,9 @@ import { fileURLToPath } from "url";
 import { request } from "undici";
 import consola from "consola";
 import { execSync } from "child_process";
+import net from "net";
 
-const __dirname = process.cwd();
+__dirname = process.cwd();
 const MKCERT_URL = "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";
 
 const mkcertObj: Record<string, string> = {
@@ -114,3 +115,16 @@ export function manageArray(arr: string[], length: number, newItem: string): str
 
   return arr;
 }
+
+export const checkPortInUse = (port: number): Promise<boolean> => {
+  return new Promise((resolve) => {
+    const server = net
+      .createServer()
+      .once("error", () => resolve(true))
+      .once("listening", () => {
+        server.close();
+        resolve(false);
+      })
+      .listen(port);
+  });
+};
