@@ -14,6 +14,7 @@ export class SwitcheROO extends Tile {
   }
 
   public async serialize(): Promise<void> {
+    // nothing to do here
     return;
   }
 
