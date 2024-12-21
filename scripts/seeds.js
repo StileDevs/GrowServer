@@ -1,7 +1,7 @@
 "use strict";
 
-const { players } = require("../dist/database/schemas/Player");
-const { worlds } = require("../dist/database/schemas/World");
+const { players } = require("../dist/src/database/schemas/Player");
+const { worlds } = require("../dist/src/database/schemas/World");
 const { drizzle } = require("drizzle-orm/libsql");
 const { createClient } = require("@libsql/client");
 const bcrypt = require("bcryptjs");
