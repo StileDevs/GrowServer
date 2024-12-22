@@ -5,9 +5,11 @@ import { request } from "undici";
 import consola from "consola";
 import { execSync } from "child_process";
 import net from "net";
+import decompress from "decompress";
 
 __dirname = process.cwd();
 const MKCERT_URL = "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";
+const WEBSITE_BUILD_URL = "https://github.com/StileDevs/growserver-frontend/releases/latest/download/build.zip";
 
 const mkcertObj: Record<string, string> = {
   "win32-x64": `${MKCERT_URL}/mkcert-v1.4.4-windows-amd64.exe`,
@@ -69,6 +71,26 @@ export async function setupMkcert() {
     execSync(`${mkcertExecuteable} -install && cd ${join(__dirname, ".cache", "ssl")} && ${mkcertExecuteable} *.growserver.app`, { stdio: "ignore" });
   } catch (e) {
     consola.error("Something wrong when setup mkcert", e);
+  }
+}
+
+export async function downloadWebsite() {
+  if (!existsSync(join(__dirname, ".cache", "compressed"))) mkdirSync(join(__dirname, ".cache", "compressed"), { recursive: true });
+  else return;
+
+  consola.info("Downloading compiled website assets");
+  await downloadFile(WEBSITE_BUILD_URL, join(__dirname, ".cache", "compressed", "build.zip"));
+}
+
+export async function setupWebsite() {
+  if (!existsSync(join(__dirname, ".cache", "website"))) mkdirSync(join(__dirname, ".cache", "website"), { recursive: true });
+  else return;
+
+  consola.info("Setup website assets");
+  try {
+    decompress(join(__dirname, ".cache", "compressed", "build.zip"), join(__dirname, ".cache"));
+  } catch (e) {
+    consola.error("Something wrong when setup website", e);
   }
 }
 

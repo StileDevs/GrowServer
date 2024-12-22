@@ -1,6 +1,6 @@
 import { Client, ItemsDat, ItemsDatMeta, Variant } from "growtopia.js";
 import { Web } from "./Web";
-import { downloadMkcert, hashItemsDat, setupMkcert, checkPortInUse } from "../utils/Utils";
+import { downloadMkcert, hashItemsDat, setupMkcert, checkPortInUse, downloadWebsite, setupWebsite } from "../utils/Utils";
 import { join } from "path";
 import { ConnectListener } from "../events/Connect";
 import { DisconnectListener } from "../events/Disconnect";
@@ -66,7 +66,10 @@ export class Base {
 
       await downloadMkcert();
       await setupMkcert();
-      await Web();
+
+      await downloadWebsite();
+      await setupWebsite();
+      await Web(this);
 
       consola.log(`🔔 Starting ENet server on port ${port}`);
 

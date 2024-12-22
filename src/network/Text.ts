@@ -62,10 +62,10 @@ export class ITextPacket {
     try {
       const data = jwt.verify(ltoken, process.env.JWT_SECRET as string) as JsonObject;
 
-      const growID = data.growID as string;
+      const growId = data.growId as string;
       const password = data.password as string;
 
-      const player = await this.base.database.players.get(growID.toLowerCase());
+      const player = await this.base.database.players.get(growId.toLowerCase());
       if (!player) throw new Error("Player not found");
 
       const isValid = await bcrypt.compare(password, player.password);
@@ -91,10 +91,10 @@ export class ITextPacket {
 
   private async validateRefreshToken() {
     try {
-      const growID = this.obj.tankIDName as string;
+      const growId = this.obj.tankIDName as string;
       const password = this.obj.tankIDPass as string;
 
-      const player = await this.base.database.players.get(growID.toLowerCase());
+      const player = await this.base.database.players.get(growId.toLowerCase());
       if (!player) throw new Error("Player not found");
 
       const isValid = await bcrypt.compare(password, player.password);
