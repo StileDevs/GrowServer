@@ -2,7 +2,7 @@
   "name": "growserver",
   "version": "3.0.0",
   "description": "a growtopia private server",
-  "main": "dist/app.js",
+  "main": "dist/src/app.js",
   "scripts": {
     "test": "nr build && (node dist/src/app.js || bun run dist/src/app.js)",
     "dev": "tsx ./src/app.ts",
