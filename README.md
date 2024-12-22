@@ -2,9 +2,13 @@
 
 > A Growtopia private server using Node.js
 
+> [!NOTE]
+> This source is not production ready yet. In the future it will be using a Docker to deploy the server, Feel free to open an issue/pull request regarding this.
+
 ## Requirements
 
 - Node.js v18+ (Recommended LTS v20)
+- npm (Included on Node.js) (Recommended [pnpm](https://pnpm.io))
 - [mkcert](https://github.com/FiloSottile/mkcert)
 
 ## Setup
@@ -27,7 +31,6 @@ $ npm run dev
 Example for default .env file (Generated automatically)
 
 ```
-ENCRYPT_SECRET=SUPERSECRET # Default encrypt secret
 DISCORD_BOT_TOKEN=Tokxxxxxxxen
 ```
 
