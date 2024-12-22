@@ -3,7 +3,7 @@
 > A Growtopia private server using Node.js
 
 > [!NOTE]
-> This source is not production ready yet. In the future it will be using a Docker to deploy the server, Feel free to join [Discord Server](https://discord.gg/sGrxfKZY5t) to discuss regarding this.
+> This source is not production ready yet. In the future it will be using a Docker to deploy the server, feel free to join [Discord Server](https://discord.gg/sGrxfKZY5t) to discuss regarding this.
 
 ## Requirements
 
