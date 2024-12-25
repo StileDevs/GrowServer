@@ -4,7 +4,7 @@ import { Peer } from "../../core/Peer";
 import { ROLE } from "../../Constants";
 import { Variant } from "growtopia.js";
 
-export class Ping extends Command {
+export default class Ping extends Command {
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     super(base, peer, text, args);
     this.opt = {

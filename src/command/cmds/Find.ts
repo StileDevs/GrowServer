@@ -5,7 +5,7 @@ import { ROLE } from "../../Constants";
 import { Variant } from "growtopia.js";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 
-export class Find extends Command {
+export default class Find extends Command {
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     super(base, peer, text, args);
     this.opt = {

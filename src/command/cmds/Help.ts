@@ -6,7 +6,7 @@ import { Variant } from "growtopia.js";
 import { CommandMap } from ".";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 
-export class Help extends Command {
+export default class Help extends Command {
   constructor(base: Base, peer: Peer, text: string, args: string[]) {
     super(base, peer, text, args);
     this.opt = {

@@ -4,7 +4,7 @@ import { Peer } from "../../core/Peer";
 import { ROLE } from "../../Constants";
 import { Variant } from "growtopia.js";
 
-export class SaveServer extends Command {
+export default class SaveServer extends Command {
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     super(base, peer, text, args);
     this.opt = {

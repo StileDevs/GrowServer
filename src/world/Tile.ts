@@ -42,7 +42,6 @@ export class Tile {
 
   public static async tileUpdate(base: Base, peer: Peer, world: World, block: Block, type: number) {
     const data = await tileParse(type, base, world, block);
-    console.log({ type, block });
 
     peer.every((p) => {
       if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {

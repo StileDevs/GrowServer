@@ -14,10 +14,11 @@ export const CommandMap: Record<
 const loadCommands = async () => {
   const commandFiles = readdirSync(__dirname).filter((file) => (file.endsWith(".ts") || file.endsWith(".js")) && !file.endsWith(".d.ts") && file !== "index.ts");
   for (const file of commandFiles) {
-    const commandName = file.split(".")[0];
+    const commandName = file.split(".")[0].toLowerCase();
     const path = relative(__dirname, join(__dirname, file));
 
-    CommandMap[commandName] = await import(`./${path}`);
+    const classes = await import(`./${path}`);
+    CommandMap[commandName] = classes.default;
   }
 };
 

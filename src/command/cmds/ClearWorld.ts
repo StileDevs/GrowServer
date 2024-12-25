@@ -5,7 +5,7 @@ import { ROLE } from "../../Constants";
 import { PacketTypes, TextPacket, Variant } from "growtopia.js";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 
-export class ClearWorld extends Command {
+export default class ClearWorld extends Command {
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     super(base, peer, text, args);
     this.opt = {

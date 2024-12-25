@@ -4,7 +4,7 @@ import { Peer } from "../../core/Peer";
 import { ROLE } from "../../Constants";
 import { PacketTypes, TextPacket, Variant } from "growtopia.js";
 
-export class Sb extends Command {
+export default class Sb extends Command {
   constructor(public base: Base, public peer: Peer, public text: string, public args: string[]) {
     super(base, peer, text, args);
     this.opt = {
