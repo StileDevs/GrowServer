@@ -7,6 +7,7 @@ const { pages_to_items } = require("./parser");
 const { join } = require("path");
 const consola = require("consola");
 
+
 const ITEMS_DAT_PATH = join(__dirname, "..", "..", "assets", "dat", "items.dat");
 
 async function build(split) {
