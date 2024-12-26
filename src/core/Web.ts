@@ -111,8 +111,8 @@ export async function Web(base: Base) {
   app.post("/player/signup", async (ctx) => {
     try {
       const body = await ctx.req.json();
-      const growId = body.growId;
-      const password = body.password;
+      const growId = body.data?.growId;
+      const password = body.data?.password;
 
       if (!growId || !password) throw new Error("Unauthorized");
 
