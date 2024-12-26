@@ -111,11 +111,23 @@ export async function Web(base: Base) {
   app.post("/player/signup", async (ctx) => {
     try {
       const body = await ctx.req.json();
-      const growId = body.growId;
-      const password = body.password;
+      const growId = body.data?.growId;
+      const password = body.data?.password;
+      const confirmPassword = body.data?.confirmPassword;
 
-      if (!growId || !password) throw new Error("Unauthorized");
+      if (!growId || !password || !confirmPassword) throw new Error("Unauthorized");
 
+      // Check if user already exists
+      const user = await base.database.players.get(growId.toLowerCase());
+      if (user) throw new Error("User already exists");
+
+      // Check if password and confirm password match
+      if (password !== confirmPassword) throw new Error("Password and Confirm Password does not match");
+
+      // Save player to database
+      await base.database.players.set(growId, password);
+
+      // Login user:
       const token = jwt.sign({ growId, password }, process.env.JWT_SECRET as string);
 
       if (!token) throw new Error("Unauthorized");
