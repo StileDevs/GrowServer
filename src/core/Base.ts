@@ -13,6 +13,7 @@ import { Collection } from "../utils/Collection";
 import { Database } from "../database/Database";
 import { Peer } from "./Peer";
 import { World } from "./World";
+import { request } from "undici";
 import { TextPacket } from "growtopia.js";
 import { PacketTypes } from "../Constants";
 __dirname = process.cwd();
@@ -69,6 +70,7 @@ export class Base {
 
       await downloadWebsite();
       await setupWebsite();
+      this.cdn = await this.getLatestCdn();
       await Web(this);
 
       consola.log(`🔔 Starting ENet server on port ${port}`);
@@ -117,6 +119,21 @@ export class Base {
     this.items.hash = `${hashItemsDat(itemsDat.data)}`;
     this.items.metadata = itemsDat.meta;
     this.items.wiki = JSON.parse(fs.readFileSync(join(__dirname, "assets", "items_info_new.json"), "utf-8")) as ItemsInfo[];
+  }
+
+  public async getLatestCdn() {
+    try {
+      const res = await request("https://mari-project.jad.li/api/v1/growtopia/cache/latest", {
+        method: "GET"
+      });
+
+      if (res.statusCode !== 200) return { version: "", uri: "" };
+
+      const data = await res.body.json();
+      return data as CDNContent;
+    } catch (e) {
+      return { version: "", uri: "" };
+    }
   }
 
   public async saveAll(disconnectAll = false): Promise<boolean> {

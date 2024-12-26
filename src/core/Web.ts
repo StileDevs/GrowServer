@@ -148,6 +148,12 @@ export async function Web(base: Base) {
     })
   );
 
+  app.get("/growtopia/cache/*", (ctx, next) => {
+    const route = ctx.req.url.split("/growtopia/cache/")[1];
+    const url = `https://ubistatic-a.akamaihd.net/${base.cdn.uri}/cache/${route}`;
+    return ctx.redirect(url);
+  });
+
   app.use(
     "/*",
     serveStatic({
