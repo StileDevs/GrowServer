@@ -38,7 +38,7 @@ export class ItemActiveReq {
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "Whoops, you're holding too many World Locks!", 0, 1));
           } else {
             this.peer.addItemInven(242, 100);
-            this.peer.removeItemInven(1796, -1);
+            this.peer.removeItemInven(1796, 1);
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "You shattered a Diamond Lock into 100 World Locks!", 0, 1));
           }
           break;
@@ -49,12 +49,16 @@ export class ItemActiveReq {
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "Whoops, you're holding too many Diamond Locks!", 0, 1));
           } else {
             this.peer.addItemInven(1796, 1);
-            this.peer.removeItemInven(242, -100);
+            this.peer.removeItemInven(242, 100);
             this.peer.send(Variant.from("OnTalkBubble", this.peer.data.netID, "You compressed 100 World Locks into a Diamond Lock!", 0, 1));
           }
           break;
         }
       }
+      this.peer.saveToCache();
+      this.peer.saveToDatabase();
+      this.peer.inventory();
+      return;
     }
 
     this.peer.equipClothes(item?.id!);
