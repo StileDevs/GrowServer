@@ -26,5 +26,8 @@ export const ActionMap: Record<
   ["input"]: Input,
   ["respawn"]: Respawn,
   ["respawn_spike"]: RespawnSpike,
-  ["drop"]: Drop
+  ["drop"]: Drop,
+  ["wrench"]: Wrench,
+  ["buy"]: StoreBuy,
+  ["store"]: StoreHandler
 };
