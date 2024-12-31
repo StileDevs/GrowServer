@@ -6,165 +6,18 @@ import { createServer } from "https";
 import { readFileSync } from "fs";
 import { join, relative } from "path";
 import consola from "consola";
-import jwt from "jsonwebtoken";
 import type { Base } from "./Base";
-import bcrypt from "bcryptjs";
+import { ApiRoute } from "../web/routes/api";
+import { PlayerRoute } from "../web/routes/player";
+import { GrowtopiaRoute } from "../web/routes/growtopia";
 
 __dirname = process.cwd();
-const conf = JSON.parse(readFileSync(join(__dirname, "config.json"), "utf-8"));
 
 export async function Web(base: Base) {
+  const conf = JSON.parse(readFileSync(join(__dirname, "config.json"), "utf-8"));
   const app = new Hono();
 
   app.use(logg((str, ...rest) => consola.log(str, ...rest)));
-
-  app.get("/", (ctx) =>
-    ctx.json({
-      message: "Hello world"
-    })
-  );
-
-  app.get("/player/growid/login/validate", (ctx) => {
-    try {
-      const query = ctx.req.query();
-      const token = query.token;
-      if (!token) throw new Error("No token provided");
-
-      return ctx.html(
-        JSON.stringify({
-          status: "success",
-          message: "Account Validated.",
-          token,
-          url: "",
-          accountType: "growtopia"
-        })
-      );
-    } catch (e) {
-      return ctx.body(`Unauthorized: ${e}`, 401);
-    }
-  });
-
-  app.post("/player/login/validate", async (ctx) => {
-    try {
-      const body = await ctx.req.json();
-      const growId = body.data?.growId;
-      const password = body.data?.password;
-
-      if (!growId || !password) throw new Error("Unauthorized");
-
-      const user = await base.database.players.get(growId.toLowerCase());
-      if (!user) throw new Error("User not found");
-
-      const isValid = await bcrypt.compare(password, user.password);
-      if (!isValid) throw new Error("Password invalid");
-
-      const token = jwt.sign({ growId, password }, process.env.JWT_SECRET as string);
-
-      return ctx.html(
-        JSON.stringify({
-          status: "success",
-          message: "Account Validated.",
-          token,
-          url: "",
-          accountType: "growtopia"
-        })
-      );
-    } catch (e) {
-      return ctx.body(`Unauthorized: ${e}`, 401);
-    }
-  });
-
-  app.all("/growtopia/server_data.php", (ctx) => {
-    let str = "";
-
-    str += `server|${conf.web.address}\n`;
-
-    const randPort = conf.web.ports[Math.floor(Math.random() * conf.web.ports.length)];
-    str += `port|${randPort}\nloginurl|${conf.web.loginUrl}\ntype|1\n${conf.web.maintenance.enable ? "maint" : "#maint"}|${conf.web.maintenance.message}\nmeta|ignoremeta\nRTENDMARKERBS1001`;
-
-    return ctx.body(str);
-  });
-
-  app.post("/player/growid/checktoken", async (ctx) => {
-    try {
-      const formData = await ctx.req.formData();
-      const refreshToken = formData.get("refreshToken") as string;
-
-      if (!refreshToken) throw new Error("Unauthorized");
-
-      jwt.verify(refreshToken, process.env.JWT_SECRET as string);
-
-      return ctx.html(
-        JSON.stringify({
-          status: "success",
-          message: "Account Validated.",
-          token: refreshToken,
-          url: "",
-          accountType: "growtopia"
-        })
-      );
-    } catch (e) {
-      return ctx.body("Unauthorized", 401);
-    }
-  });
-
-  app.post("/player/signup", async (ctx) => {
-    try {
-      const body = await ctx.req.json();
-      const growId = body.data?.growId;
-      const password = body.data?.password;
-      const confirmPassword = body.data?.confirmPassword;
-
-      if (!growId || !password || !confirmPassword) throw new Error("Unauthorized");
-
-      // Check if user already exists
-      const user = await base.database.players.get(growId.toLowerCase());
-      if (user) throw new Error("User already exists");
-
-      // Check if password and confirm password match
-      if (password !== confirmPassword) throw new Error("Password and Confirm Password does not match");
-
-      // Save player to database
-      await base.database.players.set(growId, password);
-
-      // Login user:
-      const token = jwt.sign({ growId, password }, process.env.JWT_SECRET as string);
-
-      if (!token) throw new Error("Unauthorized");
-
-      jwt.verify(token, process.env.JWT_SECRET as string);
-
-      return ctx.html(
-        JSON.stringify({
-          status: "success",
-          message: "Account Validated.",
-          token,
-          url: "",
-          accountType: "growtopia"
-        })
-      );
-    } catch (e) {
-      return ctx.body("Unauthorized", 401);
-    }
-  });
-
-  app.post("/player/login/dashboard", (ctx) => {
-    const html = readFileSync(join(__dirname, ".cache", "website", "index.html"), "utf-8");
-    return ctx.html(html);
-  });
-
-  app.use(
-    "/growtopia/cache",
-    serveStatic({
-      root: relative(__dirname, join(__dirname, "assets", "cache"))
-    })
-  );
-
-  app.get("/growtopia/cache/*", (ctx, next) => {
-    const route = ctx.req.url.split("/growtopia/cache/")[1];
-    const url = `https://ubistatic-a.akamaihd.net/${base.cdn.uri}/cache/${route}`;
-    return ctx.redirect(url);
-  });
 
   app.use(
     "/*",
@@ -172,6 +25,10 @@ export async function Web(base: Base) {
       root: relative(__dirname, join(__dirname, ".cache", "website"))
     })
   );
+
+  app.route("/", new ApiRoute(base).execute());
+  app.route("/", new PlayerRoute(base).execute());
+  app.route("/", new GrowtopiaRoute(base).execute());
 
   serve(
     {
