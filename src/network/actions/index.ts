@@ -10,6 +10,9 @@ import { Input } from "./Input";
 import { Respawn } from "./Respawn";
 import { RespawnSpike } from "./RespawnSpike";
 import { Drop } from "./Drop";
+import { Wrench } from "./Wrench";
+import { StoreBuy } from "./StoreBuy";
+import { StoreHandler } from "./StoreHandler";
 
 export const ActionMap: Record<
   string,
