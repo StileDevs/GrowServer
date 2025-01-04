@@ -124,7 +124,7 @@ export class PlayerRoute {
       }
     });
 
-    this.app.post("/player/login/dashboard", (ctx) => {
+    this.app.post("/login/dashboard", (ctx) => {
       const html = readFileSync(join(__dirname, ".cache", "website", "index.html"), "utf-8");
       return ctx.html(html);
     });
