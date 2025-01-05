@@ -1,0 +1,14 @@
+{
+  "assets": [
+    {
+      "name": "banner-transparent",
+      "type": "rttex",
+      "id": 8900,
+      "path": "interface/banner-transparent.png",
+      "overwritePropertiesName": ["extraFile"],
+      "item": {
+        "extraFile": "interface/banner-transparent.rttex"
+      }
+    }
+  ]
+}

@@ -1,6 +1,5 @@
 import { Hono } from "hono";
 import { type Base } from "../../core/Base";
-import jwt from "jsonwebtoken";
 import { readFileSync } from "fs";
 import { join, relative } from "path";
 import { serveStatic } from "@hono/node-server/serve-static";
@@ -30,17 +29,18 @@ export class GrowtopiaRoute {
     });
 
     this.app.use(
-      "/cache",
+      "/cache/*",
       serveStatic({
-        root: relative(__dirname, join(__dirname, "assets", "cache"))
+        root: "./.cache"
       })
     );
 
-    this.app.get("/cache/*", (ctx, next) => {
-      const route = ctx.req.url.split("/growtopia/cache/")[1];
-      const url = `https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/cache/${route}`;
-      return ctx.redirect(url);
-    });
+    // this.app.get("/cache/*", (ctx) => {
+    //   const route = ctx.req.url.split("/growtopia/cache/")[1];
+    //   const url = `https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/cache/${route}`;
+    //   console.log("no found", url);
+    //   return ctx.redirect(url);
+    // });
 
     return this.app;
   }

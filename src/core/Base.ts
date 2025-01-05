@@ -7,8 +7,9 @@ import { DisconnectListener } from "../events/Disconnect";
 import { type PackageJson } from "type-fest";
 import { RawListener } from "../events/Raw";
 import consola from "consola";
-import fs from "fs";
-import { Cache, CDNContent, ItemsInfo } from "../types";
+import { readFileSync } from "fs";
+import { readFile } from "fs/promises";
+import { Cache, CDNContent, CustomItemsConfig, ItemsInfo } from "../types";
 import { Collection } from "../utils/Collection";
 import { Database } from "../database/Database";
 import { Peer } from "./Peer";
@@ -16,6 +17,9 @@ import { World } from "./World";
 import { request } from "undici";
 import { TextPacket } from "growtopia.js";
 import { PacketTypes } from "../Constants";
+import { RTTEX } from "../utils/RTTEX";
+import { writeFile } from "fs/promises";
+import { mkdir } from "fs/promises";
 __dirname = process.cwd();
 
 export class Base {
@@ -34,14 +38,14 @@ export class Base {
       }
     });
     this.items = {
-      hash: `${hashItemsDat(fs.readFileSync(join(__dirname, "assets", "dat", "items.dat")))}`,
-      content: fs.readFileSync(join(__dirname, "assets", "dat", "items.dat")),
+      hash: `${hashItemsDat(readFileSync(join(__dirname, "assets", "dat", "items.dat")))}`,
+      content: readFileSync(join(__dirname, "assets", "dat", "items.dat")),
       // wiki: JSON.parse(fs.readFileSync("./assets/items_info.json", "utf-8")) as WikiItems[],
       metadata: {} as ItemsDatMeta,
       wiki: [] as ItemsInfo[]
     };
-    this.package = JSON.parse(fs.readFileSync(join(__dirname, "package.json"), "utf-8"));
-    this.config = JSON.parse(fs.readFileSync(join(__dirname, "config.json"), "utf-8"));
+    this.package = JSON.parse(readFileSync(join(__dirname, "package.json"), "utf-8"));
+    this.config = JSON.parse(readFileSync(join(__dirname, "config.json"), "utf-8"));
     this.cdn = { version: "", uri: "0000/0000" };
     this.cache = {
       peers: new Collection(),
@@ -104,21 +108,55 @@ export class Base {
   }
 
   private async loadItems() {
-    let itemsDat = new ItemsDat(fs.readFileSync(join(__dirname, "assets", "dat", "items.dat")));
+    let itemsDat = new ItemsDat(await readFile(join(__dirname, "assets", "dat", "items.dat")));
     await itemsDat.decode();
+    consola.start("Loading custom items...");
 
-    // try {
-    //   itemsDat = await Items.loadCustomItems(itemsDat);
-    //   this.log.info("Loaded custom items");
-    // } catch (e) {
-    //   this.log.error(e);
-    // }
+    try {
+      const itemsConf = JSON.parse(await readFile(join(__dirname, "assets", "custom-items", "items-config.json"), "utf-8")) as CustomItemsConfig;
+
+      for (const asset of itemsConf.assets) {
+        if (!asset.id) throw "Item ID are required to replace specific item";
+
+        switch (asset.type) {
+          case "rttex": {
+            const image = await readFile(join(__dirname, "assets", "custom-items", ...asset.path.split("/")));
+            const rttex = await RTTEX.encode(image);
+
+            if (asset.overwritePropertiesName.includes("extraFile")) {
+              itemsDat.meta.items[asset.id].extraFile = asset.item.extraFile;
+              itemsDat.meta.items[asset.id].extraFileHash = hashItemsDat(rttex);
+            }
+
+            // Store rttex to .cache directory
+            const path = asset.item.extraFile.split("/");
+            path.pop();
+            await mkdir(join(__dirname, ".cache", "growtopia", "cache", ...path), {
+              recursive: true
+            });
+
+            await writeFile(join(__dirname, ".cache", "growtopia", "cache", ...asset.item.extraFile.split("/")), rttex, {
+              flush: true
+            });
+
+            consola.success(`Successfully converting image file "${asset.path}" into RTTEX`);
+            break;
+          }
+
+          default: {
+            throw "Assets type are required";
+          }
+        }
+      }
+    } catch (e) {
+      consola.error("Failed to load custom items: " + e);
+    }
 
     await itemsDat.encode();
     this.items.content = itemsDat.data;
     this.items.hash = `${hashItemsDat(itemsDat.data)}`;
     this.items.metadata = itemsDat.meta;
-    this.items.wiki = JSON.parse(fs.readFileSync(join(__dirname, "assets", "items_info_new.json"), "utf-8")) as ItemsInfo[];
+    this.items.wiki = JSON.parse(await readFile(join(__dirname, "assets", "items_info_new.json"), "utf-8")) as ItemsInfo[];
   }
 
   public async getLatestCdn() {

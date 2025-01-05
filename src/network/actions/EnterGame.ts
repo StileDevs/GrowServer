@@ -8,7 +8,7 @@ export class EnterGame {
   constructor(public base: Base, public peer: Peer) {}
 
   public async execute(action: NonEmptyObject<{ action: string }>): Promise<void> {
-    const tes = new DialogBuilder().defaultColor().addLabelWithIcon("`wThe GrowServer Gazette``", "5016", "big").addSpacer("small").raw("add_image_button||interface/large/banner-transparent.rttex|bannerlayout|||\n").addTextBox("Welcome to GrowServer").addQuickExit().endDialog("gazzette_end", "Cancel", "Ok").str();
+    const tes = new DialogBuilder().defaultColor().addLabelWithIcon("`wThe GrowServer Gazette``", "5016", "big").addSpacer("small").raw("add_image_button||interface/banner-transparent.rttex|bannerlayout|||\n").addTextBox("Welcome to GrowServer").addQuickExit().endDialog("gazzette_end", "Cancel", "Ok").str();
     this.peer.send(
       Variant.from(
         "OnRequestWorldSelectMenu",

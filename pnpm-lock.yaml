@@ -44,6 +44,9 @@ importers:
       hono:
         specifier: ^4.6.3
         version: 4.6.5
+      imagescript:
+        specifier: ^1.3.0
+        version: 1.3.0
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
@@ -1045,6 +1048,10 @@ packages:
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
+
+  imagescript@1.3.0:
+    resolution: {integrity: sha512-lCYzQrWzdnA68K03oMj/BUlBJrVBnslzDOgGFymAp49NmdGEJxGeN7sHh5mCva0nQkq+kkKSuru2zLf1m04+3A==}
+    engines: {node: '>=14.0.0'}
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -2124,6 +2131,8 @@ snapshots:
   hono@4.6.5: {}
 
   ieee754@1.2.1: {}
+
+  imagescript@1.3.0: {}
 
   inherits@2.0.4: {}
 

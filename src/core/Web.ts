@@ -10,6 +10,7 @@ import type { Base } from "./Base";
 import { ApiRoute } from "../web/routes/api";
 import { PlayerRoute } from "../web/routes/player";
 import { GrowtopiaRoute } from "../web/routes/growtopia";
+import { showRoutes } from "hono/dev";
 
 __dirname = process.cwd();
 
@@ -69,4 +70,8 @@ export async function Web(base: Base) {
       consola.log(`⛅ Running Login server on https://${conf.web.loginUrl}`);
     }
   );
+
+  showRoutes(app, {
+    verbose: true
+  });
 }
