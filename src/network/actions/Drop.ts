@@ -9,6 +9,13 @@ export class Drop {
 
   public async execute(action: NonEmptyObject<{ itemID: string }>): Promise<void> {
     const itemID = parseInt(action.itemID);
+
+    // Prevent dropping specific items add to the list if you want to prevent more items
+    if (itemID === 18 || itemID === 32) {
+      this.peer.send(Variant.from("OnConsoleMessage", "You'd be sorry if you lost that."));
+      return;
+    }
+
     const item = this.base.items.metadata.items.find((v) => v.id === itemID);
 
     const peerItem = this.peer.data.inventory.items.find((v) => v.id === itemID);
