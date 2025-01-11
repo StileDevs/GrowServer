@@ -12,7 +12,7 @@ export class Drop {
 
     // Prevent dropping specific items add to the list if you want to prevent more items
     if (itemID === 18 || itemID === 32) {
-      this.peer.send(Variant.from("OnConsoleMessage", "You'd be sorry if you lost that."));
+      this.peer.send(Variant.from("OnTextOverlay", "You'd be sorry if you lost that!"));
       return;
     }
 
