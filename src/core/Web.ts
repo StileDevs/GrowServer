@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { logger as logg } from "hono/logger";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { serve } from "@hono/node-server";
-import { serveStatic as serveStaticBun } from "hono/bun";
 import { createServer } from "https";
 import { join, relative } from "path";
 import consola from "consola";
@@ -19,21 +18,23 @@ export async function Web(base: Base) {
   const conf = JSON.parse(confFile as string);
   const app = new Hono();
 
+  let buns = process.versions.bun ? await import("hono/bun") : undefined;
+
   app.use(logg((str, ...rest) => consola.log(str, ...rest)));
 
   const rootPath = relative(__dirname, join(__dirname, ".cache", "website"));
   app.use(
     "/*",
-    process.env.RUNTIME_ENV === "bun"
-      ? serveStaticBun({ root: rootPath })
+    process.env.RUNTIME_ENV === "bun" && process.versions.bun
+      ? buns?.serveStatic({ root: rootPath })!
       : serveStatic({
           root: rootPath
         })
   );
 
-  app.route("/", new ApiRoute(base).execute());
-  app.route("/", new PlayerRoute(base).execute());
-  app.route("/", new GrowtopiaRoute(base).execute());
+  app.route("/", await new ApiRoute(base).execute());
+  app.route("/", await new PlayerRoute(base).execute());
+  app.route("/", await new GrowtopiaRoute(base).execute());
 
   const key = await getFile(join(__dirname, "assets", "ssl", "server.key"));
   const cert = await getFile(join(__dirname, "assets", "ssl", "server.crt"));

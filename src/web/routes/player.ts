@@ -10,7 +10,7 @@ export class PlayerRoute {
   public app = new Hono().basePath("/player");
   constructor(public base: Base) {}
 
-  public execute() {
+  public async execute() {
     this.app.get("/growid/login/validate", (ctx) => {
       try {
         const query = ctx.req.query();

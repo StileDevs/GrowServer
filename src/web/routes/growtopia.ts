@@ -13,7 +13,9 @@ export class GrowtopiaRoute {
 
   constructor(public base: Base) {}
 
-  public execute() {
+  public async execute() {
+    let buns = process.versions.bun ? await import("hono/bun") : undefined;
+
     this.app.get("/hello", (ctx) => {
       return ctx.json({ message: "Hello, world!" });
     });
@@ -32,8 +34,8 @@ export class GrowtopiaRoute {
     const rootPath = "./.cache";
     this.app.use(
       "/cache/*",
-      process.env.RUNTIME_ENV === "bun"
-        ? serveStaticBun({ root: rootPath })
+      process.env.RUNTIME_ENV === "bun" && process.versions.bun
+        ? buns?.serveStatic({ root: rootPath })!
         : serveStatic({
             root: rootPath
           })

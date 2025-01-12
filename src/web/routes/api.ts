@@ -6,7 +6,7 @@ export class ApiRoute {
 
   constructor(public base: Base) {}
 
-  public execute() {
+  public async execute() {
     this.app.get("/hello", (ctx) => {
       return ctx.json({ message: "Hello, world!" });
     });
