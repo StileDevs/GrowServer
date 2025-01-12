@@ -3,6 +3,7 @@ import { type Base } from "../../core/Base";
 import { readFileSync } from "fs";
 import { join, relative } from "path";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { serveStatic as serveStaticBun } from "hono/bun";
 
 __dirname = process.cwd();
 
@@ -28,11 +29,14 @@ export class GrowtopiaRoute {
       return ctx.body(str);
     });
 
+    const rootPath = "./.cache";
     this.app.use(
       "/cache/*",
-      serveStatic({
-        root: "./.cache"
-      })
+      process.env.RUNTIME_ENV === "bun"
+        ? serveStaticBun({ root: rootPath })
+        : serveStatic({
+            root: rootPath
+          })
     );
 
     this.app.get("/cache/*", (ctx) => {

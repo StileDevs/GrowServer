@@ -10,7 +10,7 @@ import { Variant } from "growtopia.js";
 
 export class RawListener {
   constructor(public base: Base) {
-    consola.log('🦀 Listening ENet "raw" event');
+    consola.log('🧷Listening ENet "raw" event');
   }
 
   public run(netID: number, channelID: number, chunk: Buffer): void {

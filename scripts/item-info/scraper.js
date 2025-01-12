@@ -24,7 +24,7 @@ async function get_item_pages(item_list, split) {
 }
 
 async function post_request(item_list, count) {
-  consola.log(`ItemsInfo part ${count}, starting post request`);
+  consola.log(`📡ItemsInfo part ${count}, starting post request`);
 
   const post_data = new URLSearchParams({
     title: "Special:Export",
