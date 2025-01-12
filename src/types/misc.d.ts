@@ -2,6 +2,7 @@ import { PeerData } from "./peer";
 import { WorldData } from "./world";
 import { Collection } from "../utils/Collection";
 import { CooldownOptions } from "./commands";
+import { ItemDefinition } from "growtopia.js";
 
 export interface CDNContent {
   version: string;
@@ -70,14 +71,77 @@ export interface CustomItemsConfig {
 }
 
 export interface CustomItemsAssets {
-  name: string;
-  type: "rttex";
   id: number;
-  path: string;
-  overwritePropertiesName: string[];
-  item: CustomItemPropsValue;
+  item: CustomItemsProps;
+  storePath: string;
 }
 
-export interface CustomItemPropsValue {
-  extraFile: string;
+export interface CustomItemsProps {
+  extraFile?: CustomItemsExtraFile;
+  texture?: CustomItemsTexture;
+
+  flags?: number;
+  flagsCategory?: number;
+  type?: number;
+  materialType?: number;
+  name?: string;
+  visualEffectType?: number;
+  flags2?: number;
+  textureX?: number;
+  textureY?: number;
+  storageType?: number;
+  isStripeyWallpaper?: number;
+  collisionType?: number;
+  breakHits?: number;
+  resetStateAfter?: number;
+  bodyPartType?: number;
+  blockType?: number;
+  growTime?: number;
+  rarity?: number;
+  maxAmount?: number;
+  audioVolume?: number;
+  petName?: string;
+  petPrefix?: string;
+  petSuffix?: string;
+  petAbility?: string;
+  seedBase?: number;
+  seedOverlay?: number;
+  treeBase?: number;
+  treeLeaves?: number;
+  seedColor?: number;
+  seedOverlayColor?: number;
+  isMultiFace?: number;
+  isRayman?: number;
+  extraOptions?: string;
+  texture2?: string;
+  extraOptions2?: string;
+  punchOptions?: string;
+
+  extraBytes?: Buffer;
+
+  // new options
+  ingredient?: number;
+  flags3?: number;
+  flags4?: number;
+  bodyPart?: Buffer;
+  flags5?: number;
+  extraTexture?: string;
+  itemRenderer?: string;
+  unknownInt1?: number; // NOTE: not sure what this does
+  unknownBytes1?: Buffer; // NOTE: not sure what this does
+  extraFlags1?: number; // NOTE: not sure what this does
+  extraHash1?: number; // NOTE: not sure what this does
+  unknownBytes2?: Buffer; // NOTE: not sure what this does
+}
+
+export interface CustomItemsExtraFile {
+  fileName: string;
+  pathAsset: string;
+  pathResult: string;
+}
+
+export interface CustomItemsTexture {
+  fileName: string;
+  pathAsset: string;
+  pathResult: string;
 }

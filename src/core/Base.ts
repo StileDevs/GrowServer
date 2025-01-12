@@ -125,35 +125,46 @@ export class Base {
       for (const asset of itemsConf.assets) {
         if (!asset.id) throw "Item ID are required to replace specific item";
 
-        switch (asset.type) {
-          case "rttex": {
-            const image = await readFile(join(__dirname, "assets", "custom-items", ...asset.path.split("/")));
-            const rttex = await RTTEX.encode(image);
+        const item = itemsDat.meta.items[asset.id];
 
-            if (asset.overwritePropertiesName.includes("extraFile")) {
-              itemsDat.meta.items[asset.id].extraFile = asset.item.extraFile;
-              itemsDat.meta.items[asset.id].extraFileHash = hashItemsDat(rttex);
-            }
+        consola.start(`Modifying item ID: ${item.id} | ${item.name}`);
 
-            // Store rttex to .cache directory
-            const path = asset.item.extraFile.split("/");
-            path.pop();
-            await mkdir(join(__dirname, ".cache", "growtopia", "cache", ...path), {
-              recursive: true
-            });
+        Object.assign(item, {
+          ...asset.item
+        });
 
-            await writeFile(join(__dirname, ".cache", "growtopia", "cache", ...asset.item.extraFile.split("/")), rttex, {
-              flush: true
-            });
+        if (asset.item.extraFile) {
+          const image = await readFile(join(__dirname, "assets", "custom-items", asset.item.extraFile.pathAsset));
+          const rttex = await RTTEX.encode(image);
 
-            consola.success(`Successfully converting image file "${asset.path}" to rttex file`);
-            break;
-          }
+          item.extraFile = asset.item.extraFile.pathResult;
+          item.extraFileHash = hashItemsDat(rttex);
 
-          default: {
-            throw "Assets type are required";
-          }
+          await mkdir(join(__dirname, ".cache", "growtopia", "cache", asset.storePath), {
+            recursive: true
+          });
+          await writeFile(join(__dirname, ".cache", "growtopia", "cache", asset.storePath, asset.item.extraFile.fileName), rttex, {
+            flush: true
+          });
         }
+
+        if (asset.item.texture) {
+          const image = await readFile(join(__dirname, "assets", "custom-items", asset.item.texture.pathAsset));
+          const rttex = await RTTEX.encode(image);
+
+          item.texture = asset.item.texture.pathResult;
+          item.textureHash = hashItemsDat(rttex);
+
+          await mkdir(join(__dirname, ".cache", "growtopia", "cache", asset.storePath), {
+            recursive: true
+          });
+          await writeFile(join(__dirname, ".cache", "growtopia", "cache", asset.storePath, asset.item.texture.fileName), rttex, {
+            flush: true
+          });
+        }
+
+        console.log(item);
+        consola.success(`Successfully modifying item ID: ${item.id} | ${item.name}`);
       }
     } catch (e) {
       consola.error("Failed to load custom items: " + e);
