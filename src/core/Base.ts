@@ -163,7 +163,6 @@ export class Base {
           });
         }
 
-        console.log(item);
         consola.success(`Successfully modifying item ID: ${item.id} | ${item.name}`);
       }
     } catch (e) {
