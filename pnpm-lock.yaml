@@ -10,10 +10,10 @@ importers:
     dependencies:
       '@antfu/ni':
         specifier: ^0.23.0
-        version: 0.23.0
+        version: 0.23.2
       '@hono/node-server':
         specifier: ^1.13.1
-        version: 1.13.2(hono@4.6.5)
+        version: 1.13.7(hono@4.6.17)
       '@libsql/client':
         specifier: ^0.14.0
         version: 0.14.0
@@ -25,7 +25,7 @@ importers:
         version: 4.0.3
       consola:
         specifier: ^3.2.3
-        version: 3.2.3
+        version: 3.4.0
       cross-env:
         specifier: ^7.0.3
         version: 7.0.3
@@ -34,22 +34,22 @@ importers:
         version: 4.2.1
       dotenv:
         specifier: ^16.4.5
-        version: 16.4.5
+        version: 16.4.7
       drizzle-orm:
         specifier: ^0.31.2
-        version: 0.31.2(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.11)(better-sqlite3@11.4.0)(bun-types@1.1.37)
+        version: 0.31.4(@libsql/client@0.14.0)(bun-types@1.1.44)
       drizzle-zod:
         specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.31.2(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.11)(better-sqlite3@11.4.0)(bun-types@1.1.37))(zod@3.23.8)
+        version: 0.5.1(drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.1.44))(zod@3.24.1)
       fast-xml-parser:
         specifier: ^4.5.0
-        version: 4.5.0
+        version: 4.5.1
       growtopia.js:
-        specifier: ^2.0.6
-        version: 2.0.6
+        specifier: ^2.0.8
+        version: 2.0.8
       hono:
         specifier: ^4.6.3
-        version: 4.6.5
+        version: 4.6.17
       imagescript:
         specifier: ^1.3.0
         version: 1.3.0
@@ -61,20 +61,20 @@ importers:
         version: 1.3.3
       nanoid:
         specifier: ^3.3.7
-        version: 3.3.7
+        version: 3.3.8
       undici:
         specifier: ^6.19.8
-        version: 6.20.1
+        version: 6.21.1
       zod:
         specifier: ^3.23.8
-        version: 3.23.8
+        version: 3.24.1
     devDependencies:
       '@types/bcryptjs':
         specifier: ^2.4.6
         version: 2.4.6
       '@types/bun':
         specifier: ^1.1.14
-        version: 1.1.14
+        version: 1.1.17
       '@types/decompress':
         specifier: ^4.2.7
         version: 4.2.7
@@ -83,7 +83,7 @@ importers:
         version: 9.0.7
       '@types/node':
         specifier: ^22.5.5
-        version: 22.7.7
+        version: 22.10.7
       drizzle-kit:
         specifier: ^0.22.8
         version: 0.22.8
@@ -95,15 +95,15 @@ importers:
         version: 4.19.2
       type-fest:
         specifier: ^4.26.1
-        version: 4.26.1
+        version: 4.32.0
       typescript:
         specifier: ^5.6.2
-        version: 5.6.3
+        version: 5.7.3
 
 packages:
 
-  '@antfu/ni@0.23.0':
-    resolution: {integrity: sha512-R5/GkA3PfGewAXLzz6lN5XagunF6PKeDtWt8dbZQXvHfebLS0qEczV+Azg/d+tKgSh6kRBpxvu8oSjARdPtw0A==}
+  '@antfu/ni@0.23.2':
+    resolution: {integrity: sha512-FSEVWXvwroExDXUu8qV6Wqp2X3D1nJ0Li4LFymCyvCVrm7I3lNfG0zZWSWvGU1RE7891eTnFTyh31L3igOwNKQ==}
     hasBin: true
 
   '@esbuild-kit/core-utils@3.3.2':
@@ -528,8 +528,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@hono/node-server@1.13.2':
-    resolution: {integrity: sha512-0w8nEmAyx0Ul0CQp8BL2VtAG4YVdpzXd/mvvM+l0G5Oq22pUyHS+KeFFPSY+czLOF5NAiV3MUNPD1n14Ol5svg==}
+  '@hono/node-server@1.13.7':
+    resolution: {integrity: sha512-kTfUMsoloVKtRA2fLiGSd9qBddmru9KadNyhJCwgKBxTiNkaAJEwkVN9KV/rS4HtmmNRtUh6P+YpmjRMl0d9vQ==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -599,11 +599,8 @@ packages:
   '@types/bcryptjs@2.4.6':
     resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
 
-  '@types/better-sqlite3@7.6.11':
-    resolution: {integrity: sha512-i8KcD3PgGtGBLl3+mMYA8PdKkButvPyARxA7IQAd6qeslht13qxb1zzO8dRCtE7U3IoJS782zDBAeoKiM695kg==}
-
-  '@types/bun@1.1.14':
-    resolution: {integrity: sha512-opVYiFGtO2af0dnWBdZWlioLBoxSdDO5qokaazLhq8XQtGZbY4pY3/JxY8Zdf/hEwGubbp7ErZXoN1+h2yesxA==}
+  '@types/bun@1.1.17':
+    resolution: {integrity: sha512-zZt0Kao/8hAwNOXh4bmt8nKbMEd4QD8n7PeTGF+NZTVY5ouXhU/TX7jUj4He1p7mgY+WdplnU1B6MB1j17vdzg==}
 
   '@types/decompress@4.2.7':
     resolution: {integrity: sha512-9z+8yjKr5Wn73Pt17/ldnmQToaFHZxK0N1GHysuk/JIPT8RIdQeoInM01wWPgypRcvb6VH1drjuFpQ4zmY437g==}
@@ -614,8 +611,8 @@ packages:
   '@types/node@20.12.14':
     resolution: {integrity: sha512-scnD59RpYD91xngrQQLGkE+6UrHUPzeKZWhhjBSa3HSkwjbQc38+q3RoIVEwxQGRw3M+j5hpNAM+lgV3cVormg==}
 
-  '@types/node@22.7.7':
-    resolution: {integrity: sha512-SRxCrrg9CL/y54aiMCG3edPKdprgMVGDXjA3gB8UmmBW5TcXzRUYAh8EWzTnSJFAd1rgImPELza+A3bJ+qxz8Q==}
+  '@types/node@22.10.7':
+    resolution: {integrity: sha512-V09KvXxFiutGp6B7XkpaDXlNadZxrzajcY50EuoLIpQ6WWYCSvf19lVIazzfIzQvhUN2HjX12spLojTnhuKlGg==}
 
   '@types/ws@8.5.13':
     resolution: {integrity: sha512-osM/gWBTPKgHV8XkTunnegTRIsvF6owmf5w+JtAfOw472dptdm0dlGv4xCt6GwQRcC2XVOvvRE/0bAoQcL2QkA==}
@@ -645,17 +642,8 @@ packages:
   bcryptjs@2.4.3:
     resolution: {integrity: sha512-V/Hy/X9Vt7f3BbPJEi8BdVFMByHi+jNXrYkW3huaybV/kQ0KJg0Y6PkEMbn+zeT+i+SiKZ/HMqJGIIt4LZDqNQ==}
 
-  better-sqlite3@11.4.0:
-    resolution: {integrity: sha512-B7C9y2aSvtTwDJIz34iUxMjQWmbAYFmpq0Rwf9weYTtx6jUYsUKVt5ePPYlGyLVBoySppPa41PBrzl1ipMhG7A==}
-
-  bindings@1.5.0:
-    resolution: {integrity: sha512-p2q/t/mhvuOj/UeLlV6566GD/guowlr0hHxClI0W9m7MWYkL1F0hLo+0Aexs9HSPCtR1SXQ0TD3MMKrXZajbiQ==}
-
   bl@1.2.3:
     resolution: {integrity: sha512-pvcNpa0UU69UT341rO6AYy4FVAIkUHuZXRIWbq+zHnsVcRzDDjIAhGuuYoi0d//cwIwtt4pkpKycWEfjdV+vww==}
-
-  bl@4.1.0:
-    resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
 
   brace-expansion@2.0.1:
     resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
@@ -681,15 +669,12 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
-  bun-types@1.1.37:
-    resolution: {integrity: sha512-C65lv6eBr3LPJWFZ2gswyrGZ82ljnH8flVE03xeXxKhi2ZGtFiO4isRKTKnitbSqtRAcaqYSR6djt1whI66AbA==}
+  bun-types@1.1.44:
+    resolution: {integrity: sha512-jtcekoZeSINgEcHSISzhR13w/cyE+Fankw2Cpl4c0fN3lRmKVAX0i9ay4FyK4lOxUK1HG4HkuIlrPvXKz4Y7sw==}
 
   chokidar@4.0.3:
     resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
     engines: {node: '>= 14.16.0'}
-
-  chownr@1.1.4:
-    resolution: {integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg==}
 
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
@@ -701,8 +686,8 @@ packages:
   commander@2.20.3:
     resolution: {integrity: sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==}
 
-  consola@3.2.3:
-    resolution: {integrity: sha512-I5qxpzLv+sJhTVEoLYNcTW+bThDCPsit0vLNKShZx6rLtpilNpmmeTPaeqJb9ZE9dV3DGaeby6Vuhrw38WjeyQ==}
+  consola@3.4.0:
+    resolution: {integrity: sha512-EiPU8G6dQG0GFHNR8ljnZFki/8a+cQwEQ+7wpxdChl02Q8HXlwEZWD5lqAF8vC2sEC3Tehr8hy7vErz88LHyUA==}
     engines: {node: ^14.18.0 || >=16.10.0}
 
   core-util-is@1.0.3:
@@ -721,18 +706,14 @@ packages:
     resolution: {integrity: sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A==}
     engines: {node: '>= 12'}
 
-  debug@4.3.7:
-    resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
+  debug@4.4.0:
+    resolution: {integrity: sha512-6WTZ/IxCY/T6BALoZHaE4ctp9xm+Z5kY/pzYaCHRFeyVhojxlrm+46y68HA6hr0TcwEssoxNiDEUJQjfPZ/RYA==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
     peerDependenciesMeta:
       supports-color:
         optional: true
-
-  decompress-response@6.0.0:
-    resolution: {integrity: sha512-aW35yZM6Bb/4oJlZncMH2LCoZtJXTRxES17vE3hoRiowU2kWHaJKFkSBDnDR+cm9J+9QhXmREyIfv0pji9ejCQ==}
-    engines: {node: '>=10'}
 
   decompress-tar@4.1.1:
     resolution: {integrity: sha512-JdJMaCrGpB5fESVyxwpCx4Jdj2AagLmv3y58Qy4GE6HMVjWz1FeVQk1Ct4Kye7PftcdOo/7U7UKzYBJgqnGeUQ==}
@@ -754,28 +735,20 @@ packages:
     resolution: {integrity: sha512-e48kc2IjU+2Zw8cTb6VZcJQ3lgVbS4uuB1TfCHbiZIP/haNXm+SVyhu+87jts5/3ROpd82GSVCoNs/z8l4ZOaQ==}
     engines: {node: '>=4'}
 
-  deep-extend@0.6.0:
-    resolution: {integrity: sha512-LOHxIOaPYdHlJRtCQfDIVZtfw/ufM8+rVj649RIHzcm/vGwQRXFt6OPqIFWsm2XEMrNIEtWR64sY1LEKD2vAOA==}
-    engines: {node: '>=4.0.0'}
-
   detect-libc@2.0.2:
     resolution: {integrity: sha512-UX6sGumvvqSaXgdKGUsgZWqcUyIXZ/vZTrlRT/iobiKhGL0zL4d3osHj3uqllWJK+i+sixDS/3COVEOFbupFyw==}
     engines: {node: '>=8'}
 
-  detect-libc@2.0.3:
-    resolution: {integrity: sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw==}
-    engines: {node: '>=8'}
-
-  dotenv@16.4.5:
-    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
+  dotenv@16.4.7:
+    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
     engines: {node: '>=12'}
 
   drizzle-kit@0.22.8:
     resolution: {integrity: sha512-VjI4wsJjk3hSqHSa3TwBf+uvH6M6pRHyxyoVbt935GUzP9tUR/BRZ+MhEJNgryqbzN2Za1KP0eJMTgKEPsalYQ==}
     hasBin: true
 
-  drizzle-orm@0.31.2:
-    resolution: {integrity: sha512-QnenevbnnAzmbNzQwbhklvIYrDE8YER8K7kSrAWQSV1YvFCdSQPzj+jzqRdTSsV2cDqSpQ0NXGyL1G9I43LDLg==}
+  drizzle-orm@0.31.4:
+    resolution: {integrity: sha512-VGD9SH9aStF2z4QOTnVlVX/WghV/EnuEzTmsH3fSVp2E4fFgc8jl3viQrS/XUJx1ekW4rVVLJMH42SfGQdjX3Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=3'
@@ -785,6 +758,7 @@ packages:
       '@op-engineering/op-sqlite': '>=2'
       '@opentelemetry/api': ^1.4.1
       '@planetscale/database': '>=1'
+      '@prisma/client': '*'
       '@tidbcloud/serverless': '*'
       '@types/better-sqlite3': '*'
       '@types/pg': '*'
@@ -800,6 +774,7 @@ packages:
       mysql2: '>=2'
       pg: '>=8'
       postgres: '>=3'
+      prisma: '*'
       react: '>=18'
       sql.js: '>=1'
       sqlite3: '>=5'
@@ -819,6 +794,8 @@ packages:
       '@opentelemetry/api':
         optional: true
       '@planetscale/database':
+        optional: true
+      '@prisma/client':
         optional: true
       '@tidbcloud/serverless':
         optional: true
@@ -849,6 +826,8 @@ packages:
       pg:
         optional: true
       postgres:
+        optional: true
+      prisma:
         optional: true
       react:
         optional: true
@@ -901,12 +880,8 @@ packages:
   eventemitter3@5.0.1:
     resolution: {integrity: sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==}
 
-  expand-template@2.0.3:
-    resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
-    engines: {node: '>=6'}
-
-  fast-xml-parser@4.5.0:
-    resolution: {integrity: sha512-/PlTQCI96+fZMAOLMZK4CWG1ItCbfZ/0jx7UIJFChPNrx7tcEgerUgWbeieCM9MfHInUDyK8DWYZ+YrywDJuTg==}
+  fast-xml-parser@4.5.1:
+    resolution: {integrity: sha512-y655CeyUQ+jj7KBbYMc4FG01V8ZQqjN+gDYGJ50RtfsUB8iG9AmwmwoAgeKLJdmueKKMrH1RJ7yXHTSoczdv5w==}
     hasBin: true
 
   fd-slicer@1.1.0:
@@ -927,9 +902,6 @@ packages:
   file-type@6.2.0:
     resolution: {integrity: sha512-YPcTBDV+2Tm0VqjybVd32MHdlEGAtuxS3VAYsumFokDSMG+ROT5wawGlnHDoz7bfMcMDt9hxuXvXwoKUx2fkOg==}
     engines: {node: '>=4'}
-
-  file-uri-to-path@1.0.0:
-    resolution: {integrity: sha512-0Zt+s3L7Vf1biwWZ29aARiVYLx7iMGnEUl9x33fbB/j3jR81u/O2LbqK+Bm1CDSNDKVtJ/YjwY7TUd5SkeLQLw==}
 
   foreground-child@3.3.0:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
@@ -954,9 +926,6 @@ packages:
   get-tsconfig@4.8.1:
     resolution: {integrity: sha512-k9PN+cFBmaLWtVz29SkUoqU5O0slLuHJXt/2P+tMVFT+phsSGXGkp9t3rQIqdz0e+06EHNGs3oM6ZX1s2zHxRg==}
 
-  github-from-package@0.0.0:
-    resolution: {integrity: sha512-SyHy3T1v2NUXn29OsWdxmK6RwHD+vkj3v8en8AOBZ1wBQ/hCAQ5bAQTD02kW4W9tUp/3Qh6J8r9EvntiyCmOOw==}
-
   glob@10.4.5:
     resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
     hasBin: true
@@ -964,101 +933,101 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  growtopia.js-android-arm-eabi@2.0.6:
-    resolution: {integrity: sha512-QKywb6W8iaOhKYhO9WtfIIGyKl/tAvEF6wqiCwHRtKrQdMg+6GEHi3ysByf49LdwC1BA+u3PtCydjmACNpk+yg==}
+  growtopia.js-android-arm-eabi@2.0.8:
+    resolution: {integrity: sha512-7gm33u93+MSqywpaSQiyQaHZERvOXNIZE0MruGfAGW30o2uiRbIjgjhx6MZ4sxdzkobqSBeF/8LCb9XGqnFAXg==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [android]
 
-  growtopia.js-android-arm64@2.0.6:
-    resolution: {integrity: sha512-EGRbSwi07nz0fdDAGhlTM0ZjFKvSE1ll3RCAvIIy7O3pzTEtgOQWH9yxQ1tdJtyKWpU8IoD+APJgfPD33OMqjQ==}
+  growtopia.js-android-arm64@2.0.8:
+    resolution: {integrity: sha512-ZeXnCnjBsp9cdiHJBQ9+V5O+dzeP+xrCQfWC6MXbhtlS7rQq6FHn/spEUkE3z3wyJwSuFusDZw4bc6TuzxSMKA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [android]
 
-  growtopia.js-darwin-arm64@2.0.6:
-    resolution: {integrity: sha512-BFi/szEc8Knipx9T/hTS1MFOSjzkZxpTYBZK33Q4z4IgQiD5xWgZRFqph4dei7uBohOPM18BVShkgpn1wqrN8A==}
+  growtopia.js-darwin-arm64@2.0.8:
+    resolution: {integrity: sha512-vZW4HRgOQFQfew2Wgc/VV0ONfSrAFCIpjwkJdDd5FU7OzD+etN78pEa+TXHmnzRQJGc6jBmsu06K5JIyN4M50Q==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  growtopia.js-darwin-universal@2.0.6:
-    resolution: {integrity: sha512-dzD7C8jXiSQK/9LWuTQxEDefxmGVJeTDSc7RF3ydyLHBk9cdTWX0h2/yv9/LhNR/Ejyg3HMkF9HlsvIB4hsy6g==}
+  growtopia.js-darwin-universal@2.0.8:
+    resolution: {integrity: sha512-9feC0QyhQicnKULjJnwaK8y8sunJjl2E0vNZi4pLWuWgEy3GIPjhCKbKMoJ7Rilos2cPktvrAQqnI1plhZH7Dw==}
     engines: {node: '>= 10'}
     os: [darwin]
 
-  growtopia.js-darwin-x64@2.0.6:
-    resolution: {integrity: sha512-oedgFHWSioVqXgUgpkXQ/3Bqlwlxr1lPMkH40ifeCWbzwGBlt+BQvK6UNNGn/ToykArvdpL4wUSdaOuX42iYag==}
+  growtopia.js-darwin-x64@2.0.8:
+    resolution: {integrity: sha512-ocqi/rt5LFXpReXq/uMvgtdaNgKKkaZTr02Qul0//+euAz9GpOnXAc5koP7tyz10ukT2eG1qX/lMism8EWcBQg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  growtopia.js-linux-arm-gnueabihf@2.0.6:
-    resolution: {integrity: sha512-pAflrzMM4HI7zUVt5SOamrBvafKh/G/A/l2tbfBAyVpttTUXbavy0ZKFwPq476KR4KhyUi/g+V2j3BObj/1o2g==}
+  growtopia.js-linux-arm-gnueabihf@2.0.8:
+    resolution: {integrity: sha512-0Y72Gz7uDRepeUO9Um+zY9aGT/xm4152tJhDfPJg2r1YrxGg6PfnJlDdDF8a9WLbVB8HkjeFfWtYnj0DXQV5kQ==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  growtopia.js-linux-arm-musleabihf@2.0.6:
-    resolution: {integrity: sha512-5Tx3XHkwsvZAzOH0ZR2gBWikw9UAjI/E6BWmHp34XhonEVg6rilP+6Vuf0sx3R6XD5X7UhTyqSArBYNB93pkEg==}
+  growtopia.js-linux-arm-musleabihf@2.0.8:
+    resolution: {integrity: sha512-PMFmbdpgySyRUxSGJ71v0K8sUvgA2OvUvzyowMWX82qMugtvddDh5g6h7N7bT1VMijlWFsIXBAAufIpWTt5gEQ==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  growtopia.js-linux-arm64-gnu@2.0.6:
-    resolution: {integrity: sha512-dCyP/OxU0MJy7ngfcv5vJwIDgiyVHrjrbfuyvDRwcWfy+0VkKPFASuZtsPckwv/d4Orq+EJZXNQPGPbV47XxRg==}
+  growtopia.js-linux-arm64-gnu@2.0.8:
+    resolution: {integrity: sha512-IxscjzyyUj2QUwL42p6NZ+lCTg/Ba7yYxCuZfkR1Gb2cl3VWXJEygBkdNbQ+Tzxf8Ig+3OBAr7ziyX7/kgwQlw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  growtopia.js-linux-arm64-musl@2.0.6:
-    resolution: {integrity: sha512-/UunbxaLj84qTXTIGKoll/0gy0VutO87DfEGdANe7qmJix98tgo+GiEDlurp5xZPLbQ/Y49hcXbstPXWz5b+qw==}
+  growtopia.js-linux-arm64-musl@2.0.8:
+    resolution: {integrity: sha512-8gLeNgtq4+uGe9+ERSBLasHF5MBV4vn/3MXX0N2jB5mConQXwW3Z2gRoD2/om7rIdpcTsHfNYHRH73PCN98rgg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  growtopia.js-linux-riscv64-gnu@2.0.6:
-    resolution: {integrity: sha512-3YkWE2Rns4I1yDBdWosLyot75mtxWEPmW3LFj56N2z4yZv0fjzcln8+nkfTFNExSCi5sTBDmRcqaoLKYeW7vbQ==}
+  growtopia.js-linux-riscv64-gnu@2.0.8:
+    resolution: {integrity: sha512-vLID95gjybThJachwTVzgNNTFX7RZ+PRqj9I3zmzkzm+tW6YLdeSRdfoDdThxj14ZuWyBle8vRujoU8MywpPDQ==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
 
-  growtopia.js-linux-x64-gnu@2.0.6:
-    resolution: {integrity: sha512-uJ8Zd0ENnX1x6UkJjj20lSjWR2i2XLM9KfXqNo/f+Gb2l4I+yg1FWWPvJ8EWSl8/fDqDVd+lTYageIM1MoGiHA==}
+  growtopia.js-linux-x64-gnu@2.0.8:
+    resolution: {integrity: sha512-pUUjys4yPFFXkCp5aj4FjXhCaA8AAHH0GLFcCasayAmhcqlvguYPrdI6umEihe42uMX8AM8kObmYmUEmvttEEg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  growtopia.js-linux-x64-musl@2.0.6:
-    resolution: {integrity: sha512-hZ3cABY3Y/811xt6fm657O2+k7z3QXWyFmWZ55BZVhF0PX10W5nOQI+O/uTOrJLghiSXzXfEcQWAESoRCJnuvw==}
+  growtopia.js-linux-x64-musl@2.0.8:
+    resolution: {integrity: sha512-gyhZHCpOcfRkTF0TslCl6bQgWj6lhD0UM/eWIxU10jNoUpkyz5t40tzVlgPlsjW5Chq41A3DEwerju7B6yQUGg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  growtopia.js-win32-arm64-msvc@2.0.6:
-    resolution: {integrity: sha512-rUntIx2AQ/RTRnJ2TwX+4maQ5oJJGPWmTK0WXsUJVtgtho6/imioRUG7EXmCSfH6zCEAsvRlKPrZXo2ZCnO+ZQ==}
+  growtopia.js-win32-arm64-msvc@2.0.8:
+    resolution: {integrity: sha512-Id3l7LgZTr+6Q6cbmxxMNgfkjQQE1jNIk0DQxEScXup0seVTpro1JZI3HWSncyIFNEZPL6HVA5LU+98smeOVug==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  growtopia.js-win32-ia32-msvc@2.0.6:
-    resolution: {integrity: sha512-jcW4DKlAuBmQzf1JyAKgX7FXVseMb0us08jEtv7HOqVNY+uXboTwslPsJU2LGg98a6mqAl3Ii58qOZYA1nMzaQ==}
+  growtopia.js-win32-ia32-msvc@2.0.8:
+    resolution: {integrity: sha512-4mOBtozvEP6YILWC9NzLC6f46er94aAT2TKh2PhC0J1CdWkxDgL6GdHDAq00pMN1/Xmu9vhMpEbdQEosrSeANg==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
 
-  growtopia.js-win32-x64-msvc@2.0.6:
-    resolution: {integrity: sha512-IXuZ0JUwGD1q7E+kAjqUqzGPt3a7jZL8zAHPH8wD+3kuZ6OScpbJ2mLJGkSRFegP7ytizaknfOtONX821x4V6Q==}
+  growtopia.js-win32-x64-msvc@2.0.8:
+    resolution: {integrity: sha512-qST8gznHdmSvfttvvI6wPAtVQBKmsfpx4k4dza9ZVC2OQfPmdwh+EJSS8u0Pg9cRI80/dUDTUqQ2JWmR5Czwpw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  growtopia.js@2.0.6:
-    resolution: {integrity: sha512-5ugjqjCBv+DHzl6NAtgFY2p3fF7Cq1+DgDojkYVeqe7SUqTH5PFgRgI8MUijcm+Pp5ygG0wSDuJVG+SQ2KCL4w==}
+  growtopia.js@2.0.8:
+    resolution: {integrity: sha512-0sXZN7SMq06oO8g4L7GzyCkX7A+EikFqGoRSeAhZGpB/11HxGQNnSgBffAkFu2VpoffBnr8P0CWaPlyl1xUUCA==}
     engines: {node: '>= 10'}
 
-  hono@4.6.5:
-    resolution: {integrity: sha512-qsmN3V5fgtwdKARGLgwwHvcdLKursMd+YOt69eGpl1dUCJb8mCd7hZfyZnBYjxCegBG7qkJRQRUy2oO25yHcyQ==}
+  hono@4.6.17:
+    resolution: {integrity: sha512-Kbh4M0so2RzLiIg6iP33DoTU68TdvP2O/kb1Hhhdwa37fazuf402ig8ZRfjkz2dqXwiWl2dAgh0f++TuKAdOtQ==}
     engines: {node: '>=16.9.0'}
 
   ieee754@1.2.1:
@@ -1070,9 +1039,6 @@ packages:
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
-
-  ini@1.3.8:
-    resolution: {integrity: sha512-JV/yugV2uzW5iMRSiZAyDtQd+nxtUnjeLt0acNdw98kKLrvuRVyB80tsREOE7yvGVgalhZ6RNXCmEHkUKBKxew==}
 
   is-fullwidth-code-point@3.0.0:
     resolution: {integrity: sha512-zymm5+u+sCsSWyD9qNaejV3DFvhCKclKdizYaJUuHA83RLjb7nSuGnddCHGv0hk+KY7BMAlsWeK4Ueg6EV6XQg==}
@@ -1109,6 +1075,7 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
+    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   lodash.includes@4.3.0:
@@ -1139,23 +1106,13 @@ packages:
     resolution: {integrity: sha512-2w31R7SJtieJJnQtGc7RVL2StM2vGYVfqUOvUDxH6bC6aJTxPxTF0GnIgCyu7tjockiUWAYQRbxa7vKn34s5sQ==}
     engines: {node: '>=4'}
 
-  mimic-response@3.1.0:
-    resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
-    engines: {node: '>=10'}
-
   minimatch@9.0.5:
     resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  minimist@1.2.8:
-    resolution: {integrity: sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==}
-
   minipass@7.1.2:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
     engines: {node: '>=16 || 14 >=14.17'}
-
-  mkdirp-classic@0.5.3:
-    resolution: {integrity: sha512-gKLcREMhtuZRwRAfqP3RFW+TK4JqApVBtOIftVgjuABpAtpxhPGaDcfvbhNvD0B8iD1oUr/txX35NjcaY6Ns/A==}
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
@@ -1163,17 +1120,10 @@ packages:
   mwparser@1.3.3:
     resolution: {integrity: sha512-s0LCYoF8sx8c8liTCq++dvpyUQOnHrHrBjcca2CvRYLUrwQpNX6gS/276q1nUyOmG8lsH+e9KvlA1BJO1axusg==}
 
-  nanoid@3.3.7:
-    resolution: {integrity: sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==}
+  nanoid@3.3.8:
+    resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
-
-  napi-build-utils@1.0.2:
-    resolution: {integrity: sha512-ONmRUqK7zj7DWX0D9ADe03wbwOBZxNAfF20PlGfCWQcD3+/MakShIHrMqx9YwPTfxDdF1zLeL+RGZiR9kGMLdg==}
-
-  node-abi@3.71.0:
-    resolution: {integrity: sha512-SZ40vRiy/+wRTf21hxkkEjPJZpARzUMVcJoQse2EF8qkUWbbO2z7vd5oA/H6bVH6SZQ5STGcu0KRDS7biNRfxw==}
-    engines: {node: '>=10'}
 
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
@@ -1225,30 +1175,14 @@ packages:
     resolution: {integrity: sha512-MnUuEycAemtSaeFSjXKW/aroV7akBbY+Sv+RkyqFjgAe73F+MR0TBWKBRDkmfWq/HiFmdavfZ1G7h4SPZXaCSg==}
     engines: {node: '>=0.10.0'}
 
-  prebuild-install@7.1.2:
-    resolution: {integrity: sha512-UnNke3IQb6sgarcZIDU3gbMeTp/9SSU1DAIkil7PrqG1vZlBtY5msYccSKSHDqa3hNg436IXK+SNImReuA1wEQ==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   process-nextick-args@2.0.1:
     resolution: {integrity: sha512-3ouUOpQhtgrbOa17J7+uxOTpITYWaGP7/AhoR3+A+/1e9skrzelGi/dXzEYyvbxubEF6Wn2ypscTKiKJFFn1ag==}
 
   promise-limit@2.7.0:
     resolution: {integrity: sha512-7nJ6v5lnJsXwGprnGXga4wx6d1POjvi5Qmf1ivTRxTjH4Z/9Czja/UCMLVmB9N93GeWOU93XaFaEt6jbuoagNw==}
 
-  pump@3.0.2:
-    resolution: {integrity: sha512-tUPXtzlGM8FE3P0ZL6DVs/3P58k9nk8/jZeQCurTJylQA8qFYzHFfhBJkuqyE0FifOsQ0uKWekiZ5g8wtr28cw==}
-
-  rc@1.2.8:
-    resolution: {integrity: sha512-y3bGgqKj3QBdxLbLkomlohkvsA8gdAiUQlSBJnBhfn+BPxg4bc62d8TcBW15wavDfgexCgccckhcZvywyQYPOw==}
-    hasBin: true
-
   readable-stream@2.3.8:
     resolution: {integrity: sha512-8p0AUk4XODgIewSi0l8Epjs+EVnWiK7NoDIEGU0HhE7+ZyY8D1IMY7odu5lRrFXGg71L15KG8QrPmum45RTtdA==}
-
-  readable-stream@3.6.2:
-    resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
-    engines: {node: '>= 6'}
 
   readdirp@4.1.1:
     resolution: {integrity: sha512-h80JrZu/MHUZCyHu5ciuoI0+WxsCxzxJTILn6Fs8rxSnFPh+UVHYfeIxK1nVGugMqkfC4vJcBOYbkfkwYK0+gw==}
@@ -1288,12 +1222,6 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  simple-concat@1.0.1:
-    resolution: {integrity: sha512-cSFtAPtRhljv69IK0hTVZQ+OfE9nePi/rtJmw5UjHeVyVroEqJXP1sFztKUy1qU+xvz3u/sfYJLa947b7nAN2Q==}
-
-  simple-get@4.0.1:
-    resolution: {integrity: sha512-brv7p5WgH0jmQJr1ZDDfKDOSeWWg+OVypG99A/5vYGPqJ6pxiaHLy8nxtFjBA7oMa01ebA9gfh1uMCFqOuXxvA==}
-
   source-map-support@0.5.21:
     resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
 
@@ -1312,9 +1240,6 @@ packages:
   string_decoder@1.1.1:
     resolution: {integrity: sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==}
 
-  string_decoder@1.3.0:
-    resolution: {integrity: sha512-hkRX8U1WjJFd8LsDJ2yQ/wWWxaopEsABU1XfkM8A+j0+85JAGppt16cr1Whg6KIbb4okU6Mql6BOj+uup/wKeA==}
-
   strip-ansi@6.0.1:
     resolution: {integrity: sha512-Y38VPSHcqkFrCpFnQ9vuSXmquuv5oXOKpGeT6aGrr3o3Gc9AlVa6JBfUSOCnbxGGZF+/0ooI7KrPuUSztUdU5A==}
     engines: {node: '>=8'}
@@ -1326,23 +1251,12 @@ packages:
   strip-dirs@2.1.0:
     resolution: {integrity: sha512-JOCxOeKLm2CAS73y/U4ZeZPTkE+gNVCzKt7Eox84Iej1LT/2pTWYpZKJuxwQpvX1LiZb1xokNR7RLfuBAa7T3g==}
 
-  strip-json-comments@2.0.1:
-    resolution: {integrity: sha512-4gB8na07fecVVkOI6Rs4e7T6NOTki5EmL7TUduTs6bu3EdnSycntVJ4re8kgZA+wx9IueI2Y11bfbgwtzuE0KQ==}
-    engines: {node: '>=0.10.0'}
-
   strnum@1.0.5:
     resolution: {integrity: sha512-J8bbNyKKXl5qYcR36TIO8W3mVGVHrmmxsd5PAItGkmyzwJvybiw2IVq5nqd0i4LSNSkB/sx9VHllbfFdr9k1JA==}
-
-  tar-fs@2.1.1:
-    resolution: {integrity: sha512-V0r2Y9scmbDRLCNex/+hYzvp/zyYjvFbHPNgVTKfQvVrb6guiE/fxP+XblDNR011utopbkex2nM4dHNV6GDsng==}
 
   tar-stream@1.6.2:
     resolution: {integrity: sha512-rzS0heiNf8Xn7/mpdSVVSMAWAoy9bfb1WOTYC78Z0UQKeKa/CWS8FOq0lKGNa8DWKAn9gxjCvMLYc5PGXYlK2A==}
     engines: {node: '>= 0.8.0'}
-
-  tar-stream@2.2.0:
-    resolution: {integrity: sha512-ujeqbceABgwMZxEJnk2HDY2DlnUZ+9oEcb1KzTVfYHio0UE6dG71n60d8D2I4qNvleWrrXpmjpt7vZeF1LnMZQ==}
-    engines: {node: '>=6'}
 
   through@2.3.8:
     resolution: {integrity: sha512-w89qg7PI8wAdvX60bMDP+bFoD5Dvhm9oLheFp5O4a2QF0cSBGsBX4qZmadPMvVqlLJBBci+WqGGOAPvcDeNSVg==}
@@ -1355,15 +1269,12 @@ packages:
     engines: {node: '>=18.0.0'}
     hasBin: true
 
-  tunnel-agent@0.6.0:
-    resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
-
-  type-fest@4.26.1:
-    resolution: {integrity: sha512-yOGpmOAL7CkKe/91I5O3gPICmJNLJ1G4zFYVAsRHg7M64biSnPtRj0WNQt++bRkjYOqjWXrhnUw1utzmVErAdg==}
+  type-fest@4.32.0:
+    resolution: {integrity: sha512-rfgpoi08xagF3JSdtJlCwMq9DGNDE0IMh3Mkpc1wUypg9vPi786AiqeBBKcqvIkq42azsBM85N490fyZjeUftw==}
     engines: {node: '>=16'}
 
-  typescript@5.6.3:
-    resolution: {integrity: sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==}
+  typescript@5.7.3:
+    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -1373,11 +1284,11 @@ packages:
   undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
-  undici-types@6.19.8:
-    resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
-  undici@6.20.1:
-    resolution: {integrity: sha512-AjQF1QsmqfJys+LXfGTNum+qw4S88CojRInG/6t31W/1fk6G59s92bnAvGz5Cmur+kQv2SURXEvvudLmbrE8QA==}
+  undici@6.21.1:
+    resolution: {integrity: sha512-q/1rj5D0/zayJB2FraXdaWxbhWiNKDvu8naDT2dl1yTlvJp4BLtOcp2a5BvgGNQpYYJzau7tf1WgKv3b+7mqpQ==}
     engines: {node: '>=18.17'}
 
   util-deprecate@1.0.2:
@@ -1422,12 +1333,12 @@ packages:
   yauzl@2.10.0:
     resolution: {integrity: sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g==}
 
-  zod@3.23.8:
-    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
+  zod@3.24.1:
+    resolution: {integrity: sha512-muH7gBL9sI1nciMZV67X5fTKKBLtwpZ5VBp1vsOQzj1MhrBZ4wlVCm3gedKZWLp0Oyel8sIGfeiz54Su+OVT+A==}
 
 snapshots:
 
-  '@antfu/ni@0.23.0': {}
+  '@antfu/ni@0.23.2': {}
 
   '@esbuild-kit/core-utils@3.3.2':
     dependencies:
@@ -1646,9 +1557,9 @@ snapshots:
   '@esbuild/win32-x64@0.23.1':
     optional: true
 
-  '@hono/node-server@1.13.2(hono@4.6.5)':
+  '@hono/node-server@1.13.7(hono@4.6.17)':
     dependencies:
-      hono: 4.6.5
+      hono: 4.6.17
 
   '@isaacs/cliui@8.0.2':
     dependencies:
@@ -1722,34 +1633,29 @@ snapshots:
 
   '@types/bcryptjs@2.4.6': {}
 
-  '@types/better-sqlite3@7.6.11':
+  '@types/bun@1.1.17':
     dependencies:
-      '@types/node': 22.7.7
-    optional: true
-
-  '@types/bun@1.1.14':
-    dependencies:
-      bun-types: 1.1.37
+      bun-types: 1.1.44
 
   '@types/decompress@4.2.7':
     dependencies:
-      '@types/node': 22.7.7
+      '@types/node': 22.10.7
 
   '@types/jsonwebtoken@9.0.7':
     dependencies:
-      '@types/node': 22.7.7
+      '@types/node': 22.10.7
 
   '@types/node@20.12.14':
     dependencies:
       undici-types: 5.26.5
 
-  '@types/node@22.7.7':
+  '@types/node@22.10.7':
     dependencies:
-      undici-types: 6.19.8
+      undici-types: 6.20.0
 
   '@types/ws@8.5.13':
     dependencies:
-      '@types/node': 22.7.7
+      '@types/node': 22.10.7
 
   ansi-regex@5.0.1: {}
 
@@ -1767,28 +1673,10 @@ snapshots:
 
   bcryptjs@2.4.3: {}
 
-  better-sqlite3@11.4.0:
-    dependencies:
-      bindings: 1.5.0
-      prebuild-install: 7.1.2
-    optional: true
-
-  bindings@1.5.0:
-    dependencies:
-      file-uri-to-path: 1.0.0
-    optional: true
-
   bl@1.2.3:
     dependencies:
       readable-stream: 2.3.8
       safe-buffer: 5.2.1
-
-  bl@4.1.0:
-    dependencies:
-      buffer: 5.7.1
-      inherits: 2.0.4
-      readable-stream: 3.6.2
-    optional: true
 
   brace-expansion@2.0.1:
     dependencies:
@@ -1814,7 +1702,7 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bun-types@1.1.37:
+  bun-types@1.1.44:
     dependencies:
       '@types/node': 20.12.14
       '@types/ws': 8.5.13
@@ -1822,9 +1710,6 @@ snapshots:
   chokidar@4.0.3:
     dependencies:
       readdirp: 4.1.1
-
-  chownr@1.1.4:
-    optional: true
 
   color-convert@2.0.1:
     dependencies:
@@ -1834,7 +1719,7 @@ snapshots:
 
   commander@2.20.3: {}
 
-  consola@3.2.3: {}
+  consola@3.4.0: {}
 
   core-util-is@1.0.3: {}
 
@@ -1850,14 +1735,9 @@ snapshots:
 
   data-uri-to-buffer@4.0.1: {}
 
-  debug@4.3.7:
+  debug@4.4.0:
     dependencies:
       ms: 2.1.3
-
-  decompress-response@6.0.0:
-    dependencies:
-      mimic-response: 3.1.0
-    optional: true
 
   decompress-tar@4.1.1:
     dependencies:
@@ -1897,15 +1777,9 @@ snapshots:
       pify: 2.3.0
       strip-dirs: 2.1.0
 
-  deep-extend@0.6.0:
-    optional: true
-
   detect-libc@2.0.2: {}
 
-  detect-libc@2.0.3:
-    optional: true
-
-  dotenv@16.4.5: {}
+  dotenv@16.4.7: {}
 
   drizzle-kit@0.22.8:
     dependencies:
@@ -1915,17 +1789,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.31.2(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.11)(better-sqlite3@11.4.0)(bun-types@1.1.37):
+  drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.1.44):
     optionalDependencies:
       '@libsql/client': 0.14.0
-      '@types/better-sqlite3': 7.6.11
-      better-sqlite3: 11.4.0
-      bun-types: 1.1.37
+      bun-types: 1.1.44
 
-  drizzle-zod@0.5.1(drizzle-orm@0.31.2(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.11)(better-sqlite3@11.4.0)(bun-types@1.1.37))(zod@3.23.8):
+  drizzle-zod@0.5.1(drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.1.44))(zod@3.24.1):
     dependencies:
-      drizzle-orm: 0.31.2(@libsql/client@0.14.0)(@types/better-sqlite3@7.6.11)(better-sqlite3@11.4.0)(bun-types@1.1.37)
-      zod: 3.23.8
+      drizzle-orm: 0.31.4(@libsql/client@0.14.0)(bun-types@1.1.44)
+      zod: 3.24.1
 
   eastasianwidth@0.2.0: {}
 
@@ -1943,7 +1815,7 @@ snapshots:
 
   esbuild-register@3.6.0(esbuild@0.19.12):
     dependencies:
-      debug: 4.3.7
+      debug: 4.4.0
       esbuild: 0.19.12
     transitivePeerDependencies:
       - supports-color
@@ -2028,10 +1900,7 @@ snapshots:
 
   eventemitter3@5.0.1: {}
 
-  expand-template@2.0.3:
-    optional: true
-
-  fast-xml-parser@4.5.0:
+  fast-xml-parser@4.5.1:
     dependencies:
       strnum: 1.0.5
 
@@ -2049,9 +1918,6 @@ snapshots:
   file-type@5.2.0: {}
 
   file-type@6.2.0: {}
-
-  file-uri-to-path@1.0.0:
-    optional: true
 
   foreground-child@3.3.0:
     dependencies:
@@ -2076,9 +1942,6 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  github-from-package@0.0.0:
-    optional: true
-
   glob@10.4.5:
     dependencies:
       foreground-child: 3.3.0
@@ -2090,81 +1953,78 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  growtopia.js-android-arm-eabi@2.0.6:
+  growtopia.js-android-arm-eabi@2.0.8:
     optional: true
 
-  growtopia.js-android-arm64@2.0.6:
+  growtopia.js-android-arm64@2.0.8:
     optional: true
 
-  growtopia.js-darwin-arm64@2.0.6:
+  growtopia.js-darwin-arm64@2.0.8:
     optional: true
 
-  growtopia.js-darwin-universal@2.0.6:
+  growtopia.js-darwin-universal@2.0.8:
     optional: true
 
-  growtopia.js-darwin-x64@2.0.6:
+  growtopia.js-darwin-x64@2.0.8:
     optional: true
 
-  growtopia.js-linux-arm-gnueabihf@2.0.6:
+  growtopia.js-linux-arm-gnueabihf@2.0.8:
     optional: true
 
-  growtopia.js-linux-arm-musleabihf@2.0.6:
+  growtopia.js-linux-arm-musleabihf@2.0.8:
     optional: true
 
-  growtopia.js-linux-arm64-gnu@2.0.6:
+  growtopia.js-linux-arm64-gnu@2.0.8:
     optional: true
 
-  growtopia.js-linux-arm64-musl@2.0.6:
+  growtopia.js-linux-arm64-musl@2.0.8:
     optional: true
 
-  growtopia.js-linux-riscv64-gnu@2.0.6:
+  growtopia.js-linux-riscv64-gnu@2.0.8:
     optional: true
 
-  growtopia.js-linux-x64-gnu@2.0.6:
+  growtopia.js-linux-x64-gnu@2.0.8:
     optional: true
 
-  growtopia.js-linux-x64-musl@2.0.6:
+  growtopia.js-linux-x64-musl@2.0.8:
     optional: true
 
-  growtopia.js-win32-arm64-msvc@2.0.6:
+  growtopia.js-win32-arm64-msvc@2.0.8:
     optional: true
 
-  growtopia.js-win32-ia32-msvc@2.0.6:
+  growtopia.js-win32-ia32-msvc@2.0.8:
     optional: true
 
-  growtopia.js-win32-x64-msvc@2.0.6:
+  growtopia.js-win32-x64-msvc@2.0.8:
     optional: true
 
-  growtopia.js@2.0.6:
+  growtopia.js@2.0.8:
     dependencies:
       eventemitter3: 5.0.1
     optionalDependencies:
-      growtopia.js-android-arm-eabi: 2.0.6
-      growtopia.js-android-arm64: 2.0.6
-      growtopia.js-darwin-arm64: 2.0.6
-      growtopia.js-darwin-universal: 2.0.6
-      growtopia.js-darwin-x64: 2.0.6
-      growtopia.js-linux-arm-gnueabihf: 2.0.6
-      growtopia.js-linux-arm-musleabihf: 2.0.6
-      growtopia.js-linux-arm64-gnu: 2.0.6
-      growtopia.js-linux-arm64-musl: 2.0.6
-      growtopia.js-linux-riscv64-gnu: 2.0.6
-      growtopia.js-linux-x64-gnu: 2.0.6
-      growtopia.js-linux-x64-musl: 2.0.6
-      growtopia.js-win32-arm64-msvc: 2.0.6
-      growtopia.js-win32-ia32-msvc: 2.0.6
-      growtopia.js-win32-x64-msvc: 2.0.6
+      growtopia.js-android-arm-eabi: 2.0.8
+      growtopia.js-android-arm64: 2.0.8
+      growtopia.js-darwin-arm64: 2.0.8
+      growtopia.js-darwin-universal: 2.0.8
+      growtopia.js-darwin-x64: 2.0.8
+      growtopia.js-linux-arm-gnueabihf: 2.0.8
+      growtopia.js-linux-arm-musleabihf: 2.0.8
+      growtopia.js-linux-arm64-gnu: 2.0.8
+      growtopia.js-linux-arm64-musl: 2.0.8
+      growtopia.js-linux-riscv64-gnu: 2.0.8
+      growtopia.js-linux-x64-gnu: 2.0.8
+      growtopia.js-linux-x64-musl: 2.0.8
+      growtopia.js-win32-arm64-msvc: 2.0.8
+      growtopia.js-win32-ia32-msvc: 2.0.8
+      growtopia.js-win32-x64-msvc: 2.0.8
 
-  hono@4.6.5: {}
+  hono@4.6.17: {}
 
   ieee754@1.2.1: {}
 
   imagescript@1.3.0: {}
 
   inherits@2.0.4: {}
-
-  ini@1.3.8:
-    optional: true
 
   is-fullwidth-code-point@3.0.0: {}
 
@@ -2241,20 +2101,11 @@ snapshots:
     dependencies:
       pify: 3.0.0
 
-  mimic-response@3.1.0:
-    optional: true
-
   minimatch@9.0.5:
     dependencies:
       brace-expansion: 2.0.1
 
-  minimist@1.2.8:
-    optional: true
-
   minipass@7.1.2: {}
-
-  mkdirp-classic@0.5.3:
-    optional: true
 
   ms@2.1.3: {}
 
@@ -2262,15 +2113,7 @@ snapshots:
     dependencies:
       peggy: 1.2.0
 
-  nanoid@3.3.7: {}
-
-  napi-build-utils@1.0.2:
-    optional: true
-
-  node-abi@3.71.0:
-    dependencies:
-      semver: 7.6.3
-    optional: true
+  nanoid@3.3.8: {}
 
   node-domexception@1.0.0: {}
 
@@ -2309,39 +2152,9 @@ snapshots:
 
   pinkie@2.0.4: {}
 
-  prebuild-install@7.1.2:
-    dependencies:
-      detect-libc: 2.0.3
-      expand-template: 2.0.3
-      github-from-package: 0.0.0
-      minimist: 1.2.8
-      mkdirp-classic: 0.5.3
-      napi-build-utils: 1.0.2
-      node-abi: 3.71.0
-      pump: 3.0.2
-      rc: 1.2.8
-      simple-get: 4.0.1
-      tar-fs: 2.1.1
-      tunnel-agent: 0.6.0
-    optional: true
-
   process-nextick-args@2.0.1: {}
 
   promise-limit@2.7.0: {}
-
-  pump@3.0.2:
-    dependencies:
-      end-of-stream: 1.4.4
-      once: 1.4.0
-    optional: true
-
-  rc@1.2.8:
-    dependencies:
-      deep-extend: 0.6.0
-      ini: 1.3.8
-      minimist: 1.2.8
-      strip-json-comments: 2.0.1
-    optional: true
 
   readable-stream@2.3.8:
     dependencies:
@@ -2352,13 +2165,6 @@ snapshots:
       safe-buffer: 5.1.2
       string_decoder: 1.1.1
       util-deprecate: 1.0.2
-
-  readable-stream@3.6.2:
-    dependencies:
-      inherits: 2.0.4
-      string_decoder: 1.3.0
-      util-deprecate: 1.0.2
-    optional: true
 
   readdirp@4.1.1: {}
 
@@ -2386,16 +2192,6 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  simple-concat@1.0.1:
-    optional: true
-
-  simple-get@4.0.1:
-    dependencies:
-      decompress-response: 6.0.0
-      once: 1.4.0
-      simple-concat: 1.0.1
-    optional: true
-
   source-map-support@0.5.21:
     dependencies:
       buffer-from: 1.1.2
@@ -2419,11 +2215,6 @@ snapshots:
     dependencies:
       safe-buffer: 5.1.2
 
-  string_decoder@1.3.0:
-    dependencies:
-      safe-buffer: 5.2.1
-    optional: true
-
   strip-ansi@6.0.1:
     dependencies:
       ansi-regex: 5.0.1
@@ -2436,18 +2227,7 @@ snapshots:
     dependencies:
       is-natural-number: 4.0.1
 
-  strip-json-comments@2.0.1:
-    optional: true
-
   strnum@1.0.5: {}
-
-  tar-fs@2.1.1:
-    dependencies:
-      chownr: 1.1.4
-      mkdirp-classic: 0.5.3
-      pump: 3.0.2
-      tar-stream: 2.2.0
-    optional: true
 
   tar-stream@1.6.2:
     dependencies:
@@ -2458,15 +2238,6 @@ snapshots:
       readable-stream: 2.3.8
       to-buffer: 1.1.1
       xtend: 4.0.2
-
-  tar-stream@2.2.0:
-    dependencies:
-      bl: 4.1.0
-      end-of-stream: 1.4.4
-      fs-constants: 1.0.0
-      inherits: 2.0.4
-      readable-stream: 3.6.2
-    optional: true
 
   through@2.3.8: {}
 
@@ -2479,14 +2250,9 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  tunnel-agent@0.6.0:
-    dependencies:
-      safe-buffer: 5.2.1
-    optional: true
+  type-fest@4.32.0: {}
 
-  type-fest@4.26.1: {}
-
-  typescript@5.6.3: {}
+  typescript@5.7.3: {}
 
   unbzip2-stream@1.4.3:
     dependencies:
@@ -2495,9 +2261,9 @@ snapshots:
 
   undici-types@5.26.5: {}
 
-  undici-types@6.19.8: {}
+  undici-types@6.20.0: {}
 
-  undici@6.20.1: {}
+  undici@6.21.1: {}
 
   util-deprecate@1.0.2: {}
 
@@ -2530,4 +2296,4 @@ snapshots:
       buffer-crc32: 0.2.13
       fd-slicer: 1.1.0
 
-  zod@3.23.8: {}
+  zod@3.24.1: {}
