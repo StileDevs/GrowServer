@@ -7,13 +7,10 @@ export class AppCheckResponsePack {
   constructor(public base: Base, public peer: Peer, public tank: TankPacket, public world: World) {}
 
   public async execute() {
-    // Client validation işlemlerini buraya ekleyin
+    // Client validation
     console.log("Executing AppCheckResponsePack...");
-    // Örnek validation işlemi
     if (this.tank.data?.type === 24) {
       console.log("Valid APP_CHECK_RESPONSE packet received.");
-      // Client validation işlemleri
-      // Örneğin, peer'in bağlantısını doğrulama
       if (this.peer.isValid()) {
         console.log("Peer is valid.");
       } else {

@@ -344,8 +344,6 @@ export class Peer extends OldPeer<PeerData> {
     }
   }
   public isValid(): boolean {
-    // Peer'in geçerli olup olmadığını kontrol eden kod
-    // Örneğin, peer'in bağlantısının açık olup olmadığını kontrol edebiliriz
     return this.data && this.data.netID !== undefined;
   }
 
