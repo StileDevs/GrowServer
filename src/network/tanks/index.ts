@@ -7,6 +7,7 @@ import { State } from "./State";
 import { ItemActiveObjectReq } from "./ItemActiveObjectReq";
 import { TileActiveReq } from "./TileActiveReq";
 import { ItemActiveReq } from "./ItemActiveReq";
+import { AppCheckResponsePack } from './AppCheckResponsePack';
 
 export const TankMap: Record<
   number,
@@ -20,5 +21,6 @@ export const TankMap: Record<
   [TankTypes.STATE]: State,
   [TankTypes.ITEM_ACTIVATE_OBJECT_REQUEST]: ItemActiveObjectReq,
   [TankTypes.ITEM_ACTIVATE_REQUEST]: ItemActiveReq,
-  [TankTypes.TILE_ACTIVATE_REQUEST]: TileActiveReq
+  [TankTypes.TILE_ACTIVATE_REQUEST]: TileActiveReq,
+  [TankTypes.APP_CHECK_RESPONSE]: AppCheckResponsePack
 };

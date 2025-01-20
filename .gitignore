@@ -11,6 +11,8 @@ build
 data.db
 data
 
+
+
 # Ignore ssl
 assets/ssl/_wildcard.growserver.app.pem
 assets/ssl/_wildcard.growserver.app-key.pem
@@ -37,3 +39,4 @@ lerna-debug.log*
 *.sw?
 
 items_info_new.json
+assets/custom-items/game/growserver_phnx_wings.png

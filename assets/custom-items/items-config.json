@@ -27,6 +27,23 @@
         }
       },
       "storePath": "game"
+    },
+    {
+      "id": 5415,
+      "item": {
+        "name": "PHNX's Wing",
+        "textureX": 1,
+        "textureY": 0,
+        "type": 20,
+        "bodyPartType": 6,
+        "visualEffectType": 4,
+        "texture": {
+          "fileName": "growserver_phnx_wings.rttex",
+          "pathAsset": "game/growserver_phnx_wings.png",
+          "pathResult": "growserver_phnx_wings.rttex"
+        }
+      },
+      "storePath": "game"
     }
   ]
 }

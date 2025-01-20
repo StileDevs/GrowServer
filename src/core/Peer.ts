@@ -343,4 +343,10 @@ export class Peer extends OldPeer<PeerData> {
       this.send(Variant.from("OnConsoleMessage", itemInfo.func.rem));
     }
   }
+  public isValid(): boolean {
+    // Peer'in geçerli olup olmadığını kontrol eden kod
+    // Örneğin, peer'in bağlantısının açık olup olmadığını kontrol edebiliriz
+    return this.data && this.data.netID !== undefined;
+  }
+
 }
