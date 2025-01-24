@@ -33,7 +33,7 @@ export class Base {
       enet: {
         ip: "0.0.0.0",
         useNewPacket: {
-          asServer: true
+          asServer: false
         }
       }
     });

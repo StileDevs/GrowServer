@@ -26,7 +26,7 @@ export class GrowtopiaRoute {
       str += `server|${this.conf.web.address}\n`;
 
       const randPort = this.conf.web.ports[Math.floor(Math.random() * this.conf.web.ports.length)];
-      str += `port|${randPort}\nloginurl|${this.conf.web.loginUrl}\ntype|1\ntype2|1\n${this.conf.web.maintenance.enable ? "maint" : "#maint"}|${
+      str += `port|${randPort}\nloginurl|${this.conf.web.loginUrl}\ntype|1\n${this.conf.web.maintenance.enable ? "maint" : "#maint"}|${
         this.conf.web.maintenance.message
       }\nmeta|ignoremeta\nRTENDMARKERBS1001`;
 
