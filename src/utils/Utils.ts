@@ -37,7 +37,7 @@ async function downloadFile(url: string, filePath: string) {
 
     response.body.pipe(fileStream);
 
-    await new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       fileStream.on("finish", resolve);
       fileStream.on("error", reject);
     });
