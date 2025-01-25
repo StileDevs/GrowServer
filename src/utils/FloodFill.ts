@@ -52,10 +52,23 @@ export class Floodfill {
         const neighbours = this.neighbours(node);
 
         for (const neighbour of neighbours) {
-          const block = this.data.blocks[neighbour.x + neighbour.y * this.data.width];
+          const block =
+            this.data.blocks[neighbour.x + neighbour.y * this.data.width];
 
-          const meta = this.data.base.items.metadata.items[block.fg || block.bg];
-          if (this.totalNodes.find((n) => n.x === neighbour.x && n.y === neighbour.y) || block.lock || block.worldLock || TileIgnore.blockIDsToIgnoreByLock.includes(meta.id || 0) || (this.data.noEmptyAir && (!meta.id || TileIgnore.blockActionTypesToIgnore.includes(meta.type || 0)))) continue;
+          const meta =
+            this.data.base.items.metadata.items[block.fg || block.bg];
+          if (
+            this.totalNodes.find(
+              (n) => n.x === neighbour.x && n.y === neighbour.y
+            ) ||
+            block.lock ||
+            block.worldLock ||
+            TileIgnore.blockIDsToIgnoreByLock.includes(meta.id || 0) ||
+            (this.data.noEmptyAir &&
+              (!meta.id ||
+                TileIgnore.blockActionTypesToIgnore.includes(meta.type || 0)))
+          )
+            continue;
 
           tempNodes.push(neighbour);
           this.totalNodes.push(neighbour);
@@ -78,14 +91,16 @@ export class Floodfill {
       const x = node.x + directions[i].x;
       const y = node.y + directions[i].y;
 
-      if (x < 0 || x >= this.data.width || y < 0 || y >= this.data.height) continue;
+      if (x < 0 || x >= this.data.width || y < 0 || y >= this.data.height)
+        continue;
 
       const block = this.data.blocks[x + y * this.data.width];
 
       if (block.lock) continue;
       if (i >= directions.length / 2) {
         // corners
-        if (this.data.noEmptyAir && !this.isConnectedToFaces({ x, y })) continue;
+        if (this.data.noEmptyAir && !this.isConnectedToFaces({ x, y }))
+          continue;
       }
 
       if (block) nodes.push({ x, y });
@@ -100,7 +115,8 @@ export class Floodfill {
       const x = node.x + directions[i].x;
       const y = node.y + directions[i].y;
 
-      if (x < 0 || x >= this.data.width || y < 0 || y >= this.data.height) continue;
+      if (x < 0 || x >= this.data.width || y < 0 || y >= this.data.height)
+        continue;
 
       res = !!this.totalNodes.find((i) => i.x === x && i.y === y);
       if (res) break;
@@ -115,20 +131,24 @@ export class Floodfill {
 
     this.data.s_block.lock = {
       ownerFg: this.data.s_block.fg,
-      ownerUserID: typeof owner.data?.id_user === "string" ? parseInt(owner.data.id_user) : owner.data?.id_user,
-      ownerName: owner.name,
-      ownerX: this.data.s_block.x,
-      ownerY: this.data.s_block.y,
-      isOwner: true,
+      ownerUserID:
+        typeof owner.data?.id_user === "string"
+          ? parseInt(owner.data.id_user)
+          : owner.data?.id_user,
+      ownerName:      owner.name,
+      ownerX:         this.data.s_block.x,
+      ownerY:         this.data.s_block.y,
+      isOwner:        true,
       ignoreEmptyAir: this.data.noEmptyAir,
-      adminIDs: []
+      adminIDs:       []
     };
 
     let i = 0;
 
     for (const node of this.totalNodes) {
       if (i >= this.data.max) break;
-      if (node.x === this.data.s_block.x && node.y === this.data.s_block.y) continue;
+      if (node.x === this.data.s_block.x && node.y === this.data.s_block.y)
+        continue;
 
       const b_pos = node.x + node.y * this.data.width;
       const block = world.data.blocks[b_pos];
@@ -136,8 +156,8 @@ export class Floodfill {
       block.lock = {
         ownerFg: this.data.s_block.fg,
         //ownerUserID: owner.data.id,
-        ownerX: this.data.s_block.x,
-        ownerY: this.data.s_block.y
+        ownerX:  this.data.s_block.x,
+        ownerY:  this.data.s_block.y
         //adminIDs: [],
       };
 
@@ -150,18 +170,25 @@ export class Floodfill {
     world.saveToCache();
 
     const tank = TankPacket.from({
-      type: TankTypes.SEND_LOCK,
-      netID: owner.data?.id_user as number,
+      type:        TankTypes.SEND_LOCK,
+      netID:       owner.data?.id_user as number,
       targetNetID: this.data.max,
-      info: this.data.s_block.fg,
-      xPunch: this.data.s_block.x,
-      yPunch: this.data.s_block.y,
-      data: () => buffer
+      info:        this.data.s_block.fg,
+      xPunch:      this.data.s_block.x,
+      yPunch:      this.data.s_block.y,
+      data:        () => buffer
     });
 
     owner.every((p) => {
       if (p.data?.world === owner.data?.world && p.data?.world !== "EXIT") {
-        p.send(Variant.from({ netID: owner.data?.netID }, "OnPlayPositioned", "audio/use_lock.wav"), tank);
+        p.send(
+          Variant.from(
+            { netID: owner.data?.netID },
+            "OnPlayPositioned",
+            "audio/use_lock.wav"
+          ),
+          tank
+        );
       }
     });
   }

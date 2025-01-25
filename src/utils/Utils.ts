@@ -1,6 +1,5 @@
 import { createWriteStream, existsSync, mkdirSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { join } from "path";
 import { request } from "undici";
 import consola from "consola";
 import { execSync } from "child_process";
@@ -8,24 +7,26 @@ import net from "net";
 import decompress from "decompress";
 
 __dirname = process.cwd();
-const MKCERT_URL = "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";
-const WEBSITE_BUILD_URL = "https://github.com/StileDevs/growserver-frontend/releases/latest/download/build.zip";
+const MKCERT_URL =
+  "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";
+const WEBSITE_BUILD_URL =
+  "https://github.com/StileDevs/growserver-frontend/releases/latest/download/build.zip";
 
 const mkcertObj: Record<string, string> = {
-  "win32-x64": `${MKCERT_URL}/mkcert-v1.4.4-windows-amd64.exe`,
-  "win32-arm64": `${MKCERT_URL}/mkcert-v1.4.4-windows-arm64.exe`,
-  "linux-x64": `${MKCERT_URL}/mkcert-v1.4.4-linux-amd64`,
-  "linux-arm": `${MKCERT_URL}/mkcert-v1.4.4-linux-arm`,
-  "linux-arm64": `${MKCERT_URL}/mkcert-v1.4.4-linux-arm64`,
-  "darwin-x64": `${MKCERT_URL}/mkcert-v1.4.4-darwin-amd64`,
+  "win32-x64":    `${MKCERT_URL}/mkcert-v1.4.4-windows-amd64.exe`,
+  "win32-arm64":  `${MKCERT_URL}/mkcert-v1.4.4-windows-arm64.exe`,
+  "linux-x64":    `${MKCERT_URL}/mkcert-v1.4.4-linux-amd64`,
+  "linux-arm":    `${MKCERT_URL}/mkcert-v1.4.4-linux-arm`,
+  "linux-arm64":  `${MKCERT_URL}/mkcert-v1.4.4-linux-arm64`,
+  "darwin-x64":   `${MKCERT_URL}/mkcert-v1.4.4-darwin-amd64`,
   "darwin-arm64": `${MKCERT_URL}/mkcert-v1.4.4-darwin-arm64`
 };
 
 async function downloadFile(url: string, filePath: string) {
   try {
     const response = await request(url, {
-      method: "GET",
-      headers: {},
+      method:          "GET",
+      headers:         {},
       maxRedirections: 5
     });
 
@@ -50,52 +51,74 @@ async function downloadFile(url: string, filePath: string) {
 
 export async function downloadMkcert() {
   const checkPlatform = `${process.platform}-${process.arch}`;
-  const name = process.platform === "darwin" || process.platform === "linux" ? "mkcert" : "mkcert.exe";
+  const name =
+    process.platform === "darwin" || process.platform === "linux"
+      ? "mkcert"
+      : "mkcert.exe";
 
-  if (!existsSync(join(__dirname, ".cache", "bin"))) mkdirSync(join(__dirname, ".cache", "bin"), { recursive: true });
+  if (!existsSync(join(__dirname, ".cache", "bin")))
+    mkdirSync(join(__dirname, ".cache", "bin"), { recursive: true });
   else return;
 
   consola.info("Downloading mkcert");
-  await downloadFile(mkcertObj[checkPlatform], join(__dirname, ".cache", "bin", name));
+  await downloadFile(
+    mkcertObj[checkPlatform],
+    join(__dirname, ".cache", "bin", name)
+  );
 }
 
 export async function setupMkcert() {
-  const name = process.platform === "darwin" || process.platform === "linux" ? "mkcert" : "mkcert.exe";
+  const name =
+    process.platform === "darwin" || process.platform === "linux"
+      ? "mkcert"
+      : "mkcert.exe";
   const mkcertExecuteable = join(__dirname, ".cache", "bin", name);
 
-  if (!existsSync(join(__dirname, ".cache", "ssl"))) mkdirSync(join(__dirname, ".cache", "ssl"), { recursive: true });
+  if (!existsSync(join(__dirname, ".cache", "ssl")))
+    mkdirSync(join(__dirname, ".cache", "ssl"), { recursive: true });
   else return;
 
   consola.info("Setup mkcert certificate");
   try {
-    execSync(`${mkcertExecuteable} -install && cd ${join(__dirname, ".cache", "ssl")} && ${mkcertExecuteable} *.growserver.app`, { stdio: "ignore" });
+    execSync(
+      `${mkcertExecuteable} -install && cd ${join(__dirname, ".cache", "ssl")} && ${mkcertExecuteable} *.growserver.app`,
+      { stdio: "ignore" }
+    );
   } catch (e) {
     consola.error("Something wrong when setup mkcert", e);
   }
 }
 
 export async function downloadWebsite() {
-  if (!existsSync(join(__dirname, ".cache", "compressed"))) mkdirSync(join(__dirname, ".cache", "compressed"), { recursive: true });
+  if (!existsSync(join(__dirname, ".cache", "compressed")))
+    mkdirSync(join(__dirname, ".cache", "compressed"), { recursive: true });
   else return;
 
   consola.info("Downloading compiled website assets");
-  await downloadFile(WEBSITE_BUILD_URL, join(__dirname, ".cache", "compressed", "build.zip"));
+  await downloadFile(
+    WEBSITE_BUILD_URL,
+    join(__dirname, ".cache", "compressed", "build.zip")
+  );
 }
 
 export async function setupWebsite() {
-  if (!existsSync(join(__dirname, ".cache", "website"))) mkdirSync(join(__dirname, ".cache", "website"), { recursive: true });
+  if (!existsSync(join(__dirname, ".cache", "website")))
+    mkdirSync(join(__dirname, ".cache", "website"), { recursive: true });
   else return;
 
   consola.info("Setup website assets");
   try {
-    decompress(join(__dirname, ".cache", "compressed", "build.zip"), join(__dirname, ".cache"));
+    decompress(
+      join(__dirname, ".cache", "compressed", "build.zip"),
+      join(__dirname, ".cache")
+    );
   } catch (e) {
     consola.error("Something wrong when setup website", e);
   }
 }
 
-export function parseAction(chunk: Buffer): Record<string, string | number> {
-  const data: Record<string, string | number> = {};
+export function parseAction(chunk: Buffer): Record<string, string> {
+  const data: Record<string, string> = {};
   chunk[chunk.length - 1] = 0;
 
   const str = chunk.toString("utf-8", 4);
@@ -123,7 +146,11 @@ export function hashItemsDat(file: Buffer) {
   return hash;
 }
 
-export function manageArray(arr: string[], length: number, newItem: string): string[] {
+export function manageArray(
+  arr: string[],
+  length: number,
+  newItem: string
+): string[] {
   if (arr.length > length) {
     arr.shift();
   }

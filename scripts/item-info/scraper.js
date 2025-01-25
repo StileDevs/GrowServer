@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable no-undef */
 "use strict";
 const consola = require("consola");
 
@@ -27,8 +29,8 @@ async function post_request(item_list, count) {
   consola.log(`📡ItemsInfo part ${count}, starting post request`);
 
   const post_data = new URLSearchParams({
-    title: "Special:Export",
-    pages: item_list.join("\n"),
+    title:   "Special:Export",
+    pages:   item_list.join("\n"),
     curonly: 1
   });
 
@@ -52,7 +54,7 @@ module.exports = {
 async function fetchWiki(post_data) {
   const response = await fetch("https://growtopia.fandom.com/wiki/Special:Export", {
     method: "POST",
-    body: post_data
+    body:   post_data
   });
 
   if (response.status !== 200) return [null, response.statusText];

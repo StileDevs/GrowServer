@@ -1,4 +1,4 @@
-import { ItemDefinition, Tank, TankPacket, TextPacket, Variant } from "growtopia.js";
+import { TankPacket, TextPacket, Variant } from "growtopia.js";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
@@ -9,8 +9,15 @@ export class TileActiveReq {
   private pos: number;
   private block: Block;
 
-  constructor(public base: Base, public peer: Peer, public tank: TankPacket, public world: World) {
-    this.pos = (this.tank.data?.xPunch as number) + (this.tank.data?.yPunch as number) * this.world.data.width;
+  constructor(
+    public base: Base,
+    public peer: Peer,
+    public tank: TankPacket,
+    public world: World
+  ) {
+    this.pos =
+      (this.tank.data?.xPunch as number) +
+      (this.tank.data?.yPunch as number) * this.world.data.width;
     this.block = this.world.data.blocks[this.pos];
   }
 
@@ -40,9 +47,16 @@ export class TileActiveReq {
       this.peer.send(Variant.from("OnZoomCamera", [10000], 1000));
 
       this.peer.every((p) => {
-        if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") {
+        if (
+          p.data?.world === this.peer.data?.world &&
+          p.data?.world !== "EXIT"
+        ) {
           p.send(
-            Variant.from({ netID: this.peer.data?.netID }, "OnSetFreezeState", 0),
+            Variant.from(
+              { netID: this.peer.data?.netID },
+              "OnSetFreezeState",
+              0
+            ),
             Variant.from(
               {
                 netID: this.peer.data?.netID
@@ -67,14 +81,37 @@ export class TileActiveReq {
       let door = wrld?.data.blocks?.find((b) => b.door && b.door.id === id);
       if (!door) door = wrld?.data.blocks?.find((b) => b.fg === 6);
 
-      this.world.data.playerCount ? this.world.data.playerCount-- : 0;
+      this.world.data.playerCount = this.world.data.playerCount
+        ? this.world.data.playerCount - 1
+        : 0;
+
       this.peer.every((p) => {
-        if (p.data?.netID !== this.peer.data.netID && p.data?.world === this.peer.data.world && p.data.world !== "EXIT") {
+        if (
+          p.data?.netID !== this.peer.data.netID &&
+          p.data?.world === this.peer.data.world &&
+          p.data.world !== "EXIT"
+        ) {
           p.send(
-            Variant.from("OnRemove", `netID|${this.peer.data.netID}`, `pId|${this.peer.data.id_user}`),
-            Variant.from("OnConsoleMessage", `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``),
-            Variant.from("OnTalkBubble", this.peer.data.netID, `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``),
-            TextPacket.from(PacketTypes.ACTION, "action|play_sfx", "file|audio/door_shut.wav", "delayMS|0")
+            Variant.from(
+              "OnRemove",
+              `netID|${this.peer.data.netID}`,
+              `pId|${this.peer.data.id_user}`
+            ),
+            Variant.from(
+              "OnConsoleMessage",
+              `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
+            ),
+            Variant.from(
+              "OnTalkBubble",
+              this.peer.data.netID,
+              `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
+            ),
+            TextPacket.from(
+              PacketTypes.ACTION,
+              "action|play_sfx",
+              "file|audio/door_shut.wav",
+              "delayMS|0"
+            )
           );
         }
       });

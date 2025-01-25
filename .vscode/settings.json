@@ -1,8 +1,8 @@
 {
-  "prettier.withNodeModules": true,
-  "prettier.trailingComma": "none",
   "editor.tabSize": 2,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "",
   "editor.formatOnSave": true,
-  "prettier.printWidth": 320
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
 }

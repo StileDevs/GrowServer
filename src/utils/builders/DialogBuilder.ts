@@ -51,7 +51,11 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addLabelWithIcon(text: string, titleid: string | number, type: string): DialogBuilder {
+  public addLabelWithIcon(
+    text: string,
+    titleid: string | number,
+    type: string
+  ): DialogBuilder {
     switch (type.toUpperCase()) {
       case "BIG":
         this.#str += `add_label_with_icon|big|${text}|left|${titleid}|\n`;
@@ -93,7 +97,14 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addStoreButton(name: string, title: string, description: string, image: string = "", imagepos: { x: number; y: number } = { x: 0, y: 0 }, cost: string | number = ""): DialogBuilder {
+  public addStoreButton(
+    name: string,
+    title: string,
+    description: string,
+    image: string = "",
+    imagepos: { x: number; y: number } = { x: 0, y: 0 },
+    cost: string | number = ""
+  ): DialogBuilder {
     this.#str += `add_button|${name}|${title}|${image}|${description}|${imagepos.x}|${imagepos.y}|${cost}|\n`;
 
     return this;
@@ -107,7 +118,13 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addButtonWithIcon(name: string | number, itemID: string | number, text: string, frame = "left", count = 0): DialogBuilder {
+  public addButtonWithIcon(
+    name: string | number,
+    itemID: string | number,
+    text: string,
+    frame = "left",
+    count = 0
+  ): DialogBuilder {
     this.#str += `add_button_with_icon|${name}|${text}|${frame}|${itemID}|${count ? count : ""}\n`;
     return this;
   }
@@ -121,7 +138,12 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addCustomButton(name: string | number, imageLocation: string, image_size = { width: 400, height: 260 }, btnWidth = 0.24): DialogBuilder {
+  public addCustomButton(
+    name: string | number,
+    imageLocation: string,
+    image_size = { width: 400, height: 260 },
+    btnWidth = 0.24
+  ): DialogBuilder {
     this.#str += `add_custom_button|${name}|image:${imageLocation};image_size:${image_size.width},${image_size.height};width:${btnWidth};|\n`;
     return this;
   }
@@ -143,7 +165,11 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addCheckbox(name: string, string: string, type: string): DialogBuilder {
+  public addCheckbox(
+    name: string,
+    string: string,
+    type: string
+  ): DialogBuilder {
     switch (type.toUpperCase()) {
       case "SELECTED":
         this.#str += `add_checkbox|${name}|${string}|1|\n`;
@@ -188,7 +214,12 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
 
-  public addInputBox(name = "", text = "", cont: string | number = "", size: string | number = 0): DialogBuilder {
+  public addInputBox(
+    name = "",
+    text = "",
+    cont: string | number = "",
+    size: string | number = 0
+  ): DialogBuilder {
     this.#str += `add_text_input|${name}|${text}|${cont}|${size}|\n`;
     return this;
   }

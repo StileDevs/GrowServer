@@ -15,7 +15,9 @@ export class TrashEnd {
 
   public async execute(): Promise<void> {
     const itemID = parseInt(this.action.itemID);
-    const invenItem = this.peer.data.inventory.items.find((item) => item.id === itemID);
+    const invenItem = this.peer.data.inventory.items.find(
+      (item) => item.id === itemID
+    );
     if (!/\d/.test(this.action.trash_count)) return;
     if (!invenItem) return;
 
@@ -25,7 +27,9 @@ export class TrashEnd {
 
     // Check if inventory amount is empty, then delete it.
     if (invenItem.amount <= 0) {
-      this.peer.data.inventory.items = this.peer.data.inventory.items.filter((i) => i.amount !== 0);
+      this.peer.data.inventory.items = this.peer.data.inventory.items.filter(
+        (i) => i.amount !== 0
+      );
     }
 
     this.peer.saveToCache();

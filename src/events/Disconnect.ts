@@ -1,5 +1,4 @@
 import { Base } from "../core/Base";
-import { Peer } from "../core/Peer";
 import consola from "consola";
 
 export class DisconnectListener {
@@ -8,8 +7,6 @@ export class DisconnectListener {
   }
 
   public run(netID: number): void {
-    const peer = new Peer(this.base, netID);
-
     consola.log(`➖Peer ${netID} disconnected`);
     this.base.cache.peers.delete(netID);
   }

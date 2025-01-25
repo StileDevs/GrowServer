@@ -1,4 +1,4 @@
-import { ItemDefinition, Tank, TankPacket, Variant } from "growtopia.js";
+import { TankPacket, Variant } from "growtopia.js";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
@@ -9,8 +9,15 @@ export class State {
   private pos: number;
   private block: Block;
 
-  constructor(public base: Base, public peer: Peer, public tank: TankPacket, public world: World) {
-    this.pos = (this.tank.data?.xPunch as number) + (this.tank.data?.yPunch as number) * this.world.data.width;
+  constructor(
+    public base: Base,
+    public peer: Peer,
+    public tank: TankPacket,
+    public world: World
+  ) {
+    this.pos =
+      (this.tank.data?.xPunch as number) +
+      (this.tank.data?.yPunch as number) * this.world.data.width;
     this.block = this.world.data.blocks[this.pos];
   }
 
@@ -20,7 +27,9 @@ export class State {
 
     this.peer.data.x = this.tank.data?.xPos;
     this.peer.data.y = this.tank.data?.yPos;
-    this.peer.data.rotatedLeft = Boolean((this.tank.data?.state as number) & 0x10);
+    this.peer.data.rotatedLeft = Boolean(
+      (this.tank.data?.state as number) & 0x10
+    );
 
     this.peer.saveToCache();
     this.peer.every((p) => {
@@ -33,14 +42,25 @@ export class State {
   }
 
   private async onPlayerMove() {
-    if ((this.tank.data?.xPunch as number) > 0 || (this.tank.data?.yPunch as number) > 0) return;
+    if (
+      (this.tank.data?.xPunch as number) > 0 ||
+      (this.tank.data?.yPunch as number) > 0
+    )
+      return;
     if (this.block === undefined) return;
 
-    const itemMeta = this.base.items.metadata.items[this.block.fg || this.block.bg];
+    const itemMeta =
+      this.base.items.metadata.items[this.block.fg || this.block.bg];
 
     switch (itemMeta.type) {
       case ActionTypes.CHECKPOINT: {
-        this.peer.send(Variant.from({ netID: this.peer.data.netID, delay: 0 }, "SetRespawnPos", this.pos));
+        this.peer.send(
+          Variant.from(
+            { netID: this.peer.data.netID, delay: 0 },
+            "SetRespawnPos",
+            this.pos
+          )
+        );
         this.peer.data.lastCheckpoint = {
           x: Math.round((this.tank.data?.xPos as number) / 32),
           y: Math.round((this.tank.data?.yPos as number) / 32)

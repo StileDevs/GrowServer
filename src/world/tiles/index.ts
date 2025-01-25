@@ -17,20 +17,25 @@ import { DiceTile } from "./DiceTile";
 import { SeedTile } from "./SeedTile";
 
 const TileMap: Record<number, Class<Tile>> = {
-  [ActionTypes.DOOR]: DoorTile,
-  [ActionTypes.MAIN_DOOR]: DoorTile,
-  [ActionTypes.PORTAL]: DoorTile,
-  [ActionTypes.SIGN]: SignTile,
-  [ActionTypes.LOCK]: LockTile,
-  [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
-  [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
-  [ActionTypes.SWITCHEROO]: SwitcheROO,
+  [ActionTypes.DOOR]:            DoorTile,
+  [ActionTypes.MAIN_DOOR]:       DoorTile,
+  [ActionTypes.PORTAL]:          DoorTile,
+  [ActionTypes.SIGN]:            SignTile,
+  [ActionTypes.LOCK]:            LockTile,
+  [ActionTypes.HEART_MONITOR]:   HeartMonitorTile,
+  [ActionTypes.DISPLAY_BLOCK]:   DisplayBlockTile,
+  [ActionTypes.SWITCHEROO]:      SwitcheROO,
   [ActionTypes.WEATHER_MACHINE]: WeatherTile,
-  [ActionTypes.DICE]: DiceTile,
-  [ActionTypes.SEED]: SeedTile
+  [ActionTypes.DICE]:            DiceTile,
+  [ActionTypes.SEED]:            SeedTile
 };
 
-const tileParse = async (actionType: number, base: Base, world: World, block: Block) => {
+const tileParse = async (
+  actionType: number,
+  base: Base,
+  world: World,
+  block: Block
+) => {
   try {
     let Class = TileMap[actionType];
 

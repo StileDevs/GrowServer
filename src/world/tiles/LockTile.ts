@@ -11,9 +11,16 @@ export class LockTile extends Tile {
   public adminCount: number;
   public ownerID: number;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 26) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 26
+  ) {
     super(base, world, block, alloc);
-    this.ownerID = (this.block.lock ? this.block.lock.ownerUserID : this.world.data.owner?.id) as number;
+    this.ownerID = (
+      this.block.lock ? this.block.lock.ownerUserID : this.world.data.owner?.id
+    ) as number;
     this.adminCount = 0;
 
     this.alloc += 4 * this.adminCount;

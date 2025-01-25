@@ -16,15 +16,15 @@ export class Default extends WorldGen {
 
     this.data = {
       name,
-      width: this.width,
-      height: this.height,
-      blocks: [],
-      admins: [], // separate to different table
+      width:       this.width,
+      height:      this.height,
+      blocks:      [],
+      admins:      [], // separate to different table
       playerCount: 0,
-      jammers: [], // separate to different table
-      dropped: {
+      jammers:     [], // separate to different table
+      dropped:     {
         // separate (maybe?) to different table
-        uid: 0,
+        uid:   0,
         items: []
       },
       weatherId: 41
@@ -32,7 +32,7 @@ export class Default extends WorldGen {
   }
 
   public generate(): Promise<void> {
-    return new Promise((res, rej) => {
+    return new Promise((res, _rej) => {
       // starting points
       let x = 0;
       let y = 0;
@@ -56,11 +56,24 @@ export class Default extends WorldGen {
         if (block.y === Y_START_DIRT - 1 && block.x === mainDoorPosition) {
           block.fg = 6;
           block.door = {
-            label: "EXIT",
+            label:       "EXIT",
             destination: "EXIT"
           };
         } else if (block.y >= Y_START_DIRT) {
-          block.fg = block.x === mainDoorPosition && block.y === Y_START_DIRT ? 8 : block.y < Y_END_DIRT ? (block.y >= Y_LAVA_START ? (Math.random() > 0.2 ? (Math.random() > 0.1 ? 2 : 10) : 4) : Math.random() > 0.01 ? 2 : 10) : 8;
+          block.fg =
+            block.x === mainDoorPosition && block.y === Y_START_DIRT
+              ? 8
+              : block.y < Y_END_DIRT
+                ? block.y >= Y_LAVA_START
+                  ? Math.random() > 0.2
+                    ? Math.random() > 0.1
+                      ? 2
+                      : 10
+                    : 4
+                  : Math.random() > 0.01
+                    ? 2
+                    : 10
+                : 8;
           block.bg = 14;
         }
 

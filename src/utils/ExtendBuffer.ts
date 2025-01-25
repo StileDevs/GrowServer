@@ -80,11 +80,19 @@ export class ExtendBuffer {
     const len = this.data.readInt16LE(this.mempos);
     this.mempos += 2;
 
-    if (!opts.encoded) return this.data.toString("utf-8", this.mempos, (this.mempos += len));
+    if (!opts.encoded)
+      return this.data.toString("utf-8", this.mempos, (this.mempos += len));
     else {
       const chars = [];
       for (let i = 0; i < len; i++) {
-        chars.push(String.fromCharCode(this.data[this.mempos] ^ STRING_CIPHER_KEY.charCodeAt((opts.id! + i) % STRING_CIPHER_KEY.length)));
+        chars.push(
+          String.fromCharCode(
+            this.data[this.mempos] ^
+              STRING_CIPHER_KEY.charCodeAt(
+                (opts.id! + i) % STRING_CIPHER_KEY.length
+              )
+          )
+        );
         this.mempos++;
       }
 
@@ -93,7 +101,11 @@ export class ExtendBuffer {
     }
   }
 
-  public writeString(str: string, id?: number, encoded: boolean = false): Promise<undefined> {
+  public writeString(
+    str: string,
+    id?: number,
+    encoded: boolean = false
+  ): Promise<undefined> {
     return new Promise((resolve) => {
       // write the str length first
 
@@ -108,7 +120,11 @@ export class ExtendBuffer {
         const chars = [];
 
         if (!id) return;
-        for (let i = 0; i < str.length; i++) chars.push(str.charCodeAt(i) ^ STRING_CIPHER_KEY.charCodeAt((i + id) % STRING_CIPHER_KEY.length));
+        for (let i = 0; i < str.length; i++)
+          chars.push(
+            str.charCodeAt(i) ^
+              STRING_CIPHER_KEY.charCodeAt((i + id) % STRING_CIPHER_KEY.length)
+          );
 
         for (const char of chars) this.data[this.mempos++] = char;
       }

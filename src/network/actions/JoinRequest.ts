@@ -4,16 +4,30 @@ import { Peer } from "../../core/Peer";
 import { type NonEmptyObject } from "type-fest";
 
 export class JoinRequest {
-  constructor(public base: Base, public peer: Peer) {}
+  constructor(
+    public base: Base,
+    public peer: Peer
+  ) {}
 
-  public async execute(action: NonEmptyObject<{ action: string; name: string }>): Promise<void> {
+  public async execute(
+    action: NonEmptyObject<Record<string, string>>
+  ): Promise<void> {
     const worldName = action.name || "";
     if (worldName.length <= 0) {
-      this.peer.send(Variant.from("OnFailedToEnterWorld", 1), Variant.from("OnConsoleMessage", "That world name is uhh `9empty``"));
+      this.peer.send(
+        Variant.from("OnFailedToEnterWorld", 1),
+        Variant.from("OnConsoleMessage", "That world name is uhh `9empty``")
+      );
       return;
     }
     if (worldName.match(/\W+|_|EXIT/gi)) {
-      this.peer.send(Variant.from("OnFailedToEnterWorld", 1), Variant.from("OnConsoleMessage", "That world name is too `9special`` to be entered."));
+      this.peer.send(
+        Variant.from("OnFailedToEnterWorld", 1),
+        Variant.from(
+          "OnConsoleMessage",
+          "That world name is too `9special`` to be entered."
+        )
+      );
       return;
     }
 

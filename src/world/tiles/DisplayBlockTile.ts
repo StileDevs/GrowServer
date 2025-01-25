@@ -9,7 +9,12 @@ export class DisplayBlockTile extends Tile {
   public data: ExtendBuffer;
   public extraType = TileExtraTypes.DISPLAY_BLOCK;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 13) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 13
+  ) {
     super(base, world, block, alloc);
     this.data = new ExtendBuffer(this.alloc);
   }

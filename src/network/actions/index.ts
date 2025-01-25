@@ -1,6 +1,5 @@
 import { type NonEmptyObject, type Class } from "type-fest";
 import { RefreshItemData } from "./RefreshItemData";
-import { Peer } from "../../core/Peer";
 import { EnterGame } from "./EnterGame";
 import { QuitToExit } from "./QuitToExit";
 import { Quit } from "./Quit";
@@ -17,20 +16,20 @@ import { StoreHandler } from "./StoreHandler";
 export const ActionMap: Record<
   string,
   Class<{
-    execute: (action: NonEmptyObject<any>) => Promise<void>;
+    execute: (action: NonEmptyObject<Record<string, string>>) => Promise<void>;
   }>
 > = {
   ["refresh_item_data"]: RefreshItemData,
-  ["enter_game"]: EnterGame,
-  ["quit_to_exit"]: QuitToExit,
-  ["quit"]: Quit,
-  ["join_request"]: JoinRequest,
-  ["dialog_return"]: DialogReturn,
-  ["input"]: Input,
-  ["respawn"]: Respawn,
-  ["respawn_spike"]: RespawnSpike,
-  ["drop"]: Drop,
-  ["wrench"]: Wrench,
-  ["buy"]: StoreBuy,
-  ["store"]: StoreHandler
+  ["enter_game"]:        EnterGame,
+  ["quit_to_exit"]:      QuitToExit,
+  ["quit"]:              Quit,
+  ["join_request"]:      JoinRequest,
+  ["dialog_return"]:     DialogReturn,
+  ["input"]:             Input,
+  ["respawn"]:           Respawn,
+  ["respawn_spike"]:     RespawnSpike,
+  ["drop"]:              Drop,
+  ["wrench"]:            Wrench,
+  ["buy"]:               StoreBuy,
+  ["store"]:             StoreHandler
 };

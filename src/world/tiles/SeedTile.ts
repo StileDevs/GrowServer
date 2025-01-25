@@ -9,15 +9,26 @@ export class SeedTile extends Tile {
   public data: ExtendBuffer;
   public extraType = TileExtraTypes.SEED;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 14) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 14
+  ) {
     super(base, world, block, alloc);
     this.data = new ExtendBuffer(this.alloc);
   }
 
   public async serialize(): Promise<void> {
     this.data.writeU8(this.extraType);
-    this.data.writeU32(Math.floor((Date.now() - (this.block.tree?.plantedAt as number)) / 1000));
-    this.data.writeU8((this.block.tree?.fruitCount as number) > 4 ? 4 : (this.block.tree?.fruitCount as number));
+    this.data.writeU32(
+      Math.floor((Date.now() - (this.block.tree?.plantedAt as number)) / 1000)
+    );
+    this.data.writeU8(
+      (this.block.tree?.fruitCount as number) > 4
+        ? 4
+        : (this.block.tree?.fruitCount as number)
+    );
 
     return;
   }

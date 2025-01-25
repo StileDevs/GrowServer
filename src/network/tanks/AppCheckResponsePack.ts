@@ -4,7 +4,12 @@ import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
 
 export class AppCheckResponsePack {
-  constructor(public base: Base, public peer: Peer, public tank: TankPacket, public world: World) {}
+  constructor(
+    public base: Base,
+    public peer: Peer,
+    public tank: TankPacket,
+    public world: World
+  ) {}
 
   public async execute() {
     // Client validation

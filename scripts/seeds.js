@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable no-undef */
 "use strict";
 
 const { players } = require("../dist/src/database/schemas/Player");
-const { worlds } = require("../dist/src/database/schemas/World");
+// const { worlds } = require("../dist/src/database/schemas/World");
 const { drizzle } = require("drizzle-orm/libsql");
 const { createClient } = require("@libsql/client");
 const bcrypt = require("bcryptjs");

@@ -18,7 +18,7 @@ export async function Web(base: Base) {
   const conf = JSON.parse(confFile as string);
   const app = new Hono();
 
-  let buns = process.versions.bun ? await import("hono/bun") : undefined;
+  const buns = process.versions.bun ? await import("hono/bun") : undefined;
 
   app.use(logg((str, ...rest) => consola.log(str, ...rest)));
 
@@ -26,10 +26,11 @@ export async function Web(base: Base) {
   app.use(
     "/*",
     process.env.RUNTIME_ENV === "bun" && process.versions.bun
-      ? buns?.serveStatic({ root: rootPath })!
+      ? // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
+      buns?.serveStatic({ root: rootPath })!
       : serveStatic({
-          root: rootPath
-        })
+        root: rootPath
+      })
   );
 
   app.route("/", await new ApiRoute(base).execute());
@@ -39,58 +40,62 @@ export async function Web(base: Base) {
   const key = await getFile(join(__dirname, "assets", "ssl", "server.key"));
   const cert = await getFile(join(__dirname, "assets", "ssl", "server.crt"));
 
-  const keyPem = await getFile(join(__dirname, ".cache", "ssl", "_wildcard.growserver.app-key.pem"));
-  const certPem = await getFile(join(__dirname, ".cache", "ssl", "_wildcard.growserver.app.pem"));
+  const keyPem = await getFile(
+    join(__dirname, ".cache", "ssl", "_wildcard.growserver.app-key.pem")
+  );
+  const certPem = await getFile(
+    join(__dirname, ".cache", "ssl", "_wildcard.growserver.app.pem")
+  );
   if (process.env.RUNTIME_ENV === "node") {
     serve(
       {
         fetch: app.fetch,
-        port: 80
+        port:  80
       },
-      (info) => {
+      () => {
         consola.log(`⛅Running HTTP server on http://localhost`);
       }
     );
 
     serve(
       {
-        fetch: app.fetch,
-        port: 443,
+        fetch:         app.fetch,
+        port:          443,
         createServer,
         serverOptions: {
           key,
           cert
         }
       },
-      (info) => {
+      () => {
         consola.log(`⛅Running HTTPS server on https://localhost`);
       }
     );
 
     serve(
       {
-        fetch: app.fetch,
-        port: 8080,
+        fetch:         app.fetch,
+        port:          8080,
         createServer,
         serverOptions: {
-          key: keyPem,
+          key:  keyPem,
           cert: certPem
         }
       },
-      (info) => {
+      () => {
         consola.log(`⛅Running Login server on https://${conf.web.loginUrl}`);
       }
     );
   } else if (process.env.RUNTIME_ENV === "bun") {
     Bun.serve({
       fetch: app.fetch,
-      port: 80
+      port:  80
     });
     consola.log(`⛅Running Bun HTTP server on http://localhost`);
     Bun.serve({
       fetch: app.fetch,
-      port: 443,
-      tls: {
+      port:  443,
+      tls:   {
         key,
         cert
       }
@@ -98,9 +103,9 @@ export async function Web(base: Base) {
     consola.log(`⛅Running Bun HTTPS server on https://localhost`);
     Bun.serve({
       fetch: app.fetch,
-      port: 8080,
-      tls: {
-        key: keyPem,
+      port:  8080,
+      tls:   {
+        key:  keyPem,
         cert: certPem
       }
     });
@@ -113,7 +118,7 @@ async function getFile(path: string, encoding?: BufferEncoding) {
     const file = await readFile(path, encoding);
     return file;
   } catch (e) {
-    consola.error(`${path} are not found`);
+    consola.error(`${path} are not found`, e);
     return undefined;
   }
 }

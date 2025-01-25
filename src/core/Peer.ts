@@ -1,8 +1,21 @@
 import { Block, PeerData } from "../types";
-import { ItemDefinition, Peer as OldPeer, TankPacket, TextPacket, Variant } from "growtopia.js";
+import {
+  ItemDefinition,
+  Peer as OldPeer,
+  TankPacket,
+  TextPacket,
+  Variant
+} from "growtopia.js";
 import { Base } from "./Base";
 import { World } from "./World";
-import { ActionTypes, CLOTH_MAP, ClothTypes, PacketTypes, ROLE, TankTypes } from "../Constants";
+import {
+  ActionTypes,
+  CLOTH_MAP,
+  ClothTypes,
+  PacketTypes,
+  ROLE,
+  TankTypes
+} from "../Constants";
 import { manageArray } from "../utils/Utils";
 
 export class Peer extends OldPeer<PeerData> {
@@ -15,24 +28,24 @@ export class Peer extends OldPeer<PeerData> {
     if (data)
       this.data = {
         channelID,
-        x: data.x,
-        y: data.y,
-        world: data.world,
-        inventory: data.inventory,
-        rotatedLeft: data.rotatedLeft,
-        requestedName: data.requestedName,
-        tankIDName: data.tankIDName,
+        x:                 data.x,
+        y:                 data.y,
+        world:             data.world,
+        inventory:         data.inventory,
+        rotatedLeft:       data.rotatedLeft,
+        requestedName:     data.requestedName,
+        tankIDName:        data.tankIDName,
         netID,
-        country: data.country,
-        id_user: data.id_user,
-        role: data.role,
-        gems: data.gems,
-        clothing: data.clothing,
-        exp: data.exp,
-        level: data.level,
-        lastCheckpoint: data.lastCheckpoint,
+        country:           data.country,
+        id_user:           data.id_user,
+        role:              data.role,
+        gems:              data.gems,
+        clothing:          data.clothing,
+        exp:               data.exp,
+        level:             data.level,
+        lastCheckpoint:    data.lastCheckpoint,
         lastVisitedWorlds: data.lastVisitedWorlds,
-        state: data.state
+        state:             data.state
       };
   }
 
@@ -84,15 +97,22 @@ export class Peer extends OldPeer<PeerData> {
     let mainDoor = world?.data.blocks.find((block) => block.fg === 6);
 
     if (this.data.lastCheckpoint) {
-      const pos = this.data.lastCheckpoint.x + this.data.lastCheckpoint.y * (world?.data.width as number);
+      const pos =
+        this.data.lastCheckpoint.x +
+        this.data.lastCheckpoint.y * (world?.data.width as number);
       const block = world?.data.blocks[pos];
-      const itemMeta = this.base.items.metadata.items[(block?.fg as number) || (block?.bg as number)];
+      const itemMeta =
+        this.base.items.metadata.items[
+          (block?.fg as number) || (block?.bg as number)
+        ];
 
       if (itemMeta && itemMeta.type === ActionTypes.CHECKPOINT) {
         mainDoor = this.data.lastCheckpoint as Block; // only have x,y.
       } else {
         this.data.lastCheckpoint = undefined;
-        this.send(Variant.from({ netID: this.data.netID, delay: 0 }, "SetRespawnPos", 0));
+        this.send(
+          Variant.from({ netID: this.data.netID, delay: 0 }, "SetRespawnPos", 0)
+        );
         mainDoor = world?.data.blocks?.find((block) => block.fg === 6);
       }
     } else {
@@ -102,8 +122,15 @@ export class Peer extends OldPeer<PeerData> {
     this.send(
       Variant.from({ netID: this.data.netID }, "OnSetFreezeState", 1),
       Variant.from({ netID: this.data.netID }, "OnKilled"),
-      Variant.from({ netID: this.data.netID, delay: 2000 }, "OnSetPos", [(mainDoor?.x || 0 % world.data.width) * 32, (mainDoor?.y || 0 % world.data.width) * 32]),
-      Variant.from({ netID: this.data.netID, delay: 2000 }, "OnSetFreezeState", 0)
+      Variant.from({ netID: this.data.netID, delay: 2000 }, "OnSetPos", [
+        (mainDoor?.x || 0 % world.data.width) * 32,
+        (mainDoor?.y || 0 % world.data.width) * 32
+      ]),
+      Variant.from(
+        { netID: this.data.netID, delay: 2000 },
+        "OnSetFreezeState",
+        0
+      )
     );
 
     this.sound("audio/teleport.wav", 2000);
@@ -117,8 +144,12 @@ export class Peer extends OldPeer<PeerData> {
 
     const extra = Math.random() * 6;
 
-    const x = (this.data.x as number) + (this.data.rotatedLeft ? -25 : +25) + extra;
-    const y = (this.data.y as number) + extra - Math.floor(Math.random() * (3 - -1) + -3);
+    const x =
+      (this.data.x as number) + (this.data.rotatedLeft ? -25 : +25) + extra;
+    const y =
+      (this.data.y as number) +
+      extra -
+      Math.floor(Math.random() * (3 - -1) + -3);
 
     world?.drop(this, x, y, id, amount);
   }
@@ -151,7 +182,14 @@ export class Peer extends OldPeer<PeerData> {
     );
   }
   public sound(file: string, delay = 100) {
-    this.send(TextPacket.from(PacketTypes.ACTION, "action|play_sfx", `file|${file}`, `delayMS|${delay}`));
+    this.send(
+      TextPacket.from(
+        PacketTypes.ACTION,
+        "action|play_sfx",
+        `file|${file}`,
+        `delayMS|${delay}`
+      )
+    );
   }
 
   public currentWorld() {
@@ -182,7 +220,11 @@ export class Peer extends OldPeer<PeerData> {
     this.inventory();
     this.sound("audio/door_open.wav");
 
-    this.data.lastVisitedWorlds = manageArray(this.data.lastVisitedWorlds!, 6, worldName);
+    this.data.lastVisitedWorlds = manageArray(
+      this.data.lastVisitedWorlds!,
+      6,
+      worldName
+    );
   }
 
   /**
@@ -194,8 +236,8 @@ export class Peer extends OldPeer<PeerData> {
     if (this.data.inventory?.items.find((i) => i.id === id)?.amount !== 0) {
       const tank = TankPacket.from({
         packetType: 4,
-        type: TankTypes.MODIFY_ITEM_INVENTORY,
-        info: id,
+        type:       TankTypes.MODIFY_ITEM_INVENTORY,
+        info:       id,
         buildRange: amount < 0 ? amount * -1 : undefined,
         punchRange: amount < 0 ? undefined : amount
       }).parse() as Buffer;
@@ -229,7 +271,9 @@ export class Peer extends OldPeer<PeerData> {
     if (item) {
       item.amount -= amount;
       if (item.amount < 1) {
-        this.data.inventory.items = this.data.inventory.items.filter((i) => i.id !== id);
+        this.data.inventory.items = this.data.inventory.items.filter(
+          (i) => i.id !== id
+        );
         if (this.base.items.metadata.items[id].type === ActionTypes.CLOTHES) {
           this.unequipClothes(id);
         }
@@ -253,25 +297,53 @@ export class Peer extends OldPeer<PeerData> {
           netID: this.data.netID
         },
         "OnSetClothing",
-        [this.data.clothing.hair, this.data.clothing.shirt, this.data.clothing.pants],
-        [this.data.clothing.feet, this.data.clothing.face, this.data.clothing.hand],
-        [this.data.clothing.back, this.data.clothing.mask, this.data.clothing.necklace],
+        [
+          this.data.clothing.hair,
+          this.data.clothing.shirt,
+          this.data.clothing.pants
+        ],
+        [
+          this.data.clothing.feet,
+          this.data.clothing.face,
+          this.data.clothing.hand
+        ],
+        [
+          this.data.clothing.back,
+          this.data.clothing.mask,
+          this.data.clothing.necklace
+        ],
         0x8295c3ff,
         [this.data.clothing.ances, 0.0, 0.0]
       )
     );
 
     this.every((p) => {
-      if (p.data?.world === this.data.world && p.data?.netID !== this.data.netID && p.data?.world !== "EXIT") {
+      if (
+        p.data?.world === this.data.world &&
+        p.data?.netID !== this.data.netID &&
+        p.data?.world !== "EXIT"
+      ) {
         p.send(
           Variant.from(
             {
               netID: this.data.netID
             },
             "OnSetClothing",
-            [this.data.clothing.hair, this.data.clothing.shirt, this.data.clothing.pants],
-            [this.data.clothing.feet, this.data.clothing.face, this.data.clothing.hand],
-            [this.data.clothing.back, this.data.clothing.mask, this.data.clothing.necklace],
+            [
+              this.data.clothing.hair,
+              this.data.clothing.shirt,
+              this.data.clothing.pants
+            ],
+            [
+              this.data.clothing.feet,
+              this.data.clothing.face,
+              this.data.clothing.hand
+            ],
+            [
+              this.data.clothing.back,
+              this.data.clothing.mask,
+              this.data.clothing.necklace
+            ],
             0x8295c3ff,
             [this.data.clothing.ances, 0.0, 0.0]
           )
@@ -291,7 +363,8 @@ export class Peer extends OldPeer<PeerData> {
       return false;
     };
 
-    if (Object.values(this.data.clothing).includes(itemID)) this.unequipClothes(itemID);
+    if (Object.values(this.data.clothing).includes(itemID))
+      this.unequipClothes(itemID);
     else {
       const item = this.base.items.metadata.items[itemID];
       if (!isAnces(item)) {
@@ -302,12 +375,20 @@ export class Peer extends OldPeer<PeerData> {
         }
       }
       const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
+      // eslint-disable-next-line no-extra-boolean-cast
       if (!!itemInfo?.func?.add) {
         this.send(Variant.from("OnConsoleMessage", itemInfo.func.add));
       }
       // this.formState();
       this.sendClothes();
-      this.send(TextPacket.from(PacketTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0"));
+      this.send(
+        TextPacket.from(
+          PacketTypes.ACTION,
+          "action|play_sfx",
+          "file|audio/change_clothes.wav",
+          "delayMS|0"
+        )
+      );
     }
   }
 
@@ -318,8 +399,11 @@ export class Peer extends OldPeer<PeerData> {
 
     const isAnces = (item: ItemDefinition): boolean => {
       if (item?.type === ActionTypes.ANCES) {
-        if (this.data.clothing.ances === itemID) (this.data.clothing.ances = 0), (unequiped = true);
-        return true;
+        if (this.data.clothing.ances === itemID) {
+          this.data.clothing.ances = 0;
+          unequiped = true;
+          return true;
+        }
       }
       return false;
     };
@@ -336,9 +420,17 @@ export class Peer extends OldPeer<PeerData> {
     if (unequiped) {
       // this.formState();
       this.sendClothes();
-      this.send(TextPacket.from(PacketTypes.ACTION, "action|play_sfx", "file|audio/change_clothes.wav", "delayMS|0"));
+      this.send(
+        TextPacket.from(
+          PacketTypes.ACTION,
+          "action|play_sfx",
+          "file|audio/change_clothes.wav",
+          "delayMS|0"
+        )
+      );
     }
     const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
+    // eslint-disable-next-line no-extra-boolean-cast
     if (!!itemInfo?.func?.rem) {
       this.send(Variant.from("OnConsoleMessage", itemInfo.func.rem));
     }
@@ -346,5 +438,4 @@ export class Peer extends OldPeer<PeerData> {
   public isValid(): boolean {
     return this.data && this.data.netID !== undefined;
   }
-
 }

@@ -2,11 +2,7 @@ import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { ActionTypes, LOCKS } from "../../Constants";
-import { Block, Lock } from "../../types";
-import { Floodfill } from "../../utils/FloodFill";
 import { World } from "../../core/World";
-import { Tile } from "../../world/Tile";
-import { ItemDefinition } from "growtopia.js";
 
 export class ConfirmClearWorld {
   private world: World;
@@ -29,7 +25,12 @@ export class ConfirmClearWorld {
         const itemMeta = this.base.items.metadata.items[b.fg || b.bg];
         const mLock = LOCKS.find((l) => l.id === itemMeta.id);
 
-        if (b.fg === 6 || b.fg === 8 || (!mLock && itemMeta.type === ActionTypes.LOCK)) continue;
+        if (
+          b.fg === 6 ||
+          b.fg === 8 ||
+          (!mLock && itemMeta.type === ActionTypes.LOCK)
+        )
+          continue;
 
         Object.keys(b).forEach((v) => {
           if (v === "x" || v === "y") {

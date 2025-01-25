@@ -1,4 +1,3 @@
-import { Variant } from "growtopia.js";
 import { TileExtraTypes, TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
 import type { World } from "../../core/World";
@@ -13,7 +12,12 @@ export class HeartMonitorTile extends Tile {
   private name: string;
   private userId: number;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 15) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 15
+  ) {
     super(base, world, block, alloc);
 
     this.name = this.block.heartMonitor?.name || "";
@@ -36,7 +40,9 @@ export class HeartMonitorTile extends Tile {
 
     if (this.block.rotatedLeft) this.flags |= TileFlags.ROTATED_LEFT;
 
-    const targetPeerId = this.base.cache.peers.find((v) => v.id_user === this.userId);
+    const targetPeerId = this.base.cache.peers.find(
+      (v) => v.id_user === this.userId
+    );
     if (targetPeerId) {
       const targetPeer = new Peer(this.base, targetPeerId.netID);
 

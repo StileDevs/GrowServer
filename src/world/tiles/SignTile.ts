@@ -10,7 +10,12 @@ export class SignTile extends Tile {
   public extraType = TileExtraTypes.SIGN;
   private label: string;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 15) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 15
+  ) {
     super(base, world, block, alloc);
 
     this.label = this.block.sign?.label || "";

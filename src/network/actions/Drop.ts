@@ -5,20 +5,29 @@ import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 
 export class Drop {
-  constructor(public base: Base, public peer: Peer) {}
+  constructor(
+    public base: Base,
+    public peer: Peer
+  ) {}
 
-  public async execute(action: NonEmptyObject<{ itemID: string }>): Promise<void> {
+  public async execute(
+    action: NonEmptyObject<Record<string, string>>
+  ): Promise<void> {
     const itemID = parseInt(action.itemID);
 
     // Prevent dropping specific items add to the list if you want to prevent more items
     if (itemID === 18 || itemID === 32) {
-      this.peer.send(Variant.from("OnConsoleMessage", "You'd be sorry if you lost that."));
+      this.peer.send(
+        Variant.from("OnConsoleMessage", "You'd be sorry if you lost that.")
+      );
       return;
     }
 
     const item = this.base.items.metadata.items.find((v) => v.id === itemID);
 
-    const peerItem = this.peer.data.inventory.items.find((v) => v.id === itemID);
+    const peerItem = this.peer.data.inventory.items.find(
+      (v) => v.id === itemID
+    );
     const dialog = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(`Drop ${item?.name}`, item?.id || 0, "big")

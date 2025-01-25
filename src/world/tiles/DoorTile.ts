@@ -10,7 +10,12 @@ export class DoorTile extends Tile {
   public extraType = TileExtraTypes.DOOR;
   private label: string;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 12) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 12
+  ) {
     super(base, world, block, alloc);
 
     this.label = this.block.door?.label || "";

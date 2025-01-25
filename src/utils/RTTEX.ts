@@ -9,7 +9,11 @@ export class RTTEX {
 
   constructor(image: Buffer) {
     if (!Buffer.isBuffer(image)) throw new Error("Please use buffer instead.");
-    if (image.subarray(0, 6).toString() === "RTPACK" || image.subarray(0, 6).toString() === "RTTXTR") {
+    if (
+      image.subarray(0, 6).toString() === "RTPACK" ||
+      image.subarray(0, 6).toString() === "RTTXTR"
+    ) {
+      // ignore
     } else throw new Error("File header must be a RTPACK or RTTXTR");
 
     this.image = image;
@@ -22,14 +26,14 @@ export class RTTEX {
 
   public parseRTPACK(): RTPack {
     if (this.type !== "RTPACK") throw new TypeError("Invalid type of RTPACK");
-    let data: RTPack = {
-      type: this.image.subarray(0, 6).toString(),
-      version: this.image.readUint8(6),
-      reserved: this.image.readUint8(7),
-      compressedSize: this.image.readUInt32LE(8),
+    const data: RTPack = {
+      type:             this.image.subarray(0, 6).toString(),
+      version:          this.image.readUint8(6),
+      reserved:         this.image.readUint8(7),
+      compressedSize:   this.image.readUInt32LE(8),
       decompressedSize: this.image.readUInt32LE(12),
-      compressionType: this.image.readUint8(16),
-      reserved2: new Int8Array(16)
+      compressionType:  this.image.readUint8(16),
+      reserved2:        new Int8Array(16)
     };
 
     for (let i = 17; i <= 31; i++) {
@@ -46,25 +50,26 @@ export class RTTEX {
       img = inflateSync(this.image.subarray(32));
     }
 
-    if (img.subarray(0, 6).toString() !== "RTTXTR") throw new TypeError("Invalid type of RTTXTR");
+    if (img.subarray(0, 6).toString() !== "RTTXTR")
+      throw new TypeError("Invalid type of RTTXTR");
 
-    let data: RTTXTR = {
-      type: img.subarray(0, 6).toString(),
-      version: img.readUint8(6),
-      reserved: img.readUint8(7),
-      width: img.readInt32LE(8),
-      height: img.readInt32LE(12),
-      format: img.readInt32LE(16),
-      originalWidth: img.readInt32LE(20),
+    const data: RTTXTR = {
+      type:           img.subarray(0, 6).toString(),
+      version:        img.readUint8(6),
+      reserved:       img.readUint8(7),
+      width:          img.readInt32LE(8),
+      height:         img.readInt32LE(12),
+      format:         img.readInt32LE(16),
+      originalWidth:  img.readInt32LE(20),
       originalHeight: img.readInt32LE(24),
-      isAlpha: img.readUint8(28),
-      isCompressed: img.readUint8(29),
-      reservedFlags: img.readUint16LE(30),
-      mipmap: {
-        width: img.readInt32LE(100),
-        height: img.readInt32LE(104),
+      isAlpha:        img.readUint8(28),
+      isCompressed:   img.readUint8(29),
+      reservedFlags:  img.readUint16LE(30),
+      mipmap:         {
+        width:        img.readInt32LE(100),
+        height:       img.readInt32LE(104),
         bufferLength: img.readInt32LE(108),
-        count: img.readInt32LE(32)
+        count:        img.readInt32LE(32)
       },
       reserved2: new Int32Array(16)
     };
@@ -89,21 +94,34 @@ export class RTTEX {
 
     if (!Buffer.isBuffer(data)) throw new Error("Please use buffer instead.");
 
-    if (data.subarray(0, 6).toString() === "RTPACK") data = inflateSync(rttexImg.subarray(32));
+    if (data.subarray(0, 6).toString() === "RTPACK")
+      data = inflateSync(rttexImg.subarray(32));
 
     if (data.subarray(0, 6).toString() === "RTTXTR") {
-      return Buffer.from(new ImageV2(data.readUInt16LE(12), data.readUInt16LE(8), data.subarray(124)).flip("vertical").encode("png"));
+      return Buffer.from(
+        new ImageV2(
+          data.readUInt16LE(12),
+          data.readUInt16LE(8),
+          data.subarray(124)
+        )
+          .flip("vertical")
+          .encode("png")
+      );
     } else throw new Error("Invalid format type.");
   }
 
   public static async encode(img: Buffer): Promise<Buffer> {
     if (!Buffer.isBuffer(img)) throw new Error("Please use buffer instead.");
 
-    if (img.subarray(0, 6).toString() === "RTPACK" || img.subarray(0, 6).toString() === "RTTXTR") throw new TypeError("Invalid format, must be a PNG");
+    if (
+      img.subarray(0, 6).toString() === "RTPACK" ||
+      img.subarray(0, 6).toString() === "RTTXTR"
+    )
+      throw new TypeError("Invalid format, must be a PNG");
 
-    let data = ImageV2.decode("png", img).flip("vertical");
+    const data = ImageV2.decode("png", img).flip("vertical");
 
-    let rttex = new ExtendBuffer(124);
+    const rttex = new ExtendBuffer(124);
 
     rttex.data.write("RTTXTR");
     rttex.mempos += 6;
@@ -132,7 +150,7 @@ export class RTTEX {
 
     const compressed = deflateSync(Buffer.concat([rttex.data, data.u8]));
 
-    let rtpack = new ExtendBuffer(32);
+    const rtpack = new ExtendBuffer(32);
 
     rtpack.data.write("RTPACK");
     rtpack.mempos += 6;

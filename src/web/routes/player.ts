@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { readFileSync } from "fs";
 import { join } from "path";
+import consola from "consola";
 
 __dirname = process.cwd();
 export class PlayerRoute {
@@ -19,10 +20,10 @@ export class PlayerRoute {
 
         return ctx.html(
           JSON.stringify({
-            status: "success",
-            message: "Account Validated.",
+            status:      "success",
+            message:     "Account Validated.",
             token,
-            url: "",
+            url:         "",
             accountType: "growtopia"
           })
         );
@@ -45,14 +46,17 @@ export class PlayerRoute {
         const isValid = await bcrypt.compare(password, user.password);
         if (!isValid) throw new Error("Password invalid");
 
-        const token = jwt.sign({ growId, password }, process.env.JWT_SECRET as string);
+        const token = jwt.sign(
+          { growId, password },
+          process.env.JWT_SECRET as string
+        );
 
         return ctx.html(
           JSON.stringify({
-            status: "success",
-            message: "Account Validated.",
+            status:      "success",
+            message:     "Account Validated.",
             token,
-            url: "",
+            url:         "",
             accountType: "growtopia"
           })
         );
@@ -72,14 +76,15 @@ export class PlayerRoute {
 
         return ctx.html(
           JSON.stringify({
-            status: "success",
-            message: "Account Validated.",
-            token: refreshToken,
-            url: "",
+            status:      "success",
+            message:     "Account Validated.",
+            token:       refreshToken,
+            url:         "",
             accountType: "growtopia"
           })
         );
       } catch (e) {
+        consola.error("Error checking token:", e);
         return ctx.body("Unauthorized", 401);
       }
     });
@@ -91,20 +96,25 @@ export class PlayerRoute {
         const password = body.data?.password;
         const confirmPassword = body.data?.confirmPassword;
 
-        if (!growId || !password || !confirmPassword) throw new Error("Unauthorized");
+        if (!growId || !password || !confirmPassword)
+          throw new Error("Unauthorized");
 
         // Check if user already exists
         const user = await this.base.database.players.get(growId.toLowerCase());
         if (user) throw new Error("User already exists");
 
         // Check if password and confirm password match
-        if (password !== confirmPassword) throw new Error("Password and Confirm Password does not match");
+        if (password !== confirmPassword)
+          throw new Error("Password and Confirm Password does not match");
 
         // Save player to database
         await this.base.database.players.set(growId, password);
 
         // Login user:
-        const token = jwt.sign({ growId, password }, process.env.JWT_SECRET as string);
+        const token = jwt.sign(
+          { growId, password },
+          process.env.JWT_SECRET as string
+        );
 
         if (!token) throw new Error("Unauthorized");
 
@@ -112,20 +122,24 @@ export class PlayerRoute {
 
         return ctx.html(
           JSON.stringify({
-            status: "success",
-            message: "Account Validated.",
+            status:      "success",
+            message:     "Account Validated.",
             token,
-            url: "",
+            url:         "",
             accountType: "growtopia"
           })
         );
       } catch (e) {
+        consola.error("Error signing up:", e);
         return ctx.body("Unauthorized", 401);
       }
     });
 
     this.app.post("/login/dashboard", (ctx) => {
-      const html = readFileSync(join(__dirname, ".cache", "website", "index.html"), "utf-8");
+      const html = readFileSync(
+        join(__dirname, ".cache", "website", "index.html"),
+        "utf-8"
+      );
       return ctx.html(html);
     });
 

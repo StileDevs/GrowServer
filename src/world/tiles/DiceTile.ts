@@ -9,7 +9,12 @@ export class DiceTile extends Tile {
   public data: ExtendBuffer;
   public extraType = TileExtraTypes.DICE;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 10) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 10
+  ) {
     super(base, world, block, alloc);
     this.data = new ExtendBuffer(this.alloc);
   }

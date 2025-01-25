@@ -7,7 +7,12 @@ import { Tile } from "../Tile";
 export class WeatherTile extends Tile {
   public data: ExtendBuffer;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 8) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 8
+  ) {
     super(base, world, block, alloc);
     this.data = new ExtendBuffer(this.alloc);
   }

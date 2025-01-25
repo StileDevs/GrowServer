@@ -9,7 +9,11 @@ import { TankMap } from "./tanks/index";
 export class ITankPacket {
   public tank;
 
-  constructor(public base: Base, public peer: Peer, public chunk: Buffer) {
+  constructor(
+    public base: Base,
+    public peer: Peer,
+    public chunk: Buffer
+  ) {
     this.tank = TankPacket.fromBuffer(chunk);
   }
 
@@ -17,13 +21,19 @@ export class ITankPacket {
     const tankType = this.tank.data?.type as number;
     const world = new World(this.base, this.peer.data.world);
 
-    consola.debug(`[DEBUG] Receive tank packet of ${TankTypes[tankType]}:\n`, this.tank);
+    consola.debug(
+      `[DEBUG] Receive tank packet of ${TankTypes[tankType]}:\n`,
+      this.tank
+    );
 
     try {
       const type = this.tank.data?.type as number;
-      let Class = TankMap[type];
+      const Class = TankMap[type];
 
-      if (!Class) throw new Error(`No TankPacket class found with type ${TankTypes[type]} (${type})`);
+      if (!Class)
+        throw new Error(
+          `No TankPacket class found with type ${TankTypes[type]} (${type})`
+        );
 
       const tnk = new Class(this.base, this.peer, this.tank, world);
       await tnk.execute();

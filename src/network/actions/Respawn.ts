@@ -3,9 +3,14 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 
 export class Respawn {
-  constructor(public base: Base, public peer: Peer) {}
+  constructor(
+    public base: Base,
+    public peer: Peer
+  ) {}
 
-  public async execute(action: NonEmptyObject<{ action: string }>): Promise<void> {
+  public async execute(
+    _action: NonEmptyObject<Record<string, string>>
+  ): Promise<void> {
     this.peer.respawn();
   }
 }

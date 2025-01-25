@@ -31,9 +31,13 @@ export class AreaLockEdit {
     }>
   ) {
     this.world = this.peer.currentWorld()!;
-    this.pos = parseInt(this.action.tilex) + parseInt(this.action.tiley) * (this.world?.data.width as number);
+    this.pos =
+      parseInt(this.action.tilex) +
+      parseInt(this.action.tiley) * (this.world?.data.width as number);
     this.block = this.world?.data.blocks[this.pos] as Block;
-    this.itemMeta = this.base.items.metadata.items.find((i) => i.id === parseInt(this.action.lockID))!;
+    this.itemMeta = this.base.items.metadata.items.find(
+      (i) => i.id === parseInt(this.action.lockID)
+    )!;
   }
 
   public async execute(): Promise<void> {
@@ -53,23 +57,37 @@ export class AreaLockEdit {
 
     if (this.action.buttonClicked === "reapply_lock") {
       this.world.data.blocks?.forEach((b) => {
-        if (b.lock && b.lock.ownerX === this.block.x && b.lock.ownerY === this.block.y) b.lock = undefined;
+        if (
+          b.lock &&
+          b.lock.ownerX === this.block.x &&
+          b.lock.ownerY === this.block.y
+        )
+          b.lock = undefined;
       });
 
       const algo = new Floodfill({
-        s_node: { x: parseInt(this.action.tilex), y: parseInt(this.action.tiley) },
-        max: (mLock as Lock).maxTiles || 0,
-        width: this.world.data.width || 100,
-        height: this.world.data.height || 60,
-        blocks: this.world.data.blocks as Block[],
-        s_block: this.block,
-        base: this.base,
+        s_node: {
+          x: parseInt(this.action.tilex),
+          y: parseInt(this.action.tiley)
+        },
+        max:        (mLock as Lock).maxTiles || 0,
+        width:      this.world.data.width || 100,
+        height:     this.world.data.height || 60,
+        blocks:     this.world.data.blocks as Block[],
+        s_block:    this.block,
+        base:       this.base,
         noEmptyAir: ignoreEmpty
       });
       algo.exec();
       algo.apply(this.world, this.peer);
     }
 
-    Tile.tileUpdate(this.base, this.peer, this.world, this.block, this.itemMeta.type as number);
+    Tile.tileUpdate(
+      this.base,
+      this.peer,
+      this.world,
+      this.block,
+      this.itemMeta.type as number
+    );
   }
 }

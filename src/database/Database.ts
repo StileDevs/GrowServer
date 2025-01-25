@@ -3,7 +3,6 @@ import { createClient } from "@libsql/client";
 
 import { WorldDB } from "./handlers/World";
 import { PlayerDB } from "./handlers/Player";
-import { join } from "path";
 
 export class Database {
   public db;

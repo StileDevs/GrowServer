@@ -8,28 +8,78 @@ export class Collection<K, V> extends Map<K, V> {
   }
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every | Array#every } */
-  every<T extends V, ThisArg = Collection<K, V>>(predicate: (value: V, index: number, array: Array<V>) => value is T, thisArg?: ThisArg): this is Array<T>;
-  every<ThisArg = Collection<K, V>>(predicate: (value: V, index: number, array: Array<V>) => unknown, thisArg?: ThisArg): boolean;
-  every(predicate: (value: V, index: number, array: Array<V>) => unknown, thisArg?: unknown): boolean {
+  every<T extends V, ThisArg = Collection<K, V>>(
+    predicate: (value: V, index: number, array: Array<V>) => value is T,
+    thisArg?: ThisArg
+  ): this is Array<T>;
+  every<ThisArg = Collection<K, V>>(
+    predicate: (value: V, index: number, array: Array<V>) => unknown,
+    thisArg?: ThisArg
+  ): boolean;
+  every(
+    predicate: (value: V, index: number, array: Array<V>) => unknown,
+    thisArg?: unknown
+  ): boolean {
     return this.toArray().every(predicate, thisArg);
   }
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter | Array#filter } */
-  filter<S extends V, ThisArg = Collection<K, V>>(predicate: (this: ThisArg, value: V, index: number, array: Array<V>) => value is S, thisArg?: ThisArg): Array<S>;
-  filter<ThisArg = Collection<K, V>>(predicate: (this: ThisArg, value: V, index: number, array: Array<V>) => unknown, thisArg?: ThisArg): Array<V>;
-  filter(predicate: (value: V, index: number, array: Array<V>) => unknown, thisArg?: unknown): Array<V> {
+  filter<S extends V, ThisArg = Collection<K, V>>(
+    predicate: (
+      this: ThisArg,
+      value: V,
+      index: number,
+      array: Array<V>
+    ) => value is S,
+    thisArg?: ThisArg
+  ): Array<S>;
+  filter<ThisArg = Collection<K, V>>(
+    predicate: (
+      this: ThisArg,
+      value: V,
+      index: number,
+      array: Array<V>
+    ) => unknown,
+    thisArg?: ThisArg
+  ): Array<V>;
+  filter(
+    predicate: (value: V, index: number, array: Array<V>) => unknown,
+    thisArg?: unknown
+  ): Array<V> {
     return this.toArray().filter(predicate, thisArg);
   }
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find | Array#find } */
-  find<S extends V, ThisArg = Collection<K, V>>(predicate: (this: ThisArg, value: V, index: number, obj: Array<V>) => value is S, thisArg?: ThisArg): S | undefined;
-  find<ThisArg = Collection<K, V>>(predicate: (this: ThisArg, value: V, index: number, obj: Array<V>) => unknown, thisArg?: ThisArg): V | undefined;
-  find(predicate: (value: V, index: number, obj: Array<V>) => unknown, thisArg?: unknown): V | undefined {
+  find<S extends V, ThisArg = Collection<K, V>>(
+    predicate: (
+      this: ThisArg,
+      value: V,
+      index: number,
+      obj: Array<V>
+    ) => value is S,
+    thisArg?: ThisArg
+  ): S | undefined;
+  find<ThisArg = Collection<K, V>>(
+    predicate: (
+      this: ThisArg,
+      value: V,
+      index: number,
+      obj: Array<V>
+    ) => unknown,
+    thisArg?: ThisArg
+  ): V | undefined;
+  find(
+    predicate: (value: V, index: number, obj: Array<V>) => unknown,
+    thisArg?: unknown
+  ): V | undefined {
     return this.toArray().find(predicate, thisArg);
   }
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex | Array#findIndex } */
-  findIndex(predicate: (value: V, index: number, obj: Array<V>) => unknown, thisArg?: unknown): number {
+  findIndex(
+    predicate: (value: V, index: number, obj: Array<V>) => unknown,
+    thisArg?: unknown
+  ): number {
     return this.toArray().findIndex(predicate, thisArg);
   }
 
@@ -76,7 +126,10 @@ export class Collection<K, V> extends Map<K, V> {
   }
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map | Array#map } */
-  map<T>(predicate: (value: V, index: number, obj: Array<V>) => T, thisArg?: unknown): Array<T> {
+  map<T>(
+    predicate: (value: V, index: number, obj: Array<V>) => T,
+    thisArg?: unknown
+  ): Array<T> {
     return this.toArray().map(predicate, thisArg);
   }
 
@@ -93,23 +146,88 @@ export class Collection<K, V> extends Map<K, V> {
   }
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce | Array#reduce } */
-  reduce(predicate: (previousValue: V, currentValue: V, currentIndex: number, array: Array<V>) => V): V;
-  reduce(predicate: (previousValue: V, currentValue: V, currentIndex: number, array: Array<V>) => V, initialValue: V): V;
-  reduce<T>(predicate: (previousValue: T, currentValue: V, currentIndex: number, array: Array<V>) => T, initialValue: T): T;
-  reduce<T>(predicate: (previousValue: T, currentValue: V, currentIndex: number, array: Array<V>) => T, initialValue?: T): T {
+  reduce(
+    predicate: (
+      previousValue: V,
+      currentValue: V,
+      currentIndex: number,
+      array: Array<V>
+    ) => V
+  ): V;
+  reduce(
+    predicate: (
+      previousValue: V,
+      currentValue: V,
+      currentIndex: number,
+      array: Array<V>
+    ) => V,
+    initialValue: V
+  ): V;
+  reduce<T>(
+    predicate: (
+      previousValue: T,
+      currentValue: V,
+      currentIndex: number,
+      array: Array<V>
+    ) => T,
+    initialValue: T
+  ): T;
+  reduce<T>(
+    predicate: (
+      previousValue: T,
+      currentValue: V,
+      currentIndex: number,
+      array: Array<V>
+    ) => T,
+    initialValue?: T
+  ): T {
     return this.toArray().reduce(predicate, initialValue!);
   }
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight | Array#reduceRight } */
-  reduceRight(predicate: (previousValue: V, currentValue: V, currentIndex: number, array: Array<V>) => V): V;
-  reduceRight(predicate: (previousValue: V, currentValue: V, currentIndex: number, array: Array<V>) => V, initialValue: V): V;
-  reduceRight<T>(predicate: (previousValue: T, currentValue: V, currentIndex: number, array: Array<V>) => T, initialValue: T): T;
-  reduceRight<T>(predicate: (previousValue: T, currentValue: V, currentIndex: number, array: Array<V>) => T, initialValue?: T): T {
+  reduceRight(
+    predicate: (
+      previousValue: V,
+      currentValue: V,
+      currentIndex: number,
+      array: Array<V>
+    ) => V
+  ): V;
+  reduceRight(
+    predicate: (
+      previousValue: V,
+      currentValue: V,
+      currentIndex: number,
+      array: Array<V>
+    ) => V,
+    initialValue: V
+  ): V;
+  reduceRight<T>(
+    predicate: (
+      previousValue: T,
+      currentValue: V,
+      currentIndex: number,
+      array: Array<V>
+    ) => T,
+    initialValue: T
+  ): T;
+  reduceRight<T>(
+    predicate: (
+      previousValue: T,
+      currentValue: V,
+      currentIndex: number,
+      array: Array<V>
+    ) => T,
+    initialValue?: T
+  ): T {
     return this.toArray().reduceRight(predicate, initialValue!);
   }
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some | Array#some } */
-  some<ThisArg = Collection<K, V>>(predicate: (value: V, index: number, array: Array<V>) => unknown, thisArg?: ThisArg): boolean {
+  some<ThisArg = Collection<K, V>>(
+    predicate: (value: V, index: number, array: Array<V>) => unknown,
+    thisArg?: ThisArg
+  ): boolean {
     return this.toArray().some(predicate, thisArg);
   }
 

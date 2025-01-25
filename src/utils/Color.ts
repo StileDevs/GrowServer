@@ -2,8 +2,19 @@ export class Color {
   private colors: Uint8Array = new Uint8Array(4);
 
   constructor(r: number, g: number, b: number, a: number = 255) {
-    if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 || a < 0 || a > 255) {
-      throw new Error("Invalid color values. Each value must be between 0 and 255.");
+    if (
+      r < 0 ||
+      r > 255 ||
+      g < 0 ||
+      g > 255 ||
+      b < 0 ||
+      b > 255 ||
+      a < 0 ||
+      a > 255
+    ) {
+      throw new Error(
+        "Invalid color values. Each value must be between 0 and 255."
+      );
     }
 
     this.colors[0] = b;
@@ -69,7 +80,9 @@ export class Color {
 
   public static fromDecimal(decimal: number): Color {
     if (decimal < 0 || decimal > 0xffffffff) {
-      throw new Error("Invalid decimal color value. It must be between 0 and 4294967295.");
+      throw new Error(
+        "Invalid decimal color value. It must be between 0 and 4294967295."
+      );
     }
 
     const a = (decimal >> 24) & 0xff;

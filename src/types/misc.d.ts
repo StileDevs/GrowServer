@@ -2,7 +2,6 @@ import { PeerData } from "./peer";
 import { WorldData } from "./world";
 import { Collection } from "../utils/Collection";
 import { CooldownOptions } from "./commands";
-import { ItemDefinition } from "growtopia.js";
 
 export interface CDNContent {
   version: string;

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
+/* eslint-disable no-undef */
 "use strict";
 
 const { ItemsDat } = require("growtopia.js");

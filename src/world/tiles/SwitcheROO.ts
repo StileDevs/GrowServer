@@ -1,4 +1,4 @@
-import { TileExtraTypes, TileFlags } from "../../Constants";
+import { TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
 import type { World } from "../../core/World";
 import type { Block } from "../../types";
@@ -8,7 +8,12 @@ import { Tile } from "../Tile";
 export class SwitcheROO extends Tile {
   public data: ExtendBuffer;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 8) {
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 8
+  ) {
     super(base, world, block, alloc);
     this.data = new ExtendBuffer(this.alloc);
   }

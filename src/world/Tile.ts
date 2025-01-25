@@ -12,8 +12,17 @@ export class Tile {
   public lockPos: number;
   public flags: number;
 
-  constructor(public base: Base, public world: World, public block: Block, public alloc = 8) {
-    this.lockPos = this.block.lock && !this.block.lock.isOwner ? (this.block.lock.ownerX as number) + (this.block.lock.ownerY as number) * this.world.data.width : 0;
+  constructor(
+    public base: Base,
+    public world: World,
+    public block: Block,
+    public alloc = 8
+  ) {
+    this.lockPos =
+      this.block.lock && !this.block.lock.isOwner
+        ? (this.block.lock.ownerX as number) +
+          (this.block.lock.ownerY as number) * this.world.data.width
+        : 0;
     this.flags = 0x0;
     this.data = new ExtendBuffer(this.alloc);
   }
@@ -40,17 +49,23 @@ export class Tile {
     return this.data.data;
   }
 
-  public static async tileUpdate(base: Base, peer: Peer, world: World, block: Block, type: number) {
+  public static async tileUpdate(
+    base: Base,
+    peer: Peer,
+    world: World,
+    block: Block,
+    type: number
+  ) {
     const data = await tileParse(type, base, world, block);
 
     peer.every((p) => {
       if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
         p.send(
           TankPacket.from({
-            type: TankTypes.SEND_TILE_UPDATE_DATA,
+            type:   TankTypes.SEND_TILE_UPDATE_DATA,
             xPunch: block.x,
             yPunch: block.y,
-            data: () => data
+            data:   () => data
           })
         );
       }
