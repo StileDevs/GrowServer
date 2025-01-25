@@ -343,4 +343,8 @@ export class Peer extends OldPeer<PeerData> {
       this.send(Variant.from("OnConsoleMessage", itemInfo.func.rem));
     }
   }
+  public isValid(): boolean {
+    return this.data && this.data.netID !== undefined;
+  }
+
 }

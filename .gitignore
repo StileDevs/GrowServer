@@ -11,6 +11,8 @@ build
 data.db
 data
 
+
+
 # Ignore ssl
 assets/ssl/_wildcard.growserver.app.pem
 assets/ssl/_wildcard.growserver.app-key.pem
