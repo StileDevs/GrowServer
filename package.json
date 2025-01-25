@@ -5,6 +5,8 @@
   "main": "dist/src/app.js",
   "scripts": {
     "test": "nr build && (node dist/src/app.js || bun run dist/src/app.js)",
+    "lint": "eslint ./src",
+    "lint:fix": "eslint ./src --fix",
     "bun": "cross-env RUNTIME_ENV=bun bun run --bun",
     "node": "cross-env RUNTIME_ENV=node node",
     "dev": "cross-env RUNTIME_ENV=node tsx ./src/app.ts",

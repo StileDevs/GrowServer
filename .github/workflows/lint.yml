@@ -1,0 +1,15 @@
+name: ESLint
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+      - name: Install Dependencies
+        run: pnpm i --frozen-lockfile --ignore-scripts
+      - name: Run ESLint
+        run: pnpm run lint
