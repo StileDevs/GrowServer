@@ -38,10 +38,7 @@ export class Base {
   constructor() {
     this.server = new Client({
       enet: {
-        ip:           "0.0.0.0",
-        useNewPacket: {
-          asServer: false
-        }
+        ip: "0.0.0.0",
       }
     });
     this.items = {
