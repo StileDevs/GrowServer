@@ -11,7 +11,7 @@ import {
 import { join } from "path";
 import { ConnectListener } from "../events/Connect";
 import { DisconnectListener } from "../events/Disconnect";
-import { JsonObject, type PackageJson } from "type-fest";
+import { type PackageJson } from "type-fest";
 import { RawListener } from "../events/Raw";
 import consola from "consola";
 import { readFileSync } from "fs";
@@ -30,7 +30,7 @@ export class Base {
   public server: Client;
   public items;
   public package: PackageJson;
-  public config: Record<string, JsonObject>;
+  public config: typeof import('../../config.json');
   public cdn: CDNContent;
   public cache: Cache;
   public database: Database;
