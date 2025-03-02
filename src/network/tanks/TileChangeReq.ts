@@ -597,7 +597,7 @@ export class TileChangeReq {
         this.block.tree = {
           fruit:        id - 1,
           fruitCount,
-          fullyGrownAt: now + (item.growTime || 0) * 1000,
+          fullyGrownAt: (this.block.tree?.plantedAt ?? now) + (item.growTime || 0) * 1000,
           plantedAt:    now
         };
 
