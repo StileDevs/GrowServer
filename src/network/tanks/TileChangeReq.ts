@@ -29,11 +29,11 @@ export class TileChangeReq {
     public world: World
   ) {
     this.pos =
-      (this.tank.data?.xPunch as number) +
-      (this.tank.data?.yPunch as number) * this.world.data.width;
+            (this.tank.data?.xPunch as number) +
+            (this.tank.data?.yPunch as number) * this.world.data.width;
     this.block = this.world.data.blocks[this.pos];
     this.itemMeta =
-      this.base.items.metadata.items[this.block.fg || this.block.bg];
+            this.base.items.metadata.items[this.block.fg || this.block.bg];
   }
 
   public async execute() {
@@ -58,7 +58,7 @@ export class TileChangeReq {
 
       if (
         this.itemMeta.id === 242 &&
-        this.world.data.owner.id !== this.peer.data?.id_user
+                this.world.data.owner.id !== this.peer.data?.id_user
       ) {
         this.peer.send(
           Variant.from(
@@ -153,7 +153,7 @@ export class TileChangeReq {
             .embed("tilex", this.block.x)
             .embed("tiley", this.block.y)
             .addSmallText("Access list:")
-            // bikin list user disini nanti
+          // bikin list user disini nanti
             .addSpacer("small")
             .addTextBox("Currently, you're the only one with access.")
             .raw("add_player_picker|playerNetID|`wAdd``|\n")
@@ -204,8 +204,7 @@ export class TileChangeReq {
   private async onPlace() {
     const placedItem = this.base.items.metadata.items.find(
       (i) => i.id === this.tank.data?.info
-    );    
-
+    );
     const mLock = LOCKS.find((l) => l.id === placedItem?.id);
     const mainLock = this.block.lock
       ? this.world.data.blocks[
@@ -232,7 +231,7 @@ export class TileChangeReq {
       if (this.peer.data?.role !== ROLE.DEVELOPER) {
         if (
           mainLock &&
-          mainLock.lock?.ownerUserID !== this.peer.data?.id_user
+                    mainLock.lock?.ownerUserID !== this.peer.data?.id_user
         ) {
           this.sendLockSound();
           return;
@@ -242,18 +241,18 @@ export class TileChangeReq {
 
     if (
       this.unbreakableBlocks.includes(placedItem.id) &&
-      this.peer.data?.role !== ROLE.DEVELOPER
+            this.peer.data?.role !== ROLE.DEVELOPER
     ) {
       this.sendLockSound();
       return;
     }
-   
+
     if (this.block.fg === 2946) this.displayBlockPlace();
 
     if ((this.itemMeta?.id ?? 0) - 1 !== placedItem.id - 1) {
-      
+
       if (this.block.tree) {
-      
+
         const searchIds = [placedItem.id - 1, (this.itemMeta?.id ?? 0) - 1];
 
         const foundItem = this.base.items.wiki.find(item => {
@@ -269,7 +268,7 @@ export class TileChangeReq {
         }) || null;
 
         const foundItemId = foundItem ? foundItem.id.id + 1 : 0;
-        
+
         if (foundItemId !== 0) {
           this.peer.removeItemInven(this.tank.data?.info as number, 1);
         }
@@ -282,15 +281,14 @@ export class TileChangeReq {
           this.onFistDestroyedTree();
 
           await this.onPlaced(placedItemFound ?? placedItem);
-        //if (placed) {
-        //this.peer.removeItemInven(this.tank.data?.info as number, 1); // this code is unreachable, when placed is true it goes to onPlaced
-        //}
+          //if (placed) {
+          //this.peer.removeItemInven(this.tank.data?.info as number, 1); // this code is unreachable, when placed is true it goes to onPlaced
+          //}
         }
       } else {
         await this.onPlaced(placedItem);
       }
     }
-
     this.peer.inventory();
     this.peer.saveToCache();
     return;
@@ -316,16 +314,14 @@ export class TileChangeReq {
   private async onPlaced(placedItem: ItemDefinition) {
     const flags = placedItem.flags as number;
     const actionType = placedItem.type as number;
-
     if (this.tank.data?.info as number !== 32 || this.tank.data?.info as number !== 18 || this.tank.data?.info as number !== 0) {
       this.peer.removeItemInven(this.tank.data?.info as number, 1);
     }
-      
     const isBg =
-      this.base.items.metadata.items[this.tank.data?.info as number].type ===
-        ActionTypes.BACKGROUND ||
-      this.base.items.metadata.items[this.tank.data?.info as number].type ===
-        ActionTypes.SHEET_MUSIC;
+            this.base.items.metadata.items[this.tank.data?.info as number].type ===
+            ActionTypes.BACKGROUND ||
+            this.base.items.metadata.items[this.tank.data?.info as number].type ===
+            ActionTypes.SHEET_MUSIC;
 
     if (this.block.fg === 2946 && actionType !== ActionTypes.DISPLAY_BLOCK)
       return false;
@@ -460,7 +456,7 @@ export class TileChangeReq {
 
           if (
             typeof this.world.data.owner?.id === "number" &&
-            this.world.data.owner.id !== this.peer.data?.id_user
+                        this.world.data.owner.id !== this.peer.data?.id_user
           ) {
             this.peer.send(
               Variant.from(
@@ -511,7 +507,7 @@ export class TileChangeReq {
           this.world.data.blocks?.find(
             (b) =>
               b.lock?.ownerUserID &&
-              b.lock.ownerUserID !== this.peer.data?.id_user
+                            b.lock.ownerUserID !== this.peer.data?.id_user
           )
         ) {
           this.peer.send(
@@ -556,7 +552,7 @@ export class TileChangeReq {
         this.peer.every((pa) => {
           if (
             pa.data?.world === this.peer.data?.world &&
-            pa.data?.world !== "EXIT"
+                        pa.data?.world !== "EXIT"
           )
             pa.send(
               Variant.from(
@@ -593,8 +589,10 @@ export class TileChangeReq {
         const id = placedItem?.id as number;
         const item = this.base.items.metadata.items[id];
         const fruitCount =
-          Math.floor(Math.random() * 10 * (1 - (item.rarity || 0) / 1000)) + 1;
+                    Math.floor(Math.random() * 10 * (1 - (item.rarity || 0) / 1000)) + 1;
         const now = Date.now();
+
+        //this.peer.send(Variant.from("OnConsoleMessage", `\`2Placed Item Id ${this.itemMeta.id}`));
 
         this.block.tree = {
           fruit:        id - 1,
@@ -604,7 +602,6 @@ export class TileChangeReq {
         };
 
         placeBlock(fruitCount > 4 ? 4 : fruitCount);
-           
         Tile.tileUpdate(
           this.base,
           this.peer,
@@ -612,7 +609,6 @@ export class TileChangeReq {
           this.block,
           placedItem.type as number
         );
-
         break;
       }
 
@@ -628,13 +624,12 @@ export class TileChangeReq {
     if (!this.checkOwner()) return this.sendLockSound();
     if (
       typeof this.block.damage !== "number" ||
-      (this.block.resetStateAt as number) <= Date.now()
+            (this.block.resetStateAt as number) <= Date.now()
     )
       this.block.damage = 0;
-
     if (
       this.unbreakableBlocks.includes(this.itemMeta.id) &&
-      this.peer.data?.role !== ROLE.DEVELOPER
+            this.peer.data?.role !== ROLE.DEVELOPER
     ) {
       this.peer.send(
         Variant.from(
@@ -658,13 +653,50 @@ export class TileChangeReq {
     this.peer.every((p) => {
       if (
         p.data?.netID !== this.peer.data?.netID &&
-        p.data?.world === this.peer.data?.world &&
-        p.data?.world !== "EXIT"
+                p.data?.world === this.peer.data?.world &&
+                p.data?.world !== "EXIT"
       ) {
         p.send(this.tank);
       }
     });
   }
+
+  // If you will want to drop gems on the floor use the following code (fix is required)
+  //public splitGems(num: number) {
+  //  const gemValues = {
+  //    yellow: 1,
+  //    blue:   5,
+  //    red:    10,
+  //    green:  50,
+  //    purple: 100
+  //  };
+
+  //  const values = [];
+
+  //  for (const [gemName, gemValue] of Object.entries(gemValues).sort((a, b) => b[1] - a[1])) {
+  //    const maxGems = Math.floor(num / gemValue);
+  //    values.push(...Array(maxGems).fill(gemValue));
+  //    num -= maxGems * gemValue;
+  //    if (num === 0) {
+  //      break;
+  //    }
+  //  }
+
+  //  return values;
+  //}
+
+  //public dropRandomGems(min: number, max: number, block: Block) {
+  //  const randGems = Math.floor(Math.random() * (max - min + 1)) + min;
+  //  const arrGems = this.splitGems(randGems);
+
+  //  arrGems.forEach((v) => {
+  //    const extra = Math.random() * 6;
+
+  //    const x = (block.x as number) * 32 + extra;
+  //    const y = (block.y as number) * 32 + extra - Math.floor(Math.random() * (3 - -1) + -3);
+  //    this.world.drop(this.peer, x, y, 112, v, { tree: true, noSimilar: true });
+  //  });
+  //}
 
   private onFistDestroyed() {
     const placedItem = this.base.items.metadata.items.find(
@@ -683,15 +715,16 @@ export class TileChangeReq {
 
     this.block.rotatedLeft = undefined;
 
-          
     this.world.drop(
       this.peer,
       this.block.x * 32 + Math.floor(Math.random() * 16),
       this.block.y * 32 + Math.floor(Math.random() * 16),
-      this.randomizeDrop(this.itemMeta.id ?? - 1)  ?? 0,
+      this.randomizeDrop(this.itemMeta.id ?? - 1) ?? 0,
       1,
       { tree: true }
     );
+
+    this.calculateGemDrop();
 
     switch (this.itemMeta.type) {
       case ActionTypes.PORTAL:
@@ -728,7 +761,7 @@ export class TileChangeReq {
         this.peer.every((p) => {
           if (
             this.peer.data.world === p.data.world &&
-            p.data.world !== "EXIT"
+                        p.data.world !== "EXIT"
           ) {
             p.send(
               Variant.from("OnSetCurrentWeather", this.world.data.weatherId)
@@ -743,8 +776,8 @@ export class TileChangeReq {
           this.world.data.blocks?.forEach((b) => {
             if (
               b.lock &&
-              b.lock.ownerX === this.block.x &&
-              b.lock.ownerY === this.block.y
+                            b.lock.ownerX === this.block.x &&
+                            b.lock.ownerY === this.block.y
             )
               b.lock = undefined;
           });
@@ -779,7 +812,9 @@ export class TileChangeReq {
     else if (this.block.bg) this.block.bg = 0;
 
     (this.tank.data as Tank).type = TankTypes.TILE_CHANGE_REQUEST;
-    //(this.tank.data as Tank).info = 18;
+    (this.tank.data as Tank).info = 18;
+
+    this.calculateGemDrop()
 
     this.block.rotatedLeft = undefined;
 
@@ -802,19 +837,84 @@ export class TileChangeReq {
     );
   }
 
+  private calculateGemDrop() {
+    const rarity = this.itemMeta.rarity as number;
+    if (rarity <= 998) {
+      //this.peer.addExp(rarity / 5 > 0 ? rarity / 5 : 1);
+    }
+
+    // used Kukuri's code for gems drop https://discord.com/channels/617041217951236291/1109350502975676536/1322578761102917663
+    const amount = this.randomizeGemsDrop(rarity);
+    if (amount === 0) return;
+
+    if (isNaN(amount) || amount < 0) {
+      return this.peer.send(Variant.from("OnConsoleMessage", "`4Invalid amount. Please specify a positive number.`"));
+    }
+
+    const targetPlayer = this.peer.data;
+
+    if (targetPlayer) {
+
+      targetPlayer.gems += amount;
+      this.peer.send(Variant.from("OnConsoleMessage", `\`2Collected ${amount} gems`));
+
+      if (targetPlayer !== this.peer.data) {
+        const targetPeer = new Peer(this.base, targetPlayer?.netID);
+        console.log("Successfully added gems");
+        targetPeer.send(Variant.from("OnConsoleMessage", `\`2${this.peer.data.tankIDName} has added ${amount} gems to your account. You now have ${targetPlayer.gems} gems.`));
+      }
+
+      this.peer.send(Variant.from("OnSetBux", this.peer.data.gems));
+
+      this.peer.saveToCache();
+      this.peer.saveToDatabase();
+
+    }
+  }
+
+  // Trying to add more gems, because https://growtopia.fandom.com/wiki/Chandelier
+  // some items may drop more than gem calculation based on rarity
+  private randomizeGemsDrop(rarity: number) {
+    const max = Math.random();
+    let bonus = 0;
+    const threshold = Math.min(0.1 + (rarity / 100), 0.5); // Linear increase, caps on 0.5
+    // How it works: For rarity 5, threshold = 0.15, For rarity 30, threshold = 0.2
+    if (max <= threshold) {
+      bonus = 1;
+    }
+    if (rarity >= 30 && max <= 0.5) {
+      bonus = 5;
+    } else if (rarity >= 60 && max <= 0.6) {
+      bonus = 12;
+    } else if (rarity >= 60 && max <= 0.3) {
+      bonus = 5;
+    }
+
+    // Gem Calculation based on Rarity
+    let gems: number;
+    if (rarity < 30) {
+      gems = rarity / 12;
+    } else {
+      gems = rarity / 8;
+    }
+
+    return Math.floor(gems + bonus);
+  }
+
+  // Tried to find info about drop rates, here's an info on seeds: https://growtopia.fandom.com/wiki/Gems
+  // https://www.growtopiagame.com/forums/forum/general/guidebook/273543-farming-calculator%E2%80%94estimate-seeds-gems-xp-with-formula-explanations
+  // https://www.growtopiagame.com/forums/forum/general/guidebook/284860-beastly-s-calculator-hub/page12
   private randomizeDrop(id: number) {
     if (id === -1) {
-      return;
+      return 0; // was -1. block with id -1 can drop but when you will enter world with this dropped -1 id block it will throw an error 
     }
     const rand = Math.random();
-    if (rand < 0.2) {
-      return id;
-
-    } else if (rand < 0.5) {
-      return id + 1;
+    if (rand <= 0.22) {        // 2/9 chance
+      return id + 1;           // seed
+    } else if (rand <= 0.11) { // 1/9 chance
+      return id;               // block
     } else {
-
-      return;
+      return 0;
     }
   }
 
@@ -828,7 +928,7 @@ export class TileChangeReq {
     (this.tank.data as Tank).info = (this.block.damage as number) + 5;
 
     this.block.resetStateAt =
-      Date.now() + (this.itemMeta.resetStateAfter as number) * 1000;
+            Date.now() + (this.itemMeta.resetStateAfter as number) * 1000;
     // satisfies type
     (this.block.damage as number) += 1;
 
@@ -861,7 +961,7 @@ export class TileChangeReq {
         this.peer.every((p) => {
           if (
             this.peer.data.world === p.data.world &&
-            p.data.world !== "EXIT"
+                        p.data.world !== "EXIT"
           ) {
             p.send(
               Variant.from("OnSetCurrentWeather", this.world.data.weatherId)
