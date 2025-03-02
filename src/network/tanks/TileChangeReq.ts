@@ -637,6 +637,15 @@ export class TileChangeReq {
 
     this.block.rotatedLeft = undefined;
 
+    this.world.drop(
+      this.peer,
+      this.block.x * 32 + Math.floor(Math.random() * 16),
+      this.block.y * 32 + Math.floor(Math.random() * 16),
+      this.randomizeDrop(this.itemMeta.id ?? -1) ?? 0,
+      1,
+      { tree: true }
+    );
+
     switch (this.itemMeta.type) {
       case ActionTypes.PORTAL:
       case ActionTypes.DOOR:
@@ -707,6 +716,20 @@ export class TileChangeReq {
         }
         break;
       }
+    }
+  }
+  
+  private randomizeDrop(id: number) {
+    if (id === -1) {
+      return 0; // was -1. block with id -1 can drop but when you will enter world with this dropped -1 id block it will throw an error 
+    }
+    const rand = Math.random();
+    if (rand < 0.6) {
+      return id;
+    } else if (rand < 0.8) {
+      return id + 1;
+    } else {
+      return 0; 
     }
   }
 
