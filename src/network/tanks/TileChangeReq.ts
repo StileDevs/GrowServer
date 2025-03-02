@@ -249,7 +249,43 @@ export class TileChangeReq {
 
     if (this.block.fg === 2946) this.displayBlockPlace();
 
-    const placed = await this.onPlaced(placedItem);
+    if ((this.itemMeta?.id ?? 0) - 1 !== placedItem.id - 1) {
+      
+      if (this.block.tree) {
+      
+        const searchIds = [placedItem.id - 1, (this.itemMeta?.id ?? 0) - 1];
+
+        const foundItem = this.base.items.wiki.find(item => {
+
+          const spliceArray = item.recipe?.splice;
+          const bothIdsFound = spliceArray && searchIds.every(id => spliceArray.includes(id));
+
+          return bothIdsFound;
+
+        }) || null;
+
+        const foundItemId = foundItem ? foundItem.id.id + 1 : 0;
+        
+        if (foundItemId !== 0) {
+          this.peer.removeItemInven(this.tank.data?.info as number, 1);
+        }
+
+        const placedItemFound = this.base.items.metadata.items.find(
+          (i) => i.id === foundItemId
+        );
+
+        if (placedItemFound && placedItemFound.id !== 0) {
+          this.onFistDestroyedTree();
+
+          await this.onPlaced(placedItemFound ?? placedItem);
+        //if (placed) {
+        //this.peer.removeItemInven(this.tank.data?.info as number, 1); // this code is unreachable, when placed is true it goes to onPlaced
+        //}
+        }
+      } else {
+        await this.onPlaced(placedItem);
+      }
+    }
 
     if (placed) this.peer.removeItemInven(this.tank.data?.info as number, 1);
     this.peer.inventory();
@@ -277,6 +313,11 @@ export class TileChangeReq {
   private async onPlaced(placedItem: ItemDefinition) {
     const flags = placedItem.flags as number;
     const actionType = placedItem.type as number;
+
+    if (this.tank.data?.info as number !== 32 || this.tank.data?.info as number !== 18 || this.tank.data?.info as number !== 0) {
+      this.peer.removeItemInven(this.tank.data?.info as number, 1);
+    }
+      
     const isBg =
       this.base.items.metadata.items[this.tank.data?.info as number].type ===
         ActionTypes.BACKGROUND ||
@@ -641,7 +682,7 @@ export class TileChangeReq {
       this.peer,
       this.block.x * 32 + Math.floor(Math.random() * 16),
       this.block.y * 32 + Math.floor(Math.random() * 16),
-      this.randomizeDrop(this.itemMeta.id ?? -1) ?? 0,
+      this.randomizeDrop(this.itemMeta.id ?? - 1)  ?? 0,
       1,
       { tree: true }
     );
@@ -719,6 +760,42 @@ export class TileChangeReq {
     }
   }
   
+  private onFistDestroyedTree() {
+    const placedItem = this.base.items.metadata.items.find(
+      (i) => i.id === this.tank.data?.info
+    );
+    if (!placedItem || !placedItem.id) return;
+
+    this.block.damage = 0;
+    this.block.resetStateAt = 0;
+
+    if (this.block.fg) this.block.fg = 0;
+    else if (this.block.bg) this.block.bg = 0;
+
+    (this.tank.data as Tank).type = TankTypes.TILE_CHANGE_REQUEST;
+    //(this.tank.data as Tank).info = 18;
+
+    this.block.rotatedLeft = undefined;
+
+    this.block.tree = undefined;
+    this.block.fg = 0x0;
+
+    this.peer.every(
+      (p) =>
+        p.data?.world === this.peer.data?.world &&
+                p.data?.world !== "EXIT" &&
+                p.send(
+                  TankPacket.from({
+                    type:        TankTypes.SEND_TILE_TREE_STATE,
+                    netID:       this.peer.data?.netID,
+                    targetNetID: -1,
+                    xPunch:      this.block.x,
+                    yPunch:      this.block.y
+                  })
+                )
+    );
+  }
+
   private randomizeDrop(id: number) {
     if (id === -1) {
       return 0; // was -1. block with id -1 can drop but when you will enter world with this dropped -1 id block it will throw an error 

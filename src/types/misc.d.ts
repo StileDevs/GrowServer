@@ -15,7 +15,7 @@ export interface Cache {
 }
 
 export interface ItemsInfo {
-  id: number;
+  id: any;
   name: string;
   desc: string;
   recipe?: Recipe;
