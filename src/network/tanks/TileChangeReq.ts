@@ -204,7 +204,8 @@ export class TileChangeReq {
   private async onPlace() {
     const placedItem = this.base.items.metadata.items.find(
       (i) => i.id === this.tank.data?.info
-    );
+    );    
+
     const mLock = LOCKS.find((l) => l.id === placedItem?.id);
     const mainLock = this.block.lock
       ? this.world.data.blocks[
@@ -246,7 +247,7 @@ export class TileChangeReq {
       this.sendLockSound();
       return;
     }
-
+   
     if (this.block.fg === 2946) this.displayBlockPlace();
 
     if ((this.itemMeta?.id ?? 0) - 1 !== placedItem.id - 1) {
@@ -260,6 +261,9 @@ export class TileChangeReq {
           const spliceArray = item.recipe?.splice;
           const bothIdsFound = spliceArray && searchIds.every(id => spliceArray.includes(id));
 
+          //if (bothIdsFound) {
+          //  console.log(`Item ${item.name} has both IDs: ${searchIds}`);
+          //}
           return bothIdsFound;
 
         }) || null;
@@ -287,7 +291,6 @@ export class TileChangeReq {
       }
     }
 
-    if (placed) this.peer.removeItemInven(this.tank.data?.info as number, 1);
     this.peer.inventory();
     this.peer.saveToCache();
     return;
@@ -601,6 +604,7 @@ export class TileChangeReq {
         };
 
         placeBlock(fruitCount > 4 ? 4 : fruitCount);
+           
         Tile.tileUpdate(
           this.base,
           this.peer,
@@ -608,6 +612,7 @@ export class TileChangeReq {
           this.block,
           placedItem.type as number
         );
+
         break;
       }
 
@@ -678,6 +683,7 @@ export class TileChangeReq {
 
     this.block.rotatedLeft = undefined;
 
+          
     this.world.drop(
       this.peer,
       this.block.x * 32 + Math.floor(Math.random() * 16),
@@ -759,7 +765,7 @@ export class TileChangeReq {
       }
     }
   }
-  
+
   private onFistDestroyedTree() {
     const placedItem = this.base.items.metadata.items.find(
       (i) => i.id === this.tank.data?.info
@@ -798,15 +804,17 @@ export class TileChangeReq {
 
   private randomizeDrop(id: number) {
     if (id === -1) {
-      return 0; // was -1. block with id -1 can drop but when you will enter world with this dropped -1 id block it will throw an error 
+      return;
     }
     const rand = Math.random();
-    if (rand < 0.6) {
+    if (rand < 0.2) {
       return id;
-    } else if (rand < 0.8) {
+
+    } else if (rand < 0.5) {
       return id + 1;
     } else {
-      return 0; 
+
+      return;
     }
   }
 
