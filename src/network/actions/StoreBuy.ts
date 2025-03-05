@@ -3,6 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
+import { ActionTypes } from "../../Constants";
 
 type TabConfig = {
   id: string;
@@ -17,6 +18,7 @@ type StoreItem = {
   image?: string;
   imagePos?: { x: number; y: number };
   cost?: string | number;
+  itemId?: number;
 };
 
 export class StoreBuy {
@@ -32,70 +34,78 @@ export class StoreBuy {
   private readonly storeItems: Record<string, StoreItem[]> = {
     main: [
       {
-        name:        "test_store",
+
+        name:        "test_store1",
         title:       "After swtich tab",
         description: "Hello",
         image:       "interface/large/store_buttons/store_buttons.rttex",
         imagePos:    { x: 1, y: 1 },
-        cost:        2000
+        cost:        2,
+        itemId:      4272
       },
       {
-        name:        "test_store",
-        title:       "Test",
+        name:        "wooden_background",
+        title:       "Wooden Background",
         description: "Hello",
         image:       "interface/large/store_buttons/store_buttons.rttex",
         imagePos:    { x: 1, y: 0 },
-        cost:        200000
+        cost:        20,
+        itemId:      52
       }
     ],
     player: [
       {
-        name:        "test_store",
+        name:        "test_store3",
         title:       "Test",
         description: "Hello",
         image:       "interface/large/store_buttons/store_buttons.rttex",
         imagePos:    { x: 2, y: 0 },
-        cost:        50000
+        cost:        50,
+        itemId:      4272
       }
     ],
     locks: [
       {
-        name:        "test_store",
+        name:        "test_store4",
         title:       "Test",
         description: "Hello",
         image:       "interface/large/store_buttons/store_buttons.rttex",
         imagePos:    { x: 3, y: 0 },
-        cost:        5000
+        cost:        5,
+        itemId:      4272
       }
     ],
     itempacks: [
       {
-        name:        "test_store",
+        name:        "test_store5",
         title:       "Test",
         description: "Hello",
         image:       "interface/large/store_buttons/store_buttons.rttex",
         imagePos:    { x: 4, y: 0 },
-        cost:        10000
+        cost:        1,
+        itemId:      4272
       }
     ],
     creativity: [
       {
-        name:        "test_store",
+        name:        "test_store6",
         title:       "Test",
         description: "Hello",
         image:       "interface/large/store_buttons/store_buttons.rttex",
         imagePos:    { x: 5, y: 0 },
-        cost:        15000
+        cost:        15,
+        itemId:      4272
       }
     ],
     token: [
       {
-        name:        "test_store",
+        name:        "test_store7",
         title:       "Test",
         description: "Hello",
         image:       "interface/large/store_buttons/store_buttons.rttex",
         imagePos:    { x: 6, y: 0 },
-        cost:        1000
+        cost:        10,
+        itemId:      4272
       }
     ]
   };
@@ -103,7 +113,7 @@ export class StoreBuy {
   constructor(
     public base: Base,
     public peer: Peer
-  ) {}
+  ) { }
 
   private createTabButtons(activeTab: string): string {
     const buttons = this.tabs.map((tab) => {
@@ -114,6 +124,16 @@ export class StoreBuy {
     const dialog = new DialogBuilder();
     buttons.forEach((button) => dialog.raw(button).addSpacer("small"));
     return dialog.str();
+  }
+
+  findStoreItemByName(name: string): StoreItem | undefined {
+    for (const category in this.storeItems) {
+      const item = this.storeItems[category].find(item => item.name === name);
+      if (item) {
+        return item;
+      }
+    }
+    return undefined;
   }
 
   private addStoreItems(
@@ -160,11 +180,18 @@ export class StoreBuy {
       "token"
     ];
 
-    if (!validTabs.includes(action.item)) {
-      return;
+    const dialog = this.createStoreDialog(action.item);
+
+    this.peer.send(Variant.from("OnStoreRequest", dialog));
+    this.peer.send(Variant.from("OnStorePurchaseResult"));
+    const actionItem = this.findStoreItemByName(action.item);
+    if ((!validTabs.includes(action.item) && this.findStoreItemByName(action.item))) {
+      this.peer.addItemInven(actionItem?.itemId as number, 1);
+      this.peer.data.gems -= (actionItem?.cost as number) ?? 0
+      this.peer.send("OnSetBux", this.peer.data.gems)
     }
 
-    const dialog = this.createStoreDialog(action.item);
-    this.peer.send(Variant.from("OnStoreRequest", dialog));
+    this.peer.saveToCache();
+    this.peer.saveToDatabase();
   }
 }
