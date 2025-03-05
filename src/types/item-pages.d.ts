@@ -6,7 +6,7 @@ export interface ItemsInfo {
   desc: string;
   recipe?: Recipe;
   func?: ItemInfoFunc;
-  chi?: "earth" | "wind" | "fire" | "water";
+  chi?: "earth" | "wind" | "fire" | "water" | "";
 }
 
 export interface ItemInfoFunc {

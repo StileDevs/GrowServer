@@ -1,13 +1,13 @@
 import { ItemDefinition } from "growtopia.js";
 import { Template } from "mwparser";
 
-class TemplateParser {
+export class TemplateParser {
 
   public readonly _chi = ["earth", "wind", "fire", "water"];
 
   constructor(public items: ItemDefinition[]) {}
 
-  public itemIdFromName(item_name) {
+  public itemIdFromName(item_name: string) {
     const item = this.items.find((item) => item.name === item_name);
     if (item) {
       return Number(item.id);

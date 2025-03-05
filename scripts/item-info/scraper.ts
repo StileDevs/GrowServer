@@ -36,13 +36,12 @@ export class Scraper {
     consola.log(`📡ItemsInfo part ${iterateNum}, starting post request`);
     
 
-    const names = this.items.map((i) => i.name);
+    const names = items.map((i) => i.name);
     const postData = new URLSearchParams({
       title:   "Special:Export",
       pages:   names.join("\n"),
       curonly: "1"
     });
-
 
     const [text, status] = await this.fetchWiki(postData);
 
@@ -51,7 +50,6 @@ export class Scraper {
     } else {
       consola.error(`ItemsInfo part ${iterateNum}, status: ${status}`);
     }
-
 
     const result = {
       text,
@@ -70,8 +68,10 @@ export class Scraper {
       body:   postData
     });
 
+
+
     if (response.status !== 200) return [null, response.statusText];
-  
+    
     const text = await response.text();
   
     return [text, response.statusText];
