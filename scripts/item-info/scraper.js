@@ -16,7 +16,7 @@ async function split_item_list(item_list, split) {
 
 async function get_item_pages(item_list, split) {
   const sublists = await split_item_list(item_list, split);
-
+  
   const tasks = sublists.map((sublist, i) => post_request(sublist, i + 1));
   const results = await Promise.all(tasks);
 
@@ -28,13 +28,17 @@ async function get_item_pages(item_list, split) {
 async function post_request(item_list, count) {
   consola.log(`📡ItemsInfo part ${count}, starting post request`);
 
+  const ids = item_list.map((i) => i.id);
+  const names = item_list.map((i) => i.name);
   const post_data = new URLSearchParams({
     title:   "Special:Export",
-    pages:   item_list.join("\n"),
+    pages:   names.join("\n"),
     curonly: 1
   });
 
   const [res, status] = await fetchWiki(post_data);
+
+
 
   if (res !== null) {
     consola.success(`ItemsInfo part ${count}, status: ${status}`);
@@ -42,7 +46,13 @@ async function post_request(item_list, count) {
     consola.error(`ItemsInfo part ${count}, status: ${status}`);
   }
 
-  return res;
+  const result = {
+    ids,
+    names,
+    text: res
+  }
+
+  return result;
 }
 
 module.exports = {

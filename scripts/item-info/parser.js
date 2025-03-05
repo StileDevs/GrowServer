@@ -13,6 +13,7 @@ async function pages_to_items(pages, item_list) {
   const parsed_items = [];
 
   template_parser.item_list = item_list;
+
   for (const page of pages) {
     parsed_items.push(...(await parse_xml_page(page)));
   }
@@ -22,11 +23,15 @@ async function pages_to_items(pages, item_list) {
 
 async function parse_xml_page(page) {
   const page_items_parsed = [];
-  const doc = XParser.parse(page);
+  const doc = XParser.parse(page.text);
 
-  for (const page of doc.mediawiki.page) {
-    const item_name = page.title;
-    const page_text = page.revision.text;
+  console.log(doc.mediawiki.page.length, page.ids.length, page.text.length)
+  for (const [itemId, index] of page.ids.entries()) {
+    console.log(itemId,index)
+  }
+  for (const paged of doc.mediawiki.page) {
+    const item_name = paged.title;
+    const page_text = paged.revision.text;
     page_items_parsed.push(parse_item_data(item_name, page_text));
   }
 
@@ -34,7 +39,11 @@ async function parse_xml_page(page) {
 }
 
 function parse_item_data(item_name, page_text) {
-  let item_data = { id: template_parser.item_list.find((v) => v.name === item_name), name: item_name, recipe: {}, func: {} };
+  const item = template_parser.item_list.find((v) => v.name === item_name);
+  if (item === undefined) {
+    console.log(item, item_name);
+  }
+  let item_data = { id: item, name: item_name, recipe: {}, func: {} };
   const parsed_wiki = parse(page_text); // parses wikitext to a nodelist where you can easily filter templates
 
   for (const template of parsed_wiki.templates) {

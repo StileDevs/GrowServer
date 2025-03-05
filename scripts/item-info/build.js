@@ -19,12 +19,14 @@ async function build(split) {
 
   const item_list = [];
 
-  items_dat.meta.items.forEach((item) => {
+
+  for (const item of items_dat.meta.items) {
     item_list.push({ id: item.id, name: item.name });
-  });
+  }
+
 
   const item_names = item_list.map((item) => item.name);
-  const item_pages = await get_item_pages(item_names, split);
+  const item_pages = await get_item_pages(item_list, split);
 
   const parsed_items = await pages_to_items(item_pages, item_list);
 
