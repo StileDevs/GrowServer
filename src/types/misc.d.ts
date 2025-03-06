@@ -15,6 +15,14 @@ export interface Cache {
 }
 
 
+export interface ItemsInfo {
+  id: number;
+  name: string;
+  desc: string;
+  recipe?: Recipe;
+  func?: ItemInfoFunc;
+  chi?: "earth" | "wind" | "fire" | "water";
+}
 
 export interface MipMap {
   width: number;

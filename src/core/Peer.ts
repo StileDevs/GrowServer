@@ -266,6 +266,9 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public removeItemInven(id: number, amount = 1) {
+    if (id === 0 || id === -1 || id === 32 || id === 18) {
+      return;
+    }
     const item = this.data.inventory.items.find((i) => i.id === id);
 
     if (item) {
