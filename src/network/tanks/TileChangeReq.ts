@@ -345,6 +345,10 @@ export class TileChangeReq {
       case ActionTypes.LAVA:
       case ActionTypes.PLATFORM:
       case ActionTypes.FOREGROUND:
+      case ActionTypes.BOOMBOX:
+      case ActionTypes.FOREGROUND_WITH_EXTRA_FRAME:
+      case ActionTypes.PHASED_BLOCK:
+      case ActionTypes.PHASED_BLOCK_2:
       case ActionTypes.BACKGROUND: {
         placeBlock();
         Tile.tileUpdate(
@@ -909,9 +913,9 @@ export class TileChangeReq {
       return 0; // was -1. block with id -1 can drop but when you will enter world with this dropped -1 id block it will throw an error 
     }
     const rand = Math.random();
-    if (rand <= 0.22) {        // 2/9 chance
+    if (rand <= 0.33) {        // 2/9 chance
       return id + 1;           // seed
-    } else if (rand <= 0.11) { // 1/9 chance
+    } else if (rand <= 0.21) { // 1/9 chance
       return id;               // block
     } else {
       return 0;

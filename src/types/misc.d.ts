@@ -14,7 +14,6 @@ export interface Cache {
   cooldown: Collection<string, CooldownOptions>;
 }
 
-
 export interface ItemsInfo {
   id: number;
   name: string;
