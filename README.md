@@ -64,7 +64,7 @@ In order to make new login system work you need to install [mkcert](https://gith
 Install the mkcert local CA by
 
 ```
-$ npm run mkcert:setup
+$ mkcert -install
 ```
 
 ### Hosts
