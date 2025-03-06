@@ -267,7 +267,7 @@ export class TileChangeReq {
 
         }) || null;
 
-        const foundItemId = foundItem ? foundItem.id.id + 1 : 0;
+        const foundItemId = foundItem ? foundItem.id + 1 : 0;
 
         if (foundItemId !== 0) {
           this.peer.removeItemInven(this.tank.data?.info as number, 1);
