@@ -37,10 +37,10 @@ importers:
         version: 16.4.7
       drizzle-orm:
         specifier: ^0.31.2
-        version: 0.31.4(@libsql/client@0.14.0)(bun-types@1.2.0)
+        version: 0.31.4(@libsql/client@0.14.0)(bun-types@1.2.4)
       drizzle-zod:
         specifier: ^0.5.1
-        version: 0.5.1(drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.2.0))(zod@3.24.1)
+        version: 0.5.1(drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.2.4))(zod@3.24.1)
       fast-xml-parser:
         specifier: ^4.5.0
         version: 4.5.1
@@ -79,8 +79,8 @@ importers:
         specifier: ^2.4.6
         version: 2.4.6
       '@types/bun':
-        specifier: ^1.1.14
-        version: 1.2.0
+        specifier: ^1.2.4
+        version: 1.2.4
       '@types/decompress':
         specifier: ^4.2.7
         version: 4.2.7
@@ -88,8 +88,8 @@ importers:
         specifier: ^9.0.7
         version: 9.0.8
       '@types/node':
-        specifier: ^22.5.5
-        version: 22.10.10
+        specifier: ^22.13.9
+        version: 22.13.9
       drizzle-kit:
         specifier: ^0.22.8
         version: 0.22.8
@@ -683,8 +683,8 @@ packages:
   '@types/bcryptjs@2.4.6':
     resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
 
-  '@types/bun@1.2.0':
-    resolution: {integrity: sha512-5N1JqdahfpBlAv4wy6svEYcd/YfO2GNrbL95JOmFx8nkE6dbK4R0oSE5SpBA4vBRqgrOUAXF8Dpiz+gi7r80SA==}
+  '@types/bun@1.2.4':
+    resolution: {integrity: sha512-QtuV5OMR8/rdKJs213iwXDpfVvnskPXY/S0ZiFbsTjQZycuqPbMW8Gf/XhLfwE5njW8sxI2WjISURXPlHypMFA==}
 
   '@types/decompress@4.2.7':
     resolution: {integrity: sha512-9z+8yjKr5Wn73Pt17/ldnmQToaFHZxK0N1GHysuk/JIPT8RIdQeoInM01wWPgypRcvb6VH1drjuFpQ4zmY437g==}
@@ -701,8 +701,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@22.10.10':
-    resolution: {integrity: sha512-X47y/mPNzxviAGY5TcYPtYL8JsY3kAq2n8fMmKoRCxq/c4v4pyGNCzM2R6+M5/umG4ZfHuT+sgqDYqWc9rJ6ww==}
+  '@types/node@22.13.9':
+    resolution: {integrity: sha512-acBjXdRJ3A6Pb3tqnw9HZmyR3Fiol3aGxRCK1x3d+6CDAMjl7I649wpSd+yNURCjbOUGu9tqtLKnTGxmK6CyGw==}
 
   '@types/ws@8.5.14':
     resolution: {integrity: sha512-bd/YFLW+URhBzMXurx7lWByOu+xzU9+kb3RboOteXYDfW+tr+JZa99OyNmPINEGB/ahzKrEuc8rcv4gnpJmxTw==}
@@ -856,8 +856,8 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
-  bun-types@1.2.0:
-    resolution: {integrity: sha512-KEaJxyZfbV/c4eyG0vyehDpYmBGreNiQbZIqvVHJwZ4BmeuWlNZ7EAzMN2Zcd7ailmS/tGVW0BgYbGf+lGEpWw==}
+  bun-types@1.2.4:
+    resolution: {integrity: sha512-nDPymR207ZZEoWD4AavvEaa/KZe/qlrbMSchqpQwovPZCKc7pwMoENjEtHgMKaAjJhy+x6vfqSBA1QU3bJgs0Q==}
 
   callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
@@ -2164,13 +2164,13 @@ snapshots:
 
   '@types/bcryptjs@2.4.6': {}
 
-  '@types/bun@1.2.0':
+  '@types/bun@1.2.4':
     dependencies:
-      bun-types: 1.2.0
+      bun-types: 1.2.4
 
   '@types/decompress@4.2.7':
     dependencies:
-      '@types/node': 22.10.10
+      '@types/node': 22.13.9
 
   '@types/estree@1.0.6': {}
 
@@ -2179,17 +2179,17 @@ snapshots:
   '@types/jsonwebtoken@9.0.8':
     dependencies:
       '@types/ms': 2.1.0
-      '@types/node': 22.10.10
+      '@types/node': 22.13.9
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@22.10.10':
+  '@types/node@22.13.9':
     dependencies:
       undici-types: 6.20.0
 
   '@types/ws@8.5.14':
     dependencies:
-      '@types/node': 22.10.10
+      '@types/node': 22.13.9
 
   '@typescript-eslint/eslint-plugin@8.21.0(@typescript-eslint/parser@8.21.0(eslint@9.19.0)(typescript@5.7.3))(eslint@9.19.0)(typescript@5.7.3)':
     dependencies:
@@ -2375,9 +2375,9 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bun-types@1.2.0:
+  bun-types@1.2.4:
     dependencies:
-      '@types/node': 22.10.10
+      '@types/node': 22.13.9
       '@types/ws': 8.5.14
 
   callsites@3.1.0: {}
@@ -2473,14 +2473,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.2.0):
+  drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.2.4):
     optionalDependencies:
       '@libsql/client': 0.14.0
-      bun-types: 1.2.0
+      bun-types: 1.2.4
 
-  drizzle-zod@0.5.1(drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.2.0))(zod@3.24.1):
+  drizzle-zod@0.5.1(drizzle-orm@0.31.4(@libsql/client@0.14.0)(bun-types@1.2.4))(zod@3.24.1):
     dependencies:
-      drizzle-orm: 0.31.4(@libsql/client@0.14.0)(bun-types@1.2.0)
+      drizzle-orm: 0.31.4(@libsql/client@0.14.0)(bun-types@1.2.4)
       zod: 3.24.1
 
   eastasianwidth@0.2.0: {}
