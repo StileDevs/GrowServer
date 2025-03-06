@@ -1,12 +1,11 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable no-undef */
 "use strict";
 
-const { players } = require("../dist/src/database/schemas/Player");
-// const { worlds } = require("../dist/src/database/schemas/World");
-const { drizzle } = require("drizzle-orm/libsql");
-const { createClient } = require("@libsql/client");
-const bcrypt = require("bcryptjs");
+
+import { players } from "../src/database/schemas/Player";
+// import { worlds } from "../src/database/schemas/World";
+import { drizzle } from "drizzle-orm/libsql";
+import { createClient } from "@libsql/client";
+import bcrypt from "bcryptjs";
 
 /**
  * @param {string} password

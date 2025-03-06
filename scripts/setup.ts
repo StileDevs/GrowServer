@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-/* eslint-disable no-undef */
 "use strict";
 
-const fs = require("fs");
+import fs from "fs";
 
 function init() {
   setupEnv();
