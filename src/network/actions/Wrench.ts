@@ -15,12 +15,12 @@ export class Wrench {
     return new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(
-        `${this.peer.name}\`w's Information (${this.peer.data.id_user})`,
+        `${this.peer.name}\`w's Information (uid: ${this.peer.data.id_user})`,
         32,
         "big"
       )
       .addTextBox(`Player Infomation`)
-      .addSmallText(`Level: ${this.peer.data.level || 1}`)
+      .addSmallText(`Level: ${this.peer.data.level || 1} (${this.peer.data.exp}/${this.peer.calculateRequiredLevelXp(this.peer.data.level)})`)
       .addSmallText(`Gems: ${this.peer.data.gems || 0}`)
       .addSmallText(`NetID: ${this.peer.data.netID}`);
   }

@@ -718,7 +718,7 @@ export class TileChangeReq {
     (this.tank.data as Tank).info = 18;
 
     this.block.rotatedLeft = undefined;
-
+    this.peer.addXp(Math.max(1, Math.round((this.itemMeta.rarity ?? 0) / 5)) * 5 / 5, false);
     this.world.drop(
       this.peer,
       this.block.x * 32 + Math.floor(Math.random() * 16),
@@ -938,6 +938,7 @@ export class TileChangeReq {
 
     switch (this.itemMeta.type) {
       case ActionTypes.SEED: {
+        this.peer.addXp(((Math.round(this.itemMeta.rarity ?? 0 / 5) * 5 ) / 5), false);
         this.world.harvest(this.peer, this.block);
         break;
       }
