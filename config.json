@@ -13,7 +13,7 @@
       "key": "./assets/ssl/server.key",
       "cert": "./assets/ssl/server.crt"
     },
-    "cdnUrl": "growserver-cache.jad.li"
+    "cdnUrl": "growserver-cache.netlify.app"
   },
   "webFrontend": {
     "root": "./.cache/website",
