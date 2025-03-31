@@ -42,6 +42,7 @@ export async function Web(base: Base) {
   const certPem = await getFile(
     base.config.webFrontend.tls.cert
   );
+
   if (process.env.RUNTIME_ENV === "node") {
     serve(
       {

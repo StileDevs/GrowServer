@@ -6,7 +6,9 @@ import {
   setupMkcert,
   checkPortInUse,
   downloadWebsite,
-  setupWebsite
+  setupWebsite,
+  downloadItemsDat,
+  fetchJSON
 } from "../utils/Utils";
 import { join } from "path";
 import { ConnectListener } from "../events/Connect";
@@ -15,7 +17,7 @@ import { type PackageJson } from "type-fest";
 import { RawListener } from "../events/Raw";
 import consola from "consola";
 import { readFileSync } from "fs";
-import { Cache, CDNContent, CustomItemsConfig, ItemsInfo } from "../types";
+import { Cache, CDNContent, CustomItemsConfig, ItemsData, ItemsInfo } from "../types";
 import { Collection } from "../utils/Collection";
 import { Database } from "../database/Database";
 import { Peer } from "./Peer";
@@ -28,7 +30,7 @@ __dirname = process.cwd();
 
 export class Base {
   public server: Client;
-  public items;
+  public items: ItemsData;
   public package: PackageJson;
   public config: typeof import('../../config.json');
   public cdn: CDNContent;
@@ -41,20 +43,19 @@ export class Base {
         ip: "0.0.0.0",
       }
     });
-    this.items = {
-      hash:     `${hashItemsDat(readFileSync(join(__dirname, "assets", "dat", "items.dat")))}`,
-      content:  readFileSync(join(__dirname, "assets", "dat", "items.dat")),
-      // wiki: JSON.parse(fs.readFileSync("./assets/items_info.json", "utf-8")) as WikiItems[],
-      metadata: {} as ItemsDatMeta,
-      wiki:     [] as ItemsInfo[]
-    };
     this.package = JSON.parse(
       readFileSync(join(__dirname, "package.json"), "utf-8")
     );
     this.config = JSON.parse(
       readFileSync(join(__dirname, "config.json"), "utf-8")
     );
-    this.cdn = { version: "", uri: "0000/0000" };
+    this.cdn = { version: "", uri: "0000/0000", itemsDatName: "" };
+    this.items = {
+      content:  Buffer.alloc(0),
+      hash:     "",
+      metadata: {} as ItemsDatMeta,
+      wiki:     []
+    }
     this.cache = {
       peers:    new Collection(),
       worlds:   new Collection(),
@@ -83,10 +84,23 @@ export class Base {
 
       await downloadMkcert();
       await setupMkcert();
-
+      
       await downloadWebsite();
       await setupWebsite();
       this.cdn = await this.getLatestCdn();
+      await downloadItemsDat(this.cdn.itemsDatName);
+      
+      consola.info(`Parsing ${this.cdn.itemsDatName}`)
+      const datDir = join(__dirname, ".cache", "growtopia", "dat");
+      const datName = join(datDir, this.cdn.itemsDatName);
+      const itemsDat = readFileSync(datName);
+
+      this.items = {
+        hash:     `${hashItemsDat(itemsDat)}`,
+        content:  itemsDat,
+        metadata: {} as ItemsDatMeta,
+        wiki:     [] as ItemsInfo[]
+      }
       await Web(this);
 
       consola.log(`🔔Starting ENet server on port ${port}`);
@@ -253,21 +267,21 @@ export class Base {
   }
 
   public async getLatestCdn() {
+
     try {
-      const res = await request(
-        "https://mari-project.jad.li/api/v1/growtopia/cache/latest",
-        {
-          method: "GET"
-        }
-      );
+      const cdnData = await fetchJSON("https://mari-project.jad.li/api/v1/growtopia/cache/latest") as CDNContent;
+      const itemsDat = await fetchJSON("https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main/latest.json") as { content: string };
+     
+      const data: CDNContent = {
+        version:      cdnData.version,
+        uri:          cdnData.uri,
+        itemsDatName: itemsDat.content
+      }
 
-      if (res.statusCode !== 200) return { version: "", uri: "" };
-
-      const data = await res.body.json();
-      return data as CDNContent;
+      return data;
     } catch (e) {
       consola.error(`Failed to get latest CDN: ${e}`);
-      return { version: "", uri: "" };
+      return { version: "", uri: "", itemsDatName: "" };
     }
   }
 

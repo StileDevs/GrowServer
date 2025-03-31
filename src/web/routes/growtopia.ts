@@ -49,12 +49,6 @@ export class GrowtopiaRoute {
         });
     this.app.use("/cache/*", staticMiddleware);
 
-    this.app.get("/cache/*", (ctx) => {
-      const route = ctx.req.url.split("/growtopia/cache/")[1];
-      const url = `https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/cache/${route}`;
-      return ctx.redirect(url);
-    });
-
     return this.app;
   }
 }
