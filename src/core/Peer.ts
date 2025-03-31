@@ -441,4 +441,38 @@ export class Peer extends OldPeer<PeerData> {
   public isValid(): boolean {
     return this.data && this.data.netID !== undefined;
   }
+
+
+  // Xp formulas sources: https://www.growtopiagame.com/forums/forum/general/guidebook/7120124-level-125-xp-calculator-and-data-updated-calculator
+  // https://growtopia.fandom.com/wiki/Leveling
+  // https://growtopia.fandom.com/wiki/User_blog:LightningWizardz/GROWTOPIA_FORMULA_(Rough_Calculation_Mode)
+  public addXp(amount: number, bonus: boolean){
+    const playerLvl = this.data.level;
+    // check playmods
+    // check bonuses
+    this.data.exp += amount;
+    if (this.data.exp >= this.calculateRequiredLevelXp(playerLvl)){
+      this.data.level++;
+      this.data.exp = 0;
+      this.send(
+        Variant.from(
+          "OnTalkBubble",
+          this.data.netID,
+          this.name + " is now level " + this.data.level
+        ),
+        Variant.from(
+          "OnConsoleMessage",
+          this.data.netID,
+          this.name + " is now level " + this.data.level + "!"
+        )
+      )
+    } 
+    this.saveToCache();
+    this.saveToDatabase();
+  }
+
+  public calculateRequiredLevelXp(lvl: number): number{
+    const requiredXp = 50 * ((lvl * lvl) + 2); 
+    return requiredXp;
+  }
 }
