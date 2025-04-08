@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { readFileSync } from "fs";
 import { join } from "path";
 import consola from "consola";
+import type { FormData } from "undici";
 
 __dirname = process.cwd();
 export class PlayerRoute {
@@ -67,7 +68,7 @@ export class PlayerRoute {
 
     this.app.post("/growid/checktoken", async (ctx) => {
       try {
-        const formData = await ctx.req.formData();
+        const formData = await ctx.req.formData() as FormData;
         const refreshToken = formData.get("refreshToken") as string;
 
         if (!refreshToken) throw new Error("Unauthorized");

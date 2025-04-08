@@ -79,7 +79,6 @@ export async function Web(base: Base) {
     Bun.serve({
       fetch: app.fetch,
       port:  base.config.web.port,
-      // @ts-expect-error probably a bug in the types
       tls:   {
         key,
         cert
@@ -89,7 +88,6 @@ export async function Web(base: Base) {
     Bun.serve({
       fetch: app.fetch,
       port:  base.config.webFrontend.port,
-      // @ts-expect-error probably a bug in the types
       tls:   {
         key:  keyPem,
         cert: certPem
