@@ -63,8 +63,8 @@ importers:
         specifier: ^3.3.7
         version: 3.3.8
       undici:
-        specifier: ^6.19.8
-        version: 6.21.1
+        specifier: ^7.7.0
+        version: 7.7.0
       zod:
         specifier: ^3.23.8
         version: 3.24.1
@@ -1424,6 +1424,7 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
+    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   locate-path@6.0.0:
@@ -1734,9 +1735,9 @@ packages:
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
 
-  undici@6.21.1:
-    resolution: {integrity: sha512-q/1rj5D0/zayJB2FraXdaWxbhWiNKDvu8naDT2dl1yTlvJp4BLtOcp2a5BvgGNQpYYJzau7tf1WgKv3b+7mqpQ==}
-    engines: {node: '>=18.17'}
+  undici@7.7.0:
+    resolution: {integrity: sha512-tZ6+5NBq4KH35rr46XJ2JPFKxfcBlYNaqLF/wyWIO9RMHqqU/gx/CLB1Y2qMcgB8lWw/bKHa7qzspqCN7mUHvA==}
+    engines: {node: '>=20.18.1'}
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -3195,7 +3196,7 @@ snapshots:
 
   undici-types@6.20.0: {}
 
-  undici@6.21.1: {}
+  undici@7.7.0: {}
 
   uri-js@4.4.1:
     dependencies:
