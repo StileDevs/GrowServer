@@ -145,7 +145,7 @@ export async function setupMkcert() {
   try {
     execSync(
       `${mkcertExecuteable} -install && cd ${join(__dirname, ".cache", "ssl")} && ${mkcertExecuteable} *.growserver.app`,
-      { stdio: "ignore" }
+      { stdio: "inherit" }
     );
   } catch (e) {
     consola.error("Something wrong when setup mkcert", e);
