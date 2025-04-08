@@ -4,13 +4,18 @@ import { ItemsDat } from "growtopia.js";
 import { join } from "path";
 import { Scraper } from "./scraper";
 import { Parser } from "./parser";
+import { downloadItemsDat, getLatestItemsDatName } from "./utils";
 
 
-const ITEMS_DAT_PATH = join(__dirname, "..", "..", "assets", "dat", "items.dat");
-
-
+__dirname = process.cwd();
 
 (async() => {
+  const itemsDatName = await getLatestItemsDatName();
+
+  await downloadItemsDat(itemsDatName);
+
+  const ITEMS_DAT_PATH = join(__dirname, ".cache", "growtopia", "dat", itemsDatName);
+
   const file = await readFile(ITEMS_DAT_PATH);
   const itemsdat = new ItemsDat(file);
   await itemsdat.decode();
@@ -24,7 +29,6 @@ const ITEMS_DAT_PATH = join(__dirname, "..", "..", "assets", "dat", "items.dat")
 
   consola.info("Writing ItemsInfo file into ./assets/items_info_new.json");
   writeFile("./assets/items_info_new.json", JSON.stringify(items));
-  console.log(items)
 })();
 
 

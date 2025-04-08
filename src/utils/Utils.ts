@@ -5,11 +5,11 @@ import consola from "consola";
 import { execSync } from "child_process";
 import net from "net";
 import decompress from "decompress";
+import { ITEMS_DAT_URL } from "../Constants";
 
 __dirname = process.cwd();
 
-const ITEMS_DAT_URL = "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main";
-const ITEMS_DAT_FETCH_URL = "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main/latest.json";
+
 
 const MKCERT_URL =
   "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";

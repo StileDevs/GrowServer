@@ -26,6 +26,7 @@ import { request } from "undici";
 import { RTTEX } from "../utils/RTTEX";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import chokidar from "chokidar";
+import { ITEMS_DAT_FETCH_URL } from "../Constants";
 __dirname = process.cwd();
 
 export class Base {
@@ -149,7 +150,7 @@ export class Base {
 
   private async loadItems() {
     const itemsDat = new ItemsDat(
-      await readFile(join(__dirname, "assets", "dat", "items.dat"))
+      await readFile(join(__dirname, ".cache", "growtopia", "dat", this.cdn.itemsDatName))
     );
     await itemsDat.decode();
     consola.start("Loading custom items...");
@@ -270,7 +271,7 @@ export class Base {
 
     try {
       const cdnData = await fetchJSON("https://mari-project.jad.li/api/v1/growtopia/cache/latest") as CDNContent;
-      const itemsDat = await fetchJSON("https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main/latest.json") as { content: string };
+      const itemsDat = await fetchJSON(ITEMS_DAT_FETCH_URL) as { content: string };
      
       const data: CDNContent = {
         version:      cdnData.version,
