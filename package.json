@@ -54,7 +54,7 @@
     "@types/bun": "^1.2.4",
     "@types/decompress": "^4.2.7",
     "@types/jsonwebtoken": "^9.0.7",
-    "@types/node": "^22.13.9",
+    "@types/node": "^22.14.0",
     "drizzle-kit": "^0.22.8",
     "eslint": "^9.19.0",
     "jiti": "^2.4.2",
