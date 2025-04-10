@@ -26,7 +26,7 @@
   "author": "JadlionHD <jadlion.dev@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@antfu/ni": "^0.23.0",
+    "@antfu/ni": "^24.3.0",
     "@hono/node-server": "^1.13.1",
     "@libsql/client": "^0.14.0",
     "bcryptjs": "^2.4.3",
