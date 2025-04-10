@@ -27,7 +27,7 @@
   "license": "MIT",
   "dependencies": {
     "@antfu/ni": "^24.3.0",
-    "@hono/node-server": "^1.13.1",
+    "@hono/node-server": "^1.14.0",
     "@libsql/client": "^0.15.2",
     "bcryptjs": "^2.4.3",
     "chokidar": "^4.0.3",
