@@ -19,7 +19,7 @@
     "noEmitOnError": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "types": [],
+    "types": ["@types/bun"],
     "rootDir": "."
   },
   "exclude": ["node_modules", "./node_modules", "./node_modules/**/*"],
