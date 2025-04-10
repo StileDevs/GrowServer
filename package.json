@@ -29,7 +29,7 @@
     "@antfu/ni": "^24.3.0",
     "@hono/node-server": "^1.14.0",
     "@libsql/client": "^0.15.2",
-    "bcryptjs": "^2.4.3",
+    "bcryptjs": "^3.0.2",
     "chokidar": "^4.0.3",
     "consola": "^3.2.3",
     "cross-env": "^7.0.3",
