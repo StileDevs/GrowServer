@@ -1,6 +1,6 @@
 {
   "name": "growserver",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "a growtopia private server",
   "main": "dist/src/app.js",
   "scripts": {
