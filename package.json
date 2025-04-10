@@ -36,7 +36,7 @@
     "decompress": "^4.2.1",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.41.0",
-    "drizzle-zod": "^0.5.1",
+    "drizzle-zod": "^0.7.1",
     "fast-xml-parser": "^5.2.0",
     "growtopia.js": "^2.0.15",
     "hono": "^4.6.3",
