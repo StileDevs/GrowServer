@@ -1,19 +1,17 @@
 "use strict";
 
 import fs from "fs";
+import { downloadMkcert } from "./item-info/utils";
 
 function init() {
-  setupEnv();
+  setup();
 }
 
-function setupEnv() {
+async function setup() {
   if (!fs.existsSync("./data")) {
     fs.mkdirSync("./data");
   }
-
-  if (!fs.existsSync("./.env")) {
-    fs.writeFileSync("./.env", "JWT_SECRET=SuperSecretDoNotShareToAnyoneElse\nDISCORD_BOT_TOKEN=Tokxxxxxxxen");
-  }
+  await downloadMkcert()
 }
-
+  
 init();

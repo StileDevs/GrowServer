@@ -6,16 +6,26 @@ import consola from "consola";
 
 __dirname = process.cwd();
 
+const MKCERT_URL =
+"https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";
 const ITEMS_DAT_URL = "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main";
 const ITEMS_DAT_FETCH_URL = "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main/latest.json";
 
+const mkcertObj: Record<string, string> = {
+  "win32-x64":    `${MKCERT_URL}/mkcert-v1.4.4-windows-amd64.exe`,
+  "win32-arm64":  `${MKCERT_URL}/mkcert-v1.4.4-windows-arm64.exe`,
+  "linux-x64":    `${MKCERT_URL}/mkcert-v1.4.4-linux-amd64`,
+  "linux-arm":    `${MKCERT_URL}/mkcert-v1.4.4-linux-arm`,
+  "linux-arm64":  `${MKCERT_URL}/mkcert-v1.4.4-linux-arm64`,
+  "darwin-x64":   `${MKCERT_URL}/mkcert-v1.4.4-darwin-amd64`,
+  "darwin-arm64": `${MKCERT_URL}/mkcert-v1.4.4-darwin-arm64`
+};
 
 async function downloadFile(url: string, filePath: string) {
   try {
     const response = await request(url, {
       method:          "GET",
-      headers:         {},
-      maxRedirections: 5
+      maxRedirections: 32
     });
 
     if (response.statusCode !== 200) {
@@ -42,8 +52,9 @@ export async function fetchJSON(url: string) {
     const response = await request(url, {
       method:          "GET",
       headers:         {},
-      maxRedirections: 5
+      maxRedirections: 32
     });
+
 
     if (response.statusCode !== 200) {
       throw new Error(`Failed to fetch JSON: ${response.statusCode}`);
@@ -56,6 +67,25 @@ export async function fetchJSON(url: string) {
   }
 }
 
+
+export async function downloadMkcert() {
+  const checkPlatform = `${process.platform}-${process.arch}`;
+  const name =
+    process.platform === "darwin" || process.platform === "linux"
+      ? "mkcert"
+      : "mkcert.exe";
+
+  if (!existsSync(join(__dirname, ".cache", "bin")))
+    mkdirSync(join(__dirname, ".cache", "bin"), { recursive: true });
+  else return;
+
+  consola.info("Downloading mkcert");
+
+  await downloadFile(
+    mkcertObj[checkPlatform],
+    join(__dirname, ".cache", "bin", name)
+  );
+}
 
 export async function downloadItemsDat(itemsDatName: string) {
   const datDir = join(__dirname, ".cache", "growtopia", "dat");

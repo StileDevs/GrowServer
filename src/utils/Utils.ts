@@ -33,12 +33,14 @@ async function downloadFile(url: string, filePath: string) {
     const response = await request(url, {
       method:          "GET",
       headers:         {},
-      maxRedirections: 5
+      maxRedirections: 32
     });
+
 
     if (response.statusCode !== 200) {
       throw new Error(`Failed to download file: ${response.statusCode}`);
     }
+
 
     const fileStream = createWriteStream(filePath);
 
@@ -60,7 +62,7 @@ export async function fetchJSON(url: string) {
     const response = await request(url, {
       method:          "GET",
       headers:         {},
-      maxRedirections: 5
+      maxRedirections: 32
     });
 
     if (response.statusCode !== 200) {
@@ -136,10 +138,18 @@ export async function setupMkcert() {
       ? "mkcert"
       : "mkcert.exe";
   const mkcertExecuteable = join(__dirname, ".cache", "bin", name);
+  const sslDir = join(__dirname, ".cache", "ssl");
 
-  if (!existsSync(join(__dirname, ".cache", "ssl")))
-    mkdirSync(join(__dirname, ".cache", "ssl"), { recursive: true });
-  else return;
+
+  if (!existsSync(sslDir)) {
+    mkdirSync(sslDir, { recursive: true });
+  }
+
+  const files = readdirSync(sslDir);
+  if (files.length > 0) {
+    consola.info("SSL certificates already exist");
+    return;
+  }
 
   consola.info("Setup mkcert certificate");
   try {
