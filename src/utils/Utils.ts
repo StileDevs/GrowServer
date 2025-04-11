@@ -141,15 +141,9 @@ export async function setupMkcert() {
   const sslDir = join(__dirname, ".cache", "ssl");
 
 
-  if (!existsSync(sslDir)) {
+  if (!existsSync(sslDir))
     mkdirSync(sslDir, { recursive: true });
-  }
-
-  const files = readdirSync(sslDir);
-  if (files.length > 0) {
-    consola.info("SSL certificates already exist");
-    return;
-  }
+  else return;
 
   consola.info("Setup mkcert certificate");
   try {
