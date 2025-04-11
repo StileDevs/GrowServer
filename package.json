@@ -1,7 +1,7 @@
 {
   "name": "growserver",
-  "version": "3.0.4",
-  "description": "a growtopia private server",
+  "version": "3.0.5",
+  "description": "A Growtopia private server built with Node.js and Bun.js, powered by growtopia.js",
   "main": "dist/src/app.js",
   "scripts": {
     "test": "nr build && (node dist/src/app.js || bun run dist/src/app.js)",

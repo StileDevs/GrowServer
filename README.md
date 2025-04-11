@@ -1,13 +1,13 @@
 ![Example](/assets/ignore/banner.png)
 
-> A Growtopia private server using Node.js
+> A Growtopia private server built with Node.js and Bun.js, powered by [growtopia.js](https://github.com/JadlionHD/growtopia.js)
 
 > [!NOTE]
 > This source is not production ready yet. In the future it will be using a Docker to deploy the server, feel free to join [Discord Server](https://discord.gg/sGrxfKZY5t) to discuss regarding this.
 
 ## Requirements
 
-- Node.js v18+ (Recommended LTS v20)
+- [Node.js](https://nodejs.org) v20+ or [Bun.js](https://bun.sh) v1.2.9+
 - [pnpm](https://pnpm.io)
 - [mkcert](https://github.com/FiloSottile/mkcert)
 
