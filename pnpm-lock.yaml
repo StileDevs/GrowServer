@@ -106,8 +106,8 @@ importers:
         specifier: ^2.4.2
         version: 2.4.2
       type-fest:
-        specifier: ^4.39.1
-        version: 4.39.1
+        specifier: ^4.40.0
+        version: 4.40.0
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -1737,8 +1737,8 @@ packages:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
     engines: {node: '>= 0.8.0'}
 
-  type-fest@4.39.1:
-    resolution: {integrity: sha512-uW9qzd66uyHYxwyVBYiwS4Oi0qZyUqwjU+Oevr6ZogYiXt99EOYtwvzMSLw1c3lYo2HzJsep/NB23iEVEgjG/w==}
+  type-fest@4.40.0:
+    resolution: {integrity: sha512-ABHZ2/tS2JkvH1PEjxFDTUWC8dB5OsIGZP4IFLhR293GqT5Y5qB1WwL2kMPYhQW9DVgVD8Hd7I8gjwPIf5GFkw==}
     engines: {node: '>=16'}
 
   typescript-eslint@8.29.1:
@@ -3207,7 +3207,7 @@ snapshots:
     dependencies:
       prelude-ls: 1.2.1
 
-  type-fest@4.39.1: {}
+  type-fest@4.40.0: {}
 
   typescript-eslint@8.29.1(eslint@9.25.0(jiti@2.4.2))(typescript@5.8.3):
     dependencies:
