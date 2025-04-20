@@ -11,7 +11,6 @@ __dirname = process.cwd();
 
 (async() => {
   const itemsDatName = await getLatestItemsDatName();
-
   await downloadItemsDat(itemsDatName);
 
   const ITEMS_DAT_PATH = join(__dirname, ".cache", "growtopia", "dat", itemsDatName);
@@ -29,6 +28,8 @@ __dirname = process.cwd();
 
   consola.info("Writing ItemsInfo file into ./assets/items_info_new.json");
   writeFile("./assets/items_info_new.json", JSON.stringify(items));
+
+
 })();
 
 
