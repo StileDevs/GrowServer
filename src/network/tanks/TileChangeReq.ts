@@ -722,10 +722,9 @@ export class TileChangeReq {
 
     let dropItemId = null;
 
-    // check if this is a seed. Might have to use typed one if growtopia.js uses typed one instead of an int.
     // This is also different from harvesting tree, as this means that tree is broken when it is not fully grow yet.
-    if (this.itemMeta.type == 19) {
-      if (Math.random() < 0.10) {
+    if (this.itemMeta.type == ActionTypes.SEED) {
+      if (Math.random() <= 0.10) {
         dropItemId = this.itemMeta.id!;
       }
     }
@@ -814,6 +813,11 @@ export class TileChangeReq {
             placedItem.type as number
           );
         }
+        break;
+      }
+
+      case ActionTypes.SEED: {
+        this.block.tree = undefined
         break;
       }
     }
@@ -952,7 +956,6 @@ export class TileChangeReq {
 
     switch (this.itemMeta.type) {
       case ActionTypes.SEED: {
-        this.peer.addXp(((Math.round(this.itemMeta.rarity ?? 0 / 5) * 5) / 5), false);
         this.world.harvest(this.peer, this.block);
         break;
       }
