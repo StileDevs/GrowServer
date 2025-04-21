@@ -50,7 +50,7 @@
     "zod": "^3.24.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9.25.0",
+    "@eslint/js": "^9.25.1",
     "@stylistic/eslint-plugin-ts": "^4.2.0",
     "@types/bcryptjs": "^2.4.6",
     "@types/bun": "^1.2.10",
