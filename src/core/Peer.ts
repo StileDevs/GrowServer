@@ -12,6 +12,7 @@ import {
   ActionTypes,
   CLOTH_MAP,
   ClothTypes,
+  NameStyles,
   PacketTypes,
   ROLE,
   TankTypes
@@ -84,7 +85,7 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public countryState() {
-    const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? "maxLevel" : ""}`;
+    const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? NameStyles.MAX_LEVEL : ""}`;
 
     this.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
     this.every((p) => {

@@ -369,3 +369,25 @@ export enum BlockFlags {
   NO_SHADOW = 1 << 6,
   WORLD_LOCK = 1 << 7
 }
+
+export enum NameStyles {
+  // Titles
+  MAX_LEVEL = "maxLevel",
+  DOCTOR = "doctor",
+  MENTOR = "3",
+  GROW4GOOD = "grow4good",
+  THANKSGIVING = "thanksgiving",
+  YOUTUBE = "youtube",
+  TIKTOK = "tiktok",
+  SHOW_GUILD = "showGuild",
+
+  // Special assignment method
+  LEGENDARY = " of Legend``",
+
+  // Colors!
+  DEVELOPER = "`b",
+  MOD = "`5",
+  OWNER = "`2",
+  ACCESS = "`^",
+  GAME = "`a"
+}
