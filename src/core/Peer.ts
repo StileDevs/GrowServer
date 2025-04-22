@@ -83,6 +83,18 @@ export class Peer extends OldPeer<PeerData> {
     }
   }
 
+  public countryState() {
+    const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? "maxLevel" : ""}`;
+
+    this.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
+    this.every((p) => {
+      if (p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") {
+        p.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
+        this.send(Variant.from({ netID: p.data.netID }, "OnCountryState", country(p)));
+      }
+    });
+  }
+
   public every(callbackfn: (peer: Peer, netID: number) => void): void {
     this.base.cache.peers.forEach((p, k) => {
       const pp = new Peer(this.base, p.netID);
@@ -218,6 +230,7 @@ export class Peer extends OldPeer<PeerData> {
 
     await world?.enter(this, xDoor, yDoor);
     this.inventory();
+    this.countryState();
     this.sound("audio/door_open.wav");
 
     this.data.lastVisitedWorlds = manageArray(
@@ -511,7 +524,8 @@ export class Peer extends OldPeer<PeerData> {
           p.send(Variant.from("OnTalkBubble", this.data.netID, `${this.name} is now level ${this.data.level}!`), Variant.from("OnConsoleMessage", `${this.name} is now level ${this.data.level}!`));
         }
       });
-    } 
+    }
+    this.countryState();
     this.saveToCache();
   }
 
