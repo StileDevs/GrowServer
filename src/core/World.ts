@@ -496,7 +496,7 @@ ${peer.data.lastVisitedWorlds
     const item = this.base.items.metadata.items.find(
       (i) => i.id === droppedItem.id
     );
-    if ((item?.id ?? 0) <= 1 ) return;
+    if ((item?.id ?? 0) <= 1) return;
 
     const itemInInv = peer.data.inventory.items.find(
       (i) => i.id === droppedItem.id

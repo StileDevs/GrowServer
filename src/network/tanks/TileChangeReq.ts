@@ -29,11 +29,11 @@ export class TileChangeReq {
     public world: World
   ) {
     this.pos =
-            (this.tank.data?.xPunch as number) +
-            (this.tank.data?.yPunch as number) * this.world.data.width;
+      (this.tank.data?.xPunch as number) +
+      (this.tank.data?.yPunch as number) * this.world.data.width;
     this.block = this.world.data.blocks[this.pos];
     this.itemMeta =
-            this.base.items.metadata.items[this.block.fg || this.block.bg];
+      this.base.items.metadata.items[this.block.fg || this.block.bg];
   }
 
   public async execute() {
@@ -58,7 +58,7 @@ export class TileChangeReq {
 
       if (
         this.itemMeta.id === 242 &&
-                this.world.data.owner.id !== this.peer.data?.id_user
+        this.world.data.owner.id !== this.peer.data?.id_user
       ) {
         this.peer.send(
           Variant.from(
@@ -153,7 +153,7 @@ export class TileChangeReq {
             .embed("tilex", this.block.x)
             .embed("tiley", this.block.y)
             .addSmallText("Access list:")
-          // bikin list user disini nanti
+            // bikin list user disini nanti
             .addSpacer("small")
             .addTextBox("Currently, you're the only one with access.")
             .raw("add_player_picker|playerNetID|`wAdd``|\n")
@@ -209,7 +209,7 @@ export class TileChangeReq {
     const mainLock = this.block.lock
       ? this.world.data.blocks[
         (this.block.lock.ownerX as number) +
-            (this.block.lock.ownerY as number) * this.world.data.width
+      (this.block.lock.ownerY as number) * this.world.data.width
       ]
       : null;
 
@@ -231,7 +231,7 @@ export class TileChangeReq {
       if (this.peer.data?.role !== ROLE.DEVELOPER) {
         if (
           mainLock &&
-                    mainLock.lock?.ownerUserID !== this.peer.data?.id_user
+          mainLock.lock?.ownerUserID !== this.peer.data?.id_user
         ) {
           this.sendLockSound();
           return;
@@ -241,7 +241,7 @@ export class TileChangeReq {
 
     if (
       this.unbreakableBlocks.includes(placedItem.id) &&
-            this.peer.data?.role !== ROLE.DEVELOPER
+      this.peer.data?.role !== ROLE.DEVELOPER
     ) {
       this.sendLockSound();
       return;
@@ -318,10 +318,10 @@ export class TileChangeReq {
       this.peer.removeItemInven(this.tank.data?.info as number, 1);
     }
     const isBg =
-            this.base.items.metadata.items[this.tank.data?.info as number].type ===
-            ActionTypes.BACKGROUND ||
-            this.base.items.metadata.items[this.tank.data?.info as number].type ===
-            ActionTypes.SHEET_MUSIC;
+      this.base.items.metadata.items[this.tank.data?.info as number].type ===
+      ActionTypes.BACKGROUND ||
+      this.base.items.metadata.items[this.tank.data?.info as number].type ===
+      ActionTypes.SHEET_MUSIC;
 
     if (this.block.fg === 2946 && actionType !== ActionTypes.DISPLAY_BLOCK)
       return false;
@@ -460,7 +460,7 @@ export class TileChangeReq {
 
           if (
             typeof this.world.data.owner?.id === "number" &&
-                        this.world.data.owner.id !== this.peer.data?.id_user
+            this.world.data.owner.id !== this.peer.data?.id_user
           ) {
             this.peer.send(
               Variant.from(
@@ -511,7 +511,7 @@ export class TileChangeReq {
           this.world.data.blocks?.find(
             (b) =>
               b.lock?.ownerUserID &&
-                            b.lock.ownerUserID !== this.peer.data?.id_user
+              b.lock.ownerUserID !== this.peer.data?.id_user
           )
         ) {
           this.peer.send(
@@ -556,7 +556,7 @@ export class TileChangeReq {
         this.peer.every((pa) => {
           if (
             pa.data?.world === this.peer.data?.world &&
-                        pa.data?.world !== "EXIT"
+            pa.data?.world !== "EXIT"
           )
             pa.send(
               Variant.from(
@@ -593,7 +593,7 @@ export class TileChangeReq {
         const id = placedItem?.id as number;
         const item = this.base.items.metadata.items[id];
         const fruitCount =
-                    Math.floor(Math.random() * 10 * (1 - (item.rarity || 0) / 1000)) + 1;
+          Math.floor(Math.random() * 10 * (1 - (item.rarity || 0) / 1000)) + 1;
         const now = Date.now();
 
         //this.peer.send(Variant.from("OnConsoleMessage", `\`2Placed Item Id ${this.itemMeta.id}`));
@@ -628,12 +628,12 @@ export class TileChangeReq {
     if (!this.checkOwner()) return this.sendLockSound();
     if (
       typeof this.block.damage !== "number" ||
-            (this.block.resetStateAt as number) <= Date.now()
+      (this.block.resetStateAt as number) <= Date.now()
     )
       this.block.damage = 0;
     if (
       this.unbreakableBlocks.includes(this.itemMeta.id) &&
-            this.peer.data?.role !== ROLE.DEVELOPER
+      this.peer.data?.role !== ROLE.DEVELOPER
     ) {
       this.peer.send(
         Variant.from(
@@ -657,8 +657,8 @@ export class TileChangeReq {
     this.peer.every((p) => {
       if (
         p.data?.netID !== this.peer.data?.netID &&
-                p.data?.world === this.peer.data?.world &&
-                p.data?.world !== "EXIT"
+        p.data?.world === this.peer.data?.world &&
+        p.data?.world !== "EXIT"
       ) {
         p.send(this.tank);
       }
@@ -719,14 +719,29 @@ export class TileChangeReq {
 
     this.block.rotatedLeft = undefined;
     this.peer.addXp(Math.max(1, Math.round((this.itemMeta.rarity ?? 0) / 5)) * 5 / 5, false);
-    this.world.drop(
-      this.peer,
-      this.block.x * 32 + Math.floor(Math.random() * 16),
-      this.block.y * 32 + Math.floor(Math.random() * 16),
-      this.randomizeDrop(this.itemMeta.id ?? - 1) ?? 0,
-      1,
-      { tree: true }
-    );
+
+    let dropItemId = null;
+
+    // This is also different from harvesting tree, as this means that tree is broken when it is not fully grow yet.
+    if (this.itemMeta.type == ActionTypes.SEED) {
+      if (Math.random() <= 0.10) {
+        dropItemId = this.itemMeta.id!;
+      }
+    }
+    else {
+      dropItemId = this.randomizeDrop(this.itemMeta.id!)
+    }
+
+    if (dropItemId != null) {
+      this.world.drop(
+        this.peer,
+        this.block.x * 32 + Math.floor(Math.random() * 16),
+        this.block.y * 32 + Math.floor(Math.random() * 16),
+        dropItemId,
+        1,
+        { tree: true }
+      );
+    }
 
     this.calculateGemDrop();
 
@@ -765,7 +780,7 @@ export class TileChangeReq {
         this.peer.every((p) => {
           if (
             this.peer.data.world === p.data.world &&
-                        p.data.world !== "EXIT"
+            p.data.world !== "EXIT"
           ) {
             p.send(
               Variant.from("OnSetCurrentWeather", this.world.data.weatherId)
@@ -780,8 +795,8 @@ export class TileChangeReq {
           this.world.data.blocks?.forEach((b) => {
             if (
               b.lock &&
-                            b.lock.ownerX === this.block.x &&
-                            b.lock.ownerY === this.block.y
+              b.lock.ownerX === this.block.x &&
+              b.lock.ownerY === this.block.y
             )
               b.lock = undefined;
           });
@@ -798,6 +813,11 @@ export class TileChangeReq {
             placedItem.type as number
           );
         }
+        break;
+      }
+
+      case ActionTypes.SEED: {
+        this.block.tree = undefined
         break;
       }
     }
@@ -828,16 +848,16 @@ export class TileChangeReq {
     this.peer.every(
       (p) =>
         p.data?.world === this.peer.data?.world &&
-                p.data?.world !== "EXIT" &&
-                p.send(
-                  TankPacket.from({
-                    type:        TankTypes.SEND_TILE_TREE_STATE,
-                    netID:       this.peer.data?.netID,
-                    targetNetID: -1,
-                    xPunch:      this.block.x,
-                    yPunch:      this.block.y
-                  })
-                )
+        p.data?.world !== "EXIT" &&
+        p.send(
+          TankPacket.from({
+            type:        TankTypes.SEND_TILE_TREE_STATE,
+            netID:       this.peer.data?.netID,
+            targetNetID: -1,
+            xPunch:      this.block.x,
+            yPunch:      this.block.y
+          })
+        )
     );
   }
 
@@ -909,16 +929,14 @@ export class TileChangeReq {
   // https://www.growtopiagame.com/forums/forum/general/guidebook/273543-farming-calculator%E2%80%94estimate-seeds-gems-xp-with-formula-explanations
   // https://www.growtopiagame.com/forums/forum/general/guidebook/284860-beastly-s-calculator-hub/page12
   private randomizeDrop(id: number) {
-    if (id === -1) {
-      return 0; // was -1. block with id -1 can drop but when you will enter world with this dropped -1 id block it will throw an error 
-    }
     const rand = Math.random();
     if (rand <= 0.33) {        // 2/9 chance
       return id + 1;           // seed
     } else if (rand <= 0.21) { // 1/9 chance
       return id;               // block
     } else {
-      return 0;
+      // Need to differentiate if the function actually choose an item or returning item id that coincidentally uses the same id as blank
+      return null;
     }
   }
 
@@ -932,13 +950,12 @@ export class TileChangeReq {
     (this.tank.data as Tank).info = (this.block.damage as number) + 5;
 
     this.block.resetStateAt =
-            Date.now() + (this.itemMeta.resetStateAfter as number) * 1000;
+      Date.now() + (this.itemMeta.resetStateAfter as number) * 1000;
     // satisfies type
     (this.block.damage as number) += 1;
 
     switch (this.itemMeta.type) {
       case ActionTypes.SEED: {
-        this.peer.addXp(((Math.round(this.itemMeta.rarity ?? 0 / 5) * 5 ) / 5), false);
         this.world.harvest(this.peer, this.block);
         break;
       }
@@ -966,7 +983,7 @@ export class TileChangeReq {
         this.peer.every((p) => {
           if (
             this.peer.data.world === p.data.world &&
-                        p.data.world !== "EXIT"
+            p.data.world !== "EXIT"
           ) {
             p.send(
               Variant.from("OnSetCurrentWeather", this.world.data.weatherId)
