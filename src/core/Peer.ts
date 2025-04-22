@@ -438,8 +438,51 @@ export class Peer extends OldPeer<PeerData> {
       this.send(Variant.from("OnConsoleMessage", itemInfo.func.rem));
     }
   }
+
   public isValid(): boolean {
     return this.data && this.data.netID !== undefined;
+  }
+
+  public sendEffect(eff: number, ...args: Variant[]) {
+    this.every((p) => {
+      if (p.data.world === this.data.world && p.data.world !== "EXIT") {
+        p.send(Variant.from("OnParticleEffect", eff, [(this.data.x as number) + 10, (this.data.y as number) + 16]), ...args);
+      }
+    });
+  }
+
+  public sendState(punchID?: number, everyPeer = true) {
+    const tank = TankPacket.from({
+      type:   TankTypes.SET_CHARACTER_STATE,
+      netID:  this.data.netID,
+      info:   this.data.state.mod,
+      xPos:   1200,
+      yPos:   200,
+      xSpeed: 300,
+      ySpeed: 600,
+      xPunch: 0,
+      yPunch: 0,
+      state:  0
+    }).parse() as Buffer;
+
+    tank.writeUint8(punchID || 0x0, 5);
+    tank.writeUint8(0x80, 6);
+    tank.writeUint8(0x80, 7);
+    tank.writeFloatLE(125.0, 20);
+
+    // if (this.data.state.modsEffect & ModsEffects.HARVESTER) {
+    //   tank.writeFloatLE(150, 36);
+    //   tank.writeFloatLE(1000, 40);
+    // }
+
+    this.send(tank);
+    if (everyPeer) {
+      this.every((p) => {
+        if (p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") {
+          p.send(tank);
+        }
+      });
+    }
   }
 
 
@@ -448,27 +491,28 @@ export class Peer extends OldPeer<PeerData> {
   // https://growtopia.fandom.com/wiki/User_blog:LightningWizardz/GROWTOPIA_FORMULA_(Rough_Calculation_Mode)
   public addXp(amount: number, bonus: boolean){
     const playerLvl = this.data.level;
+    const requiredXp = this.calculateRequiredLevelXp(playerLvl);
+
+    // Max level is 125
+    if (this.data.level >= 125) {
+      this.data.exp = 0;
+      return;
+    }
+
     // check playmods
     // check bonuses
     this.data.exp += amount;
-    if (this.data.exp >= this.calculateRequiredLevelXp(playerLvl)){
+    if (this.data.exp >= requiredXp) {
       this.data.level++;
       this.data.exp = 0;
-      this.send(
-        Variant.from(
-          "OnTalkBubble",
-          this.data.netID,
-          this.name + " is now level " + this.data.level
-        ),
-        Variant.from(
-          "OnConsoleMessage",
-          this.data.netID,
-          this.name + " is now level " + this.data.level + "!"
-        )
-      )
+      this.sendEffect(46);
+      this.every((p) => {
+        if (p.data.world === this.data.world && p.data.world !== "EXIT") {
+          p.send(Variant.from("OnTalkBubble", this.data.netID, `${this.name} is now level ${this.data.level}!`), Variant.from("OnConsoleMessage", `${this.name} is now level ${this.data.level}!`));
+        }
+      });
     } 
     this.saveToCache();
-    this.saveToDatabase();
   }
 
   public calculateRequiredLevelXp(lvl: number): number{
