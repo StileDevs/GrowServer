@@ -11,7 +11,11 @@
        * Path to tsx binary
        * Assuming locally installed
        */
-      "runtimeExecutable": "tsx",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       /*
        * Open terminal when debugging starts (Optional)
        * Useful to see console.logs

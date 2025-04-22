@@ -51,29 +51,6 @@ export class TileChangeReq {
     }
   }
 
-  private checkOwner() {
-    if (this.world.data.owner) {
-      if (this.world.data.owner.id !== this.peer.data?.id_user) return false;
-      if (this.peer.data?.role !== ROLE.DEVELOPER) return false;
-
-      if (
-        this.itemMeta.id === 242 &&
-        this.world.data.owner.id !== this.peer.data?.id_user
-      ) {
-        this.peer.send(
-          Variant.from(
-            "OnTalkBubble",
-            this.peer.data.netID,
-            `\`#[\`0\`9World Locked by ${this.world.data.owner?.displayName}\`#]`
-          )
-        );
-        return false;
-      }
-
-      return true;
-    } else return true;
-  }
-
   private async onTileWrench() {
     switch (this.itemMeta.type) {
       case ActionTypes.SIGN: {
@@ -625,7 +602,24 @@ export class TileChangeReq {
 
   private async onFist() {
     if (!this.itemMeta.id) return;
-    if (!this.checkOwner()) return this.sendLockSound();
+    if (this.world.data.owner) {
+      if (this.world.data.owner.id !== this.peer.data.id_user) {
+        if (this.itemMeta.type === ActionTypes.LOCK) {
+          this.peer.send(
+            Variant.from(
+              "OnTalkBubble",
+              this.peer.data.netID,
+              `\`#[\`0\`9World Locked by ${this.world.data.owner?.displayName}\`#]`
+            )
+          );
+          this.sendLockSound();
+          return;
+        }
+        if (this.peer.data.role !== ROLE.DEVELOPER) return this.sendLockSound();
+      }
+    }
+
+
     if (
       typeof this.block.damage !== "number" ||
       (this.block.resetStateAt as number) <= Date.now()
