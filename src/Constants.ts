@@ -379,6 +379,9 @@ export enum NameStyles {
   THANKSGIVING = "thanksgiving",
   YOUTUBE = "youtube",
   TIKTOK = "tiktok",
+  MASTER = "master",
+  DONOR = "donor",
+  EUPHORIA = "euphoria",
   SHOW_GUILD = "showGuild",
 
   // Special assignment method
