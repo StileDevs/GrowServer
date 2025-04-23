@@ -6,6 +6,7 @@ export interface ItemsInfo {
   desc: string;
   recipe?: Recipe;
   func?: ItemInfoFunc;
+  playMods?: string[];
   chi?: "earth" | "wind" | "fire" | "water" | "";
 }
 

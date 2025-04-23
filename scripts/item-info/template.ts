@@ -1,5 +1,5 @@
 import { ItemDefinition } from "growtopia.js";
-import { Template } from "mwparser";
+import { Template, UnnamedParameter } from "mwparser";
 
 export class TemplateParser {
 
@@ -31,5 +31,20 @@ export class TemplateParser {
   
   public func(t: Template) {
     return t.parameters[0]?.value
+  }
+
+  public playMods(t: Template) {
+    const mods: string[] = [];
+
+    // Remove first parameter (which is the combination with rest of the parameters)
+    t.parameters.shift();
+
+    for (const param of t.parameters) {
+      if (param instanceof UnnamedParameter) {
+        mods.push(param.rawValue.value);
+      }
+    }
+
+    return mods;
   }
 }
