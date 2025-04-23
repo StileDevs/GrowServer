@@ -63,24 +63,24 @@ export class Parser {
       const parsed_wiki = parse(pageText); // parses wikitext to a nodelist where you can easily filter templates
       
       for (const template of parsed_wiki.templates) {
-        // console.log(template.name, template.parameters);
-        switch (template.name) {
-          case "Item/Mod": 
+        const name = template.name.toLowerCase();
+
+        switch (name) {
+          case "item/mod": 
             itemData.playMods = this.TParser.playMods(template);
             break;
-          case "RecipeSplice":
+          case "recipesplice":
             itemData.recipe!.splice = this.TParser.splice(template);
             break;
-          case "Item":
+          case "item":
             [itemData.desc, itemData.chi as string] = this.TParser.item(template);
             break;
-          case "Added":
+          case "added":
             itemData.func!.add = this.TParser.func(template);
             break;
-          case "Removed":
+          case "removed":
             itemData.func!.rem = this.TParser.func(template);
             break;
-            // console.log(template.parameters);
           default:
             // console.log(template.name);
         }
