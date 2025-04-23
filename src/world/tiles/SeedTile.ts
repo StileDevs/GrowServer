@@ -36,6 +36,7 @@ export class SeedTile extends Tile {
   public async setFlags(): Promise<void> {
     if (this.block.toggleable?.open) this.flags |= TileFlags.OPEN;
     if (this.block.toggleable?.public) this.flags |= TileFlags.PUBLIC;
+    this.flags |= TileFlags.SEED;
     return;
   }
 }

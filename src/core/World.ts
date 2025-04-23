@@ -160,7 +160,7 @@ ${peer.data.lastVisitedWorlds
     y: number,
     id: number,
     isBg: boolean,
-    fruitCount?: number
+    { fruitCount, dontSendTileChange }: { fruitCount?: number, dontSendTileChange?: boolean } = {},
   ) {
     let state = 0x8;
 
@@ -172,23 +172,25 @@ ${peer.data.lastVisitedWorlds
       block.rotatedLeft = true;
     }
 
-    peer.every((p) => {
-      if (p.data?.world === this.data.name && p.data?.world !== "EXIT") {
-        const packet = TankPacket.from({
-          type:   TankTypes.ITEM_CHANGE_OBJECT,
-          netID:  peer.data?.netID,
-          state,
-          info:   id,
-          xPunch: x,
-          yPunch: y
-        });
+    if (!dontSendTileChange) {
+      peer.every((p) => {
+        if (p.data?.world === this.data.name && p.data?.world !== "EXIT") {
+          const packet = TankPacket.from({
+            type:   TankTypes.TILE_CHANGE_REQUEST,
+            netID:  peer.data?.netID,
+            state,
+            info:   id,
+            xPunch: x,
+            yPunch: y
+          });
 
-        const buffer = packet.parse() as Buffer;
+          const buffer = packet.parse() as Buffer;
 
-        buffer[7] = fruitCount || 0;
-        p.send(buffer);
-      }
-    });
+          buffer[7] = fruitCount || 0;
+          p.send(buffer);
+        }
+      });
+    }
   }
 
   public async enter(peer: Peer, x: number, y: number) {

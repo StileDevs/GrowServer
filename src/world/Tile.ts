@@ -21,15 +21,15 @@ export class Tile {
     this.lockPos =
       this.block.lock && !this.block.lock.isOwner
         ? (this.block.lock.ownerX as number) +
-          (this.block.lock.ownerY as number) * this.world.data.width
+        (this.block.lock.ownerY as number) * this.world.data.width
         : 0;
     this.flags = 0x0;
     this.data = new ExtendBuffer(this.alloc);
   }
 
-  public async serialize(): Promise<void> {}
+  public async serialize(): Promise<void> { }
 
-  public async setFlags(): Promise<void> {}
+  public async setFlags(): Promise<void> { }
 
   private async serializeBlockData(lockPos: number, flags: number) {
     this.data.writeU32(this.block.fg | (this.block.bg << 16));
