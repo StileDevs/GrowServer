@@ -728,7 +728,11 @@ export class TileChangeReq {
     (this.tank.data as Tank).info = 18;
 
     this.block.rotatedLeft = undefined;
-    this.peer.addXp(Math.max(1, Math.round((this.itemMeta.rarity ?? 0) / 5)) * 5 / 5, false);
+
+
+    if ((this.itemMeta.rarity || 0) < 999) {
+      this.peer.addXp(Math.max(1, Math.round((this.itemMeta.rarity ?? 0) / 5)) * 5 / 5, false);
+    }
 
     let dropItemId = null;
 
@@ -742,7 +746,7 @@ export class TileChangeReq {
       dropItemId = this.randomizeDrop(this.itemMeta.id!)
     }
 
-    if (dropItemId != null) {
+    if (!((this.itemMeta.flags as number) & BlockFlags.SEEDLESS) && dropItemId != null) {
       this.world.drop(
         this.peer,
         this.block.x * 32 + Math.floor(Math.random() * 16),
@@ -870,8 +874,10 @@ export class TileChangeReq {
 
   private calculateGemDrop() {
     const rarity = this.itemMeta.rarity as number;
-    if (rarity <= 998) {
-      //this.peer.addExp(rarity / 5 > 0 ? rarity / 5 : 1);
+
+    // Prevent no rarity items drop gems
+    if (rarity >= 999) {
+      return;
     }
 
     // used Kukuri's code for gems drop https://discord.com/channels/617041217951236291/1109350502975676536/1322578761102917663

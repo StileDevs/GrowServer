@@ -362,12 +362,20 @@ export const TileIgnore = {
 export enum BlockFlags {
   MULTI_FACING = 1 << 0,
   WRENCHABLE = 1 << 1,
-  PERMANENT = 1 << 2, // SEEDLESS / NO_SEED
-  DROPLESS = 1 << 3, // PERMANENT
-  NO_SEED = 1 << 4, // DROPLESS
-  NO_SELF = 1 << 5,
-  NO_SHADOW = 1 << 6,
-  WORLD_LOCK = 1 << 7
+  SEEDLESS = 1 << 2, // This item never drops any seeds.
+  PERMANENT = 1 << 3, // This item is permanent.
+  DROPLESS = 1 << 4, // DROPLESS
+  NO_SELF = 1 << 5, // This item can't be used on yourself.
+  NO_SHADOW = 1 << 6, // This item has no shadow.
+  WORLD_LOCKED = 1 << 7, // This item can only be used in World-Locked worlds.
+  BETA = 1 << 8, // This item is a beta item.
+  AUTO_PICKUP = 1 << 9, // This item can't be destroyed - smashing it will return it to your backpack if you have room!
+  MOD = 1 << 10, // This item is a mod item.
+  RANDOM_GROW = 1 << 11, // A tree of this type can bear surprising fruit!
+  PUBLIC = 1 << 12, // This item is PUBLIC: Even if it's locked, anyone can smash it.
+  FOREGROUND = 1 << 13, // This item is a foreground item.
+  HOLIDAY = 1 << 14, // This item can only be created during WinterFest!
+  UNTRADEABLE = 1 << 15, // This item can't be dropped or traded.
 }
 
 export enum NameStyles {

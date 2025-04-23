@@ -503,10 +503,10 @@ export class Peer extends OldPeer<PeerData> {
   // Xp formulas sources: https://www.growtopiagame.com/forums/forum/general/guidebook/7120124-level-125-xp-calculator-and-data-updated-calculator
   // https://growtopia.fandom.com/wiki/Leveling
   // https://growtopia.fandom.com/wiki/User_blog:LightningWizardz/GROWTOPIA_FORMULA_(Rough_Calculation_Mode)
-  public addXp(amount: number, bonus: boolean){
+  public addXp(amount: number, bonus: boolean) {
     const playerLvl = this.data.level;
     const requiredXp = this.calculateRequiredLevelXp(playerLvl);
-
+    
     // Max level is 125
     if (this.data.level >= 125) {
       this.data.exp = 0;
