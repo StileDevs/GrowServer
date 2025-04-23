@@ -228,6 +228,8 @@ export class TileChangeReq {
 
     if ((this.itemMeta?.id ?? 0) - 1 !== placedItem.id - 1) {
 
+      // not a priority fix, but with current check, you can splice dirt seed with door block, if the recipes permits it.
+      // maybe try checking if the placedItemId is also a seed.
       if (this.block.tree) {
 
         const searchIds = [placedItem.id - 1, (this.itemMeta?.id ?? 0) - 1];
@@ -246,18 +248,21 @@ export class TileChangeReq {
 
         const foundItemId = foundItem ? foundItem.id + 1 : 0;
 
-        if (foundItemId !== 0) {
-          this.peer.removeItemInven(this.tank.data?.info as number, 1);
-        }
+        // if (foundItemId !== 0) {
+        //   this.peer.removeItemInven(this.tank.data?.info as number, 1);
+        // }
 
         const placedItemFound = this.base.items.metadata.items.find(
           (i) => i.id === foundItemId
         );
 
         if (placedItemFound && placedItemFound.id !== 0) {
-          this.onFistDestroyedTree();
+          this.block.damage = 0;
+          this.block.resetStateAt = 0;
+          this.block.fg = 0;
+          this.block.tree = undefined; // the tile data is not cleared to mark that this contains tree
 
-          await this.onPlaced(placedItemFound ?? placedItem);
+          await this.onPlaced(placedItemFound, { isSplicing: true });
           //if (placed) {
           //this.peer.removeItemInven(this.tank.data?.info as number, 1); // this code is unreachable, when placed is true it goes to onPlaced
           //}
@@ -288,12 +293,13 @@ export class TileChangeReq {
     );
   }
 
-  private async onPlaced(placedItem: ItemDefinition) {
+  private async onPlaced(
+    placedItem: ItemDefinition,
+    { isSplicing }: { isSplicing?: boolean } = { isSplicing: false }
+  ) {
     const flags = placedItem.flags as number;
     const actionType = placedItem.type as number;
-    if (this.tank.data?.info as number !== 32 || this.tank.data?.info as number !== 18 || this.tank.data?.info as number !== 0) {
-      this.peer.removeItemInven(this.tank.data?.info as number, 1);
-    }
+
     const isBg =
       this.base.items.metadata.items[this.tank.data?.info as number].type ===
       ActionTypes.BACKGROUND ||
@@ -304,17 +310,21 @@ export class TileChangeReq {
       return false;
 
     if (this.block.fg && flags & BlockFlags.WRENCHABLE) return false;
-    if (this.block.fg && !this.block.bg) return false;
+    if (this.block.fg && !isBg) return false;
     if (this.block.fg && actionType === ActionTypes.PLATFORM) return false;
 
-    const placeBlock = (fruit?: number) =>
+    if (this.tank.data?.info as number !== 32 || this.tank.data?.info as number !== 18 || this.tank.data?.info as number !== 0) {
+      this.peer.removeItemInven(this.tank.data?.info as number, 1);
+    }
+
+    const placeBlock = (fruit?: number, dontSendTileChange?: boolean) =>
       this.world.place(
         this.peer,
         this.block.x,
         this.block.y,
         placedItem.id as number,
         isBg,
-        fruit
+        { fruitCount: fruit, dontSendTileChange: dontSendTileChange },
       );
     switch (actionType) {
       case ActionTypes.SHEET_MUSIC:
@@ -456,7 +466,7 @@ export class TileChangeReq {
             this.block.x,
             this.block.y,
             placedItem.id as number,
-            isBg
+            isBg,
           );
 
           const algo = new Floodfill({
@@ -573,7 +583,7 @@ export class TileChangeReq {
           Math.floor(Math.random() * 10 * (1 - (item.rarity || 0) / 1000)) + 1;
         const now = Date.now();
 
-        //this.peer.send(Variant.from("OnConsoleMessage", `\`2Placed Item Id ${this.itemMeta.id}`));
+        // this.peer.send(Variant.from("OnConsoleMessage", `\`2Placed Item Id ${this.itemMeta.id}`));
 
         this.block.tree = {
           fruit:        id - 1,
@@ -582,7 +592,7 @@ export class TileChangeReq {
           plantedAt:    now
         };
 
-        placeBlock(fruitCount > 4 ? 4 : fruitCount);
+        placeBlock(fruitCount > 4 ? 4 : fruitCount, isSplicing);
         Tile.tileUpdate(
           this.base,
           this.peer,
@@ -590,6 +600,10 @@ export class TileChangeReq {
           this.block,
           placedItem.type as number
         );
+
+        if (isSplicing) {
+          this.sendSpliceSound();
+        }
         break;
       }
 
@@ -646,17 +660,19 @@ export class TileChangeReq {
       this.onFistDamaged();
     }
 
-    this.peer.send(this.tank);
     this.world.saveToCache();
-    this.peer.every((p) => {
-      if (
-        p.data?.netID !== this.peer.data?.netID &&
-        p.data?.world === this.peer.data?.world &&
-        p.data?.world !== "EXIT"
-      ) {
-        p.send(this.tank);
-      }
-    });
+    if (this.tank.data) {
+      this.peer.send(this.tank);
+      this.peer.every((p) => {
+        if (
+          p.data?.netID !== this.peer.data?.netID &&
+          p.data?.world === this.peer.data?.world &&
+          p.data?.world !== "EXIT"
+        ) {
+          p.send(this.tank);
+        }
+      });
+    }
   }
 
   // If you will want to drop gems on the floor use the following code (fix is required)
@@ -817,43 +833,40 @@ export class TileChangeReq {
     }
   }
 
-  private onFistDestroyedTree() {
-    const placedItem = this.base.items.metadata.items.find(
-      (i) => i.id === this.tank.data?.info
-    );
-    if (!placedItem || !placedItem.id) return;
+  // private onFistDestroyedTree() {
+  //   const placedItem = this.base.items.metadata.items.find(
+  //     (i) => i.id === this.tank.data?.info
+  //   );
+  //   if (!placedItem || !placedItem.id) return;
 
-    this.block.damage = 0;
-    this.block.resetStateAt = 0;
+  //   this.block.damage = 0;
+  //   this.block.resetStateAt = 0;
 
-    if (this.block.fg) this.block.fg = 0;
-    else if (this.block.bg) this.block.bg = 0;
+  //   if (this.block.fg) this.block.fg = 0;
+  //   else if (this.block.bg) this.block.bg = 0;
 
-    (this.tank.data as Tank).type = TankTypes.TILE_CHANGE_REQUEST;
-    (this.tank.data as Tank).info = 18;
+  //   this.calculateGemDrop()
 
-    this.calculateGemDrop()
+  //   this.block.rotatedLeft = undefined;
 
-    this.block.rotatedLeft = undefined;
+  //   this.block.tree = undefined;
+  //   this.block.fg = 0x0;
 
-    this.block.tree = undefined;
-    this.block.fg = 0x0;
-
-    this.peer.every(
-      (p) =>
-        p.data?.world === this.peer.data?.world &&
-        p.data?.world !== "EXIT" &&
-        p.send(
-          TankPacket.from({
-            type:        TankTypes.SEND_TILE_TREE_STATE,
-            netID:       this.peer.data?.netID,
-            targetNetID: -1,
-            xPunch:      this.block.x,
-            yPunch:      this.block.y
-          })
-        )
-    );
-  }
+  //   this.peer.every(
+  //     (p) =>
+  //       p.data?.world === this.peer.data?.world &&
+  //       p.data?.world !== "EXIT" &&
+  //       p.send(
+  //         TankPacket.from({
+  //           type: TankTypes.SEND_TILE_TREE_STATE,
+  //           netID: this.peer.data?.netID,
+  //           targetNetID: -1,
+  //           xPunch: this.block.x,
+  //           yPunch: this.block.y
+  //         })
+  //       )
+  //   );
+  // }
 
   private calculateGemDrop() {
     const rarity = this.itemMeta.rarity as number;
@@ -950,6 +963,7 @@ export class TileChangeReq {
 
     switch (this.itemMeta.type) {
       case ActionTypes.SEED: {
+        this.tank.data = undefined
         this.world.harvest(this.peer, this.block);
         break;
       }
@@ -1020,4 +1034,18 @@ export class TileChangeReq {
         );
     });
   }
+
+  private sendSpliceSound() {
+    this.peer.every((p) => {
+      if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT")
+        p.send(
+          Variant.from(
+            { netID: this.peer.data?.netID },
+            "OnPlayPositioned",
+            "audio/success.wav"
+          )
+        );
+    });
+  }
+
 }
