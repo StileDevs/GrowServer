@@ -119,6 +119,7 @@ export interface Tree {
   fruitCount: number;
   fullyGrownAt: number;
   plantedAt: number;
+  isSpliced: boolean;
 }
 
 export interface HeartMonitor {
