@@ -228,9 +228,17 @@ export class TileChangeReq {
 
     if ((this.itemMeta?.id ?? 0) - 1 !== placedItem.id - 1) {
 
-      // not a priority fix, but with current check, you can splice dirt seed with door block, if the recipes permits it.
-      // maybe try checking if the placedItemId is also a seed.
-      if (this.block.tree) {
+      if (this.block.tree && placedItem.type == ActionTypes.SEED) {
+        if (Date.now() >= this.block.tree.fullyGrownAt) {
+          this.notifySplicingMatureTree();
+          return;
+        }
+
+        if (this.block.tree.isSpliced) {
+          this.notifySplicing3Seeds();
+          return;
+        }
+
 
         const searchIds = [placedItem.id - 1, (this.itemMeta?.id ?? 0) - 1];
 
@@ -257,15 +265,12 @@ export class TileChangeReq {
         );
 
         if (placedItemFound && placedItemFound.id !== 0) {
-          this.block.damage = 0;
-          this.block.resetStateAt = 0;
-          this.block.fg = 0;
-          this.block.tree = undefined; // the tile data is not cleared to mark that this contains tree
-
-          await this.onPlaced(placedItemFound, { isSplicing: true });
+          await this.onPlaced(placedItemFound, { splicerSeedId: placedItem.id });
           //if (placed) {
           //this.peer.removeItemInven(this.tank.data?.info as number, 1); // this code is unreachable, when placed is true it goes to onPlaced
           //}
+        } else {
+          this.notifyFailedSplice(this.block.fg, placedItem.id);
         }
       } else {
         await this.onPlaced(placedItem);
@@ -295,7 +300,8 @@ export class TileChangeReq {
 
   private async onPlaced(
     placedItem: ItemDefinition,
-    { isSplicing }: { isSplicing?: boolean } = { isSplicing: false }
+    // splicer seed id is the seed that initiates the splicing, or in other words, the second seed
+    { splicerSeedId: splicerSeedId }: { splicerSeedId?: number } = { splicerSeedId: undefined }
   ) {
     const flags = placedItem.flags as number;
     const actionType = placedItem.type as number;
@@ -310,12 +316,18 @@ export class TileChangeReq {
       return false;
 
     if (this.block.fg && flags & BlockFlags.WRENCHABLE) return false;
-    if (this.block.fg && !isBg) return false;
+    if (this.block.fg && !isBg) {
+      // if this is not a splicing action, then prevent blocks from overriding other blocks
+      if (!splicerSeedId) {
+        return false;
+      }
+    }
     if (this.block.fg && actionType === ActionTypes.PLATFORM) return false;
 
     if (this.tank.data?.info as number !== 32 || this.tank.data?.info as number !== 18 || this.tank.data?.info as number !== 0) {
       this.peer.removeItemInven(this.tank.data?.info as number, 1);
     }
+
 
     const placeBlock = (fruit?: number, dontSendTileChange?: boolean) =>
       this.world.place(
@@ -575,7 +587,7 @@ export class TileChangeReq {
       }
 
       case ActionTypes.SEED: {
-        if (this.block.fg !== 0) return false;
+        if (this.block.fg !== 0 && !splicerSeedId) return false;
 
         const id = placedItem?.id as number;
         const item = this.base.items.metadata.items[id];
@@ -585,14 +597,17 @@ export class TileChangeReq {
 
         // this.peer.send(Variant.from("OnConsoleMessage", `\`2Placed Item Id ${this.itemMeta.id}`));
 
+        this.block.damage = 0;
+        this.block.resetStateAt = 0;
         this.block.tree = {
           fruit:        id - 1,
           fruitCount,
           fullyGrownAt: (this.block.tree?.plantedAt ?? now) + (item.growTime || 0) * 1000,
-          plantedAt:    now
+          plantedAt:    now,
+          isSpliced:    !!splicerSeedId,
         };
 
-        placeBlock(fruitCount > 4 ? 4 : fruitCount, isSplicing);
+        placeBlock(fruitCount > 4 ? 4 : fruitCount, !!splicerSeedId);
         Tile.tileUpdate(
           this.base,
           this.peer,
@@ -601,8 +616,8 @@ export class TileChangeReq {
           placedItem.type as number
         );
 
-        if (isSplicing) {
-          this.sendSpliceSound();
+        if (splicerSeedId) {
+          this.notifySuccessfulSplice(this.block.fg, splicerSeedId, placedItem.id!);
         }
         break;
       }
@@ -969,8 +984,11 @@ export class TileChangeReq {
 
     switch (this.itemMeta.type) {
       case ActionTypes.SEED: {
-        this.tank.data = undefined
-        this.world.harvest(this.peer, this.block);
+        if (this.block.tree && Date.now() >= this.block.tree.fullyGrownAt) {
+          // dont send tile damage 
+          this.tank.data = undefined
+          this.world.harvest(this.peer, this.block);
+        }
         break;
       }
 
@@ -1041,7 +1059,27 @@ export class TileChangeReq {
     });
   }
 
-  private sendSpliceSound() {
+  private notifySuccessfulSplice(seed1Id: number, seed2Id: number, spliceResultSeedId: number) {
+    const seed1Name = this.base.items.metadata.items.find(
+      (i) => i.id === seed1Id
+    )!.name;
+    const seed2Name = this.base.items.metadata.items.find(
+      (i) => i.id === seed2Id
+    )!.name;
+    // the block name
+    const spliceBlockName = this.base.items.metadata.items.find(
+      (i) => i.id === spliceResultSeedId - 1
+    )!.name;
+
+    this.peer.send(
+      Variant.from(
+        "OnTalkBubble",
+        this.peer.data.netID,
+        `${seed1Name} and ${seed2Name} have been spliced to make an \`o${spliceBlockName} Tree\`0!`,
+        0
+      )
+    );
+
     this.peer.every((p) => {
       if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT")
         p.send(
@@ -1052,6 +1090,47 @@ export class TileChangeReq {
           )
         );
     });
+  }
+
+  private notifyFailedSplice(seed1Id: number, seed2Id: number) {
+    const seed1Name = this.base.items.metadata.items.find(
+      (i) => i.id === seed1Id
+    )!.name;
+    const seed2Name = this.base.items.metadata.items.find(
+      (i) => i.id === seed2Id
+    )!.name;
+
+    this.peer.send(
+      // stacking talk bubble didnt work :(
+      Variant.from(
+        "OnTalkBubble",
+        this.peer.data.netID,
+        `Hmm, it looks like ${seed1Name} and ${seed2Name} can't be spliced.`,
+        1
+      )
+    );
+  }
+
+  private notifySplicing3Seeds() {
+    this.peer.send(
+      Variant.from(
+        "OnTalkBubble",
+        this.peer.data.netID,
+        "it would be too dangerous to try to mix three seeds.",
+        1
+      )
+    );
+  }
+
+  private notifySplicingMatureTree() {
+    this.peer.send(
+      Variant.from(
+        "OnTalkBubble",
+        this.peer.data.netID,
+        "This tree is already too big to splice another seed with.",
+        1
+      )
+    );
   }
 
 }
