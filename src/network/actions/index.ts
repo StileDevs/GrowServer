@@ -12,6 +12,7 @@ import { Drop } from "./Drop";
 import { Wrench } from "./Wrench";
 import { StoreBuy } from "./StoreBuy";
 import { StoreHandler } from "./StoreHandler";
+import { Info } from "./info";
 
 export const ActionMap: Record<
   string,
@@ -31,5 +32,6 @@ export const ActionMap: Record<
   ["drop"]:              Drop,
   ["wrench"]:            Wrench,
   ["buy"]:               StoreBuy,
-  ["store"]:             StoreHandler
+  ["store"]:             StoreHandler,
+  ["info"]:              Info,
 };
