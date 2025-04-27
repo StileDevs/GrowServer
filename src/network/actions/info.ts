@@ -4,20 +4,15 @@ import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 
-import itemsInfo from "../../../assets/ItemInfoClean.json";
+import itemsInfo from "../../../assets/items_info_new.json";
 
 interface ItemData {
   id: number;
   name: string;
   chi: string;
   desc: string;
-  type: string;
-  Hardness: string;
-  GrowTime: string;
-  rarity: string;
   recipe: {
     splice: number[];
-    combine: number[];
   };
 }
 
@@ -36,14 +31,14 @@ export class ItemInfo {
 
     if (itemID === 32) {
       this.peer.send(
-        Variant.from("OnConsoleMessage", "This item cannot be inspected.")
+        Variant.from("OnTextOverlay", "This item cannot be inspected.")
       );
       return;
     }
 
     if (isNaN(itemID)) {
       this.peer.send(
-        Variant.from("OnConsoleMessage", "Invalid item ID.")
+        Variant.from("OnTextOverlay", "Invalid item ID.")
       );
       return;
     }
@@ -52,7 +47,7 @@ export class ItemInfo {
 
     if (!item) {
       this.peer.send(
-        Variant.from("OnConsoleMessage", "Item information not found.")
+        Variant.from("OnTextOverlay", "Item information not found.")
       );
       return;
     }
@@ -79,12 +74,7 @@ export class ItemInfo {
     db.addSmallText(`\`o${this.cleanDescription(description)}`);
 
     db.addSpacer("small");
-
-    if (isSeed) {
-      db.addSmallText(`\`wGrow Time: ${item.GrowTime || "N/A"}`);
-    } else {
-      db.addSmallText(`\`wDurability: ${item.Hardness || "N/A"}`);
-    }
+    db.addSmallText(`\`wChi: ${item.chi}`);
 
     const isFarmable = item.recipe.splice.length > 0;
     db.addSmallText(`\`wFarmable: ${isFarmable ? "Yes" : "No"}`);
