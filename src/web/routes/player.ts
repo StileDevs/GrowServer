@@ -5,7 +5,6 @@ import jwt from "jsonwebtoken";
 import { readFileSync } from "fs";
 import { join } from "path";
 import consola from "consola";
-import type { FormData } from "undici";
 
 __dirname = process.cwd();
 export class PlayerRoute {

@@ -1,9 +1,9 @@
 import { createWriteStream, existsSync, mkdirSync, readdirSync, unlinkSync } from "fs";
 import { join } from "path";
-import { request } from "undici";
 import consola from "consola";
 import { execSync } from "child_process";
 import net from "net";
+import ky from "ky";
 import decompress from "decompress";
 import { ITEMS_DAT_URL } from "../Constants";
 
@@ -26,25 +26,22 @@ const mkcertObj: Record<string, string> = {
   "darwin-arm64": `${MKCERT_URL}/mkcert-v1.4.4-darwin-arm64`
 };
 
-
-
 async function downloadFile(url: string, filePath: string) {
   try {
-    const response = await request(url, {
-      method:          "GET",
-      headers:         {},
-      maxRedirections: 32
+    const response = await ky.get(url, {
+      redirect: "follow"
     });
 
-
-    if (response.statusCode !== 200) {
-      throw new Error(`Failed to download file: ${response.statusCode}`);
+    if (!response.ok) {
+      throw new Error(`Failed to download file: ${response.status}`);
     }
 
-
     const fileStream = createWriteStream(filePath);
-
-    response.body.pipe(fileStream);
+    
+    for await (const chunk of response.body!) {
+      fileStream.write(chunk);
+    }
+    fileStream.end();
 
     await new Promise<void>((resolve, reject) => {
       fileStream.on("finish", resolve);
@@ -59,23 +56,20 @@ async function downloadFile(url: string, filePath: string) {
 
 export async function fetchJSON(url: string) {
   try {
-    const response = await request(url, {
-      method:          "GET",
-      headers:         {},
-      maxRedirections: 32
+    const response = await ky.get(url, {
+      redirect: "follow"
     });
 
-    if (response.statusCode !== 200) {
-      throw new Error(`Failed to fetch JSON: ${response.statusCode}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch JSON: ${response.status}`);
     }
 
-    const json = await response.body.json();
+    const json = await response.json();
     return json;
   } catch (error) {
     consola.error("Error fetching JSON:", error);
   }
 }
-
 
 export async function downloadItemsDat(itemsDatName: string) {
   const datDir = join(__dirname, ".cache", "growtopia", "dat");

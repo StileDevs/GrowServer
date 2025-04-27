@@ -1,17 +1,18 @@
 "use strict";
 
 import fs from "fs";
-import { downloadMkcert } from "./item-info/utils";
+import { downloadMkcert, setupMkcert } from "./utils";
 
-function init() {
-  setup();
-}
 
 async function setup() {
+  await downloadMkcert();
+  await setupMkcert();
   if (!fs.existsSync("./data")) {
     fs.mkdirSync("./data");
   }
-  await downloadMkcert()
 }
   
-init();
+
+(async() => {
+  await setup();
+})();

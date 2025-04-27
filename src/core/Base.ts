@@ -22,10 +22,10 @@ import { Collection } from "../utils/Collection";
 import { Database } from "../database/Database";
 import { Peer } from "./Peer";
 import { World } from "./World";
-import { request } from "undici";
 import { RTTEX } from "../utils/RTTEX";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import chokidar from "chokidar";
+import ky from "ky";
 import { ITEMS_DAT_FETCH_URL } from "../Constants";
 __dirname = process.cwd();
 

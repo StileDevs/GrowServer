@@ -4,7 +4,7 @@ import { ItemsDat } from "growtopia.js";
 import { join } from "path";
 import { Scraper } from "./scraper";
 import { Parser } from "./parser";
-import { downloadItemsDat, getLatestItemsDatName } from "./utils";
+import { downloadItemsDat, getLatestItemsDatName } from "../utils";
 
 
 __dirname = process.cwd();
