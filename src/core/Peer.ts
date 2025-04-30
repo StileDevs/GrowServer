@@ -10,8 +10,10 @@ import { Base } from "./Base";
 import { World } from "./World";
 import {
   ActionTypes,
+  CharacterState,
   CLOTH_MAP,
   ClothTypes,
+  ModsEffects,
   NameStyles,
   PacketTypes,
   ROLE,
@@ -233,6 +235,7 @@ export class Peer extends OldPeer<PeerData> {
     this.inventory();
     this.countryState();
     this.sound("audio/door_open.wav");
+    this.formPlayMods();
 
     this.data.lastVisitedWorlds = manageArray(
       this.data.lastVisitedWorlds!,
@@ -369,6 +372,28 @@ export class Peer extends OldPeer<PeerData> {
     });
   }
 
+
+  // Check every clothes playmods & apply it
+  public formPlayMods() {
+    let charActive = 0;
+    const modActive = 0;
+
+    Object.keys(this.data.clothing).forEach((k) => {
+      const itemInfo = this.base.items.wiki.find((i) => i.id === this.data.clothing[k]);
+      const playMods = itemInfo?.playMods || [];
+
+      for (const mod of playMods) {
+        const name = mod.toLowerCase();
+        if (name.includes("double jump")) charActive |= CharacterState.DOUBLE_JUMP;
+      }
+    });
+
+    this.data.state.mod = charActive;
+    this.data.state.modsEffect = modActive;
+
+    this.sendState();
+  }
+
   public equipClothes(itemID: number) {
     if (!this.searchItem(itemID)) return;
 
@@ -392,11 +417,18 @@ export class Peer extends OldPeer<PeerData> {
         }
       }
       const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
+
+
+
+
+
+
+      console.log(itemInfo)
       // eslint-disable-next-line no-extra-boolean-cast
       if (!!itemInfo?.func?.add) {
         this.send(Variant.from("OnConsoleMessage", itemInfo.func.add));
       }
-      // this.formState();
+      this.formPlayMods();
       this.sendClothes();
       this.send(
         TextPacket.from(
@@ -435,7 +467,7 @@ export class Peer extends OldPeer<PeerData> {
     }
 
     if (unequiped) {
-      // this.formState();
+      this.formPlayMods();
       this.sendClothes();
       this.send(
         TextPacket.from(

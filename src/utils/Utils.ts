@@ -5,7 +5,7 @@ import { execSync } from "child_process";
 import net from "net";
 import ky from "ky";
 import decompress from "decompress";
-import { ITEMS_DAT_URL } from "../Constants";
+import { ITEMS_DAT_URL, weatherIdMap } from "../Constants";
 
 __dirname = process.cwd();
 
@@ -238,3 +238,8 @@ export const checkPortInUse = (port: number): Promise<boolean> => {
       .listen(port);
   });
 };
+
+
+export function getWeatherId(blockId: number): number {
+  return weatherIdMap[blockId] || 0;
+}

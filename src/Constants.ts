@@ -402,3 +402,98 @@ export enum NameStyles {
   ACCESS = "`^",
   GAME = "`a"
 }
+
+export enum CharacterState {
+  WALK_IN_BLOCKS = 1 << 0,
+  DOUBLE_JUMP = 1 << 1,
+  IS_INVISIBLE = 1 << 2,
+  NO_HANDS = 1 << 3,
+  NO_EYES = 1 << 4,
+  NO_BODY = 1 << 5,
+  DEVIL_HORNS = 1 << 6,
+  GOLDEN_HALO = 1 << 7,
+  IS_FROZEN = 1 << 11,
+  IS_CURSED = 1 << 12,
+  IS_DUCTAPED = 1 << 13,
+  HAVE_CIGAR = 1 << 14,
+  IS_SHINING = 1 << 15,
+  IS_ZOMBIE = 1 << 16,
+  IS_HIT_BY_LAVA = 1 << 17,
+  HAVE_HAUNTED_SHADOWS = 1 << 18,
+  HAVE_GEIGER_RADIATION = 1 << 19,
+  HAVE_REFLECTOR = 1 << 20,
+  IS_EGGED = 1 << 21,
+  HAVE_PINEAPPLE_FLOAT = 1 << 22,
+  HAVE_FLYING_PINEAPPLE = 1 << 23,
+  HAVE_SUPER_SUPPORTER_NAME = 1 << 24,
+  HAVE_SUPER_PINEAPPLE = 1 << 25
+}
+
+export enum ModsEffects {
+  HARVESTER = 1 << 0,
+  PUNCH_DAMAGE = 1 << 1
+}
+
+export enum StateFlags {
+  NONE = 0,
+  UNK = 1 << 1,
+  RESET_VISUAL_STATE = 1 << 2,
+  EXTENDED = 1 << 3,
+  ROTATE_LEFT = 1 << 4,
+  ON_SOLID = 1 << 5,
+  ON_FIRE_DAMAGE = 1 << 6,
+  ON_JUMP = 1 << 7,
+  ON_KILLED = 1 << 8,
+  ON_PUNCHED = 1 << 9,
+  ON_PLACED = 1 << 10,
+  ON_TILE_ACTION = 1 << 11,
+  ON_GOT_PUNCHED = 1 << 12,
+  ON_RESPAWNED = 1 << 13,
+  ON_COLLECT_OBJECT = 1 << 14,
+  ON_TRAMPOLINE = 1 << 15,
+  ON_DAMAGE = 1 << 16,
+  ON_SLIDE = 1 << 17,
+  ON_WALL_HANG = 1 << 21,
+  ON_ACID_DAMAGE = 1 << 26
+  // MAX = 31
+}
+
+export const weatherIdMap: Record<number, number> = {
+  3694: 28,
+  3832: 29,
+  5000: 34,
+  1490: 10,
+  934: 2,
+  946: 3,
+  932: 4,
+  984: 5,
+  1210: 8,
+  1364: 11,
+  1750: 15,
+  2046: 17,
+  2284: 18,
+  2744: 19,
+  3252: 20,
+  3446: 21,
+  3534: 22,
+  4242: 30,
+  4486: 31,
+  4776: 32,
+  4892: 33,
+  5112: 35,
+  5654: 36,
+  5716: 37,
+  5958: 38,
+  6854: 42,
+  7644: 44,
+  12054: 60,
+  12056: 61,
+  8896: 47,
+  8836: 48,
+  10286: 51,
+  11880: 59,
+  12408: 62,
+  12844: 64,
+  13004: 65,
+  13070: 66
+};
