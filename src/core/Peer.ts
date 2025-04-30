@@ -418,12 +418,6 @@ export class Peer extends OldPeer<PeerData> {
       }
       const itemInfo = this.base.items.wiki.find((i) => i.id === itemID);
 
-
-
-
-
-
-      console.log(itemInfo)
       // eslint-disable-next-line no-extra-boolean-cast
       if (!!itemInfo?.func?.add) {
         this.send(Variant.from("OnConsoleMessage", itemInfo.func.add));
