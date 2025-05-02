@@ -9,6 +9,7 @@ import { DropEnd } from "./DropEnd";
 import { SignEdit } from "./SignEdit";
 import { TrashEnd } from "./TrashEnd";
 import { DebugConfirmCommand } from "./debugConfirm";
+import { CurrencyApply } from "./CurrencyApply";
 
 export const DialogMap: Record<
   string,
@@ -16,14 +17,16 @@ export const DialogMap: Record<
     execute: () => Promise<void>;
   }>
 > = {
-  ["gazzette_end"]: GazzetteEnd,
-  ["find_item"]: FindItem,
-  ["find_item_end"]: FindItemEnd,
-  ["area_lock_edit"]: AreaLockEdit,
+  ["gazzette_end"]:       GazzetteEnd,
+  ["find_item"]:          FindItem,
+  ["find_item_end"]:      FindItemEnd,
+  ["area_lock_edit"]:     AreaLockEdit,
   ["confirm_clearworld"]: ConfirmClearWorld,
-  ["door_edit"]: DoorEdit,
-  ["drop_end"]: DropEnd,
-  ["sign_edit"]: SignEdit,
-  ["trash_end"]: TrashEnd,
-  ["debug_confirm"]: DebugConfirmCommand,
+  ["door_edit"]:          DoorEdit,
+  ["drop_end"]:           DropEnd,
+  ["sign_edit"]:          SignEdit,
+  ["trash_end"]:          TrashEnd,
+  ["debug_confirm"]:      DebugConfirmCommand,
+  ["currency_apply"]:     CurrencyApply,
+  ["currency_manager"]:   CurrencyApply,
 };

@@ -40,3 +40,8 @@ lerna-debug.log*
 
 items_info_new.json
 .vs/
+.env.schema
+pnpm-lock.yaml
+pnpm-workspace.yaml
+.env.schema
+pnpm-lock.yaml
