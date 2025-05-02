@@ -13,14 +13,14 @@ export default class Debug extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["debug"],
+      command:     ["debug"],
       description: "Open the developer debug menu",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`bDev",
-      usage: "/debug",
-      example: ["/debug"],
-      permission: [ROLE.DEVELOPER]
+      cooldown:    5,
+      ratelimit:   1,
+      category:    "`bDev",
+      usage:       "/debug",
+      example:     ["/debug"],
+      permission:  [ROLE.DEVELOPER]
     };
   }
 
