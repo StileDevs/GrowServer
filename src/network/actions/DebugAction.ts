@@ -13,21 +13,24 @@ export class DebugAction {
   ) { }
 
   public async execute(): Promise<void> {
-    if (this.peer.data.role !== ROLE.DEVELOPER) {
+    if (![ROLE.DEVELOPER].includes(this.peer.data.role)) {
       this.peer.send(Variant.from("OnConsoleMessage", "⚠️ You do not have permission to use /debug."));
       return;
     }
 
-    const state = this.peer.data.state.mod;
+    const state = this.peer.data.state.mod || 0; // Ensure state is valid
+
     const dialog = new DialogBuilder()
       .defaultColor()
       .addQuickExit()
-      .addLabelWithIcon("Debug Tools", 5024, "big")
-      .addTextBox("Toggle your player mods")
+      .addLabelWithIcon("Debug Tools", 32, "big")
+      .addTextBox("Toggle your playmods. Only visible to developers/admins.")
+      .addLabel("Mod States")
       .addSpacer("small")
       .addCheckbox("mod_select_all", "Enable All Mods", "NOT_SELECTED")
       .addCheckbox("mod_reset_all", "Reset All Mods", "NOT_SELECTED")
       .addSpacer("small")
+      .addLabel("Individual Mods")
       .addCheckbox("mod_walk_in_blocks", "Walk in Blocks", (state & CharacterState.WALK_IN_BLOCKS) ? "SELECTED" : "NOT_SELECTED")
       .addCheckbox("mod_double_jump", "Double Jump", (state & CharacterState.DOUBLE_JUMP) ? "SELECTED" : "NOT_SELECTED")
       .addCheckbox("mod_is_invisible", "Invisible", (state & CharacterState.IS_INVISIBLE) ? "SELECTED" : "NOT_SELECTED")
@@ -54,6 +57,7 @@ export class DebugAction {
       .endDialog("debug_confirm", "Close", "Apply")
       .str();
 
+    console.log("Generated Dialog:", dialog); // Debug log
     this.peer.send(Variant.from("OnDialogRequest", dialog));
   }
 }
