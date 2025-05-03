@@ -13,6 +13,7 @@ import { Wrench } from "./Wrench";
 import { StoreBuy } from "./StoreBuy";
 import { StoreHandler } from "./StoreHandler";
 import { DebugAction } from "./DebugAction";
+import { Info } from "./info";
 
 export const ActionMap: Record<
   string,
@@ -34,5 +35,6 @@ export const ActionMap: Record<
   ["buy"]:               StoreBuy,
   ["store"]:             StoreHandler,
   ["debug"]:             DebugAction,
+  ["info"]:              Info,
 
 };
