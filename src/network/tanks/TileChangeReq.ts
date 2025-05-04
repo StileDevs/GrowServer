@@ -185,7 +185,7 @@ export class TileChangeReq {
     const mLock = LOCKS.find((l) => l.id === placedItem?.id);
     const mainLock = this.block.lock
       ? this.world.data.blocks[
-      (this.block.lock.ownerX as number) +
+        (this.block.lock.ownerX as number) +
       (this.block.lock.ownerY as number) * this.world.data.width
       ]
       : null;
@@ -364,10 +364,10 @@ export class TileChangeReq {
       case ActionTypes.DOOR:
       case ActionTypes.MAIN_DOOR: {
         this.block.door = {
-          label: "",
+          label:       "",
           destination: "",
-          id: "",
-          locked: false
+          id:          "",
+          locked:      false
         };
         placeBlock();
         Tile.tileUpdate(
@@ -383,7 +383,7 @@ export class TileChangeReq {
 
       case ActionTypes.HEART_MONITOR: {
         this.block.heartMonitor = {
-          name: this.peer.data.tankIDName,
+          name:   this.peer.data.tankIDName,
           userID: parseInt(this.peer.data.id_user as string)
         };
         placeBlock();
@@ -426,7 +426,7 @@ export class TileChangeReq {
       case ActionTypes.WEATHER_MACHINE:
       case ActionTypes.SWITCHEROO: {
         this.block.toggleable = {
-          open: false,
+          open:   false,
           public: false
         };
         placeBlock();
@@ -482,13 +482,13 @@ export class TileChangeReq {
           );
 
           const algo = new Floodfill({
-            s_node: { x: this.block.x, y: this.block.y },
-            max: mLock.maxTiles,
-            width: this.world.data.width,
-            height: this.world.data.height,
-            blocks: this.world.data.blocks,
-            s_block: this.block,
-            base: this.base,
+            s_node:     { x: this.block.x, y: this.block.y },
+            max:        mLock.maxTiles,
+            width:      this.world.data.width,
+            height:     this.world.data.height,
+            blocks:     this.world.data.blocks,
+            s_block:    this.block,
+            base:       this.base,
             noEmptyAir: false
           });
 
@@ -545,8 +545,8 @@ export class TileChangeReq {
           };
         }
         this.world.data.owner = {
-          id: this.peer.data?.id_user as number,
-          name: this.peer.data?.tankIDName as string,
+          id:          this.peer.data?.id_user as number,
+          name:        this.peer.data?.tankIDName as string,
           displayName: this.peer.name
         };
 
@@ -600,11 +600,11 @@ export class TileChangeReq {
         this.block.damage = 0;
         this.block.resetStateAt = 0;
         this.block.tree = {
-          fruit: id - 1,
+          fruit:        id - 1,
           fruitCount,
           fullyGrownAt: (this.block.tree?.plantedAt ?? now) + (item.growTime || 0) * 1000,
-          plantedAt: now,
-          isSpliced: !!splicerSeedId,
+          plantedAt:    now,
+          isSpliced:    !!splicerSeedId,
         };
 
         placeBlock(fruitCount > 4 ? 4 : fruitCount, !!splicerSeedId);
