@@ -622,6 +622,21 @@ export class TileChangeReq {
         break;
       }
 
+      case ActionTypes.SIGN: {
+        this.block.sign = {
+          label: ""
+        }
+        placeBlock();
+        Tile.tileUpdate(
+          this.base,
+          this.peer,
+          this.world,
+          this.block,
+          placedItem.type!
+        );
+        break;
+      }
+
       default: {
         consola.debug("Unknown block placing", this.block, placedItem);
         return false;
