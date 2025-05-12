@@ -42,8 +42,8 @@ importers:
         specifier: ^0.7.1
         version: 0.7.1(drizzle-orm@0.43.1(@libsql/client@0.15.4)(bun-types@1.2.12)(gel@2.0.2))(zod@3.24.4)
       fast-xml-parser:
-        specifier: ^5.2.2
-        version: 5.2.2
+        specifier: ^5.2.3
+        version: 5.2.3
       growtopia.js:
         specifier: ^2.1.2
         version: 2.1.2
@@ -1267,8 +1267,8 @@ packages:
   fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
 
-  fast-xml-parser@5.2.2:
-    resolution: {integrity: sha512-ZaCmslH75Jkfowo/x44Uq8KT5SutC5BFxHmY61nmTXPccw11PVuIXKUqC2hembMkJ3nPwTkQESXiUlsKutCbMg==}
+  fast-xml-parser@5.2.3:
+    resolution: {integrity: sha512-OdCYfRqfpuLUFonTNjvd30rCBZUneHpSQkCqfaeWQ9qrKcl6XlWeDBNVwGb+INAIxRshuN2jF+BE0L6gbBO2mw==}
     hasBin: true
 
   fastq@1.19.1:
@@ -1906,6 +1906,11 @@ packages:
 
   semver@7.7.1:
     resolution: {integrity: sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  semver@7.7.2:
+    resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -3164,7 +3169,7 @@ snapshots:
 
   fast-levenshtein@2.0.6: {}
 
-  fast-xml-parser@5.2.2:
+  fast-xml-parser@5.2.3:
     dependencies:
       strnum: 2.1.0
 
@@ -3245,7 +3250,7 @@ snapshots:
       '@petamoriken/float16': 3.9.2
       debug: 4.4.0
       env-paths: 3.0.0
-      semver: 7.7.1
+      semver: 7.7.2
       shell-quote: 1.8.2
       which: 4.0.0
     transitivePeerDependencies:
@@ -3724,6 +3729,9 @@ snapshots:
   semver@7.6.3: {}
 
   semver@7.7.1: {}
+
+  semver@7.7.2:
+    optional: true
 
   send@1.2.0:
     dependencies:
