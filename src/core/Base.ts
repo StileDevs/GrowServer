@@ -58,14 +58,14 @@ export class Base {
     );
     this.cdn = { version: "", uri: "0000/0000", itemsDatName: "" };
     this.items = {
-      content: Buffer.alloc(0),
-      hash: "",
+      content:  Buffer.alloc(0),
+      hash:     "",
       metadata: {} as ItemsDatMeta,
-      wiki: [],
+      wiki:     [],
     };
     this.cache = {
-      peers: new Collection(),
-      worlds: new Collection(),
+      peers:    new Collection(),
+      worlds:   new Collection(),
       cooldown: new Collection(),
     };
 
@@ -105,10 +105,10 @@ export class Base {
       const itemsDat = readFileSync(datName);
 
       this.items = {
-        hash: `${hashItemsDat(itemsDat)}`,
-        content: itemsDat,
+        hash:     `${hashItemsDat(itemsDat)}`,
+        content:  itemsDat,
         metadata: {} as ItemsDatMeta,
-        wiki: [] as ItemsInfo[],
+        wiki:     [] as ItemsInfo[],
       };
       await Web(this);
 
@@ -301,8 +301,8 @@ export class Base {
       };
 
       const data: CDNContent = {
-        version: cdnData.version,
-        uri: cdnData.uri,
+        version:      cdnData.version,
+        uri:          cdnData.uri,
         itemsDatName: itemsDat.content,
       };
 
