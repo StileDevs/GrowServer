@@ -2,12 +2,12 @@ import { TankPacket, Variant } from "growtopia.js";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
-import { Block } from "../../types";
+import { TileData } from "../../types";
 import { ActionTypes } from "../../Constants";
 
 export class State {
   private pos: number;
-  private block: Block;
+  private block: TileData;
 
   constructor(
     public base: Base,

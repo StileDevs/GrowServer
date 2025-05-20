@@ -9,7 +9,7 @@ export interface PeerData {
   tankIDName: string;
   netID: number;
   country: string;
-  id_user: string | number;
+  userID: number;
   role: string;
   gems: number;
   clothing: Clothing;

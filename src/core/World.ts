@@ -1,10 +1,13 @@
 import { TankPacket, TextPacket, Variant } from "growtopia.js";
-import { Block, WorldData } from "../types";
+import { TileData, WorldData } from "../types";
 import { Base } from "./Base";
-import { PacketTypes, TankTypes } from "../Constants";
+import { ActionTypes, LockPermission, PacketTypes, TankTypes } from "../Constants";
 import { Peer } from "./Peer";
-import { tileParse } from "../world/tiles";
+// import { tileParse } from "../world/tiles";
 import { Default } from "../world/generation/Default";
+import { Tile } from "../world/Tile";
+import { tileFrom } from "../world/tiles";
+import { writeFileSync } from "fs";
 
 export class World {
   public data: WorldData;
@@ -21,10 +24,10 @@ export class World {
     if (data) this.data = data;
     else
       this.data = {
-        name:      "",
-        width:     0,
-        height:    0,
-        blocks:    [],
+        name: "",
+        width: 0,
+        height: 0,
+        blocks: [],
         weatherId: 41
       };
   }
@@ -65,7 +68,7 @@ export class World {
           Variant.from(
             "OnRemove",
             `netID|${peer.data?.netID}`,
-            `pId|${peer.data?.id_user}`
+            `pId|${peer.data?.userID}`
           ),
           Variant.from(
             "OnConsoleMessage",
@@ -96,22 +99,22 @@ add_floater|START|0|0.5|3529161471
 add_floater|START1|0|0.5|3529161471
 add_floater|START2|0|0.5|3529161471
 ${Array.from(this.base.cache.worlds.values())
-  .sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0))
-  .slice(0, 6)
-  .map((v) => {
-    if (v.playerCount)
-      return `add_floater|${v.name}${v.playerCount ? ` (${v.playerCount})` : ""}|0|0.5|3529161471\n`;
-    else return "";
-  })
-  .join("\n")}
+            .sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0))
+            .slice(0, 6)
+            .map((v) => {
+              if (v.playerCount)
+                return `add_floater|${v.name}${v.playerCount ? ` (${v.playerCount})` : ""}|0|0.5|3529161471\n`;
+              else return "";
+            })
+            .join("\n")}
 add_heading|Recently Visited Worlds<CR>|
 ${peer.data.lastVisitedWorlds
-  ?.reverse()
-  .map((v) => {
-    const count = this.base.cache.worlds.get(v)?.playerCount || 0;
-    return `add_floater|${v}${count ? ` (${count})` : ""}|0|0.5|3417414143\n`;
-  })
-  .join("\n")}
+            ?.reverse()
+            .map((v) => {
+              const count = this.base.cache.worlds.get(v)?.playerCount || 0;
+              return `add_floater|${v}${count ? ` (${count})` : ""}|0|0.5|3417414143\n`;
+            })
+            .join("\n")}
 `
         ),
         Variant.from(
@@ -135,17 +138,17 @@ ${peer.data.lastVisitedWorlds
       const world = await this.base.database.worlds.get(this.worldName);
       if (world) {
         this.data = {
-          name:        world.name,
-          width:       world.width,
-          height:      world.height,
-          blocks:      JSON.parse((world.blocks as Buffer).toString()),
-          admins:      [],
+          name: world.name,
+          width: world.width,
+          height: world.height,
+          blocks: JSON.parse((world.blocks as Buffer).toString()),
+          admins: [],
           playerCount: 0,
-          jammers:     [],
-          dropped:     world.dropped
+          jammers: [],
+          dropped: world.dropped
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
-          owner:     world.owner ? JSON.parse(world.owner.toString()) : null,
+          owner: world.owner ? JSON.parse(world.owner.toString()) : null,
           weatherId: world.weather_id || 41
         };
       } else {
@@ -176,10 +179,10 @@ ${peer.data.lastVisitedWorlds
       peer.every((p) => {
         if (p.data?.world === this.data.name && p.data?.world !== "EXIT") {
           const packet = TankPacket.from({
-            type:   TankTypes.TILE_CHANGE_REQUEST,
-            netID:  peer.data?.netID,
+            type: TankTypes.TILE_CHANGE_REQUEST,
+            netID: peer.data?.netID,
             state,
-            info:   id,
+            info: id,
             xPunch: x,
             yPunch: y
           });
@@ -224,8 +227,9 @@ ${peer.data.lastVisitedWorlds
       );
 
       // const blockBuf = new Tile(this.base, this, block).serialize(item?.type as number);
-      const type = item?.type as number;
-      const blockBuf = await tileParse(type, this.base, this, block);
+      // const type = item?.type as number;
+      // const blockBuf = await tileParse(type, this.base, this, block);
+      const blockBuf = (await tileFrom(this.base, this, block).parse()).data;
 
       blockBuf.forEach((b) => blockBytes.push(b));
     }
@@ -264,11 +268,12 @@ ${peer.data.lastVisitedWorlds
       Buffer.concat([unk1, Buffer.from(blockBytes)]),
       Buffer.concat([unk2, dropData, weatherData])
     ]);
+    writeFileSync("wtdf.dat", worldMap)
 
     const tank = TankPacket.from({
-      type:  TankTypes.SEND_MAP_DATA,
+      type: TankTypes.SEND_MAP_DATA,
       state: 8,
-      data:  () => worldMap
+      data: () => worldMap
     });
 
     const mainDoor = this.data.blocks.find((block) => block.fg === 6);
@@ -285,7 +290,7 @@ ${peer.data.lastVisitedWorlds
       Variant.from(
         { delay: -1 },
         "OnSpawn",
-        `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.id_user}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`
+        `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`
       ),
 
       Variant.from(
@@ -332,7 +337,7 @@ ${peer.data.lastVisitedWorlds
           Variant.from(
             { delay: -1 },
             "OnSpawn",
-            `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.id_user}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+            `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
           ),
           Variant.from(
             {
@@ -378,7 +383,7 @@ ${peer.data.lastVisitedWorlds
           Variant.from(
             { delay: -1 },
             "OnSpawn",
-            `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.id_user}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+            `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.userID}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
           ),
           Variant.from(
             {
@@ -428,13 +433,13 @@ ${peer.data.lastVisitedWorlds
     { tree, noSimilar }: { tree?: boolean; noSimilar?: boolean } = {}
   ) {
     const tank = TankPacket.from({
-      type:        TankTypes.ITEM_CHANGE_OBJECT,
-      netID:       -1,
+      type: TankTypes.ITEM_CHANGE_OBJECT,
+      netID: -1,
       targetNetID: tree ? -1 : peer.data?.netID,
-      state:       0,
-      info:        id,
-      xPos:        x,
-      yPos:        y
+      state: 0,
+      info: id,
+      xPos: x,
+      yPos: y
     });
 
     const position = Math.trunc(x / 32) + Math.trunc(y / 32) * this.data.width;
@@ -475,7 +480,7 @@ ${peer.data.lastVisitedWorlds
         amount,
         x,
         y,
-        uid:   ++this.data.dropped.uid,
+        uid: ++this.data.dropped.uid,
         block: { x: block.x, y: block.y }
       });
 
@@ -517,10 +522,10 @@ ${peer.data.lastVisitedWorlds
         p.data?.world !== "EXIT" &&
         p.send(
           TankPacket.from({
-            type:        TankTypes.ITEM_CHANGE_OBJECT,
-            netID:       peer.data?.netID,
+            type: TankTypes.ITEM_CHANGE_OBJECT,
+            netID: peer.data?.netID,
             targetNetID: -1,
-            info:        uid
+            info: uid
           })
         )
     );
@@ -538,7 +543,7 @@ ${peer.data.lastVisitedWorlds
 
         this.drop(peer, droppedItem.x, droppedItem.y, droppedItem.id, extra, {
           noSimilar: true,
-          tree:      true
+          tree: true
         });
       } else {
         if (droppedItem.id !== 112) {
@@ -575,7 +580,7 @@ ${peer.data.lastVisitedWorlds
     this.saveToCache();
   }
 
-  public harvest(peer: Peer, block: Block) {
+  public harvest(peer: Peer, block: TileData) {
     if (block.tree && Date.now() >= block.tree.fullyGrownAt) {
       this.drop(
         peer,
@@ -595,11 +600,11 @@ ${peer.data.lastVisitedWorlds
           p.data?.world !== "EXIT" &&
           p.send(
             TankPacket.from({
-              type:        TankTypes.SEND_TILE_TREE_STATE,
-              netID:       peer.data?.netID,
+              type: TankTypes.SEND_TILE_TREE_STATE,
+              netID: peer.data?.netID,
               targetNetID: -1,
-              xPunch:      block.x,
-              yPunch:      block.y
+              xPunch: block.x,
+              yPunch: block.y
             })
           )
       );
@@ -608,4 +613,21 @@ ${peer.data.lastVisitedWorlds
     }
     return false;
   }
+
+  public hasTilePermission(userID: number, tile: TileData, permissionType: LockPermission): boolean {    // no locks and worldlocks
+    if (!this.data.owner && !tile.lock) return true;
+    // is the worldowner?
+    if (this.data.owner && this.data.owner.id == userID) return true;
+    // is there a lock? if not, check does it have access to this world
+    if (!tile.lock && this.data.admins && this.data.admins.includes(userID)) return true;
+    // does the user have access on the lock and the lock is not limiting admin permission?
+    if (tile.lock && !tile.lock.adminLimited && tile.lock.adminIDs && tile.lock.adminIDs.includes(userID)) return true;
+    // if it has lock, and it is open to public or the user has access to the locks (limited admin).
+    if (tile.lock && (tile.lock.openToPublic || tile.lock.adminIDs?.includes(userID))) {
+      return !!(tile.lock.permission & permissionType) || tile.lock.permission == permissionType;
+    }
+
+    return false;
+  }
+
 }

@@ -1,4 +1,4 @@
-import { Block, PeerData } from "../types";
+import { TileData, PeerData } from "../types";
 import {
   ItemDefinition,
   Peer as OldPeer,
@@ -31,24 +31,24 @@ export class Peer extends OldPeer<PeerData> {
     if (data)
       this.data = {
         channelID,
-        x:                 data.x,
-        y:                 data.y,
-        world:             data.world,
-        inventory:         data.inventory,
-        rotatedLeft:       data.rotatedLeft,
-        requestedName:     data.requestedName,
-        tankIDName:        data.tankIDName,
+        x: data.x,
+        y: data.y,
+        world: data.world,
+        inventory: data.inventory,
+        rotatedLeft: data.rotatedLeft,
+        requestedName: data.requestedName,
+        tankIDName: data.tankIDName,
         netID,
-        country:           data.country,
-        id_user:           data.id_user,
-        role:              data.role,
-        gems:              data.gems,
-        clothing:          data.clothing,
-        exp:               data.exp,
-        level:             data.level,
-        lastCheckpoint:    data.lastCheckpoint,
+        country: data.country,
+        userID: data.userID,
+        role: data.role,
+        gems: data.gems,
+        clothing: data.clothing,
+        exp: data.exp,
+        level: data.level,
+        lastCheckpoint: data.lastCheckpoint,
         lastVisitedWorlds: data.lastVisitedWorlds,
-        state:             data.state
+        state: data.state
       };
   }
 
@@ -98,6 +98,9 @@ export class Peer extends OldPeer<PeerData> {
     });
   }
 
+  // i kinda hate how this is called everytime just to send packets to a specific world. 
+  // Perhaps, having each world storing peers would be more logical IMO.
+  // - Badewen
   public every(callbackfn: (peer: Peer, netID: number) => void): void {
     this.base.cache.peers.forEach((p, k) => {
       const pp = new Peer(this.base, p.netID);
@@ -118,11 +121,11 @@ export class Peer extends OldPeer<PeerData> {
       const block = world?.data.blocks[pos];
       const itemMeta =
         this.base.items.metadata.items[
-          (block?.fg as number) || (block?.bg as number)
+        (block?.fg as number) || (block?.bg as number)
         ];
 
       if (itemMeta && itemMeta.type === ActionTypes.CHECKPOINT) {
-        mainDoor = this.data.lastCheckpoint as Block; // only have x,y.
+        mainDoor = this.data.lastCheckpoint as TileData; // only have x,y.
       } else {
         this.data.lastCheckpoint = undefined;
         this.send(
@@ -253,8 +256,8 @@ export class Peer extends OldPeer<PeerData> {
     if (this.data.inventory?.items.find((i) => i.id === id)?.amount !== 0) {
       const tank = TankPacket.from({
         packetType: 4,
-        type:       TankTypes.MODIFY_ITEM_INVENTORY,
-        info:       id,
+        type: TankTypes.MODIFY_ITEM_INVENTORY,
+        info: id,
         buildRange: amount < 0 ? amount * -1 : undefined,
         punchRange: amount < 0 ? undefined : amount
       }).parse() as Buffer;
@@ -493,16 +496,16 @@ export class Peer extends OldPeer<PeerData> {
 
   public sendState(punchID?: number, everyPeer = true) {
     const tank = TankPacket.from({
-      type:   TankTypes.SET_CHARACTER_STATE,
-      netID:  this.data.netID,
-      info:   this.data.state.mod,
-      xPos:   1200,
-      yPos:   200,
+      type: TankTypes.SET_CHARACTER_STATE,
+      netID: this.data.netID,
+      info: this.data.state.mod,
+      xPos: 1200,
+      yPos: 200,
       xSpeed: 300,
       ySpeed: 600,
       xPunch: 0,
       yPunch: 0,
-      state:  0
+      state: 0
     }).parse() as Buffer;
 
     tank.writeUint8(punchID || 0x0, 5);
@@ -532,7 +535,7 @@ export class Peer extends OldPeer<PeerData> {
   public addXp(amount: number, bonus: boolean) {
     const playerLvl = this.data.level;
     const requiredXp = this.calculateRequiredLevelXp(playerLvl);
-    
+
     // Max level is 125
     if (this.data.level >= 125) {
       this.data.exp = 0;
@@ -556,8 +559,8 @@ export class Peer extends OldPeer<PeerData> {
     this.saveToCache();
   }
 
-  public calculateRequiredLevelXp(lvl: number): number{
-    const requiredXp = 50 * ((lvl * lvl) + 2); 
+  public calculateRequiredLevelXp(lvl: number): number {
+    const requiredXp = 50 * ((lvl * lvl) + 2);
     return requiredXp;
   }
 }

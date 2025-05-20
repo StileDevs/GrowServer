@@ -2,12 +2,12 @@ import { TankPacket, TextPacket, Variant } from "growtopia.js";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
-import { Block } from "../../types";
+import { TileData } from "../../types";
 import { PacketTypes } from "../../Constants";
 
 export class TileActiveReq {
   private pos: number;
-  private block: Block;
+  private block: TileData;
 
   constructor(
     public base: Base,
@@ -95,7 +95,7 @@ export class TileActiveReq {
             Variant.from(
               "OnRemove",
               `netID|${this.peer.data.netID}`,
-              `pId|${this.peer.data.id_user}`
+              `pId|${this.peer.data.userID}`
             ),
             Variant.from(
               "OnConsoleMessage",

@@ -1,42 +1,45 @@
-import { TileExtraTypes, TileFlags } from "../../Constants";
-import type { Base } from "../../core/Base";
-import type { World } from "../../core/World";
-import type { Block } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
-import { Tile } from "../Tile";
+// import { ItemDefinition } from "growtopia.js";
+// import { TileExtraTypes, TileFlags } from "../../Constants";
+// import type { Base } from "../../core/Base";
+// import type { World } from "../../core/World";
+// import type { TileData } from "../../types";
+// import { ExtendBuffer } from "../../utils/ExtendBuffer";
+// import { Tile } from "../Tile";
+// import { Peer } from "../../core/Peer";
 
-export class SignTile extends Tile {
-  public data: ExtendBuffer;
-  public extraType = TileExtraTypes.SIGN;
-  private label: string;
+// export class SignTile extends Tile {
+//   public extraType = TileExtraTypes.SIGN;
 
-  constructor(
-    public base: Base,
-    public world: World,
-    public block: Block,
-    public alloc = 15
-  ) {
-    super(base, world, block, alloc);
+//   constructor(
+//     public base: Base,
+//     public world: World,
+//     public data: TileData,
+//     public fgItemMeta: ItemDefinition,
+//   ) {
+//     super(base, world, data, fgItemMeta);
+//   }
 
-    this.label = this.block.sign?.label || "";
-    this.alloc += this.label.length;
+//   public async onPlace(peer: Peer): Promise<void> {
+//     this.data.flags |= TileFlags.TILEEXTRA;
+//     this.data.sign = { label: "" };
+//     super.onPlace(peer);
+//   }
 
-    this.data = new ExtendBuffer(this.alloc);
-  }
+//   public async onDestroy(peer: Peer): Promise<void> {
+//     this.data.sign = undefined;
+//     super.onDestroy(peer);
+//   }
 
-  public async serialize(): Promise<void> {
-    this.data.writeU8(this.extraType);
-    this.data.writeString(this.label);
-    this.data.writeI32(-1);
+//   public async onWrench(peer: Peer): Promise<void> {
+//     super.onWrench(peer);
+//     // TODO: implement Sign wrenching
+//   }
 
-    return;
-  }
+//   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
+//     super.serialize(dataBuffer);
+//     dataBuffer.writeU8(this.extraType);
+//     dataBuffer.writeString(this.data.sign?.label || "");
+//     dataBuffer.writeI32(0xFF);
+//   }
 
-  public async setFlags(): Promise<void> {
-    this.flags |= TileFlags.TILEEXTRA;
-
-    if (this.block.rotatedLeft) this.flags |= TileFlags.ROTATED_LEFT;
-
-    return;
-  }
-}
+// }
