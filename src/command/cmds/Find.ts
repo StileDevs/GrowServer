@@ -21,7 +21,7 @@ export default class Find extends Command {
       category:    "`oBasic",
       usage:       "/find <item_name?>",
       example:     ["/find", "/find dirt"],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 

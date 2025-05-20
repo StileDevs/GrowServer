@@ -57,49 +57,69 @@ export class Input {
           }
         }
 
-        const cmdCd = this.base.cache.cooldown.get(
-          `${originalCmd}-netID-${this.peer.data?.netID}`
-        );
-        if (!cmdCd)
-          this.base.cache.cooldown.set(
-            `${originalCmd}-netID-${this.peer.data?.netID}`,
-            {
-              limit: 1,
-              time:  Date.now(),
-            }
-          );
-        else {
-          const expireTime = cmdCd.time + cmd.opt.cooldown * 1000;
-          const timeLeft = expireTime - Date.now();
-          if (cmdCd.limit >= cmd.opt.ratelimit)
-            return this.peer.send(
-              Variant.from(
-                "OnConsoleMessage",
-                `\`6${
-                  this.peer.data?.tankIDName
-                }\`0 you're being ratelimited, please wait \`9${
-                  timeLeft / 1000
-                }s\`0`
-              )
-            );
-          cmdCd.limit += 1;
-        }
-
-        setTimeout(() => {
-          this.base.cache.cooldown.delete(
-            `${originalCmd}-netID-${this.peer.data?.netID}`
-          );
-        }, cmd.opt.cooldown || 0 * 1000);
-
-        if (cmd.opt.permission.some((perm) => perm === this.peer.data?.role))
-          await cmd.execute();
-        else
+        // Check permissions first - if no permission, don't apply cooldown
+        if (!cmd.opt.permission.some((perm) => perm === this.peer.data?.role)) {
           this.peer.send(
             Variant.from(
               "OnConsoleMessage",
               "You dont have permission to use this command."
             )
           );
+          return;
+        }
+
+        // Special check for Sb command - don't apply cooldown if no args
+        if (
+          (originalCmd === "sb" || originalCmd === "sdb") &&
+          args.length === 0
+        ) {
+          await cmd.execute();
+          return;
+        }
+
+        // Get cooldown info from command options
+        const cooldownSeconds = cmd.opt.cooldown || 1;
+        const maxUses = cmd.opt.ratelimit || 1;
+        const cooldownKey = `${originalCmd}-netID-${this.peer.data?.netID}`;
+
+        // Check if command is on cooldown
+        const cooldownInfo = this.base.cache.cooldown.get(cooldownKey);
+        const now = Date.now();
+
+        if (!cooldownInfo) {
+          // First use of the command - set initial usage data
+          this.base.cache.cooldown.set(cooldownKey, {
+            limit: 1, // Starting with 1 because this is the first use
+            time:  now,
+          });
+
+          // Set up the cooldown timer
+          setTimeout(() => {
+            this.base.cache.cooldown.delete(cooldownKey);
+          }, cooldownSeconds * 1000);
+        } else {
+          // Command has been used before - check if it's hit the rate limit
+          if (cooldownInfo.limit >= maxUses) {
+            // Calculate time remaining until cooldown expires
+            const expiresAt = cooldownInfo.time + cooldownSeconds * 1000;
+            const timeLeftMs = Math.max(0, expiresAt - now);
+            const timeLeftSec = (timeLeftMs / 1000).toFixed(1);
+
+            // Send cooldown message to the user
+            return this.peer.send(
+              Variant.from(
+                "OnConsoleMessage",
+                `\`6${this.peer.data?.tankIDName}\`0 you're being ratelimited, please wait \`9${timeLeftSec}s\`0`
+              )
+            );
+          }
+
+          // Increment the usage counter
+          cooldownInfo.limit += 1;
+        }
+
+        // Execute the command
+        await cmd.execute();
 
         return;
       }
