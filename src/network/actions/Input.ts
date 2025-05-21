@@ -2,14 +2,11 @@ import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import consola from "consola";
-import { CommandMap } from "../../command/cmds/index";
+import { CommandMap, CommandsAliasMap } from "../../command/cmds/index";
 import { Variant } from "growtopia.js";
 
 export class Input {
-  constructor(
-    public base: Base,
-    public peer: Peer
-  ) {}
+  constructor(public base: Base, public peer: Peer) {}
 
   public async execute(
     action: NonEmptyObject<Record<string, string>>
@@ -22,56 +19,107 @@ export class Input {
         const args = text.slice("/".length).split(" ");
         const commandName = args.shift()?.toLowerCase() || "";
 
-        const Class = CommandMap[commandName];
+        // Try to find the command directly by name or by its alias
+        let Class = CommandMap[commandName];
+        let originalCmd = commandName;
 
-        if (!Class)
-          throw new Error(
-            `No Command class found with command name ${commandName}`
-          );
-        const cmd = new Class(this.base, this.peer, text, args);
-
-        const cmdCd = this.base.cache.cooldown.get(
-          `${commandName}-netID-${this.peer.data?.netID}`
-        );
-        if (!cmdCd)
-          this.base.cache.cooldown.set(
-            `${commandName}-netID-${this.peer.data?.netID}`,
-            {
-              limit: 1,
-              time:  Date.now()
-            }
-          );
-        else {
-          const expireTime = cmdCd.time + cmd.opt.cooldown * 1000;
-          const timeLeft = expireTime - Date.now();
-          if (cmdCd.limit >= cmd.opt.ratelimit)
-            return this.peer.send(
-              Variant.from(
-                "OnConsoleMessage",
-                `\`6${this.peer.data?.tankIDName}\`0 you're being ratelimited, please wait \`9${timeLeft / 1000}s\`0`
-              )
-            );
-          cmdCd.limit += 1;
+        // If no direct command found, check if it's registered as an alias
+        if (!Class && CommandsAliasMap[commandName]) {
+          originalCmd = CommandsAliasMap[commandName];
+          Class = CommandMap[originalCmd];
         }
 
-        setTimeout(
-          () => {
-            this.base.cache.cooldown.delete(
-              `${commandName}-netID-${this.peer.data?.netID}`
-            );
-          },
-          cmd.opt.cooldown || 0 * 1000
-        );
+        // If we still can't find the command, notify the user
+        if (!Class) {
+          this.peer.send(
+            Variant.from(
+              "OnConsoleMessage",
+              "`4Unknown command.`` Enter `$/help`` for a list of valid commands"
+            )
+          );
+          return;
+        }
 
-        if (cmd.opt.permission.some((perm) => perm === this.peer.data?.role))
-          await cmd.execute();
-        else
+        // Create the command instance
+        const cmd = new Class(this.base, this.peer, text, args);
+
+        // Double-check that aliases are registered
+        // This ensures any missing aliases are registered even if registerAliases failed
+        if (cmd.opt && cmd.opt.command) {
+          for (const alias of cmd.opt.command) {
+            const aliasLower = alias.toLowerCase();
+            if (aliasLower !== originalCmd && !CommandsAliasMap[aliasLower]) {
+              CommandsAliasMap[aliasLower] = originalCmd;
+              consola.debug(
+                `Late-registered alias: ${aliasLower} → ${originalCmd}`
+              );
+            }
+          }
+        }
+
+        // Check permissions first - if no permission, don't apply cooldown
+        if (!cmd.opt.permission.some((perm) => perm === this.peer.data?.role)) {
           this.peer.send(
             Variant.from(
               "OnConsoleMessage",
               "You dont have permission to use this command."
             )
           );
+          return;
+        }
+
+        // Special check for Sb command - don't apply cooldown if no args
+        if (
+          (originalCmd === "sb" || originalCmd === "sdb") &&
+          args.length === 0
+        ) {
+          await cmd.execute();
+          return;
+        }
+
+        // Get cooldown info from command options
+        const cooldownSeconds = cmd.opt.cooldown || 1;
+        const maxUses = cmd.opt.ratelimit || 1;
+        const cooldownKey = `${originalCmd}-netID-${this.peer.data?.netID}`;
+
+        // Check if command is on cooldown
+        const cooldownInfo = this.base.cache.cooldown.get(cooldownKey);
+        const now = Date.now();
+
+        if (!cooldownInfo) {
+          // First use of the command - set initial usage data
+          this.base.cache.cooldown.set(cooldownKey, {
+            limit: 1, // Starting with 1 because this is the first use
+            time:  now,
+          });
+
+          // Set up the cooldown timer
+          setTimeout(() => {
+            this.base.cache.cooldown.delete(cooldownKey);
+          }, cooldownSeconds * 1000);
+        } else {
+          // Command has been used before - check if it's hit the rate limit
+          if (cooldownInfo.limit >= maxUses) {
+            // Calculate time remaining until cooldown expires
+            const expiresAt = cooldownInfo.time + cooldownSeconds * 1000;
+            const timeLeftMs = Math.max(0, expiresAt - now);
+            const timeLeftSec = (timeLeftMs / 1000).toFixed(1);
+
+            // Send cooldown message to the user
+            return this.peer.send(
+              Variant.from(
+                "OnConsoleMessage",
+                `\`6${this.peer.data?.tankIDName}\`0 you're being ratelimited, please wait \`9${timeLeftSec}s\`0`
+              )
+            );
+          }
+
+          // Increment the usage counter
+          cooldownInfo.limit += 1;
+        }
+
+        // Execute the command
+        await cmd.execute();
 
         return;
       }

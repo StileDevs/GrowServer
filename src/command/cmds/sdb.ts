@@ -21,18 +21,22 @@ export default class Sdb extends Command {
       category:    "`bDev",
       usage:       "/sdb <message>",
       example:     ["/sdb Hello everyone!"],
-      permission:  [ROLE.DEVELOPER]
+      permission:  [ROLE.DEVELOPER],
     };
   }
 
   public async execute(): Promise<void> {
-    if (!this.args.length)
-      return this.peer.send(Variant.from("Message is required."));
+    if (this.args.length === 0)
+      return this.peer.send(
+        Variant.from("OnConsoleMessage", "Message are required.")
+      );
 
     const message = this.args.join(" ");
     const senderName = this.peer.name;
     const world = this.peer.currentWorld();
-    const jammed = world?.data.jammers?.find((v) => v.type === "signal")?.enabled;
+    const jammed = world?.data.jammers?.find(
+      (v) => v.type === "signal"
+    )?.enabled;
 
     // Dialog box creation
     const dialog = new DialogBuilder()
@@ -69,7 +73,10 @@ export default class Sdb extends Command {
 
     // Confirmation to sender
     this.peer.send(
-      Variant.from("OnConsoleMessage", `\`2Super Duper Broadcast sent to all players.`)
+      Variant.from(
+        "OnConsoleMessage",
+        `\`2Super Duper Broadcast sent to all players.`
+      )
     );
   }
 }
