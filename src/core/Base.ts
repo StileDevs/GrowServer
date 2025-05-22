@@ -47,7 +47,8 @@ export class Base {
   constructor() {
     this.server = new Client({
       enet: {
-        ip: "0.0.0.0",
+        ip:                 "0.0.0.0",
+        useNewServerPacket: true
       },
     });
     this.package = JSON.parse(
