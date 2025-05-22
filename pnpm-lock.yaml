@@ -37,10 +37,10 @@ importers:
         version: 16.5.0
       drizzle-orm:
         specifier: ^0.43.1
-        version: 0.43.1(@libsql/client@0.15.6)(bun-types@1.2.13)(gel@2.0.2)
+        version: 0.43.1(@libsql/client@0.15.6)(bun-types@1.2.14)(gel@2.0.2)
       drizzle-zod:
         specifier: ^0.7.1
-        version: 0.7.1(drizzle-orm@0.43.1(@libsql/client@0.15.6)(bun-types@1.2.13)(gel@2.0.2))(zod@3.25.17)
+        version: 0.7.1(drizzle-orm@0.43.1(@libsql/client@0.15.6)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.17)
       fast-xml-parser:
         specifier: ^5.2.3
         version: 5.2.3
@@ -85,8 +85,8 @@ importers:
         specifier: ^2.4.6
         version: 2.4.6
       '@types/bun':
-        specifier: ^1.2.13
-        version: 1.2.13
+        specifier: ^1.2.14
+        version: 1.2.14
       '@types/decompress':
         specifier: ^4.2.7
         version: 4.2.7
@@ -720,8 +720,8 @@ packages:
   '@types/bcryptjs@2.4.6':
     resolution: {integrity: sha512-9xlo6R2qDs5uixm0bcIqCeMCE6HiQsIyel9KQySStiyqNl2tnj2mP3DX1Nf56MD6KMenNNlBBsy3LJ7gUEQPXQ==}
 
-  '@types/bun@1.2.13':
-    resolution: {integrity: sha512-u6vXep/i9VBxoJl3GjZsl/BFIsvML8DfVDO0RYLEwtSZSp981kEO1V5NwRcO1CPJ7AmvpbnDCiMKo3JvbDEjAg==}
+  '@types/bun@1.2.14':
+    resolution: {integrity: sha512-VsFZKs8oKHzI7zwvECiAJ5oSorWndIWEVhfbYqZd4HI/45kzW7PN2Rr5biAzvGvRuNmYLSANY+H59ubHq8xw7Q==}
 
   '@types/decompress@4.2.7':
     resolution: {integrity: sha512-9z+8yjKr5Wn73Pt17/ldnmQToaFHZxK0N1GHysuk/JIPT8RIdQeoInM01wWPgypRcvb6VH1drjuFpQ4zmY437g==}
@@ -896,8 +896,8 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
-  bun-types@1.2.13:
-    resolution: {integrity: sha512-rRjA1T6n7wto4gxhAO/ErZEtOXyEZEmnIHQfl0Dt1QQSB4QV0iP6BZ9/YB5fZaHFQ2dwHFrmPaRQ9GGMX01k9Q==}
+  bun-types@1.2.14:
+    resolution: {integrity: sha512-Kuh4Ub28ucMRWeiUUWMHsT9Wcbr4H3kLIO72RZZElSDxSu7vpetRvxIUDUaW6QtaIeixIpm7OXtNnZPf82EzwA==}
 
   callsites@3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
@@ -2293,9 +2293,9 @@ snapshots:
 
   '@types/bcryptjs@2.4.6': {}
 
-  '@types/bun@1.2.13':
+  '@types/bun@1.2.14':
     dependencies:
-      bun-types: 1.2.13
+      bun-types: 1.2.14
 
   '@types/decompress@4.2.7':
     dependencies:
@@ -2505,7 +2505,7 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bun-types@1.2.13:
+  bun-types@1.2.14:
     dependencies:
       '@types/node': 22.15.18
 
@@ -2607,15 +2607,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.43.1(@libsql/client@0.15.6)(bun-types@1.2.13)(gel@2.0.2):
+  drizzle-orm@0.43.1(@libsql/client@0.15.6)(bun-types@1.2.14)(gel@2.0.2):
     optionalDependencies:
       '@libsql/client': 0.15.6
-      bun-types: 1.2.13
+      bun-types: 1.2.14
       gel: 2.0.2
 
-  drizzle-zod@0.7.1(drizzle-orm@0.43.1(@libsql/client@0.15.6)(bun-types@1.2.13)(gel@2.0.2))(zod@3.25.17):
+  drizzle-zod@0.7.1(drizzle-orm@0.43.1(@libsql/client@0.15.6)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.17):
     dependencies:
-      drizzle-orm: 0.43.1(@libsql/client@0.15.6)(bun-types@1.2.13)(gel@2.0.2)
+      drizzle-orm: 0.43.1(@libsql/client@0.15.6)(bun-types@1.2.14)(gel@2.0.2)
       zod: 3.25.17
 
   eastasianwidth@0.2.0: {}
