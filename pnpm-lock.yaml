@@ -40,7 +40,7 @@ importers:
         version: 0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2)
       drizzle-zod:
         specifier: ^0.8.1
-        version: 0.8.1(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.20)
+        version: 0.8.1(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.23)
       fast-xml-parser:
         specifier: ^5.2.3
         version: 5.2.3
@@ -72,8 +72,8 @@ importers:
         specifier: ^4.19.4
         version: 4.19.4
       zod:
-        specifier: ^3.25.20
-        version: 3.25.20
+        specifier: ^3.25.23
+        version: 3.25.23
     devDependencies:
       '@eslint/js':
         specifier: ^9.27.0
@@ -1892,8 +1892,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.25.20:
-    resolution: {integrity: sha512-z03fqpTMDF1G02VLKUMt6vyACE7rNWkh3gpXVHgPTw28NPtDFRGvcpTtPwn2kMKtQ0idtYJUTxchytmnqYswcw==}
+  zod@3.25.23:
+    resolution: {integrity: sha512-Od2bdMosahjSrSgJtakrwjMDb1zM1A3VIHCPGveZt/3/wlrTWBya2lmEh2OYe4OIu8mPTmmr0gnLHIWQXdtWBg==}
 
 snapshots:
 
@@ -2613,10 +2613,10 @@ snapshots:
       bun-types: 1.2.14
       gel: 2.0.2
 
-  drizzle-zod@0.8.1(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.20):
+  drizzle-zod@0.8.1(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.23):
     dependencies:
       drizzle-orm: 0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2)
-      zod: 3.25.20
+      zod: 3.25.23
 
   eastasianwidth@0.2.0: {}
 
@@ -3414,4 +3414,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.25.20: {}
+  zod@3.25.23: {}
