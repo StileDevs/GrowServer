@@ -45,8 +45,8 @@ importers:
         specifier: ^5.2.3
         version: 5.2.3
       growtopia.js:
-        specifier: ^2.1.2
-        version: 2.1.2
+        specifier: ^2.1.3
+        version: 2.1.3
       hono:
         specifier: ^4.7.10
         version: 4.7.10
@@ -1289,103 +1289,103 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  growtopia.js-android-arm-eabi@2.1.2:
-    resolution: {integrity: sha512-3DNWx14YQLDIFjyuvH1EwhLB9zQrmQhT/G2NW1q4uFCtrohEyLE4H444RclvnQJyDa+APQxTVmf8rpM8iKhvcg==}
+  growtopia.js-android-arm-eabi@2.1.3:
+    resolution: {integrity: sha512-HCrGApiOm5OfRlDS2cOy+cmxQodeztc5ZFGJKgogzmrSntwS+j+BoY2QncsS2SXSXl5XTCjE1ts/M6c89uDX/g==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [android]
 
-  growtopia.js-android-arm64@2.1.2:
-    resolution: {integrity: sha512-1KmA4l2CaTMlfT/wd4n2udKk+NdLkjmASkQ8oblQ2x7mo6jh3tvXiWY9fInH/oHKflQfy7REDgUblIeFEVDznw==}
+  growtopia.js-android-arm64@2.1.3:
+    resolution: {integrity: sha512-4rcifYu30VXtPUWDKNynINRcV/n50eQmZCqJC2MCHhaWZpqBZ1lqm0N3+GSTvWy0041FDWzd3UoeqVU+DQkGog==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [android]
 
-  growtopia.js-darwin-arm64@2.1.2:
-    resolution: {integrity: sha512-6f4Xxl6NHlQhTU9vurCmi2FGwFEtlqmsvUS+20Tx/z1uLZsenb4GNVp+QmUwbFvVlQJKO0booNt2trWbuuwd2A==}
+  growtopia.js-darwin-arm64@2.1.3:
+    resolution: {integrity: sha512-JsL8TI/HZ0f1OZljbwbx1Lx7dIC4zs+1FU2+OP/eofzF7uAMx9hwwyyi4FhiEO4WSCNGbheGfx0bkKdpohSm6w==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  growtopia.js-darwin-universal@2.1.2:
-    resolution: {integrity: sha512-LWgCoDCuiFJVs4bBw74yhOwt34Qfi6Sn93DCDc46STgfiTa5j+hea6znhyuwwvkeM8PgU55DFwoi2rZocdMEgw==}
+  growtopia.js-darwin-universal@2.1.3:
+    resolution: {integrity: sha512-nty7//1O2qj3HYQVz9Z4Zldpupig5IuHG0+6n2nYZPnW9mNy25b+lPRdmBVLOSue+IlW5rw/csmCHHXwVHygvA==}
     engines: {node: '>= 10'}
     os: [darwin]
 
-  growtopia.js-darwin-x64@2.1.2:
-    resolution: {integrity: sha512-4huJ4MdxMdG5zqIFJJw0PQMzwwR8GwzYLud9dY+RWbPRFFg0XHE+IweETCYZ0dKFmiJTUsD9IVhl58JN6bcTZw==}
+  growtopia.js-darwin-x64@2.1.3:
+    resolution: {integrity: sha512-Gu940WTY71jWzf71dtb8dJ7lE6EzqzDVv/3dJETL8TL/psmqxCpgpaWRlwrUxd9A3Z0Gl7eBLhZhhSLL1kHnLw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  growtopia.js-freebsd-x64@2.1.2:
-    resolution: {integrity: sha512-DQVlO7ww752vQFcnAmGO1ZvxgqogSe1tWCuQnsDSfaICiahuyPv7VatgYn2VgxKQsjSU3K22F+bI4AFjE4IExg==}
+  growtopia.js-freebsd-x64@2.1.3:
+    resolution: {integrity: sha512-bvFA+ns0T6bS8WfaiDa4MM2ZriTHGa6zQG86J4uBsuFV5LAQRw00itVmcLK6rRGLAOvBwNQAxz7S5yGUfpsSnw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
 
-  growtopia.js-linux-arm-gnueabihf@2.1.2:
-    resolution: {integrity: sha512-53/ekj8q2Rlw8FbFtZny8OYzX9o9WKy9rdGwWZJiFKA2KqlEn+jKZfpisFp+L7yQF+2rnLKO8R9r+08GrwQk1g==}
+  growtopia.js-linux-arm-gnueabihf@2.1.3:
+    resolution: {integrity: sha512-/ssycFusGEtlOryMJ29ZcLFXmfjwugQ3xPnyJI2ejlpDApeLtKGSK+rJI4ygchjzcYEwUgvKln/M8XaPaq3p3g==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  growtopia.js-linux-arm-musleabihf@2.1.2:
-    resolution: {integrity: sha512-hd7lk5aSdTur4dZ8mY0AiOx33S2Ay8smDadiGyD932dyYY3p5DCSmecWQLd8sKif5UXLpBWTqUPBMXKZ45pSrQ==}
+  growtopia.js-linux-arm-musleabihf@2.1.3:
+    resolution: {integrity: sha512-1SEB9bV7wHqnnQRmwYRwEjmfxbQ6SjubS039JPl/rdlJiEJAz2U04w7FueaGmXM3d362TziCgnA0Vm4GMr0zFw==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  growtopia.js-linux-arm64-gnu@2.1.2:
-    resolution: {integrity: sha512-jLGbyuPVGlsbnd4JHUHfLkg2+EMXVJQL+aOPlmrziZc8SP8nxo5owLtN1eoMDWCiadwEQSLpOT6nTNiLYo5L4w==}
+  growtopia.js-linux-arm64-gnu@2.1.3:
+    resolution: {integrity: sha512-dTiRfvdutnVcz1pqfxb+c3Qqkh6wFkTHeQe5BYfAe8nvIaaIsvKISlTYFaHz0vG9w3n5VINJIfaY1ApCKH4WvA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  growtopia.js-linux-arm64-musl@2.1.2:
-    resolution: {integrity: sha512-2s3V0OBQTurD7I7DncBlhke90b+kG3FyInysl3LTHkT5UeXnN8ZdjSTxoUirp6OjF7urY/R8sqFor7wpixrzEA==}
+  growtopia.js-linux-arm64-musl@2.1.3:
+    resolution: {integrity: sha512-trwh174wGE0ILyHSJEIKY8rKzT8I/5DdwrL9B36tbgFtREvKaY6PeG7KHgAirU2NXQ9Ner5dM1B4BlhQ28kn+Q==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  growtopia.js-linux-riscv64-gnu@2.1.2:
-    resolution: {integrity: sha512-r6fW9iCgxbqluVo249FQ42FbvcuR46DlmqlaZaJe+tQ8OD5zHYmQ1gImDTGIGSw7d0DKlSwuhefoEe0uZSvIew==}
+  growtopia.js-linux-riscv64-gnu@2.1.3:
+    resolution: {integrity: sha512-zs5eIGMVoCFTHe6TvCc+U5/cY+XfHCHRsRDEDZlv7Wgsvo70O+O8YEJcyClNIINLsY/PdCIpALbVqJpXq/0Bzw==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
 
-  growtopia.js-linux-x64-gnu@2.1.2:
-    resolution: {integrity: sha512-wYAxLlrPpVaml7WOb/JX/NtNUE46T3cZAdhHM4t0mmN78maWiuCsxmeQ9Vr1rLet6tGY//F+b7YxFiUxKFtbNA==}
+  growtopia.js-linux-x64-gnu@2.1.3:
+    resolution: {integrity: sha512-ZKgs3mmQVucveCQj13ZWGSgz+if9yGDkd3axD/9Inlsw2t46HoWvv1ZWbqjEGKmQVGEf0oBZySZZnCFUikE7WA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  growtopia.js-linux-x64-musl@2.1.2:
-    resolution: {integrity: sha512-o48Mxf9OeLgmMijP78C8aMTXAdxPegjYfWwTHts5+UdW6Ah6W9CDQTSdN0H0JFjAbNjsyo/vLu0wI0hwnlabkw==}
+  growtopia.js-linux-x64-musl@2.1.3:
+    resolution: {integrity: sha512-0EZ036gn7Nt5eYRLUxQ5LhkQihztf2B1RI8RkyeMG02OyMyjDGSJFN6CqmEAGP3KlqRsxah14AR9jq/bp+I6Dw==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  growtopia.js-win32-arm64-msvc@2.1.2:
-    resolution: {integrity: sha512-S1dBYDbl3xpEBaMX98/6e2tYHMGvoRrQgbyNFrddlhd7WpkYg52YxIYp7I0zORcTTIYRxt8XW1zr9/gh3WSrkA==}
+  growtopia.js-win32-arm64-msvc@2.1.3:
+    resolution: {integrity: sha512-X0DGNc34Gim+QeDBzsEHlDDYWVvkyKidqT7GRaDU5Cml8FVWzNs6FD6ujNp5HPhDxyRFxauZHXkcGhnkzLKIrQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  growtopia.js-win32-ia32-msvc@2.1.2:
-    resolution: {integrity: sha512-aecrSklUUNJxvPhJurOjoGlKOkWo7TjWTbs6ggvrC9ReRZkKYaszY97xOf5FwpMyiyVjMkAc5nogVXVzU2Vs9g==}
+  growtopia.js-win32-ia32-msvc@2.1.3:
+    resolution: {integrity: sha512-plJMizMaFkat4k3IwQtQj7juTXvZMwe/2Ce1owmjtfs0TaO1ZQQnd89ymqqQcUJdX3JUjg0PZcsInUC5XhtG9A==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
 
-  growtopia.js-win32-x64-msvc@2.1.2:
-    resolution: {integrity: sha512-wBp55ZyYtxDfEJYL5eGUv9+Y3Md+k4dupfbO5hCr/prftBzPPn/aftykX8NYGHd1+CwCi/5xgMfQNrcxwJWpbA==}
+  growtopia.js-win32-x64-msvc@2.1.3:
+    resolution: {integrity: sha512-CSMqvUGoBZnH5w/O9UnSvTzMbX2EkTd3hIL4EGhiaL/DUkMgez3CNbgXqeD5yJTewld3nJ71K1+3IWEkNm3TUA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  growtopia.js@2.1.2:
-    resolution: {integrity: sha512-5RHmZGEkmpjb0wQfdY/thHgc3zuyg3yScSqcdAP5KtNnUUm1zdy88x8JyY56u9q+6eTYxkioojNCRLNXBrw+YQ==}
+  growtopia.js@2.1.3:
+    resolution: {integrity: sha512-PGZvN3umGJoMLDnPIj4wktbBjsV5j/F4qhEHZXXNw4StlWtCdOz/bKqoOhzjw3aNDlp/XV46GzHhigIhRecW+Q==}
     engines: {node: '>= 10'}
 
   has-flag@4.0.0:
@@ -2911,72 +2911,72 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  growtopia.js-android-arm-eabi@2.1.2:
+  growtopia.js-android-arm-eabi@2.1.3:
     optional: true
 
-  growtopia.js-android-arm64@2.1.2:
+  growtopia.js-android-arm64@2.1.3:
     optional: true
 
-  growtopia.js-darwin-arm64@2.1.2:
+  growtopia.js-darwin-arm64@2.1.3:
     optional: true
 
-  growtopia.js-darwin-universal@2.1.2:
+  growtopia.js-darwin-universal@2.1.3:
     optional: true
 
-  growtopia.js-darwin-x64@2.1.2:
+  growtopia.js-darwin-x64@2.1.3:
     optional: true
 
-  growtopia.js-freebsd-x64@2.1.2:
+  growtopia.js-freebsd-x64@2.1.3:
     optional: true
 
-  growtopia.js-linux-arm-gnueabihf@2.1.2:
+  growtopia.js-linux-arm-gnueabihf@2.1.3:
     optional: true
 
-  growtopia.js-linux-arm-musleabihf@2.1.2:
+  growtopia.js-linux-arm-musleabihf@2.1.3:
     optional: true
 
-  growtopia.js-linux-arm64-gnu@2.1.2:
+  growtopia.js-linux-arm64-gnu@2.1.3:
     optional: true
 
-  growtopia.js-linux-arm64-musl@2.1.2:
+  growtopia.js-linux-arm64-musl@2.1.3:
     optional: true
 
-  growtopia.js-linux-riscv64-gnu@2.1.2:
+  growtopia.js-linux-riscv64-gnu@2.1.3:
     optional: true
 
-  growtopia.js-linux-x64-gnu@2.1.2:
+  growtopia.js-linux-x64-gnu@2.1.3:
     optional: true
 
-  growtopia.js-linux-x64-musl@2.1.2:
+  growtopia.js-linux-x64-musl@2.1.3:
     optional: true
 
-  growtopia.js-win32-arm64-msvc@2.1.2:
+  growtopia.js-win32-arm64-msvc@2.1.3:
     optional: true
 
-  growtopia.js-win32-ia32-msvc@2.1.2:
+  growtopia.js-win32-ia32-msvc@2.1.3:
     optional: true
 
-  growtopia.js-win32-x64-msvc@2.1.2:
+  growtopia.js-win32-x64-msvc@2.1.3:
     optional: true
 
-  growtopia.js@2.1.2:
+  growtopia.js@2.1.3:
     optionalDependencies:
-      growtopia.js-android-arm-eabi: 2.1.2
-      growtopia.js-android-arm64: 2.1.2
-      growtopia.js-darwin-arm64: 2.1.2
-      growtopia.js-darwin-universal: 2.1.2
-      growtopia.js-darwin-x64: 2.1.2
-      growtopia.js-freebsd-x64: 2.1.2
-      growtopia.js-linux-arm-gnueabihf: 2.1.2
-      growtopia.js-linux-arm-musleabihf: 2.1.2
-      growtopia.js-linux-arm64-gnu: 2.1.2
-      growtopia.js-linux-arm64-musl: 2.1.2
-      growtopia.js-linux-riscv64-gnu: 2.1.2
-      growtopia.js-linux-x64-gnu: 2.1.2
-      growtopia.js-linux-x64-musl: 2.1.2
-      growtopia.js-win32-arm64-msvc: 2.1.2
-      growtopia.js-win32-ia32-msvc: 2.1.2
-      growtopia.js-win32-x64-msvc: 2.1.2
+      growtopia.js-android-arm-eabi: 2.1.3
+      growtopia.js-android-arm64: 2.1.3
+      growtopia.js-darwin-arm64: 2.1.3
+      growtopia.js-darwin-universal: 2.1.3
+      growtopia.js-darwin-x64: 2.1.3
+      growtopia.js-freebsd-x64: 2.1.3
+      growtopia.js-linux-arm-gnueabihf: 2.1.3
+      growtopia.js-linux-arm-musleabihf: 2.1.3
+      growtopia.js-linux-arm64-gnu: 2.1.3
+      growtopia.js-linux-arm64-musl: 2.1.3
+      growtopia.js-linux-riscv64-gnu: 2.1.3
+      growtopia.js-linux-x64-gnu: 2.1.3
+      growtopia.js-linux-x64-musl: 2.1.3
+      growtopia.js-win32-arm64-msvc: 2.1.3
+      growtopia.js-win32-ia32-msvc: 2.1.3
+      growtopia.js-win32-x64-msvc: 2.1.3
 
   has-flag@4.0.0: {}
 
