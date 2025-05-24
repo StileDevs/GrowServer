@@ -1,31 +1,34 @@
-import { TileFlags } from "../../Constants";
-import type { Base } from "../../core/Base";
-import type { World } from "../../core/World";
-import type { Block } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
-import { Tile } from "../Tile";
+// import { ItemDefinition, TankPacket } from "growtopia.js";
+// import { TileFlags } from "../../Constants";
+// import type { Base } from "../../core/Base";
+// import { Peer } from "../../core/Peer";
+// import type { World } from "../../core/World";
+// import type { TileData } from "../../types";
+// import { ExtendBuffer } from "../../utils/ExtendBuffer";
+// import { Tile } from "../Tile";
 
-export class SwitcheROO extends Tile {
-  public data: ExtendBuffer;
+// export class SwitcheROO extends Tile {
+//   constructor(
+//     public base: Base,
+//     public world: World,
+//     public data: TileData,
+//     public fgItemMeta: ItemDefinition,
+//   ) {
+//     super(base, world, data, fgItemMeta);
+//   }
 
-  constructor(
-    public base: Base,
-    public world: World,
-    public block: Block,
-    public alloc = 8
-  ) {
-    super(base, world, block, alloc);
-    this.data = new ExtendBuffer(this.alloc);
-  }
+//   public async onPunch(peer: Peer): Promise<void> {
+//     if (this.world.hasTilePermission(peer.data.userID, this.data)) {
+//       // default punch behaviour, but with an exception
+//       this.data.flags ^= TileFlags.OPEN;
+//     }
+//     else {
+//       if (this.data.flags & TileFlags.PUBLIC) {
+//         this.data.flags ^= TileFlags.OPEN;
+//         this.applyDamage(peer, 0);
+//       }
+//     }
 
-  public async serialize(): Promise<void> {
-    // nothing to do here
-    return;
-  }
-
-  public async setFlags(): Promise<void> {
-    if (this.block.toggleable?.open) this.flags |= TileFlags.OPEN;
-    if (this.block.toggleable?.public) this.flags |= TileFlags.PUBLIC;
-    return;
-  }
-}
+//     super.onPunch(peer);
+//   }
+// }

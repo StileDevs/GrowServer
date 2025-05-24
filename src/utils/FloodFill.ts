@@ -1,7 +1,7 @@
 import { TankPacket, Variant } from "growtopia.js";
-import type { Block } from "../types";
+import { type TileData } from "../types";
 import { Base } from "../core/Base";
-import { TankTypes, TileIgnore } from "../Constants";
+import { LockPermission, LOCKS, TankTypes, TileIgnore } from "../Constants";
 import { World } from "../core/World";
 import { Peer } from "../core/Peer";
 
@@ -27,8 +27,8 @@ interface FloodFillData {
   max: number;
   width: number;
   height: number;
-  blocks: Block[];
-  s_block: Block;
+  blocks: TileData[];
+  s_block: TileData;
   base: Base;
   noEmptyAir: boolean;
 }
@@ -37,7 +37,7 @@ export class Floodfill {
   public totalNodes: Node[] = [];
   public count = 0;
 
-  constructor(public data: FloodFillData) {}
+  constructor(public data: FloodFillData) { }
 
   async exec() {
     if (this.data.s_block.lock) return;
@@ -128,19 +128,18 @@ export class Floodfill {
   public async apply(world: World, owner: Peer) {
     const buffer = Buffer.alloc(this.data.max * 2);
     let pos = 0;
+    const lockData = LOCKS.find((v) => v.id == this.data.s_block.fg);
 
     this.data.s_block.lock = {
       ownerFg: this.data.s_block.fg,
-      ownerUserID:
-        typeof owner.data?.id_user === "string"
-          ? parseInt(owner.data.id_user)
-          : owner.data?.id_user,
-      ownerName:      owner.name,
-      ownerX:         this.data.s_block.x,
-      ownerY:         this.data.s_block.y,
-      isOwner:        true,
+      ownerUserID: owner.data?.userID,
+      ownerName: owner.name,
+      ownerX: this.data.s_block.x,
+      ownerY: this.data.s_block.y,
+      isOwner: true,
       ignoreEmptyAir: this.data.noEmptyAir,
-      adminIDs:       []
+      adminIDs: [],
+      permission: LockPermission.NONE, // the lock itself can only be destroyed by the owner
     };
 
     let i = 0;
@@ -156,8 +155,9 @@ export class Floodfill {
       block.lock = {
         ownerFg: this.data.s_block.fg,
         //ownerUserID: owner.data.id,
-        ownerX:  this.data.s_block.x,
-        ownerY:  this.data.s_block.y
+        ownerX: this.data.s_block.x,
+        ownerY: this.data.s_block.y,
+        permission: lockData ? lockData.defaultPermission : LockPermission.NONE,
         //adminIDs: [],
       };
 
@@ -170,13 +170,13 @@ export class Floodfill {
     world.saveToCache();
 
     const tank = TankPacket.from({
-      type:        TankTypes.SEND_LOCK,
-      netID:       owner.data?.id_user as number,
+      type: TankTypes.SEND_LOCK,
+      netID: owner.data?.userID as number,
       targetNetID: this.data.max,
-      info:        this.data.s_block.fg,
-      xPunch:      this.data.s_block.x,
-      yPunch:      this.data.s_block.y,
-      data:        () => buffer
+      info: this.data.s_block.fg,
+      xPunch: this.data.s_block.x,
+      yPunch: this.data.s_block.y,
+      data: () => buffer
     });
 
     owner.every((p) => {

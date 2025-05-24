@@ -104,7 +104,7 @@ export class ITextPacket {
       if (!isValid) throw new Error("Password are invalid");
 
       const targetPeerId = this.base.cache.peers.find(
-        (v) => v.id_user === player.id
+        (v) => v.userID === player.id
       );
       if (targetPeerId) {
         const targetPeer = new Peer(this.base, targetPeerId.netID);
@@ -152,7 +152,7 @@ export class ITextPacket {
       if (!isValid) throw new Error("Password are invalid");
 
       const targetPeerId = this.base.cache.peers.find(
-        (v) => v.id_user === player.id
+        (v) => v.userID === player.id
       );
       if (targetPeerId) {
         const targetPeer = new Peer(this.base, targetPeerId.netID);
@@ -173,36 +173,36 @@ export class ITextPacket {
       );
 
       const defaultInventory = {
-        max:   32,
+        max: 32,
         items: [
           {
-            id:     18, // Fist
+            id: 18, // Fist
             amount: 1
           },
           {
-            id:     32, // Wrench
+            id: 32, // Wrench
             amount: 1
           }
         ]
       };
 
       const defaultClothing = {
-        hair:     0,
-        shirt:    0,
-        pants:    0,
-        feet:     0,
-        face:     0,
-        hand:     0,
-        back:     0,
-        mask:     0,
+        hair: 0,
+        shirt: 0,
+        pants: 0,
+        feet: 0,
+        face: 0,
+        hand: 0,
+        back: 0,
+        mask: 0,
         necklace: 0,
-        ances:    0
+        ances: 0
       };
 
       this.peer.data.tankIDName = player.display_name;
       this.peer.data.rotatedLeft = false;
       this.peer.data.country = this.obj.country as string;
-      this.peer.data.id_user = player.id;
+      this.peer.data.userID = player.id;
       this.peer.data.role = player.role;
       this.peer.data.inventory = player.inventory?.length
         ? JSON.parse(player.inventory.toString())
@@ -218,11 +218,11 @@ export class ITextPacket {
         ? JSON.parse(player.last_visited_worlds.toString())
         : [];
       this.peer.data.state = {
-        mod:             0,
+        mod: 0,
         canWalkInBlocks: false,
-        modsEffect:      0,
-        lava:            {
-          damage:       0,
+        modsEffect: 0,
+        lava: {
+          damage: 0,
           resetStateAt: 0
         }
       };
