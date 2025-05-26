@@ -39,8 +39,8 @@ importers:
         specifier: ^0.43.1
         version: 0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2)
       drizzle-zod:
-        specifier: ^0.8.1
-        version: 0.8.1(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.28)
+        specifier: ^0.8.2
+        version: 0.8.2(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.28)
       fast-xml-parser:
         specifier: ^5.2.3
         version: 5.2.3
@@ -1061,8 +1061,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.8.1:
-    resolution: {integrity: sha512-k2/2cwBz3Vjb7CWPVCeMNajZpG43V7SqhNrZ8LsWJOz8TztQ5YtU2ifgnfnxqZXsxeHmdQnsl6eXm7GwDZnq/Q==}
+  drizzle-zod@0.8.2:
+    resolution: {integrity: sha512-9Do/16OjFFNrQDZgvMtxtDDwKWbFOxUAIwNPKX98SfxrP8H18vhN1BvNXbhelLcdgCE7GEaXDJqBjMExSkhpkA==}
     peerDependencies:
       drizzle-orm: '>=0.36.0'
       zod: ^3.25.1
@@ -2546,7 +2546,7 @@ snapshots:
       bun-types: 1.2.14
       gel: 2.0.2
 
-  drizzle-zod@0.8.1(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.28):
+  drizzle-zod@0.8.2(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.28):
     dependencies:
       drizzle-orm: 0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2)
       zod: 3.25.28
