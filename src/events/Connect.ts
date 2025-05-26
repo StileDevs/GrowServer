@@ -1,4 +1,4 @@
-import { TextPacket } from "growtopia.js";
+import { TextPacket, Variant } from "growtopia.js";
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
 import consola from "consola";
