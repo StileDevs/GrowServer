@@ -12,8 +12,8 @@ importers:
         specifier: ^24.4.0
         version: 24.4.0
       '@hono/node-server':
-        specifier: ^1.14.2
-        version: 1.14.2(hono@4.7.10)
+        specifier: ^1.14.3
+        version: 1.14.3(hono@4.7.10)
       '@libsql/client':
         specifier: ^0.15.7
         version: 0.15.7
@@ -39,14 +39,14 @@ importers:
         specifier: ^0.43.1
         version: 0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2)
       drizzle-zod:
-        specifier: ^0.8.1
-        version: 0.8.1(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.20)
+        specifier: ^0.8.2
+        version: 0.8.2(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.28)
       fast-xml-parser:
         specifier: ^5.2.3
         version: 5.2.3
       growtopia.js:
-        specifier: ^2.1.4
-        version: 2.1.4
+        specifier: ^2.1.5
+        version: 2.1.5
       hono:
         specifier: ^4.7.10
         version: 4.7.10
@@ -72,15 +72,15 @@ importers:
         specifier: ^4.19.4
         version: 4.19.4
       zod:
-        specifier: ^3.25.20
-        version: 3.25.20
+        specifier: ^3.25.28
+        version: 3.25.28
     devDependencies:
       '@eslint/js':
         specifier: ^9.27.0
         version: 9.27.0
       '@stylistic/eslint-plugin-ts':
-        specifier: ^4.2.0
-        version: 4.2.0(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
+        specifier: ^4.4.0
+        version: 4.4.0(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
       '@types/bcryptjs':
         specifier: ^2.4.6
         version: 2.4.6
@@ -602,8 +602,8 @@ packages:
     resolution: {integrity: sha512-0J+zgWxHN+xXONWIyPWKFMgVuJoZuGiIFu8yxk7RJjxkzpGmyja5wRFqZIVtjDVOQpV+Rw0iOAjYPE2eQyjr0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@hono/node-server@1.14.2':
-    resolution: {integrity: sha512-GHjpOeHYbr9d1vkID2sNUYkl5IxumyhDrUJB7wBp7jvqYwPFt+oNKsAPBRcdSbV7kIrXhouLE199ks1QcK4r7A==}
+  '@hono/node-server@1.14.3':
+    resolution: {integrity: sha512-KuDMwwghtFYSmIpr4WrKs1VpelTrptvJ+6x6mbUcZnFcc213cumTF5BdqfHyW93B19TNI4Vaev14vOI2a0Ie3w==}
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
@@ -711,8 +711,8 @@ packages:
   '@petamoriken/float16@3.9.2':
     resolution: {integrity: sha512-VgffxawQde93xKxT3qap3OH+meZf7VaSB5Sqd4Rqc+FP5alWbpOyan/7tRbOAvynjpG3GpdtAuGU/NdhQpmrog==}
 
-  '@stylistic/eslint-plugin-ts@4.2.0':
-    resolution: {integrity: sha512-j2o2GvOx9v66x8hmp/HJ+0T+nOppiO5ycGsCkifh7JPGgjxEhpkGmIGx3RWsoxpWbad3VCX8e8/T8n3+7ze1Zg==}
+  '@stylistic/eslint-plugin-ts@4.4.0':
+    resolution: {integrity: sha512-i5fya8tZFbF/qbjhOJ9h7CbJr91KZqYOPwrARrcdhG837q/+CEF1Wua+cYK+F3jyeegzLskJgF2sFGizOxC2gQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
       eslint: '>=9.0.0'
@@ -759,10 +759,6 @@ packages:
       eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <5.9.0'
 
-  '@typescript-eslint/scope-manager@8.29.1':
-    resolution: {integrity: sha512-2nggXGX5F3YrsGN08pw4XpMLO1Rgtnn4AzTegC2MDesv6q3QaTU5yU7IbS1tf1IwCR0Hv/1EFygLn9ms6LIpDA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   '@typescript-eslint/scope-manager@8.32.1':
     resolution: {integrity: sha512-7IsIaIDeZn7kffk7qXC3o6Z4UblZJKV3UBpkvRNpr5NSyLji7tvTcvmnMNYuYLyh26mN8W723xpo3i4MlD33vA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -774,31 +770,14 @@ packages:
       eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <5.9.0'
 
-  '@typescript-eslint/types@8.29.1':
-    resolution: {integrity: sha512-VT7T1PuJF1hpYC3AGm2rCgJBjHL3nc+A/bhOp9sGMKfi5v0WufsX/sHCFBfNTx2F+zA6qBc/PD0/kLRLjdt8mQ==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
   '@typescript-eslint/types@8.32.1':
     resolution: {integrity: sha512-YmybwXUJcgGqgAp6bEsgpPXEg6dcCyPyCSr0CAAueacR/CCBi25G3V8gGQ2kRzQRBNol7VQknxMs9HvVa9Rvfg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@typescript-eslint/typescript-estree@8.29.1':
-    resolution: {integrity: sha512-l1enRoSaUkQxOQnbi0KPUtqeZkSiFlqrx9/3ns2rEDhGKfTa+88RmXqedC1zmVTOWrLc2e6DEJrTA51C9iLH5g==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-    peerDependencies:
-      typescript: '>=4.8.4 <5.9.0'
 
   '@typescript-eslint/typescript-estree@8.32.1':
     resolution: {integrity: sha512-Y3AP9EIfYwBb4kWGb+simvPaqQoT5oJuzzj9m0i6FCY6SPvlomY2Ei4UEMm7+FXtlNJbor80ximyslzaQF6xhg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      typescript: '>=4.8.4 <5.9.0'
-
-  '@typescript-eslint/utils@8.29.1':
-    resolution: {integrity: sha512-QAkFEbytSaB8wnmB+DflhUPz6CLbFWE2SnSCrRMEa+KnXIzDYbpsn++1HGvnfAsUY44doDXmvRkO5shlM/3UfA==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-    peerDependencies:
-      eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <5.9.0'
 
   '@typescript-eslint/utils@8.32.1':
@@ -807,10 +786,6 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0
       typescript: '>=4.8.4 <5.9.0'
-
-  '@typescript-eslint/visitor-keys@8.29.1':
-    resolution: {integrity: sha512-RGLh5CRaUEf02viP5c1Vh1cMGffQscyHe7HPAzGpfmfflFg1wUz2rYxd+OZqwpeypYvZ8UxSxuIpF++fmOzEcg==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@typescript-eslint/visitor-keys@8.32.1':
     resolution: {integrity: sha512-ar0tjQfObzhSaW3C3QNmTc5ofj0hDoNQ5XWrCy6zDyabdr0TWhCkClp+rywGNj/odAFBVzzJrK4tEq5M4Hmu4w==}
@@ -1086,8 +1061,8 @@ packages:
       sqlite3:
         optional: true
 
-  drizzle-zod@0.8.1:
-    resolution: {integrity: sha512-k2/2cwBz3Vjb7CWPVCeMNajZpG43V7SqhNrZ8LsWJOz8TztQ5YtU2ifgnfnxqZXsxeHmdQnsl6eXm7GwDZnq/Q==}
+  drizzle-zod@0.8.2:
+    resolution: {integrity: sha512-9Do/16OjFFNrQDZgvMtxtDDwKWbFOxUAIwNPKX98SfxrP8H18vhN1BvNXbhelLcdgCE7GEaXDJqBjMExSkhpkA==}
     peerDependencies:
       drizzle-orm: '>=0.36.0'
       zod: ^3.25.1
@@ -1289,103 +1264,103 @@ packages:
   graphemer@1.4.0:
     resolution: {integrity: sha512-EtKwoO6kxCL9WO5xipiHTZlSzBm7WLT627TqC/uVRd0HKmq8NXyebnNYxDoBi7wt8eTWrUrKXCOVaFq9x1kgag==}
 
-  growtopia.js-android-arm-eabi@2.1.4:
-    resolution: {integrity: sha512-eqNQZzOCrP4C76exXBRhfoPJGGMUogv16Y8aS4dMf6+qI7+tnUTh/5WBHy1mFhaap2ZfAIpcdxL+rsOi6M6AAQ==}
+  growtopia.js-android-arm-eabi@2.1.5:
+    resolution: {integrity: sha512-81KiaRUrXUHKgZlRwyGGV6UxQJImCjxZel1M/3RZ8c7N9u/Q090Ps71IabuwwEuJT7P6uAaYHbe/3q+wvH5Z8A==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [android]
 
-  growtopia.js-android-arm64@2.1.4:
-    resolution: {integrity: sha512-+xgnzledg2dRT6wKA/eq3Y9hpq7BWq+yOWUsxibmIBJUClSgoCoH3V5aS/hV/46sZWGr04/5LCpN5+DOdtWNqg==}
+  growtopia.js-android-arm64@2.1.5:
+    resolution: {integrity: sha512-oq0VLVd8IM+KzEvVxpzqURQi8XsXTC0hnxXZyzdZLc3Of2VzvjRu1tBU8Ai8PknbZ/QHEQ5k7M0s/qRfG/OlqQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [android]
 
-  growtopia.js-darwin-arm64@2.1.4:
-    resolution: {integrity: sha512-pCt0mjDqFELhf+P57Tw2vwsVAphNHs2iDqUo+FbKPnGQEOkWkPoHqRSitQdY/TYyoZzfy5WevM71LooFj6UZsw==}
+  growtopia.js-darwin-arm64@2.1.5:
+    resolution: {integrity: sha512-opM/lxWkLSPQzobaEuWCLCw4lCfdVTtTvFmptvLALRLUoqFK3XffAvjl8jXIOAnomC5iAXy31f9M1bcp2wJL4Q==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  growtopia.js-darwin-universal@2.1.4:
-    resolution: {integrity: sha512-8GqNTp84M2AKwt1wNQcNovJ6KSo4sY0Lcj0lcQWa8TMndSLm838OjXF/yi1ZVE3ePfrvItaeKwAaeOcHXLihHw==}
+  growtopia.js-darwin-universal@2.1.5:
+    resolution: {integrity: sha512-cSBj+0i08O5qG19b24mqI5Pd55hfIOkL6w/NiALh6xNxvJJxD2CujliJGMu68NaBPezgQNwvgcXe8rkrlQNoHQ==}
     engines: {node: '>= 10'}
     os: [darwin]
 
-  growtopia.js-darwin-x64@2.1.4:
-    resolution: {integrity: sha512-qlylzEeQeGs2YeNnaM2o8Y+b0IjxrOCV79ylcVeb0lqmQEepnkPpvd9BzvI4V9f2q1s/d39YNDUdCx/aHi649w==}
+  growtopia.js-darwin-x64@2.1.5:
+    resolution: {integrity: sha512-m2XKv2NIEelh44iAccPRfyMlW66U2zceoCGczmyQbkF0OzzGJHoT8FYWGKkr3fBML1m0vOgyielwRZWeJkLqlA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  growtopia.js-freebsd-x64@2.1.4:
-    resolution: {integrity: sha512-yvXrtz5Y7rJylH/t+D+JMiZRyleZp8HprxpUVe8ewiRXr0HpfSVtiTcvitXupm0CLR4RROJdVItm+EH3M8mA/g==}
+  growtopia.js-freebsd-x64@2.1.5:
+    resolution: {integrity: sha512-eYqNpYKIK/XK46kGSASdG9EEeiTTsqlmdLokkLBAYtKu0NzgyZ4xSkLCVsDutkDe6OCJIdA0Mdamlqy105lAxg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
 
-  growtopia.js-linux-arm-gnueabihf@2.1.4:
-    resolution: {integrity: sha512-reKfU59yHCgDena2r7sDkXBQnDB6WDrAFFAXGpNP+pvIyWFoP+d6pvejC4bqqe+IPlldKFIuh4kZsrHXXwUX6A==}
+  growtopia.js-linux-arm-gnueabihf@2.1.5:
+    resolution: {integrity: sha512-MmkTSllXzQYIC6D7rOIPiBvhF5h+ZPvYO1X/tTTQt8p/1nnlzU0cry7zwJxlwaSIhnXv6AWfwmhn8ZlCGXDs4w==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  growtopia.js-linux-arm-musleabihf@2.1.4:
-    resolution: {integrity: sha512-TWySogqO/Jb+m36X9EFhqQKWfCzf9tXmVBNZ7Hu6oIzq7oPYS7Tsw8HFCWvhaVY5o/xH7q/dG9AOG/YYrjfgcg==}
+  growtopia.js-linux-arm-musleabihf@2.1.5:
+    resolution: {integrity: sha512-lsLZzaH31Qmxo2YotVwOReMylBnQPwn7z910jSWJlBfadt8d1ub6V2XG479Txiq29Ij7sZhKqZcGlU0lapFw3A==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  growtopia.js-linux-arm64-gnu@2.1.4:
-    resolution: {integrity: sha512-JIUfKl6BYlFA8UNKBmbNU6Ys/7jOYMcl3HYxcoU2LbMFPLtOqdomD2ZG5UpXttv9d6cj6o2buSOoNifyxyNxdw==}
+  growtopia.js-linux-arm64-gnu@2.1.5:
+    resolution: {integrity: sha512-EHDX5oRzZPyR6xWxZV6izYQiznFli1GqXlqEI3UIjW1O5de1svEtlJ/3ruWN9VeMI2eR1Gm1MaBgrnDTUhB2Bw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  growtopia.js-linux-arm64-musl@2.1.4:
-    resolution: {integrity: sha512-6WeIx/hi++j9w+N72Mv+1IrNYYDhjIe3kCE+SeQvJOgcoRXpvwNyrR2OstY1XZXkauik4k2SuxsyOH/Ba/5BlA==}
+  growtopia.js-linux-arm64-musl@2.1.5:
+    resolution: {integrity: sha512-lHOWIMXFbX3EHpr7BMv+QQ1oDuzH6/s8Fg+UCbWo27jzQAsSWrPOMWx6p0lcJ/s4Kliwsh7q1Antobwv+UovEA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  growtopia.js-linux-riscv64-gnu@2.1.4:
-    resolution: {integrity: sha512-Jzem5r9/FJMg7O6p3ImrzDNKWlxn6IarVwJPA3Uq+hKNyhJs8NJBpxJr887P3jYr1k04K/7PVq+ip1CYcpWf+A==}
+  growtopia.js-linux-riscv64-gnu@2.1.5:
+    resolution: {integrity: sha512-Y1Jld9rL5bwg/C5i/6ojwbSyFQpT7rgqep26D673c+Ckak76qw9zFROB01BCfqxV42w6sqe8N84nkINV0UrWPg==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
 
-  growtopia.js-linux-x64-gnu@2.1.4:
-    resolution: {integrity: sha512-CkyXVs6ZbS0Zxg95v4Q2UUmjEYPSpsp8umQX91tn0yQMxaC+aWDM2B3LB3LZXp488GgNuzGUmNFYgOouljQOKg==}
+  growtopia.js-linux-x64-gnu@2.1.5:
+    resolution: {integrity: sha512-HsSHCkiG2QTG6U8qrz5LyfEj2zViSmFS9Ik5hZxY6Zl6s4X/bPiUgOSMAbDEw65PMOmPSOaQY/Fw7I05wpkfRg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  growtopia.js-linux-x64-musl@2.1.4:
-    resolution: {integrity: sha512-jWP2NihZ7qymuglhyn3hHzhIMgrXefYYoPx6XPY+Om7FKDG+QAxfIclGJWGgl2ZSdkdY2zHwPjEyuGiToPnGnw==}
+  growtopia.js-linux-x64-musl@2.1.5:
+    resolution: {integrity: sha512-L/xSigeZNllHAcF4q3sR2THppOzxGMQP6aEYXV3yvPqjo3+PzqPcITa+HCJdXt8kG5mpFgJ31t1bWpqaD61IjQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  growtopia.js-win32-arm64-msvc@2.1.4:
-    resolution: {integrity: sha512-Okr6ZBFseLjm04aTauOAVsR7gaHwwIPXu4T9uqiO4HCuGE4Yqg+T2nBAB6LzvShXGIB/vWfUWkXhJ62kVz2NGg==}
+  growtopia.js-win32-arm64-msvc@2.1.5:
+    resolution: {integrity: sha512-wTkB3wtJULpNEOhaSb6qbEraaN7WiKpySXhGw5YZnzNamrsLARcY+SNK9HpmwOijoewTCNZKHre+FNKgZBM5pw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  growtopia.js-win32-ia32-msvc@2.1.4:
-    resolution: {integrity: sha512-a3TsP1A3ExpBa0M3tpxCCuota++xo6BhZ0m+sU8JWzb3qNJtyOGOIpjri1UTSJln00vI9F5nyy3onuPamiADiQ==}
+  growtopia.js-win32-ia32-msvc@2.1.5:
+    resolution: {integrity: sha512-YGo33PHJP3Ze8uh+lQdk+IloRuDAvMUsIEVzwinnwOq7styPK86SNc1pejToUgOLm4VDd1am4sPH4yG1mFQpFQ==}
     engines: {node: '>= 10'}
     cpu: [ia32]
     os: [win32]
 
-  growtopia.js-win32-x64-msvc@2.1.4:
-    resolution: {integrity: sha512-9iM/sGz48OlzKp/r7YwopqsnvFcFt1l2q+O2ds/Z9rOTL16XCcs+uqjAenZyjaAx1TBgXjCFpZNlBdClHRlXmQ==}
+  growtopia.js-win32-x64-msvc@2.1.5:
+    resolution: {integrity: sha512-b+0pX6mmre4N2j/f/rhdgj2sh9w1gFJqnUe0+9LpzGpVlBhhWTGdks9XqaPI/jVDSGBTQ08HLUZp4oqZ77e3cg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  growtopia.js@2.1.4:
-    resolution: {integrity: sha512-esUrMByXRn/d6wLNhW7IvfKu2mV0JL1ULG9ussZtJ06fy/yyp70u6EblRrzcKKu30MDiM3Jv3HwS9B4mvmhx8g==}
+  growtopia.js@2.1.5:
+    resolution: {integrity: sha512-mb/vQ/L+M+Kd8m/ky8lJK3l1dbw9PXaE9xtFekUnxRpNfEgwOPv0/yq/8VauPTJG++OUHoZ9egOsUrMkDat/OQ==}
     engines: {node: '>= 10'}
 
   has-flag@4.0.0:
@@ -1714,11 +1689,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  semver@7.7.1:
-    resolution: {integrity: sha512-hlq8tAfn0m/61p4BVRcPzIGr6LKiMwo4VM6dGi6pt4qcRkmNzTcWq6eCEjEh+qXjkMDvPlOFFSGwQjoEa6gyMA==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   semver@7.7.2:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
@@ -1892,8 +1862,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.25.20:
-    resolution: {integrity: sha512-z03fqpTMDF1G02VLKUMt6vyACE7rNWkh3gpXVHgPTw28NPtDFRGvcpTtPwn2kMKtQ0idtYJUTxchytmnqYswcw==}
+  zod@3.25.28:
+    resolution: {integrity: sha512-/nt/67WYKnr5by3YS7LroZJbtcCBurDKKPBPWWzaxvVCGuG/NOsiKkrjoOhI8mJ+SQUXEbUzeB3S+6XDUEEj7Q==}
 
 snapshots:
 
@@ -2176,7 +2146,7 @@ snapshots:
       '@eslint/core': 0.14.0
       levn: 0.4.1
 
-  '@hono/node-server@1.14.2(hono@4.7.10)':
+  '@hono/node-server@1.14.3(hono@4.7.10)':
     dependencies:
       hono: 4.7.10
 
@@ -2281,9 +2251,9 @@ snapshots:
   '@petamoriken/float16@3.9.2':
     optional: true
 
-  '@stylistic/eslint-plugin-ts@4.2.0(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)':
+  '@stylistic/eslint-plugin-ts@4.4.0(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)':
     dependencies:
-      '@typescript-eslint/utils': 8.29.1(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
+      '@typescript-eslint/utils': 8.32.1(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)
       eslint: 9.27.0(jiti@2.4.2)
       eslint-visitor-keys: 4.2.0
       espree: 10.3.0
@@ -2349,11 +2319,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/scope-manager@8.29.1':
-    dependencies:
-      '@typescript-eslint/types': 8.29.1
-      '@typescript-eslint/visitor-keys': 8.29.1
-
   '@typescript-eslint/scope-manager@8.32.1':
     dependencies:
       '@typescript-eslint/types': 8.32.1
@@ -2370,23 +2335,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/types@8.29.1': {}
-
   '@typescript-eslint/types@8.32.1': {}
-
-  '@typescript-eslint/typescript-estree@8.29.1(typescript@5.8.3)':
-    dependencies:
-      '@typescript-eslint/types': 8.29.1
-      '@typescript-eslint/visitor-keys': 8.29.1
-      debug: 4.4.1
-      fast-glob: 3.3.3
-      is-glob: 4.0.3
-      minimatch: 9.0.5
-      semver: 7.7.1
-      ts-api-utils: 2.1.0(typescript@5.8.3)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - supports-color
 
   '@typescript-eslint/typescript-estree@8.32.1(typescript@5.8.3)':
     dependencies:
@@ -2402,17 +2351,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.29.1(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)':
-    dependencies:
-      '@eslint-community/eslint-utils': 4.7.0(eslint@9.27.0(jiti@2.4.2))
-      '@typescript-eslint/scope-manager': 8.29.1
-      '@typescript-eslint/types': 8.29.1
-      '@typescript-eslint/typescript-estree': 8.29.1(typescript@5.8.3)
-      eslint: 9.27.0(jiti@2.4.2)
-      typescript: 5.8.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@typescript-eslint/utils@8.32.1(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.7.0(eslint@9.27.0(jiti@2.4.2))
@@ -2423,11 +2361,6 @@ snapshots:
       typescript: 5.8.3
     transitivePeerDependencies:
       - supports-color
-
-  '@typescript-eslint/visitor-keys@8.29.1':
-    dependencies:
-      '@typescript-eslint/types': 8.29.1
-      eslint-visitor-keys: 4.2.0
 
   '@typescript-eslint/visitor-keys@8.32.1':
     dependencies:
@@ -2613,10 +2546,10 @@ snapshots:
       bun-types: 1.2.14
       gel: 2.0.2
 
-  drizzle-zod@0.8.1(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.20):
+  drizzle-zod@0.8.2(drizzle-orm@0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2))(zod@3.25.28):
     dependencies:
       drizzle-orm: 0.43.1(@libsql/client@0.15.7)(bun-types@1.2.14)(gel@2.0.2)
-      zod: 3.25.20
+      zod: 3.25.28
 
   eastasianwidth@0.2.0: {}
 
@@ -2911,72 +2844,72 @@ snapshots:
 
   graphemer@1.4.0: {}
 
-  growtopia.js-android-arm-eabi@2.1.4:
+  growtopia.js-android-arm-eabi@2.1.5:
     optional: true
 
-  growtopia.js-android-arm64@2.1.4:
+  growtopia.js-android-arm64@2.1.5:
     optional: true
 
-  growtopia.js-darwin-arm64@2.1.4:
+  growtopia.js-darwin-arm64@2.1.5:
     optional: true
 
-  growtopia.js-darwin-universal@2.1.4:
+  growtopia.js-darwin-universal@2.1.5:
     optional: true
 
-  growtopia.js-darwin-x64@2.1.4:
+  growtopia.js-darwin-x64@2.1.5:
     optional: true
 
-  growtopia.js-freebsd-x64@2.1.4:
+  growtopia.js-freebsd-x64@2.1.5:
     optional: true
 
-  growtopia.js-linux-arm-gnueabihf@2.1.4:
+  growtopia.js-linux-arm-gnueabihf@2.1.5:
     optional: true
 
-  growtopia.js-linux-arm-musleabihf@2.1.4:
+  growtopia.js-linux-arm-musleabihf@2.1.5:
     optional: true
 
-  growtopia.js-linux-arm64-gnu@2.1.4:
+  growtopia.js-linux-arm64-gnu@2.1.5:
     optional: true
 
-  growtopia.js-linux-arm64-musl@2.1.4:
+  growtopia.js-linux-arm64-musl@2.1.5:
     optional: true
 
-  growtopia.js-linux-riscv64-gnu@2.1.4:
+  growtopia.js-linux-riscv64-gnu@2.1.5:
     optional: true
 
-  growtopia.js-linux-x64-gnu@2.1.4:
+  growtopia.js-linux-x64-gnu@2.1.5:
     optional: true
 
-  growtopia.js-linux-x64-musl@2.1.4:
+  growtopia.js-linux-x64-musl@2.1.5:
     optional: true
 
-  growtopia.js-win32-arm64-msvc@2.1.4:
+  growtopia.js-win32-arm64-msvc@2.1.5:
     optional: true
 
-  growtopia.js-win32-ia32-msvc@2.1.4:
+  growtopia.js-win32-ia32-msvc@2.1.5:
     optional: true
 
-  growtopia.js-win32-x64-msvc@2.1.4:
+  growtopia.js-win32-x64-msvc@2.1.5:
     optional: true
 
-  growtopia.js@2.1.4:
+  growtopia.js@2.1.5:
     optionalDependencies:
-      growtopia.js-android-arm-eabi: 2.1.4
-      growtopia.js-android-arm64: 2.1.4
-      growtopia.js-darwin-arm64: 2.1.4
-      growtopia.js-darwin-universal: 2.1.4
-      growtopia.js-darwin-x64: 2.1.4
-      growtopia.js-freebsd-x64: 2.1.4
-      growtopia.js-linux-arm-gnueabihf: 2.1.4
-      growtopia.js-linux-arm-musleabihf: 2.1.4
-      growtopia.js-linux-arm64-gnu: 2.1.4
-      growtopia.js-linux-arm64-musl: 2.1.4
-      growtopia.js-linux-riscv64-gnu: 2.1.4
-      growtopia.js-linux-x64-gnu: 2.1.4
-      growtopia.js-linux-x64-musl: 2.1.4
-      growtopia.js-win32-arm64-msvc: 2.1.4
-      growtopia.js-win32-ia32-msvc: 2.1.4
-      growtopia.js-win32-x64-msvc: 2.1.4
+      growtopia.js-android-arm-eabi: 2.1.5
+      growtopia.js-android-arm64: 2.1.5
+      growtopia.js-darwin-arm64: 2.1.5
+      growtopia.js-darwin-universal: 2.1.5
+      growtopia.js-darwin-x64: 2.1.5
+      growtopia.js-freebsd-x64: 2.1.5
+      growtopia.js-linux-arm-gnueabihf: 2.1.5
+      growtopia.js-linux-arm-musleabihf: 2.1.5
+      growtopia.js-linux-arm64-gnu: 2.1.5
+      growtopia.js-linux-arm64-musl: 2.1.5
+      growtopia.js-linux-riscv64-gnu: 2.1.5
+      growtopia.js-linux-x64-gnu: 2.1.5
+      growtopia.js-linux-x64-musl: 2.1.5
+      growtopia.js-win32-arm64-msvc: 2.1.5
+      growtopia.js-win32-ia32-msvc: 2.1.5
+      growtopia.js-win32-x64-msvc: 2.1.5
 
   has-flag@4.0.0: {}
 
@@ -3256,8 +3189,6 @@ snapshots:
 
   semver@7.6.3: {}
 
-  semver@7.7.1: {}
-
   semver@7.7.2: {}
 
   shebang-command@2.0.0:
@@ -3414,4 +3345,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.25.20: {}
+  zod@3.25.28: {}
