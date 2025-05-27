@@ -8,14 +8,14 @@ export class Wrench {
   constructor(
     public base: Base,
     public peer: Peer
-  ) {}
+  ) { }
 
   private InfoDialog(): DialogBuilder {
     // for now will put basic info
     return new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(
-        `${this.peer.name}\`w's Information (uid: ${this.peer.data.id_user})`,
+        `${this.peer.name}\`w's Information (uid: ${this.peer.data.userID})`,
         32,
         "big"
       )

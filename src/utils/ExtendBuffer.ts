@@ -72,6 +72,21 @@ export class ExtendBuffer {
     return val;
   }
 
+  public realloc(size: number) {
+    let newBuffer = Buffer.alloc(size);
+
+    this.data.copy(newBuffer);
+    this.data = newBuffer;
+  }
+
+  public grow(size: number) {
+    this.realloc(this.data.byteLength + size);
+  }
+
+  public shrink(size: number) {
+    this.realloc(this.data.byteLength - size);
+  }
+
   public async readString(
     opts: StringOptions = {
       encoded: false
@@ -88,9 +103,9 @@ export class ExtendBuffer {
         chars.push(
           String.fromCharCode(
             this.data[this.mempos] ^
-              STRING_CIPHER_KEY.charCodeAt(
-                (opts.id! + i) % STRING_CIPHER_KEY.length
-              )
+            STRING_CIPHER_KEY.charCodeAt(
+              (opts.id! + i) % STRING_CIPHER_KEY.length
+            )
           )
         );
         this.mempos++;
@@ -123,7 +138,7 @@ export class ExtendBuffer {
         for (let i = 0; i < str.length; i++)
           chars.push(
             str.charCodeAt(i) ^
-              STRING_CIPHER_KEY.charCodeAt((i + id) % STRING_CIPHER_KEY.length)
+            STRING_CIPHER_KEY.charCodeAt((i + id) % STRING_CIPHER_KEY.length)
           );
 
         for (const char of chars) this.data[this.mempos++] = char;

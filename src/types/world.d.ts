@@ -1,8 +1,9 @@
-export interface Block {
+export interface TileData {
   fg: number;
   bg: number;
   x: number;
   y: number;
+  flags: number;
   lock?: LockedBlocked;
   door?: Door;
   sign?: Sign;
@@ -68,7 +69,7 @@ export interface WorldData {
   name: string;
   width: number;
   height: number;
-  blocks: Block[];
+  blocks: TileData[];
   owner?: WorldOwnerData;
   admins?: number[];
   playerCount?: number;
@@ -89,12 +90,12 @@ export interface LockedBlocked {
   ownerFg?: number;
   ownerUserID?: number;
   ownerName?: string;
-  ownerX?: number;
-  ownerY?: number;
-  isOwner?: boolean;
+  ownerX?: number; // the lock X
+  ownerY?: number; // the lock Y
+  isOwner?: boolean; // indicates that this is the lock itself
   openToPublic?: boolean;
   ignoreEmptyAir?: boolean;
-  onlyAllowBuild?: boolean;
+  permission: LockPermission; // this doesnt apply to the owner of the lock. type = (LockPermission)
   adminLimited?: boolean;
   adminIDs?: number[];
 }

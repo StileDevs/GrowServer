@@ -19,7 +19,7 @@ export class ConfirmClearWorld {
 
   public async execute(): Promise<void> {
     if (this.world.data.owner) {
-      if (this.world.data.owner.id !== this.peer.data.id_user) return;
+      if (this.world.data.owner.id !== this.peer.data.userID) return;
       for (let i = 0; i < this.world.data.blocks.length; i++) {
         const b = this.world.data.blocks[i];
         const itemMeta = this.base.items.metadata.items[b.fg || b.bg];
