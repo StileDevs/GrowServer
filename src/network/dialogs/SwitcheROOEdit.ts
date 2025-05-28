@@ -8,11 +8,10 @@ import { ItemDefinition } from "growtopia.js";
 import { tileFrom } from "../../world/tiles";
 import { LockPermission, TileFlags } from "../../Constants";
 
-export class DoorEdit {
+export class SwitcheROOEdit {
   private world: World;
   private pos: number;
   private block: TileData;
-  private itemMeta: ItemDefinition;
 
   constructor(
     public base: Base,
@@ -21,11 +20,7 @@ export class DoorEdit {
       dialog_name: string;
       tilex: string;
       tiley: string;
-      itemID: string;
-      label?: string;
-      target?: string;
       checkbox_public?: string;
-      id?: string;
     }>
   ) {
     this.world = this.peer.currentWorld()!;
@@ -33,21 +28,12 @@ export class DoorEdit {
       parseInt(this.action.tilex) +
       parseInt(this.action.tiley) * (this.world?.data.width as number);
     this.block = this.world?.data.blocks[this.pos] as TileData;
-    this.itemMeta = this.base.items.metadata.items.find(
-      (i) => i.id === parseInt(action.itemID)
-    )!;
   }
 
   public async execute(): Promise<void> {
     if (!this.world.hasTilePermission(this.peer.data.userID, this.block, LockPermission.BUILD)) {
       return;
     }
-
-    this.block.door = {
-      label:       this.action.label || "",
-      destination: this.action.target?.toUpperCase() || "",
-      id:          this.action.id?.toUpperCase() || ""
-    };
 
     if (this.action.checkbox_public == "1") {
       this.block.flags |= TileFlags.PUBLIC;

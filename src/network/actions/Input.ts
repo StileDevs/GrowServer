@@ -9,7 +9,7 @@ export class Input {
   constructor(
     public base: Base,
     public peer: Peer
-  ) {}
+  ) { }
 
   public async execute(
     action: NonEmptyObject<Record<string, string>>
@@ -76,11 +76,9 @@ export class Input {
         return;
       }
 
-      this.peer.every((p) => {
-        if (
-          p.data?.world === this.peer.data?.world &&
-          this.peer.data?.world !== "EXIT"
-        ) {
+      const world = this.peer.currentWorld();
+      if (world) {
+        world.every((p) => {
           p.send(
             Variant.from(
               "OnTalkBubble",
@@ -93,8 +91,8 @@ export class Input {
               `CP:0_PL:0_OID:_CT:[W]_ <\`w${this.peer.data?.tankIDName}\`\`> ${action.text}`
             )
           );
-        }
-      });
+        })
+      }
     } catch (e) {
       consola.warn(e);
       this.peer.send(

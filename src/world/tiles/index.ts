@@ -1,8 +1,8 @@
 import type { Class } from "type-fest";
 import { ActionTypes } from "../../Constants";
-// import { DoorTile } from "./DoorTile";
+import { DoorTile } from "./DoorTile";
 import { NormalTile } from "./NormalTile";
-// import { SignTile } from "./SignTile";
+import { SignTile } from "./SignTile";
 import { Tile } from "../Tile";
 import type { World } from "../../core/World";
 import type { TileData } from "../../types";
@@ -12,34 +12,37 @@ import type { Base } from "../../core/Base";
 import { ItemDefinition } from "growtopia.js";
 // import { HeartMonitorTile } from "./HeartMonitorTile";
 // import { DisplayBlockTile } from "./DisplayBlockTile";
-// import { SwitcheROO } from "./SwitcheROO";
+import { SwitcheROO } from "./SwitcheROO";
 // import { WeatherTile } from "./WeatherTile";
 // import { DiceTile } from "./DiceTile";
 // import { SeedTile } from "./SeedTile";
 
 const TileMap: Record<number, Class<Tile>> = {
-  // [ActionTypes.DOOR]: DoorTile,
-  // [ActionTypes.MAIN_DOOR]: DoorTile,
-  // [ActionTypes.PORTAL]: DoorTile,
-  // [ActionTypes.SIGN]: SignTile,
+  [ActionTypes.DOOR]:       DoorTile,
+  [ActionTypes.MAIN_DOOR]:  DoorTile,
+  [ActionTypes.PORTAL]:     DoorTile,
+  [ActionTypes.SIGN]:       SignTile,
   // [ActionTypes.LOCK]: LockTile,
   // [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
   // [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
-  // [ActionTypes.SWITCHEROO]: SwitcheROO,
+  [ActionTypes.SWITCHEROO]: SwitcheROO,
   // [ActionTypes.WEATHER_MACHINE]: WeatherTile,
   // [ActionTypes.DICE]: DiceTile,
   // [ActionTypes.SEED]: SeedTile
 };
 
 // constructs a new Tile subclass based on the ActionType.
+// if itemType is not specified, it will get the item type from data.fg.
+//  otherwise, it will use the provided itemType. (Only usesd to bootstrap itemType)
 const tileFrom = (
   base: Base,
   world: World,
   data: TileData,
+  itemType?: ActionTypes
 ) => {
-  let itemMeta = base.items.metadata.items[data.fg];
+  const itemMeta = itemType ?? base.items.metadata.items[data.fg].type!;
   try {
-    let tile = new TileMap[itemMeta.type!](base, world, data);
+    const tile = new TileMap[itemMeta](base, world, data);
     return tile;
   }
   catch (e) {

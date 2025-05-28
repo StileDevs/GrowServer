@@ -3,12 +3,13 @@ import { TankTypes } from "../../Constants";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { NonEmptyObject } from "type-fest";
+import { gzip } from "zlib";
 
 export class RefreshItemData {
   constructor(
     public base: Base,
     public peer: Peer
-  ) {}
+  ) { }
 
   public async execute(
     _action: NonEmptyObject<Record<string, string>>

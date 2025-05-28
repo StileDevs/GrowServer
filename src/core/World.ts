@@ -24,10 +24,10 @@ export class World {
     if (data) this.data = data;
     else
       this.data = {
-        name: "",
-        width: 0,
-        height: 0,
-        blocks: [],
+        name:      "",
+        width:     0,
+        height:    0,
+        blocks:    [],
         weatherId: 41
       };
   }
@@ -58,35 +58,35 @@ export class World {
         "delayMS|0"
       )
     );
-    peer.every((p) => {
-      if (
-        p.data?.netID !== peer.data?.netID &&
-        p.data?.world !== "EXIT" &&
-        p.data?.world === peer.data?.world
-      )
-        p.send(
-          Variant.from(
-            "OnRemove",
-            `netID|${peer.data?.netID}`,
-            `pId|${peer.data?.userID}`
-          ),
-          Variant.from(
-            "OnConsoleMessage",
-            `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
-          ),
-          Variant.from(
-            "OnTalkBubble",
-            peer.data.netID,
-            `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
-          ),
-          TextPacket.from(
-            PacketTypes.ACTION,
-            "action|play_sfx",
-            "file|audio/door_shut.wav",
-            "delayMS|0"
-          )
-        );
-    });
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
+        if (p.data.netID !== peer.data.netID) {
+          p.send(
+            Variant.from(
+              "OnRemove",
+              `netID|${peer.data?.netID}`,
+              `pId|${peer.data?.userID}`
+            ),
+            Variant.from(
+              "OnConsoleMessage",
+              `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+            ),
+            Variant.from(
+              "OnTalkBubble",
+              peer.data.netID,
+              `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+            ),
+            TextPacket.from(
+              PacketTypes.ACTION,
+              "action|play_sfx",
+              "file|audio/door_shut.wav",
+              "delayMS|0"
+            )
+          );
+        }
+      })
+    }
 
     if (sendMenu)
       peer.send(
@@ -99,22 +99,22 @@ add_floater|START|0|0.5|3529161471
 add_floater|START1|0|0.5|3529161471
 add_floater|START2|0|0.5|3529161471
 ${Array.from(this.base.cache.worlds.values())
-            .sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0))
-            .slice(0, 6)
-            .map((v) => {
-              if (v.playerCount)
-                return `add_floater|${v.name}${v.playerCount ? ` (${v.playerCount})` : ""}|0|0.5|3529161471\n`;
-              else return "";
-            })
-            .join("\n")}
+  .sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0))
+  .slice(0, 6)
+  .map((v) => {
+    if (v.playerCount)
+      return `add_floater|${v.name}${v.playerCount ? ` (${v.playerCount})` : ""}|0|0.5|3529161471\n`;
+    else return "";
+  })
+  .join("\n")}
 add_heading|Recently Visited Worlds<CR>|
 ${peer.data.lastVisitedWorlds
-            ?.reverse()
-            .map((v) => {
-              const count = this.base.cache.worlds.get(v)?.playerCount || 0;
-              return `add_floater|${v}${count ? ` (${count})` : ""}|0|0.5|3417414143\n`;
-            })
-            .join("\n")}
+  ?.reverse()
+  .map((v) => {
+    const count = this.base.cache.worlds.get(v)?.playerCount || 0;
+    return `add_floater|${v}${count ? ` (${count})` : ""}|0|0.5|3417414143\n`;
+  })
+  .join("\n")}
 `
         ),
         Variant.from(
@@ -138,17 +138,17 @@ ${peer.data.lastVisitedWorlds
       const world = await this.base.database.worlds.get(this.worldName);
       if (world) {
         this.data = {
-          name: world.name,
-          width: world.width,
-          height: world.height,
-          blocks: JSON.parse((world.blocks as Buffer).toString()),
-          admins: [],
+          name:        world.name,
+          width:       world.width,
+          height:      world.height,
+          blocks:      JSON.parse((world.blocks as Buffer).toString()),
+          admins:      [],
           playerCount: 0,
-          jammers: [],
-          dropped: world.dropped
+          jammers:     [],
+          dropped:     world.dropped
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
-          owner: world.owner ? JSON.parse(world.owner.toString()) : null,
+          owner:     world.owner ? JSON.parse(world.owner.toString()) : null,
           weatherId: world.weather_id || 41
         };
       } else {
@@ -179,10 +179,10 @@ ${peer.data.lastVisitedWorlds
       peer.every((p) => {
         if (p.data?.world === this.data.name && p.data?.world !== "EXIT") {
           const packet = TankPacket.from({
-            type: TankTypes.TILE_CHANGE_REQUEST,
-            netID: peer.data?.netID,
+            type:   TankTypes.TILE_CHANGE_REQUEST,
+            netID:  peer.data?.netID,
             state,
-            info: id,
+            info:   id,
             xPunch: x,
             yPunch: y
           });
@@ -268,12 +268,11 @@ ${peer.data.lastVisitedWorlds
       Buffer.concat([unk1, Buffer.from(blockBytes)]),
       Buffer.concat([unk2, dropData, weatherData])
     ]);
-    writeFileSync("wtdf.dat", worldMap)
 
     const tank = TankPacket.from({
-      type: TankTypes.SEND_MAP_DATA,
+      type:  TankTypes.SEND_MAP_DATA,
       state: 8,
-      data: () => worldMap
+      data:  () => worldMap
     });
 
     const mainDoor = this.data.blocks.find((block) => block.fg === 6);
@@ -327,86 +326,86 @@ ${peer.data.lastVisitedWorlds
       );
     }
 
-    peer.every((p) => {
-      if (
-        p.data?.netID !== peer.data?.netID &&
-        p.data?.world === peer.data?.world &&
-        p.data?.world !== "EXIT"
-      ) {
-        p.send(
-          Variant.from(
-            { delay: -1 },
-            "OnSpawn",
-            `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
-          ),
-          Variant.from(
-            {
-              netID: peer.data?.netID
-            },
-            "OnSetClothing",
-            [
-              peer.data.clothing.hair,
-              peer.data.clothing.shirt,
-              peer.data.clothing.pants
-            ],
-            [
-              peer.data.clothing.feet,
-              peer.data.clothing.face,
-              peer.data.clothing.hand
-            ],
-            [
-              peer.data.clothing.back,
-              peer.data.clothing.mask,
-              peer.data.clothing.necklace
-            ],
-            0x8295c3ff,
-            [peer.data.clothing.ances, 0.0, 0.0]
-          ),
-          Variant.from(
-            "OnConsoleMessage",
-            `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
-          ),
-          Variant.from(
-            "OnTalkBubble",
-            peer.data.netID,
-            `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
-          ),
-          TextPacket.from(
-            PacketTypes.ACTION,
-            "action|play_sfx",
-            "file|audio/door_open.wav",
-            "delayMS|0"
-          )
-        );
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
+        if (p.data.netID !== peer.data.netID) {
+          p.send(
+            Variant.from(
+              { delay: -1 },
+              "OnSpawn",
+              `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+            ),
+            Variant.from(
+              {
+                netID: peer.data?.netID
+              },
+              "OnSetClothing",
+              [
+                peer.data.clothing.hair,
+                peer.data.clothing.shirt,
+                peer.data.clothing.pants
+              ],
+              [
+                peer.data.clothing.feet,
+                peer.data.clothing.face,
+                peer.data.clothing.hand
+              ],
+              [
+                peer.data.clothing.back,
+                peer.data.clothing.mask,
+                peer.data.clothing.necklace
+              ],
+              0x8295c3ff,
+              [peer.data.clothing.ances, 0.0, 0.0]
+            ),
+            Variant.from(
+              "OnConsoleMessage",
+              `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+            ),
+            Variant.from(
+              "OnTalkBubble",
+              peer.data.netID,
+              `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+            ),
+            TextPacket.from(
+              PacketTypes.ACTION,
+              "action|play_sfx",
+              "file|audio/door_open.wav",
+              "delayMS|0"
+            )
+          );
 
-        peer.send(
-          Variant.from(
-            { delay: -1 },
-            "OnSpawn",
-            `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.userID}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
-          ),
-          Variant.from(
-            {
-              netID: p.data?.netID
-            },
-            "OnSetClothing",
-            [
-              p.data.clothing.hair,
-              p.data.clothing.shirt,
-              p.data.clothing.pants
-            ],
-            [p.data.clothing.feet, p.data.clothing.face, p.data.clothing.hand],
-            [
-              p.data.clothing.back,
-              p.data.clothing.mask,
-              p.data.clothing.necklace
-            ],
-            0x8295c3ff,
-            [p.data.clothing.ances, 0.0, 0.0]
-          )
-        );
-      }
-    });
+          peer.send(
+            Variant.from(
+              { delay: -1 },
+              "OnSpawn",
+              `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.userID}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+            ),
+            Variant.from(
+              {
+                netID: p.data?.netID
+              },
+              "OnSetClothing",
+              [
+                p.data.clothing.hair,
+                p.data.clothing.shirt,
+                p.data.clothing.pants
+              ],
+              [p.data.clothing.feet, p.data.clothing.face, p.data.clothing.hand],
+              [
+                p.data.clothing.back,
+                p.data.clothing.mask,
+                p.data.clothing.necklace
+              ],
+              0x8295c3ff,
+              [p.data.clothing.ances, 0.0, 0.0]
+            )
+          );
+        }
+      })
+    }
+
     this.data.playerCount = this.data.playerCount
       ? this.data.playerCount + 1
       : 0;
@@ -433,13 +432,13 @@ ${peer.data.lastVisitedWorlds
     { tree, noSimilar }: { tree?: boolean; noSimilar?: boolean } = {}
   ) {
     const tank = TankPacket.from({
-      type: TankTypes.ITEM_CHANGE_OBJECT,
-      netID: -1,
+      type:        TankTypes.ITEM_CHANGE_OBJECT,
+      netID:       -1,
       targetNetID: tree ? -1 : peer.data?.netID,
-      state: 0,
-      info: id,
-      xPos: x,
-      yPos: y
+      state:       0,
+      info:        id,
+      xPos:        x,
+      yPos:        y
     });
 
     const position = Math.trunc(x / 32) + Math.trunc(y / 32) * this.data.width;
@@ -480,19 +479,19 @@ ${peer.data.lastVisitedWorlds
         amount,
         x,
         y,
-        uid: ++this.data.dropped.uid,
+        uid:   ++this.data.dropped.uid,
         block: { x: block.x, y: block.y }
       });
 
     const buffer = tank.parse() as Buffer;
     buffer.writeFloatLE(amount, 20);
 
-    peer.every(
-      (p) =>
-        p.data?.world === peer.data?.world &&
-        p.data?.world !== "EXIT" &&
-        p.send(buffer)
-    );
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
+        p.send(buffer);
+      })
+    }
 
     this.saveToCache();
   }
@@ -516,19 +515,19 @@ ${peer.data.lastVisitedWorlds
     )
       return;
 
-    peer.every(
-      (p) =>
-        p.data?.world === peer.data?.world &&
-        p.data?.world !== "EXIT" &&
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(
           TankPacket.from({
-            type: TankTypes.ITEM_CHANGE_OBJECT,
-            netID: peer.data?.netID,
+            type:        TankTypes.ITEM_CHANGE_OBJECT,
+            netID:       peer.data?.netID,
             targetNetID: -1,
-            info: uid
+            info:        uid
           })
         )
-    );
+      })
+    }
 
     if (itemInInv) {
       if (droppedItem.amount + itemInInv.amount > 200) {
@@ -543,7 +542,7 @@ ${peer.data.lastVisitedWorlds
 
         this.drop(peer, droppedItem.x, droppedItem.y, droppedItem.id, extra, {
           noSimilar: true,
-          tree: true
+          tree:      true
         });
       } else {
         if (droppedItem.id !== 112) {
@@ -600,11 +599,11 @@ ${peer.data.lastVisitedWorlds
           p.data?.world !== "EXIT" &&
           p.send(
             TankPacket.from({
-              type: TankTypes.SEND_TILE_TREE_STATE,
-              netID: peer.data?.netID,
+              type:        TankTypes.SEND_TILE_TREE_STATE,
+              netID:       peer.data?.netID,
               targetNetID: -1,
-              xPunch: block.x,
-              yPunch: block.y
+              xPunch:      block.x,
+              yPunch:      block.y
             })
           )
       );
@@ -628,6 +627,15 @@ ${peer.data.lastVisitedWorlds
     }
 
     return false;
+  }
+
+  public every(callbackfn: (peer: Peer, netID: number) => void): void {
+    this.base.cache.peers.forEach((p, k) => {
+      const pp = new Peer(this.base, p.netID);
+      if (pp.data.world == this.data.name) {
+        callbackfn(pp, p.netID);
+      }
+    });
   }
 
 }

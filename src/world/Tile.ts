@@ -5,7 +5,7 @@ import { type TileData } from "../types";
 import type { Base } from "../core/Base";
 import { ExtendBuffer } from "../utils/ExtendBuffer";
 import { TileMap } from "./tiles";
-import { ActionTypes, LockPermission, TankTypes, TileFlags } from "../Constants";
+import { ActionTypes, BlockFlags, LockPermission, TankTypes, TileFlags } from "../Constants";
 import { NormalTile } from "./tiles/NormalTile";
 
 export class Tile {
@@ -17,7 +17,7 @@ export class Tile {
 
   // This is only applies to placed foreground blocks, as beckground block doesnt have any behaviour.
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !peer.searchItem(itemMeta.id!)) {
       await this.onPlaceFail(peer);
       return;
     }
@@ -27,22 +27,29 @@ export class Tile {
     this.data.resetStateAt = 0;
     this.data.flags = this.data.flags & (TileFlags.LOCKED | TileFlags.WATER) // preserve LOCKED and WATER
 
-    let tank = TankPacket.from({
-      type: TankTypes.TILE_CHANGE_REQUEST,
+    if (itemMeta.flags! & BlockFlags.MULTI_FACING) {
+      if (peer.data.rotatedLeft) this.data.flags |= TileFlags.FLIPPED;
+    }
+
+    const tank = TankPacket.from({
+      type:   TankTypes.TILE_CHANGE_REQUEST,
       xPunch: this.data.x,
       yPunch: this.data.y,
-      info: this.data.fg
+      info:   this.data.fg,
+      state:  (this.data.flags & TileFlags.FLIPPED ? 0x10 : 0) // set the rotateLeft flag
     });
 
-    peer.every((p) => {
-      if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(tank);
-      }
-    })
+      })
+    }
+    peer.removeItemInven(itemMeta.id!, 1);
   }
 
   public async onPlaceBackground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !peer.searchItem(itemMeta.id!)) {
       this.onPlaceFail(peer);
       return;
     }
@@ -50,18 +57,20 @@ export class Tile {
     this.data.bg = itemMeta.id!;
     if (!this.data.fg) this.data.damage = 0;
 
-    let tank = TankPacket.from({
-      type: TankTypes.TILE_CHANGE_REQUEST,
+    const tank = TankPacket.from({
+      type:   TankTypes.TILE_CHANGE_REQUEST,
       xPunch: this.data.x,
       yPunch: this.data.y,
-      info: this.data.bg
+      info:   this.data.bg
     });
 
-    peer.every((p) => {
-      if (p.data.world === peer.data.world && p.data.world !== "EXIT") {
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(tank);
-      }
-    })
+      })
+    }
+    peer.removeItemInven(itemMeta.id!, 1);
   }
 
   // Fail only means that the player doing it doesnt have sufficient permission. 
@@ -80,7 +89,7 @@ export class Tile {
 
     this.applyDamage(peer, 6);
 
-    let itemHealth = this.base.items.metadata.items[this.data.fg ? this.data.fg : this.data.bg].breakHits!;
+    const itemHealth = this.base.items.metadata.items[this.data.fg ?? this.data.bg].breakHits!;
 
     if (this.data.damage && this.data.damage >= itemHealth) {
       this.onDestroy(peer);
@@ -109,18 +118,19 @@ export class Tile {
 
     this.onDrop(peer, destroyedItemID);
 
-    let tank = TankPacket.from({
-      type: TankTypes.TILE_CHANGE_REQUEST,
-      info: 18,
+    const tank = TankPacket.from({
+      type:   TankTypes.TILE_CHANGE_REQUEST,
+      info:   18,
       xPunch: this.data.x,
       yPunch: this.data.y
     });
 
-    peer.every((p) => {
-      if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
-        p.send(tank)
-      }
-    });
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
+        p.send(tank);
+      })
+    }
   }
 
   public async onDrop(peer: Peer, destroyedItemID: number) {
@@ -153,14 +163,14 @@ export class Tile {
     dataBuffer.writeU16(this.data.bg);
     dataBuffer.writeU16(await this.setParentTileIndex(0));
 
-    let flags = await this.setFlags(this.data.flags);
+    const flags = await this.setFlags(this.data.flags);
 
     dataBuffer.writeU16(flags);
 
     if (flags & TileFlags.LOCKED) {
       dataBuffer.grow(2);
 
-      let lockPos = this.data.lock
+      const lockPos = this.data.lock
         ? (this.data.lock.ownerX as number) +
         (this.data.lock.ownerY as number) * this.world.data.width
         : 0;
@@ -177,32 +187,33 @@ export class Tile {
         (this.data.damage as number) += damage / 6;
       }
 
-      let tank = new TankPacket(
+      const tank = new TankPacket(
         {
-          type: TankTypes.TILE_APPLY_DAMAGE,
-          netID: peer.data.netID,
-          info: damage,
+          type:   TankTypes.TILE_APPLY_DAMAGE,
+          netID:  peer.data.netID,
+          info:   damage,
           xPunch: this.data.x,
           yPunch: this.data.y
         }
       )
 
-      let itemMeta = this.base.items.metadata.items[this.data.fg ? this.data.fg : this.data.bg];
+      const itemMeta = this.base.items.metadata.items[this.data.fg ? this.data.fg : this.data.bg];
 
       this.data.resetStateAt =
         Date.now() + (itemMeta.resetStateAfter as number) * 1000;
 
-      peer.every((p) => {
-        if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
+      const world = peer.currentWorld();
+      if (world) {
+        world.every((p) => {
           p.send(tank);
-        }
-      });
+        })
+      }
     }
   }
 
   public async parse(): Promise<ExtendBuffer> {
     // default blocks contains length of 8
-    let dataBuffer = new ExtendBuffer(8);
+    const dataBuffer = new ExtendBuffer(8);
 
     await this.serializeBlockData(dataBuffer);
     await this.serialize(dataBuffer);
@@ -213,18 +224,19 @@ export class Tile {
   public async tileUpdate(peer: Peer) {
     const serializedData = await this.parse();
 
-    peer.every((p) => {
-      if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT") {
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(
           TankPacket.from({
-            type: TankTypes.SEND_TILE_UPDATE_DATA,
+            type:   TankTypes.SEND_TILE_UPDATE_DATA,
             xPunch: this.data.x,
             yPunch: this.data.y,
-            data: () => serializedData.data
+            data:   () => serializedData.data
           })
         );
-      }
-    });
+      })
+    }
   }
 
   private sendLockSound(peer: Peer) {

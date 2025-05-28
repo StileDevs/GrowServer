@@ -161,7 +161,7 @@ export class DialogBuilder {
    * Adds a checkbox
    * @param {string} name The name of the checkbox
    * @param {string} string The text in the checkbox
-   * @param {string} type The type of the checkbox 'select' or 'not_selected'
+   * @param {string} type The type of the checkbox 'selected' or 'not_selected'
    * @returns {DialogBuilder}
    */
 

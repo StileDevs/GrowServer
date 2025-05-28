@@ -73,7 +73,7 @@ export class ExtendBuffer {
   }
 
   public realloc(size: number) {
-    let newBuffer = Buffer.alloc(size);
+    const newBuffer = Buffer.alloc(size);
 
     this.data.copy(newBuffer);
     this.data = newBuffer;

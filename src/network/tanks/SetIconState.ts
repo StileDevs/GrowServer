@@ -23,10 +23,11 @@ export class SetIconState {
   public async execute() {
     this.tank.data!.state = this.peer.data?.rotatedLeft ? 16 : 0;
 
-    this.peer.every((p) => {
-      if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") {
+    const world = this.peer.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(this.tank);
-      }
-    });
+      })
+    }
   }
 }

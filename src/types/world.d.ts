@@ -12,11 +12,9 @@ export interface TileData {
   damage?: number;
   resetStateAt?: number;
   worldLock?: boolean;
-  boombox?: Toggleable;
   rotatedLeft?: boolean;
   entrace?: Entrance;
   tree?: Tree;
-  toggleable?: Toggleable;
   mannequin?: Mannequin;
   dice?: number;
   provider?: Provider;
@@ -104,7 +102,6 @@ export interface Door {
   label?: string;
   destination?: string;
   id?: string;
-  locked?: boolean;
 }
 
 export interface Sign {
@@ -126,12 +123,6 @@ export interface Tree {
 export interface HeartMonitor {
   name: string;
   userID: number;
-}
-
-export interface Toggleable {
-  open?: boolean;
-  public?: boolean;
-  silenced?: boolean;
 }
 
 export interface EnterArg {

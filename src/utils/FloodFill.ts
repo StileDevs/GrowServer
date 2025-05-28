@@ -131,15 +131,15 @@ export class Floodfill {
     const lockData = LOCKS.find((v) => v.id == this.data.s_block.fg);
 
     this.data.s_block.lock = {
-      ownerFg: this.data.s_block.fg,
-      ownerUserID: owner.data?.userID,
-      ownerName: owner.name,
-      ownerX: this.data.s_block.x,
-      ownerY: this.data.s_block.y,
-      isOwner: true,
+      ownerFg:        this.data.s_block.fg,
+      ownerUserID:    owner.data?.userID,
+      ownerName:      owner.name,
+      ownerX:         this.data.s_block.x,
+      ownerY:         this.data.s_block.y,
+      isOwner:        true,
       ignoreEmptyAir: this.data.noEmptyAir,
-      adminIDs: [],
-      permission: LockPermission.NONE, // the lock itself can only be destroyed by the owner
+      adminIDs:       [],
+      permission:     LockPermission.NONE, // the lock itself can only be destroyed by the owner
     };
 
     let i = 0;
@@ -153,10 +153,10 @@ export class Floodfill {
       const block = world.data.blocks[b_pos];
 
       block.lock = {
-        ownerFg: this.data.s_block.fg,
+        ownerFg:    this.data.s_block.fg,
         //ownerUserID: owner.data.id,
-        ownerX: this.data.s_block.x,
-        ownerY: this.data.s_block.y,
+        ownerX:     this.data.s_block.x,
+        ownerY:     this.data.s_block.y,
         permission: lockData ? lockData.defaultPermission : LockPermission.NONE,
         //adminIDs: [],
       };
@@ -170,26 +170,24 @@ export class Floodfill {
     world.saveToCache();
 
     const tank = TankPacket.from({
-      type: TankTypes.SEND_LOCK,
-      netID: owner.data?.userID as number,
+      type:        TankTypes.SEND_LOCK,
+      netID:       owner.data?.userID as number,
       targetNetID: this.data.max,
-      info: this.data.s_block.fg,
-      xPunch: this.data.s_block.x,
-      yPunch: this.data.s_block.y,
-      data: () => buffer
+      info:        this.data.s_block.fg,
+      xPunch:      this.data.s_block.x,
+      yPunch:      this.data.s_block.y,
+      data:        () => buffer
     });
 
-    owner.every((p) => {
-      if (p.data?.world === owner.data?.world && p.data?.world !== "EXIT") {
-        p.send(
-          Variant.from(
-            { netID: owner.data?.netID },
-            "OnPlayPositioned",
-            "audio/use_lock.wav"
-          ),
-          tank
-        );
-      }
+    world.every((p) => {
+      p.send(
+        Variant.from(
+          { netID: owner.data?.netID },
+          "OnPlayPositioned",
+          "audio/use_lock.wav"
+        ),
+        tank
+      );
     });
   }
 }

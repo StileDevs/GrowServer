@@ -14,14 +14,14 @@ export default class ClearWorld extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["clearworld"],
+      command:     ["clearworld"],
       description: "Clear a world",
-      cooldown: 60 * 10,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/clearworld",
-      example: [],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
+      cooldown:    60 * 10,
+      ratelimit:   1,
+      category:    "`oBasic",
+      usage:       "/clearworld",
+      example:     [],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
     };
   }
 

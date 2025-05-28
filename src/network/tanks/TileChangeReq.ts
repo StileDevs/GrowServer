@@ -42,7 +42,7 @@ export class TileChangeReq {
     if (!this.tank.data || this.tank.data.xPunch == undefined || this.tank.data.yPunch == undefined || this.tank.data.info == undefined) return;
     this.tank.data!.netID = this.peer.data?.netID;
 
-    let tileData = this.world.data.blocks[this.tank.data.xPunch + this.tank.data.yPunch * this.world.data.width];
+    const tileData = this.world.data.blocks[this.tank.data.xPunch + this.tank.data.yPunch * this.world.data.width];
 
     // Fist
     if (this.tank.data?.info === 18) {
@@ -52,18 +52,20 @@ export class TileChangeReq {
     }
     // Others
     else {
-      let itemMeta = this.base.items.metadata.items.find((item) => item.id == this.tank.data?.info)
+      const itemMeta = this.base.items.metadata.items.find((item) => item.id == this.tank.data?.info)
 
       if (itemMeta == undefined) return;
 
       if (itemMeta.type == ActionTypes.BACKGROUND) {
+        // we dont want to give the itemType here as to not override current foreground itemType.
         tileFrom(this.base, this.world, tileData).onPlaceBackground(this.peer, itemMeta);
       }
       else if (tileData.fg == 0) {
-        // construct and replace old tile with the new tile ( it only change how the block behaves)
-        tileFrom(this.base, this.world, tileData).onPlaceForeground(this.peer, itemMeta);
+        tileFrom(this.base, this.world, tileData, itemMeta.type!).onPlaceForeground(this.peer, itemMeta);
       }
       else {
+        // we also dont want to specify it here as to not override the current foreground block behaviour with
+        //  the placed item behaviour
         tileFrom(this.base, this.world, tileData).onItemPlace(this.peer, itemMeta);
       }
     }

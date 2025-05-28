@@ -33,13 +33,13 @@ export class WorldDB {
     if (!data.name && !data.blocks && !data.width && !data.height) return 0;
 
     const res = await this.db.insert(worlds).values({
-      name: data.name,
-      ownedBy: data.owner ? data.owner.id : null,
-      width: data.width,
-      height: data.height,
-      blocks: Buffer.from(JSON.stringify(data.blocks)),
-      owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
-      dropped: Buffer.from(JSON.stringify(data.dropped)),
+      name:       data.name,
+      ownedBy:    data.owner ? data.owner.id : null,
+      width:      data.width,
+      height:     data.height,
+      blocks:     Buffer.from(JSON.stringify(data.blocks)),
+      owner:      data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
+      dropped:    Buffer.from(JSON.stringify(data.dropped)),
       updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
       weather_id: data.weatherId
     });
@@ -54,12 +54,12 @@ export class WorldDB {
     const res = await this.db
       .update(worlds)
       .set({
-        ownedBy: data.owner ? data.owner.id : null,
-        width: data.width,
-        height: data.height,
-        blocks: Buffer.from(JSON.stringify(data.blocks)), // only save tile data here.
-        owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
-        dropped: Buffer.from(JSON.stringify(data.dropped)),
+        ownedBy:    data.owner ? data.owner.id : null,
+        width:      data.width,
+        height:     data.height,
+        blocks:     Buffer.from(JSON.stringify(data.blocks)), // only save tile data here.
+        owner:      data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
+        dropped:    Buffer.from(JSON.stringify(data.dropped)),
         updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
         weather_id: data.weatherId
       })

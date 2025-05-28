@@ -80,7 +80,7 @@ export class ITextPacket {
         this.base.config.web.cdnUrl, // https://github.com/StileDevs/growserver-cache
         "growtopia/",
         "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
-        "proto=216|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|"
+        "proto=216|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|",
       )
     );
   }
@@ -173,30 +173,30 @@ export class ITextPacket {
       );
 
       const defaultInventory = {
-        max: 32,
+        max:   32,
         items: [
           {
-            id: 18, // Fist
+            id:     18, // Fist
             amount: 1
           },
           {
-            id: 32, // Wrench
+            id:     32, // Wrench
             amount: 1
           }
         ]
       };
 
       const defaultClothing = {
-        hair: 0,
-        shirt: 0,
-        pants: 0,
-        feet: 0,
-        face: 0,
-        hand: 0,
-        back: 0,
-        mask: 0,
+        hair:     0,
+        shirt:    0,
+        pants:    0,
+        feet:     0,
+        face:     0,
+        hand:     0,
+        back:     0,
+        mask:     0,
         necklace: 0,
-        ances: 0
+        ances:    0
       };
 
       this.peer.data.tankIDName = player.display_name;
@@ -218,11 +218,11 @@ export class ITextPacket {
         ? JSON.parse(player.last_visited_worlds.toString())
         : [];
       this.peer.data.state = {
-        mod: 0,
+        mod:             0,
         canWalkInBlocks: false,
-        modsEffect: 0,
-        lava: {
-          damage: 0,
+        modsEffect:      0,
+        lava:            {
+          damage:       0,
           resetStateAt: 0
         }
       };

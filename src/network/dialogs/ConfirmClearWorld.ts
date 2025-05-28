@@ -44,12 +44,12 @@ export class ConfirmClearWorld {
         });
       }
 
-      this.peer.every((p) => {
-        if (p.data.world === this.peer.data.world && p.data.world !== "EXIT") {
+      const world = this.peer.currentWorld();
+      if (world) {
+        world.every((p) => {
           p.leaveWorld();
-          // p.enterWorld(lastWorld);
-        }
-      });
+        });
+      }
     }
   }
 }

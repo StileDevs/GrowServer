@@ -31,24 +31,24 @@ export class Peer extends OldPeer<PeerData> {
     if (data)
       this.data = {
         channelID,
-        x: data.x,
-        y: data.y,
-        world: data.world,
-        inventory: data.inventory,
-        rotatedLeft: data.rotatedLeft,
-        requestedName: data.requestedName,
-        tankIDName: data.tankIDName,
+        x:                 data.x,
+        y:                 data.y,
+        world:             data.world,
+        inventory:         data.inventory,
+        rotatedLeft:       data.rotatedLeft,
+        requestedName:     data.requestedName,
+        tankIDName:        data.tankIDName,
         netID,
-        country: data.country,
-        userID: data.userID,
-        role: data.role,
-        gems: data.gems,
-        clothing: data.clothing,
-        exp: data.exp,
-        level: data.level,
-        lastCheckpoint: data.lastCheckpoint,
+        country:           data.country,
+        userID:            data.userID,
+        role:              data.role,
+        gems:              data.gems,
+        clothing:          data.clothing,
+        exp:               data.exp,
+        level:             data.level,
+        lastCheckpoint:    data.lastCheckpoint,
         lastVisitedWorlds: data.lastVisitedWorlds,
-        state: data.state
+        state:             data.state
       };
   }
 
@@ -90,12 +90,15 @@ export class Peer extends OldPeer<PeerData> {
     const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? NameStyles.MAX_LEVEL : ""}`;
 
     this.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
-    this.every((p) => {
-      if (p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") {
-        p.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
-        this.send(Variant.from({ netID: p.data.netID }, "OnCountryState", country(p)));
-      }
-    });
+    const world = this.currentWorld();
+    if (world) {
+      world.every((p) => {
+        if (p.data.netID !== this.data.netID) {
+          p.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
+          this.send(Variant.from({ netID: p.data.netID }, "OnCountryState", country(p)));
+        }
+      })
+    }
   }
 
   // i kinda hate how this is called everytime just to send packets to a specific world. 
@@ -121,7 +124,7 @@ export class Peer extends OldPeer<PeerData> {
       const block = world?.data.blocks[pos];
       const itemMeta =
         this.base.items.metadata.items[
-        (block?.fg as number) || (block?.bg as number)
+          (block?.fg as number) || (block?.bg as number)
         ];
 
       if (itemMeta && itemMeta.type === ActionTypes.CHECKPOINT) {
@@ -256,8 +259,8 @@ export class Peer extends OldPeer<PeerData> {
     if (this.data.inventory?.items.find((i) => i.id === id)?.amount !== 0) {
       const tank = TankPacket.from({
         packetType: 4,
-        type: TankTypes.MODIFY_ITEM_INVENTORY,
-        info: id,
+        type:       TankTypes.MODIFY_ITEM_INVENTORY,
+        info:       id,
         buildRange: amount < 0 ? amount * -1 : undefined,
         punchRange: amount < 0 ? undefined : amount
       }).parse() as Buffer;
@@ -314,38 +317,9 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public sendClothes() {
-    this.send(
-      Variant.from(
-        {
-          netID: this.data.netID
-        },
-        "OnSetClothing",
-        [
-          this.data.clothing.hair,
-          this.data.clothing.shirt,
-          this.data.clothing.pants
-        ],
-        [
-          this.data.clothing.feet,
-          this.data.clothing.face,
-          this.data.clothing.hand
-        ],
-        [
-          this.data.clothing.back,
-          this.data.clothing.mask,
-          this.data.clothing.necklace
-        ],
-        0x8295c3ff,
-        [this.data.clothing.ances, 0.0, 0.0]
-      )
-    );
-
-    this.every((p) => {
-      if (
-        p.data?.world === this.data.world &&
-        p.data?.netID !== this.data.netID &&
-        p.data?.world !== "EXIT"
-      ) {
+    const world = this.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(
           Variant.from(
             {
@@ -371,8 +345,8 @@ export class Peer extends OldPeer<PeerData> {
             [this.data.clothing.ances, 0.0, 0.0]
           )
         );
-      }
-    });
+      })
+    }
   }
 
 
@@ -487,25 +461,26 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public sendEffect(eff: number, ...args: Variant[]) {
-    this.every((p) => {
-      if (p.data.world === this.data.world && p.data.world !== "EXIT") {
+    const world = this.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(Variant.from("OnParticleEffect", eff, [(this.data.x as number) + 10, (this.data.y as number) + 16]), ...args);
-      }
-    });
+      });
+    };
   }
 
   public sendState(punchID?: number, everyPeer = true) {
     const tank = TankPacket.from({
-      type: TankTypes.SET_CHARACTER_STATE,
-      netID: this.data.netID,
-      info: this.data.state.mod,
-      xPos: 1200,
-      yPos: 200,
+      type:   TankTypes.SET_CHARACTER_STATE,
+      netID:  this.data.netID,
+      info:   this.data.state.mod,
+      xPos:   1200,
+      yPos:   200,
       xSpeed: 300,
       ySpeed: 600,
       xPunch: 0,
       yPunch: 0,
-      state: 0
+      state:  0
     }).parse() as Buffer;
 
     tank.writeUint8(punchID || 0x0, 5);
@@ -520,11 +495,14 @@ export class Peer extends OldPeer<PeerData> {
 
     this.send(tank);
     if (everyPeer) {
-      this.every((p) => {
-        if (p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") {
-          p.send(tank);
-        }
-      });
+      const world = this.currentWorld();
+      if (world) {
+        world.every((p) => {
+          if (p.data.netID !== this.data.netID) {
+            p.send(tank);
+          }
+        })
+      }
     }
   }
 
@@ -549,11 +527,12 @@ export class Peer extends OldPeer<PeerData> {
       this.data.level++;
       this.data.exp = 0;
       this.sendEffect(46);
-      this.every((p) => {
-        if (p.data.world === this.data.world && p.data.world !== "EXIT") {
+      const world = this.currentWorld();
+      if (world) {
+        world.every((p) => {
           p.send(Variant.from("OnTalkBubble", this.data.netID, `${this.name} is now level ${this.data.level}!`), Variant.from("OnConsoleMessage", `${this.name} is now level ${this.data.level}!`));
-        }
-      });
+        })
+      }
     }
     this.countryState();
     this.saveToCache();

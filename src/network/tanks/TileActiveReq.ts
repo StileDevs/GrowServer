@@ -46,11 +46,9 @@ export class TileActiveReq {
 
       this.peer.send(Variant.from("OnZoomCamera", [10000], 1000));
 
-      this.peer.every((p) => {
-        if (
-          p.data?.world === this.peer.data?.world &&
-          p.data?.world !== "EXIT"
-        ) {
+      const world = this.peer.currentWorld();
+      if (world) {
+        world.every((p) => {
           p.send(
             Variant.from(
               { netID: this.peer.data?.netID },
@@ -72,8 +70,8 @@ export class TileActiveReq {
               "audio/door_open.wav"
             )
           );
-        }
-      });
+        })
+      }
     } else {
       if (worldName === "EXIT") return this.peer.leaveWorld();
       const wrld = this.peer.currentWorld();
@@ -85,36 +83,35 @@ export class TileActiveReq {
         ? this.world.data.playerCount - 1
         : 0;
 
-      this.peer.every((p) => {
-        if (
-          p.data?.netID !== this.peer.data.netID &&
-          p.data?.world === this.peer.data.world &&
-          p.data.world !== "EXIT"
-        ) {
-          p.send(
-            Variant.from(
-              "OnRemove",
-              `netID|${this.peer.data.netID}`,
-              `pId|${this.peer.data.userID}`
-            ),
-            Variant.from(
-              "OnConsoleMessage",
-              `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
-            ),
-            Variant.from(
-              "OnTalkBubble",
-              this.peer.data.netID,
-              `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
-            ),
-            TextPacket.from(
-              PacketTypes.ACTION,
-              "action|play_sfx",
-              "file|audio/door_shut.wav",
-              "delayMS|0"
-            )
-          );
-        }
-      });
+      const world = this.peer.currentWorld();
+      if (world) {
+        world.every((p) => {
+          if (p.data.netID !== this.peer.data.netID) {
+            p.send(
+              Variant.from(
+                "OnRemove",
+                `netID|${this.peer.data.netID}`,
+                `pId|${this.peer.data.userID}`
+              ),
+              Variant.from(
+                "OnConsoleMessage",
+                `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
+              ),
+              Variant.from(
+                "OnTalkBubble",
+                this.peer.data.netID,
+                `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
+              ),
+              TextPacket.from(
+                PacketTypes.ACTION,
+                "action|play_sfx",
+                "file|audio/door_shut.wav",
+                "delayMS|0"
+              )
+            );
+          }
+        })
+      }
       this.peer.enterWorld(worldName, door?.x, door?.y);
     }
   }
