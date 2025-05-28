@@ -520,9 +520,9 @@ export const weatherIdMap: Record<number, number> = {
  * @example
  * Variant.from("OnSetBux", gems, OnSetBux.WITH_ANIMATION, OnSetBux.PLAYER_NOT_SUPPORTER, [timestamp, 0, 0]);
  */
-export enum OnSetBux {
-  WITH_ANIMATION = 0,
-  NO_ANIMATION = 1,
-  PLAYER_NOT_SUPPORTER = 0,
-  PLAYER_SUPPORTER = 1,
+export const OnSetBux = {
+  WITH_ANIMATION:       0,
+  NO_ANIMATION:         1,
+  PLAYER_NOT_SUPPORTER: 0,
+  PLAYER_SUPPORTER:     1,
 }
