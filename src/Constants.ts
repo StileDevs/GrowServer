@@ -497,3 +497,32 @@ export const weatherIdMap: Record<number, number> = {
   13004: 65,
   13070: 66
 };
+
+/**
+ * Enum and packet structure for updating a player's gem (bux) count and related UI state.
+ * Used in Variant packets to inform the client of gem changes, animation preferences, and supporter status.
+ *
+ * 
+ * Parameters:
+ * 
+ *   Param 1: Number - The player's current gem (bux) amount.
+ * 
+ *   Param 2: Number - Animation flag. Use WITH_ANIMATION (0) to show animation, NO_ANIMATION (1) to skip.
+ * 
+ *   Param 3: Number - Supporter status. Use PLAYER_NOT_SUPPORTER (0) if not a supporter, PLAYER_SUPPORTER (1) if supporter.
+ * 
+ *   Param 4: Array - Additional data array:
+ * 
+ *     [0]: Number (float) - Current timestamp in seconds (used for chat or UI updates).
+ *     [1]: Number (float) - Reserved, typically 0.00.
+ *     [2]: Number (float) - Reserved, typically 0.00.
+ *
+ * @example
+ * Variant.from("OnSetBux", gems, OnSetBux.WITH_ANIMATION, OnSetBux.PLAYER_NOT_SUPPORTER, [timestamp, 0, 0]);
+ */
+export enum OnSetBux {
+  WITH_ANIMATION = 0,
+  NO_ANIMATION = 1,
+  PLAYER_NOT_SUPPORTER = 0,
+  PLAYER_SUPPORTER = 1,
+}

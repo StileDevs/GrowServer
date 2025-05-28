@@ -243,3 +243,13 @@ export const checkPortInUse = (port: number): Promise<boolean> => {
 export function getWeatherId(blockId: number): number {
   return weatherIdMap[blockId] || 0;
 }
+
+// Return the current time in seconds (today)
+export function getCurrentTimeInSeconds(): number {
+  const now = new Date();
+  const today_begin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const ms = now.getTime() - today_begin.getTime();
+  const sec = Math.floor(ms / 1000);
+  console.log("Current Time in Seconds:", sec);
+  return sec;
+}
