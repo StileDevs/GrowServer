@@ -2,7 +2,7 @@ import { TextPacket, Variant } from "growtopia.js";
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
 import { parseAction, getCurrentTimeInSeconds } from "../utils/Utils";
-import { OnSetBux, PacketTypes } from "../Constants";
+import { PacketTypes } from "../Constants";
 import consola from "consola";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -229,7 +229,7 @@ export class ITextPacket {
       };
 
       // Load Gems
-      this.peer.send(Variant.from("OnSetBux", this.peer.data.gems, OnSetBux.WITH_ANIMATION, OnSetBux.PLAYER_NOT_SUPPORTER, [getCurrentTimeInSeconds(), 0, 0]));
+      this.peer.setGems(this.peer.data.gems);
 
       this.peer.saveToCache();
       this.peer.saveToDatabase();

@@ -3,7 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
-import { ActionTypes, OnSetBux } from "../../Constants";
+import { ActionTypes } from "../../Constants";
 import { getCurrentTimeInSeconds } from "../../utils/Utils";
 
 type TabConfig = {
@@ -189,7 +189,7 @@ export class StoreBuy {
     if ((!validTabs.includes(action.item) && this.findStoreItemByName(action.item))) {
       this.peer.addItemInven(actionItem?.itemId as number, 1);
       this.peer.data.gems -= (actionItem?.cost as number) ?? 0
-      this.peer.send("OnSetBux", this.peer.data.gems, OnSetBux.WITH_ANIMATION, OnSetBux.PLAYER_NOT_SUPPORTER, [getCurrentTimeInSeconds(), 0, 0])
+      this.peer.setGems(this.peer.data.gems);
     }
 
     this.peer.saveToCache();

@@ -7,7 +7,6 @@ import {
   ActionTypes,
   BlockFlags,
   LOCKS,
-  OnSetBux,
   ROLE,
   TankTypes
 } from "../../Constants";
@@ -933,7 +932,7 @@ export class TileChangeReq {
         targetPeer.send(Variant.from("OnConsoleMessage", `\`2${this.peer.data.tankIDName} has added ${amount} gems to your account. You now have ${targetPlayer.gems} gems.`));
       }
 
-      this.peer.send(Variant.from("OnSetBux", this.peer.data.gems, OnSetBux.WITH_ANIMATION, OnSetBux.PLAYER_NOT_SUPPORTER, [getCurrentTimeInSeconds(), 0, 0]));
+      this.peer.setGems(this.peer.data.gems);
 
       this.peer.saveToCache();
       this.peer.saveToDatabase();
