@@ -15,6 +15,7 @@ import consola from "consola";
 import { Floodfill } from "../../utils/FloodFill";
 import { Tile } from "../../world/Tile";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
+import { getCurrentTimeInSeconds } from "../../utils/Utils";
 
 export class TileChangeReq {
   private pos: number;
@@ -931,7 +932,7 @@ export class TileChangeReq {
         targetPeer.send(Variant.from("OnConsoleMessage", `\`2${this.peer.data.tankIDName} has added ${amount} gems to your account. You now have ${targetPlayer.gems} gems.`));
       }
 
-      this.peer.send(Variant.from("OnSetBux", this.peer.data.gems));
+      this.peer.setGems(this.peer.data.gems);
 
       this.peer.saveToCache();
       this.peer.saveToDatabase();

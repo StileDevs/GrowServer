@@ -1,7 +1,7 @@
 import { TextPacket, Variant } from "growtopia.js";
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
-import { parseAction } from "../utils/Utils";
+import { parseAction, getCurrentTimeInSeconds } from "../utils/Utils";
 import { PacketTypes } from "../Constants";
 import consola from "consola";
 import jwt from "jsonwebtoken";
@@ -229,7 +229,7 @@ export class ITextPacket {
       };
 
       // Load Gems
-      this.peer.send(Variant.from("OnSetBux", this.peer.data.gems));
+      this.peer.setGems(this.peer.data.gems);
 
       this.peer.saveToCache();
       this.peer.saveToDatabase();

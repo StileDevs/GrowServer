@@ -19,7 +19,7 @@ import {
   ROLE,
   TankTypes
 } from "../Constants";
-import { manageArray } from "../utils/Utils";
+import { getCurrentTimeInSeconds, manageArray } from "../utils/Utils";
 
 export class Peer extends OldPeer<PeerData> {
   public base;
@@ -559,5 +559,35 @@ export class Peer extends OldPeer<PeerData> {
   public calculateRequiredLevelXp(lvl: number): number{
     const requiredXp = 50 * ((lvl * lvl) + 2); 
     return requiredXp;
+  }
+
+  /**
+   * Updates the current peer's gem (bux) amount and update the timestamp chat.
+   *
+   * This method sends a Variant packet to the client to update the displayed gem count,
+   * control animation, and optionally indicate supporter status (maybe). It also updates the
+   * timestamp used for console chat.
+   *
+   * @param amount - The new gem (bux) amount to set for the player.
+   * @param skip_animation - Whether to skip the gem animation (0 = show animation, 1 = skip animation). Default is 0.
+   *
+   * ### OnSetBux Packet Structure:
+   * - Param 1: `number` — The gem (bux) amount.
+   * - Param 2: `number` — Animation flag.
+   * - Param 3: `number` — Supporter status.
+   * - Param 4: `number[]` — Additional data array:
+   *   - `[0]`: `number` (float) — Current timestamp in seconds (used for console chat).
+   *   - `[1]`: `number` (float) — Reserved, typically 0.00.
+   *   - `[2]`: `number` (float) — Reserved, typically 0.00.
+   *
+   * @example
+   * // Set gems to 1000, show animation
+   * peer.setGems(1000);
+   *
+   * // Set gems to 500 and skip animation
+   * peer.setGems(500, 1);
+   */
+  public setGems(amount: number, skip_animation: number = 0) {
+    this.send(Variant.from("OnSetBux", amount, skip_animation, 0, [getCurrentTimeInSeconds(), 0.00, 0.00])); // Param 2 maybe for supporter status?
   }
 }
