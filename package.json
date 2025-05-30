@@ -28,7 +28,7 @@
   "dependencies": {
     "@antfu/ni": "^24.4.0",
     "@hono/node-server": "^1.14.3",
-    "@libsql/client": "^0.15.7",
+    "@libsql/client": "^0.15.8",
     "bcryptjs": "^3.0.2",
     "chokidar": "^4.0.3",
     "consola": "^3.4.2",
