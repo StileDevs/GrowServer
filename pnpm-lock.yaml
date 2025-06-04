@@ -36,11 +36,11 @@ importers:
         specifier: ^16.5.0
         version: 16.5.0
       drizzle-orm:
-        specifier: ^0.44.1
-        version: 0.44.1(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2)
+        specifier: ^0.44.2
+        version: 0.44.2(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2)
       drizzle-zod:
         specifier: ^0.8.2
-        version: 0.8.2(drizzle-orm@0.44.1(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2))(zod@3.25.48)
+        version: 0.8.2(drizzle-orm@0.44.2(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2))(zod@3.25.48)
       fast-xml-parser:
         specifier: ^5.2.3
         version: 5.2.3
@@ -1009,8 +1009,8 @@ packages:
     resolution: {integrity: sha512-PUjYKWtzOzPtdtQlTHQG3qfv4Y0XT8+Eas6UbxCmxTj7qgMf+39dDujf1BP1I+qqZtw9uzwTh8jYtkMuCq+B0Q==}
     hasBin: true
 
-  drizzle-orm@0.44.1:
-    resolution: {integrity: sha512-prIWOlwJbiYInvcJxE+IMiJCtMiFVrSUJCwx6AXSJvGOdLu35qZ46QncTZDgloiLNCG0XxTC8agQElSmsl++TA==}
+  drizzle-orm@0.44.2:
+    resolution: {integrity: sha512-zGAqBzWWkVSFjZpwPOrmCrgO++1kZ5H/rZ4qTGeGOe18iXGVJWf3WPfHOVwFIbmi8kHjfJstC6rJomzGx8g/dQ==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -2632,15 +2632,15 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.1(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2):
+  drizzle-orm@0.44.2(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2):
     optionalDependencies:
       '@libsql/client': 0.15.8
       bun-types: 1.2.15
       gel: 2.0.2
 
-  drizzle-zod@0.8.2(drizzle-orm@0.44.1(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2))(zod@3.25.48):
+  drizzle-zod@0.8.2(drizzle-orm@0.44.2(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2))(zod@3.25.48):
     dependencies:
-      drizzle-orm: 0.44.1(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2)
+      drizzle-orm: 0.44.2(@libsql/client@0.15.8)(bun-types@1.2.15)(gel@2.0.2)
       zod: 3.25.48
 
   eastasianwidth@0.2.0: {}
