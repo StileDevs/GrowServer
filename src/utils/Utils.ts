@@ -252,3 +252,41 @@ export function getCurrentTimeInSeconds(): number {
   const sec = Math.floor(ms / 1000);
   return sec;
 }
+
+/**
+ * A wrapper function that executes a function and catches any errors.
+ * If an error occurs, it logs the error and returns null.
+ * @param fn The function to execute.
+ * @return The result of the function or null if an error occurs.
+ */
+export function safeWrapper<TArgs extends unknown[], TReturn>(
+  fn: (...args: TArgs) => TReturn
+): (...args: TArgs) => TReturn | null {
+  return (...args: TArgs) => {
+    try {
+      return fn(...args);
+    } catch (error) {
+      consola.error("Error in safeWrapper:", error);
+      return null;
+    }
+  };
+}
+
+/**
+ * A wrapper function that executes an asynchronous function and catches any errors.
+ * If an error occurs, it logs the error and returns null.
+ * @param fn The asynchronous function to execute.
+ * @return A promise that resolves to the result of the function or null if an error occurs.
+*/
+export function safeWrapperAsync<TArgs extends unknown[], TReturn>(
+  fn: (...args: TArgs) => Promise<TReturn>
+): (...args: TArgs) => Promise<TReturn | null> {
+  return async (...args: TArgs) => {
+    try {
+      return await fn(...args);
+    } catch (error) {
+      consola.error("Error in safeWrapperAsync:", error);
+      return null;
+    }
+  };
+}

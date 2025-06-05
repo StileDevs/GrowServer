@@ -20,12 +20,15 @@ import {
   TankTypes
 } from "../Constants";
 import { getCurrentTimeInSeconds, manageArray } from "../utils/Utils";
+import { VariantList } from "../packet/VariantList";
 
 export class Peer extends OldPeer<PeerData> {
   public base;
+  public varlist;
   constructor(base: Base, netID: number, channelID = 0) {
     super(base.server, netID, channelID);
     this.base = base;
+    this.varlist = new VariantList(this);
 
     const data = this.base.cache.peers.get(netID);
     if (data)
