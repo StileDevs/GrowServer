@@ -37,7 +37,7 @@
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.1",
     "drizzle-zod": "^0.8.2",
-    "fast-xml-parser": "^5.2.3",
+    "fast-xml-parser": "^5.2.5",
     "growtopia.js": "^2.1.6",
     "hono": "^4.7.10",
     "imagescript": "^1.3.0",
