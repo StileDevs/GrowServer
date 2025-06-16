@@ -55,7 +55,7 @@
     "@types/bcryptjs": "^2.4.6",
     "@types/bun": "^1.2.14",
     "@types/decompress": "^4.2.7",
-    "@types/jsonwebtoken": "^9.0.9",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22.15.21",
     "drizzle-kit": "^0.31.1",
     "eslint": "^9.27.0",
