@@ -13,7 +13,7 @@ importers:
         version: 25.0.0
       '@hono/node-server':
         specifier: ^1.14.3
-        version: 1.14.3(hono@4.7.11)
+        version: 1.14.3(hono@4.8.3)
       '@libsql/client':
         specifier: ^0.15.7
         version: 0.15.8
@@ -48,8 +48,8 @@ importers:
         specifier: ^2.1.6
         version: 2.1.6
       hono:
-        specifier: ^4.7.10
-        version: 4.7.11
+        specifier: ^4.8.3
+        version: 4.8.3
       imagescript:
         specifier: ^1.3.0
         version: 1.3.1
@@ -1407,8 +1407,8 @@ packages:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
 
-  hono@4.7.11:
-    resolution: {integrity: sha512-rv0JMwC0KALbbmwJDEnxvQCeJh+xbS3KEWW5PC9cMJ08Ur9xgatI0HmtgYZfOdOSOeYsp5LO2cOhdI8cLEbDEQ==}
+  hono@4.8.3:
+    resolution: {integrity: sha512-jYZ6ZtfWjzBdh8H/0CIFfCBHaFL75k+KMzaM177hrWWm2TWL39YMYaJgB74uK/niRc866NMlH9B8uCvIo284WQ==}
     engines: {node: '>=16.9.0'}
 
   ieee754@1.2.1:
@@ -2186,9 +2186,9 @@ snapshots:
       '@eslint/core': 0.14.0
       levn: 0.4.1
 
-  '@hono/node-server@1.14.3(hono@4.7.11)':
+  '@hono/node-server@1.14.3(hono@4.8.3)':
     dependencies:
-      hono: 4.7.11
+      hono: 4.8.3
 
   '@humanfs/core@0.19.1': {}
 
@@ -3005,7 +3005,7 @@ snapshots:
 
   has-flag@4.0.0: {}
 
-  hono@4.7.11: {}
+  hono@4.8.3: {}
 
   ieee754@1.2.1: {}
 
