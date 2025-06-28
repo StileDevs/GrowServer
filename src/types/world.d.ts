@@ -77,6 +77,8 @@ export interface WorldData {
   jammers?: Jammer[];
   dropped?: Dropped;
   weatherId: number;
+  minLevel: number;
+  openToPublic?: boolean;
 }
 export interface WorldOwnerData {
   name: string;
@@ -90,10 +92,10 @@ export interface LockedBlocked {
   ownerName?: string;
   ownerX?: number; // the lock X
   ownerY?: number; // the lock Y
+  ownedTiles?: number[]; // Tile indexes this lock owns
   isOwner?: boolean; // indicates that this is the lock itself
-  openToPublic?: boolean;
   ignoreEmptyAir?: boolean;
-  permission: LockPermission; // this doesnt apply to the owner of the lock. type = (LockPermission)
+  permission?: LockPermission; // this is available exclusively to the actual Lock(small lock, huge lock, etc), not locked tile  
   adminLimited?: boolean;
   adminIDs?: number[];
 }

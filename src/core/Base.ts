@@ -41,8 +41,9 @@ export class Base {
   constructor() {
     this.server = new Client({
       enet: {
-        ip: "0.0.0.0",
-      }
+        ip:                 "0.0.0.0",
+        useNewServerPacket: true,
+      },
     });
     this.package = JSON.parse(
       readFileSync(join(__dirname, "package.json"), "utf-8")
@@ -85,12 +86,12 @@ export class Base {
 
       await downloadMkcert();
       await setupMkcert();
-      
+
       await downloadWebsite();
       await setupWebsite();
       this.cdn = await this.getLatestCdn();
       await downloadItemsDat(this.cdn.itemsDatName);
-      
+
       consola.info(`Parsing ${this.cdn.itemsDatName}`)
       const datDir = join(__dirname, ".cache", "growtopia", "dat");
       const datName = join(datDir, this.cdn.itemsDatName);
@@ -272,7 +273,7 @@ export class Base {
     try {
       const cdnData = await fetchJSON("https://mari-project.jad.li/api/v1/growtopia/cache/latest") as CDNContent;
       const itemsDat = await fetchJSON(ITEMS_DAT_FETCH_URL) as { content: string };
-     
+
       const data: CDNContent = {
         version:      cdnData.version,
         uri:          cdnData.uri,

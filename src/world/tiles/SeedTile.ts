@@ -1,183 +1,254 @@
-// import { ItemDefinition, Variant } from "growtopia.js";
-// import { TileExtraTypes, TileFlags } from "../../Constants";
-// import type { Base } from "../../core/Base";
-// import type { World } from "../../core/World";
-// import type { TileData } from "../../types";
-// import { ExtendBuffer } from "../../utils/ExtendBuffer";
-// import { Tile } from "../Tile";
-// import { Peer } from "../../core/Peer";
+import { ItemDefinition, TankPacket, Variant } from "growtopia.js";
+import { LockPermission, TankTypes, TileExtraTypes, TileFlags } from "../../Constants";
+import type { Base } from "../../core/Base";
+import type { World } from "../../core/World";
+import type { TileData } from "../../types";
+import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { Tile } from "../Tile";
+import { Peer } from "../../core/Peer";
 
-// export class SeedTile extends Tile {
-//   public extraType = TileExtraTypes.SEED;
+export class SeedTile extends Tile {
+  public extraType = TileExtraTypes.SEED;
 
-//   constructor(
-//     public base: Base,
-//     public world: World,
-//     public data: TileData,
-//     public fgItemMeta: ItemDefinition,
-//   ) {
-//     super(base, world, data, fgItemMeta);
-//   }
+  constructor(
+    public base: Base,
+    public world: World,
+    public data: TileData
+  ) {
+    super(base, world, data);
+  }
 
-//   public async onPlace(peer: Peer): Promise<void> {
-//     this.initializeTreeData(this.fgItemMeta);
-//     super.onPlace(peer);
-//   }
+  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
+    super.onPlaceForeground(peer, itemMeta);
 
-//   public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<void> {
-//     if (Date.now() >= this.data.tree!.fullyGrownAt) {
-//       this.notifySplicingMatureTree(peer);
-//       return;
-//     }
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+      return;
+    }
 
-//     if (this.data.tree!.isSpliced) {
-//       this.notifySplicing3Seeds(peer);
-//       return;
-//     }
+    this.initializeTreeData(itemMeta);
+    // actually, this is not nescessary. But since i have yet to figure out a way to set a field in the TileChangeReq packet
+    //  - Badewen
+    this.tileUpdate(peer);
+  }
 
-//     this.base.items.wiki.forEach((itemWiki) => {
-//       if (itemWiki.recipe && itemWiki.recipe.splice.length == 2) {
-//         if (itemWiki.recipe.splice.includes(item.id!) && itemWiki.recipe.splice.includes(this.fgItemMeta.id!)) {
-//           this.initializeTreeData(this.base.items.metadata.items[itemWiki.id]);
-//           this.tileUpdate(peer);
-//           this.notifySuccessfulSplice(peer, item.id!, itemWiki.id);
-//           return;
-//         }
-//       }
-//     })
+  public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<void> {
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+      this.onPlaceFail(peer);
+      return;
+    }
 
-//     this.notifyFailedSplice(peer, item.id!);
-//   }
+    if (Date.now() >= this.data.tree!.fullyGrownAt) {
+      this.notifySplicingMatureTree(peer);
+      return;
+    }
 
-//   public async onPunch(peer: Peer): Promise<void> {
-//     this.world.drop(
-//       peer,
-//       this.data.x * 32 + Math.floor(Math.random() * 16),
-//       this.data.y * 32 + Math.floor(Math.random() * 16),
-//       this.data.tree.fruit,
-//       block.tree.fruitCount,
-//       { tree: true }
-//     );
+    if (this.data.tree!.isSpliced) {
+      this.notifySplicing3Seeds(peer);
+      return;
+    }
 
-//     block.tree = undefined;
-//     block.fg = 0x0;
+    const currentSeedMeta = this.base.items.metadata.items[this.data.fg];
 
-//     peer.every(
-//       (p) =>
-//         p.data?.world === peer.data?.world &&
-//         p.data?.world !== "EXIT" &&
-//         p.send(
-//           TankPacket.from({
-//             type: TankTypes.SEND_TILE_TREE_STATE,
-//             netID: peer.data?.netID,
-//             targetNetID: -1,
-//             xPunch: block.x,
-//             yPunch: block.y
-//           })
-//         )
-//     );
-//   }
+    let spliceSuccessful = false
 
-//   public onDestroy(peer: Peer): Promise<void> {
-    
-//   }
+    if (item.id! != this.data.fg) {
+      this.base.items.wiki.every((itemWiki) => {
+        if (itemWiki.recipe && itemWiki.recipe.splice.length == 2) {
+          if (itemWiki.recipe.splice.includes(item.id! - 1) && itemWiki.recipe.splice.includes(this.data.fg! - 1)) {
+            const spliceResultSeedMeta = this.base.items.metadata.items[itemWiki.id! + 1];
+            spliceSuccessful = true
+            this.initializeTreeData(spliceResultSeedMeta);
+            this.data.tree!.isSpliced = true;
 
-//   public async serialize(): Promise<void> {
-//     this.data.writeU8(this.extraType);
-//     this.data.writeU32(
-//       Math.floor((Date.now() - (this.block.tree?.plantedAt as number)) / 1000)
-//     );
-//     this.data.writeU8(
-//       (this.block.tree?.fruitCount as number) > 4
-//         ? 4
-//         : (this.block.tree?.fruitCount as number)
-//     );
+            this.tileUpdate(peer);
+            this.notifySuccessfulSplice(peer, currentSeedMeta.name!, item.name!, spliceResultSeedMeta.name!);
+            return false;
+          }
+        }
+        return true;
+      })
+    }
 
-//     return;
-//   }
+    if (!spliceSuccessful) this.notifyFailedSplice(peer, currentSeedMeta.name!, item.name!);
+  }
 
-//   private initializeTreeData(seed: ItemDefinition) {
-//     this.data.flags |= TileFlags.TILEEXTRA;
-//     const fruitCount =
-//       Math.floor(Math.random() * 10 * (1 - (seed.rarity || 0) / 1000)) + 1;
-//     const now = Date.now();
+  public async onPunch(peer: Peer): Promise<void> {
+    if (this.data.tree && Date.now() >= this.data.tree.fullyGrownAt && this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+      const itemMeta = this.base.items.metadata.items[this.data.fg];
+      this.world.drop(
+        peer,
+        this.data.x * 32 + Math.floor(Math.random() * 16),
+        this.data.y * 32 + Math.floor(Math.random() * 16),
+        this.data.tree.fruit,
+        this.data.tree.fruitCount,
+        { tree: true }
+      );
 
-//     this.data.tree = {
-//       fruit: seed.id! - 1,
-//       fruitCount,
-//       fullyGrownAt: (this.data.tree?.plantedAt ?? now) + (seed.growTime || 0) * 1000,
-//       plantedAt: now,
-//       isSpliced: false
-//     }
-//     this.data.flags |= TileFlags.SEED;
-//   }
+      if (Math.random() <= 0.10) {
+        this.world.drop(
+          peer,
+          this.data.x * 32 + Math.floor(Math.random() * 16),
+          this.data.y * 32 + Math.floor(Math.random() * 16),
+          this.data.fg,
+          1,
+          { tree: true }
+        );
+        this.notifySeedFallout(peer, itemMeta.name!);
+      }
 
-//   private deinitializeTreeData() {
-//     this.data.flags &= ~(TileFlags.TILEEXTRA | TileFlags.SEED); // unset TILEEXTRA and SEED
-//     this.data.tree = undefined;
-//   }
+      this.world.every((p) => {
+        p.send(
+          TankPacket.from({
+            type:        TankTypes.SEND_TILE_TREE_STATE,
+            netID:       peer.data?.netID,
+            targetNetID: -1,
+            xPunch:      this.data.x,
+            yPunch:      this.data.y
+          })
+        )
+      })
 
-//   private notifySuccessfulSplice(peer: Peer, seed2Id: number, spliceResultSeedId: number) {
-//     const seed1Name = this.fgItemMeta.name;
-//     const seed2Name = this.base.items.metadata.items[seed2Id].name;
-//     // the block name
-//     const spliceBlockName = this.base.items.metadata.items[spliceResultSeedId - 1].name;
+      this.data.fg = 0;
+      this.data.resetStateAt = 0;
+      this.data.flags = this.data.flags & (TileFlags.LOCKED | TileFlags.WATER) // preserve LOCKED and WATER
+      return;
+    }
+    super.onPunch(peer);
+  }
 
-//     peer.send(
-//       Variant.from(
-//         "OnTalkBubble",
-//         peer.data.netID,
-//         `${seed1Name} and ${seed2Name} have been spliced to make an \`o${spliceBlockName} Tree\`0!`,
-//         0
-//       )
-//     );
+  public async onDestroy(peer: Peer): Promise<void> {
+    super.onDestroy(peer);
+    this.deinitializeTreeData();
+  }
 
-//     peer.every((p) => {
-//       if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT")
-//         p.send(
-//           Variant.from(
-//             { netID: peer.data?.netID },
-//             "OnPlayPositioned",
-//             "audio/success.wav"
-//           )
-//         );
-//     });
-//   }
+  public async onDrop(peer: Peer, destroyedItemID: number): Promise<void> {
+    // 10%
+    if (Math.random() <= 0.10) {
+      this.world.drop(
+        peer,
+        this.data.x * 32 + Math.floor(Math.random() * 16),
+        this.data.y * 32 + Math.floor(Math.random() * 16),
+        this.data.fg,
+        1,
+        { tree: true }
+      );
+    }
+  }
 
-//   private notifyFailedSplice(peer: Peer, seed2Id: number) {
-//     const seed1Name = this.fgItemMeta.name;
-//     const seed2Name = this.base.items.metadata.items[seed2Id].name;
+  public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
+    super.serialize(dataBuffer);
+    dataBuffer.grow(1 + 4 + 1);
+    dataBuffer.writeU8(this.extraType);
+    dataBuffer.writeU32(
+      Math.floor((Date.now() - (this.data.tree?.plantedAt as number)) / 1000)
+    );
+    dataBuffer.writeU8(
+      (this.data.tree?.fruitCount as number) > 4
+        ? 4
+        : (this.data.tree?.fruitCount as number)
+    );
 
-//     peer.send(
-//       // stacking talk bubble didnt work :(
-//       Variant.from(
-//         "OnTalkBubble",
-//         peer.data.netID,
-//         `Hmm, it looks like ${seed1Name} and ${seed2Name} can't be spliced.`,
-//         1
-//       )
-//     );
-//   }
+    return;
+  }
 
-//   private notifySplicing3Seeds(peer: Peer) {
-//     peer.send(
-//       Variant.from(
-//         "OnTalkBubble",
-//         peer.data.netID,
-//         "it would be too dangerous to try to mix three seeds.",
-//         1
-//       )
-//     );
-//   }
+  private initializeTreeData(seed: ItemDefinition) {
+    this.data.flags |= TileFlags.TILEEXTRA | TileFlags.SEED;
+    const fruitCount =
+      Math.floor(Math.random() * 10 * (1 - (seed.rarity || 0) / 1000)) + 1;
+    const now = Date.now();
 
-//   private notifySplicingMatureTree(peer: Peer) {
-//     peer.send(
-//       Variant.from(
-//         "OnTalkBubble",
-//         peer.data.netID,
-//         "This tree is already too big to splice another seed with.",
-//         1
-//       )
-//     );
-//   }
-// }
+    this.data.fg = seed.id!;
+    this.data.damage = 0;
+
+    this.data.tree = {
+      fruit:        seed.id! - 1,
+      fruitCount,
+      fullyGrownAt: (this.data.tree?.plantedAt ?? now) + (seed.growTime || 0) * 1000,
+      plantedAt:    now,
+      isSpliced:    false
+    }
+  }
+
+  private deinitializeTreeData() {
+    this.data.flags &= ~(TileFlags.TILEEXTRA | TileFlags.SEED); // unset TILEEXTRA and SEED
+    this.data.tree = undefined;
+    this.data.damage = 0;
+  }
+
+  private async notifySeedFallout(peer: Peer, seedName: string): Promise<void> {
+    peer.send(
+      Variant.from(
+        { netID: -1 },
+        "OnTalkBubble",
+        peer.data.netID,
+        `A \`w${seedName}\`\` falls out!`,
+        0,
+        1
+      )
+    )
+  }
+
+  private notifySuccessfulSplice(peer: Peer, seed1Name: string, seed2Name: string, spliceResultBlockName: string) {
+    peer.send(
+      Variant.from(
+        { netID: -1 },
+        "OnTalkBubble",
+        peer.data.netID,
+        `${seed1Name} and ${seed2Name} have been spliced to make an \`o${spliceResultBlockName} Tree\`0!`,
+        0,
+        1
+      )
+    );
+
+    peer.every((p) => {
+      if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT")
+        p.send(
+          Variant.from(
+            { netID: peer.data?.netID },
+            "OnPlayPositioned",
+            "audio/success.wav"
+          )
+        );
+    });
+  }
+
+  private notifyFailedSplice(peer: Peer, seed1Name: string, seed2Name: string) {
+    peer.send(
+      // stacking talk bubble didnt work :(
+      Variant.from(
+        { netID: -1 },
+        "OnTalkBubble",
+        peer.data.netID,
+        `Hmm, it looks like \`w${seed1Name}\`\` and \`w${seed2Name}\`\` can't be spliced.`,
+        0,
+        1
+      )
+    );
+  }
+
+  private notifySplicing3Seeds(peer: Peer) {
+    peer.send(
+      Variant.from(
+        { netID: -1 },
+        "OnTalkBubble",
+        peer.data.netID,
+        "it would be too dangerous to try to mix three seeds.",
+        0,
+        1
+      )
+    );
+  }
+
+  private notifySplicingMatureTree(peer: Peer) {
+    peer.send(
+      Variant.from(
+        { netID: -1 },
+        "OnTalkBubble",
+        peer.data.netID,
+        "This tree is already too big to splice another seed with.",
+        0,
+        1
+      )
+    );
+  }
+}

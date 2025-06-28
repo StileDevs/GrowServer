@@ -4,7 +4,8 @@ import {
   Peer as OldPeer,
   TankPacket,
   TextPacket,
-  Variant
+  Variant,
+  VariantOptions
 } from "growtopia.js";
 import { Base } from "./Base";
 import { World } from "./World";
@@ -541,5 +542,69 @@ export class Peer extends OldPeer<PeerData> {
   public calculateRequiredLevelXp(lvl: number): number {
     const requiredXp = 50 * ((lvl * lvl) + 2);
     return requiredXp;
+  }
+
+
+  /**
+   * Send OnTextBubble variant
+   * 
+   * @param message The message to send 
+   * @param stacked If true, it will override the current OnTextBubble that is being displayed on the client
+   * @param netID what netid the OnTalkBubble is for.
+   */
+
+  public sendTextBubble(message: string, stacked: boolean, netID?: number) {
+    this.send(
+      Variant.from(
+        "OnTalkBubble",
+        netID ?? this.data.netID,
+        message,
+        0,
+        stacked ? 1 : 0
+      )
+    )
+  }
+
+  /**
+   * Send `action|play_sfx` to the client
+   * @param file the file that will be played
+   * @param delay the delay in milliseconds
+   */
+  public sendSFX(file: string, delayMs: number) {
+    this.send(
+      TextPacket.from(
+        PacketTypes.ACTION,
+        "action|play_sfx",
+        `file|${file}`,
+        `delayMS|${delayMs}`
+      )
+    );
+  }
+
+  /**
+   * Send `OnPlayPositioned` variant
+   * @param file the file that will be played
+   * @param opts the Variant options. Set delay and or netID
+   */
+  public sendOnPlayPositioned(file: string, opts?: VariantOptions) {
+    this.send(
+      Variant.from(
+        opts,
+        "OnPlayPositioned",
+        file
+      )
+    )
+  }
+
+  /**
+   * 
+   * @param message the message that is going to be sent
+   */
+  public sendConsoleMessage(message: string, opts?: VariantOptions) {
+    this.send(Variant.from(
+      opts,
+      "OnConsoleMessage",
+      message
+    ))
   }
 }

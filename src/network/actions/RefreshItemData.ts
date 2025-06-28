@@ -3,7 +3,7 @@ import { TankTypes } from "../../Constants";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { NonEmptyObject } from "type-fest";
-import { gzip } from "zlib";
+import { deflateSync} from "zlib";
 
 export class RefreshItemData {
   constructor(
@@ -18,7 +18,8 @@ export class RefreshItemData {
       Variant.from("OnConsoleMessage", "One moment. Updating item data..."),
       TankPacket.from({
         type: TankTypes.SEND_ITEM_DATABASE_DATA,
-        data: () => this.base.items.content
+        info: this.base.items.content.length,
+        data: () => deflateSync(this.base.items.content)
       })
     );
   }

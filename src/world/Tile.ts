@@ -17,7 +17,8 @@ export class Tile {
 
   // This is only applies to placed foreground blocks, as beckground block doesnt have any behaviour.
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !peer.searchItem(itemMeta.id!)) {
+    if (!peer.searchItem(itemMeta.id!)) return;
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
       await this.onPlaceFail(peer);
       return;
     }
@@ -39,12 +40,10 @@ export class Tile {
       state:  (this.data.flags & TileFlags.FLIPPED ? 0x10 : 0) // set the rotateLeft flag
     });
 
-    const world = peer.currentWorld();
-    if (world) {
-      world.every((p) => {
-        p.send(tank);
-      })
-    }
+    this.world.every((p) => {
+      p.send(tank);
+    })
+
     peer.removeItemInven(itemMeta.id!, 1);
   }
 
@@ -64,12 +63,10 @@ export class Tile {
       info:   this.data.bg
     });
 
-    const world = peer.currentWorld();
-    if (world) {
-      world.every((p) => {
-        p.send(tank);
-      })
-    }
+    this.world.every((p) => {
+      p.send(tank);
+    })
+
     peer.removeItemInven(itemMeta.id!, 1);
   }
 
@@ -125,12 +122,10 @@ export class Tile {
       yPunch: this.data.y
     });
 
-    const world = peer.currentWorld();
-    if (world) {
-      world.every((p) => {
-        p.send(tank);
-      })
-    }
+    this.world.every((p) => {
+      p.send(tank);
+    })
+
   }
 
   public async onDrop(peer: Peer, destroyedItemID: number) {
@@ -144,6 +139,16 @@ export class Tile {
 
   public async onWrench(peer: Peer): Promise<void> {
     // TODO: Default behaviour when a user tries to wrench the tile
+  }
+
+  // TOOD: Implement.
+  public async onPlayerPass(peer: Peer): Promise<void> {
+
+  }
+
+  // TODO: Implement.
+  public async onStep(peer: Peer): Promise<void> {
+
   }
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> { }
@@ -202,12 +207,10 @@ export class Tile {
       this.data.resetStateAt =
         Date.now() + (itemMeta.resetStateAfter as number) * 1000;
 
-      const world = peer.currentWorld();
-      if (world) {
-        world.every((p) => {
-          p.send(tank);
-        })
-      }
+      this.world.every((p) => {
+        p.send(tank);
+      })
+
     }
   }
 
@@ -224,45 +227,32 @@ export class Tile {
   public async tileUpdate(peer: Peer) {
     const serializedData = await this.parse();
 
-    const world = peer.currentWorld();
-    if (world) {
-      world.every((p) => {
-        p.send(
-          TankPacket.from({
-            type:   TankTypes.SEND_TILE_UPDATE_DATA,
-            xPunch: this.data.x,
-            yPunch: this.data.y,
-            data:   () => serializedData.data
-          })
-        );
-      })
+    this.world.every((p) => {
+      p.send(
+        TankPacket.from({
+          type:   TankTypes.SEND_TILE_UPDATE_DATA,
+          xPunch: this.data.x,
+          yPunch: this.data.y,
+          data:   () => serializedData.data
+        })
+      );
+    })
+  }
+
+  protected sendLockSound(peer: Peer) {
+    if (this.world) {
+      this.world.every((p) => {
+        p.sendOnPlayPositioned("audio/punch_locked.wav", { netID: peer.data?.netID });
+      });
     }
   }
 
-  private sendLockSound(peer: Peer) {
-    peer.every((p) => {
-      if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT")
-        p.send(
-          Variant.from(
-            { netID: peer.data?.netID },
-            "OnPlayPositioned",
-            "audio/punch_locked.wav"
-          )
-        );
-    });
-  }
-
   private sendAreaOwner(peer: Peer) {
-    peer.every((p) => {
-      if (p.data?.world === peer.data?.world && p.data?.world !== "EXIT")
-        p.send(
-          Variant.from(
-            { netID: peer.data?.netID },
-            "OnTextBubble",
-            `That area is owned by ${peer.currentWorld()?.data.owner?.name}`
-          )
-        );
-    });
+    const owningLock = this.world.data.blocks[this.data.lock!.ownerY! * this.world.data.width + this.data.lock!.ownerX!];
+
+    const ownerName = this.world.data.owner?.name ?? owningLock.lock?.ownerName;
+
+    peer.sendTextBubble(`That area is owned by ${ownerName}`, true, peer.data.netID);
   }
 
 }

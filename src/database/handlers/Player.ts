@@ -20,6 +20,18 @@ export class PlayerDB {
     return undefined;
   }
 
+  public async getByUID(userID: number) {
+    const res = await this.db
+      .select()
+      .from(players)
+      .where(eq(players.id, userID))
+      .limit(1)
+      .execute();
+
+    if (res.length) return res[0]
+    return undefined;
+  }
+
   public async has(name: string) {
     const res = await this.db
       .select({ count: sql`count(*)` })

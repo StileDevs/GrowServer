@@ -342,21 +342,25 @@ export enum LockPermission {
   FULL = BUILD | BREAK,
 }
 
+// NOTE: defaultPermission here means what action is allowed for those who has access.
+// For example, Small lock allows the ones with access to do anything (Break & Build), 
+//  and by default, doesnt allow the ones without access to do anything to it, unless 
+//  if the TileFlags.PUBLIC is set.
 export const LOCKS = [
   {
     id:                202, // Small Lock
     maxTiles:          10,
-    defaultPermission: LockPermission.NONE,
+    defaultPermission: LockPermission.FULL,
   },
   {
     id:                204, // Big Lock
     maxTiles:          48,
-    defaultPermission: LockPermission.NONE,
+    defaultPermission: LockPermission.FULL,
   },
   {
     id:                206, // Huge Lock
     maxTiles:          200,
-    defaultPermission: LockPermission.NONE,
+    defaultPermission: LockPermission.FULL,
   },
   {
     id:                4994, // Builder's Lock

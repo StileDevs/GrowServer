@@ -1,13 +1,14 @@
-import { TankPacket, TextPacket, Variant } from "growtopia.js";
+import { PeerData, TankPacket, TextPacket, Variant } from "growtopia.js";
 import { TileData, WorldData } from "../types";
 import { Base } from "./Base";
-import { ActionTypes, LockPermission, PacketTypes, TankTypes } from "../Constants";
+import { ActionTypes, LockPermission, PacketTypes, TankTypes, TileCollisionTypes, TileFlags } from "../Constants";
 import { Peer } from "./Peer";
 // import { tileParse } from "../world/tiles";
 import { Default } from "../world/generation/Default";
 import { Tile } from "../world/Tile";
 import { tileFrom } from "../world/tiles";
 import { writeFileSync } from "fs";
+import { permission } from "process";
 
 export class World {
   public data: WorldData;
@@ -28,7 +29,8 @@ export class World {
         width:     0,
         height:    0,
         blocks:    [],
-        weatherId: 41
+        weatherId: 41,
+        minLevel:  1
       };
   }
 
@@ -149,7 +151,8 @@ ${peer.data.lastVisitedWorlds
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
           owner:     world.owner ? JSON.parse(world.owner.toString()) : null,
-          weatherId: world.weather_id || 41
+          weatherId: world.weather_id || 41,
+          minLevel:  world.minimum_level || 1,
         };
       } else {
         await this.generate(true);
@@ -613,20 +616,45 @@ ${peer.data.lastVisitedWorlds
     return false;
   }
 
-  public hasTilePermission(userID: number, tile: TileData, permissionType: LockPermission): boolean {    // no locks and worldlocks
-    if (!this.data.owner && !tile.lock) return true;
-    // is the worldowner?
-    if (this.data.owner && this.data.owner.id == userID) return true;
-    // is there a lock? if not, check does it have access to this world
-    if (!tile.lock && this.data.admins && this.data.admins.includes(userID)) return true;
-    // does the user have access on the lock and the lock is not limiting admin permission?
-    if (tile.lock && !tile.lock.adminLimited && tile.lock.adminIDs && tile.lock.adminIDs.includes(userID)) return true;
-    // if it has lock, and it is open to public or the user has access to the locks (limited admin).
-    if (tile.lock && (tile.lock.openToPublic || tile.lock.adminIDs?.includes(userID))) {
-      return !!(tile.lock.permission & permissionType) || tile.lock.permission == permissionType;
+  public hasTilePermission(userID: number, tile: TileData, permissionType: LockPermission): boolean {
+    if (tile.lock) {
+      if (tile.lock.isOwner) {
+        if (userID == tile.lock.ownerUserID) return true;
+        else return false;
+      }
+
+      const owningLock = this.data.blocks[tile.lock!.ownerY! * this.data.width + tile.lock!.ownerX!];
+      if (owningLock.lock) {
+        if (owningLock.lock.ownerUserID == userID) {
+          return true;
+        }
+
+        if (owningLock.lock.adminIDs && owningLock.lock.adminIDs.includes(userID)) {
+          if (owningLock.lock.adminLimited) {
+            return !!(owningLock.lock.permission & permissionType) || owningLock.lock.permission == permissionType;
+          }
+          return true;
+        }
+        // not admin?
+        if (owningLock.flags & TileFlags.PUBLIC) {
+          return !!(owningLock.lock.permission & permissionType) || owningLock.lock.permission == permissionType;
+        }
+      }
+    }
+    else if (this.data.owner) {
+      if (this.data.admins && this.data.admins.includes(userID)) {
+        return true;
+      }
+      else if (this.data.owner.id == userID) {
+        return true;
+      }
+    }
+    else {
+      // no locks and no owner
+      return true;
     }
 
-    return false;
+    return permissionType == LockPermission.NONE || false;
   }
 
   public every(callbackfn: (peer: Peer, netID: number) => void): void {
@@ -636,6 +664,17 @@ ${peer.data.lastVisitedWorlds
         callbackfn(pp, p.netID);
       }
     });
+  }
+
+  public getPeerByNetID(netID: number): Peer | undefined {
+    let peer = undefined;
+    this.every((p) => {
+      if (p.data.netID == netID) {
+        peer = p;
+      }
+    })
+
+    return peer;
   }
 
 }

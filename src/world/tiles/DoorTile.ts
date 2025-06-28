@@ -22,6 +22,10 @@ export class DoorTile extends Tile {
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
     super.onPlaceForeground(peer, itemMeta);
 
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+      return;
+    }
+
     // by default, it is public
     this.data.flags |= TileFlags.TILEEXTRA | TileFlags.PUBLIC;
     this.data.door = {
@@ -45,8 +49,13 @@ export class DoorTile extends Tile {
   }
 
   public async onWrench(peer: Peer): Promise<void> {
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+      this.onPlaceFail(peer);
+      return;
+    }
+
     const itemMeta = this.base.items.metadata.items[this.data.fg];
-    if (this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD && (itemMeta.flags! & BlockFlags.WRENCHABLE))) {
+    if (itemMeta.flags! & BlockFlags.WRENCHABLE) {
       const dialog = new DialogBuilder()
         .defaultColor()
         .addLabelWithIcon(

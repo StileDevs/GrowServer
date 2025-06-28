@@ -20,14 +20,19 @@ export class SignTile extends Tile {
   }
 
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
+    super.onPlaceForeground(peer, itemMeta);
+
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+      return;
+    }
+
     this.data.flags |= TileFlags.TILEEXTRA;
     this.data.sign = { label: "" };
-    super.onPlaceForeground(peer, itemMeta);
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
-    this.data.sign = undefined;
     super.onDestroy(peer);
+    this.data.sign = undefined;
   }
 
   public async onWrench(peer: Peer): Promise<void> {
@@ -49,6 +54,9 @@ export class SignTile extends Tile {
         .str();
 
       peer.send(Variant.from("OnDialogRequest", dialog));
+    }
+    else {
+      this.onPlaceFail(peer);
     }
   }
 

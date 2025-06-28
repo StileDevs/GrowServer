@@ -7,28 +7,30 @@ import { Tile } from "../Tile";
 import type { World } from "../../core/World";
 import type { TileData } from "../../types";
 import consola from "consola";
-// import { LockTile } from "./LockTile";
+import { LockTile } from "./LockTile";
 import type { Base } from "../../core/Base";
 import { ItemDefinition } from "growtopia.js";
 // import { HeartMonitorTile } from "./HeartMonitorTile";
 // import { DisplayBlockTile } from "./DisplayBlockTile";
 import { SwitcheROO } from "./SwitcheROO";
-// import { WeatherTile } from "./WeatherTile";
+import { WeatherTile } from "./WeatherTile";
 // import { DiceTile } from "./DiceTile";
-// import { SeedTile } from "./SeedTile";
+import { SeedTile } from "./SeedTile";
 
 const TileMap: Record<number, Class<Tile>> = {
-  [ActionTypes.DOOR]:       DoorTile,
-  [ActionTypes.MAIN_DOOR]:  DoorTile,
-  [ActionTypes.PORTAL]:     DoorTile,
-  [ActionTypes.SIGN]:       SignTile,
-  // [ActionTypes.LOCK]: LockTile,
+  [ActionTypes.DOOR]:            DoorTile,
+  [ActionTypes.MAIN_DOOR]:       DoorTile,
+  [ActionTypes.PORTAL]:          DoorTile,
+  [ActionTypes.SIGN]:            SignTile,
+  [ActionTypes.LOCK]:            LockTile,
   // [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
   // [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
-  [ActionTypes.SWITCHEROO]: SwitcheROO,
-  // [ActionTypes.WEATHER_MACHINE]: WeatherTile,
+  [ActionTypes.SWITCHEROO]:      SwitcheROO,
+  [ActionTypes.WEATHER_MACHINE]: WeatherTile,
   // [ActionTypes.DICE]: DiceTile,
-  // [ActionTypes.SEED]: SeedTile
+  [ActionTypes.BACKGROUND]:      NormalTile,
+  [ActionTypes.FOREGROUND]:      NormalTile,
+  [ActionTypes.SEED]:            SeedTile
 };
 
 // constructs a new Tile subclass based on the ActionType.
@@ -40,12 +42,14 @@ const tileFrom = (
   data: TileData,
   itemType?: ActionTypes
 ) => {
-  const itemMeta = itemType ?? base.items.metadata.items[data.fg].type!;
+  const type = itemType ?? base.items.metadata.items[data.fg].type!;
   try {
-    const tile = new TileMap[itemMeta](base, world, data);
+    const tile = new TileMap[type](base, world, data);
     return tile;
   }
   catch (e) {
+    consola.warn(e);
+
     return new NormalTile(base, world, data);
   }
 }

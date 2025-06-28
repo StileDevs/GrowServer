@@ -35,19 +35,20 @@ export class DialogBuilder {
   /**
    * Adds a label
    * @param {string} text Title of the label
+   * @param {string} size Type of the label. "small" or "big". default is small
    * @returns {DialogBuilder}
    */
 
-  public addLabel(text: string): DialogBuilder {
-    this.#str += `add_label|${text}|\n`;
+  public addLabel(text: string, size?: string): DialogBuilder {
+    this.#str += `add_label|${size ?? "small"}|${text}|\n`;
     return this;
   }
 
   /**
    * Adds a label with an icon
    * @param {string} text Title of the label
-   * @param {string} titleid The icon to add to the label
-   * @param {string | number} type The type of the label, 'big' or 'small'
+   * @param {string | number} titleid The icon to add to the label
+   * @param {string} type The type of the label, 'big' or 'small'
    * @returns {DialogBuilder}
    */
 
@@ -231,6 +232,18 @@ export class DialogBuilder {
 
   public addQuickExit(): DialogBuilder {
     this.#str += "add_quick_exit|\n";
+    return this;
+  }
+
+  /**
+   * Adds player picker "button"
+   * @param name The id of the player picker
+   * @param label The label that is shown to the player
+   * @returns {DialogBuilder}
+   */
+
+  public addPlayerPicker(name: string, label: string): DialogBuilder {
+    this.#str += `add_player_picker|${name}|${label}\n`;
     return this;
   }
 

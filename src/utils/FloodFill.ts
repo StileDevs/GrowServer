@@ -139,7 +139,8 @@ export class Floodfill {
       isOwner:        true,
       ignoreEmptyAir: this.data.noEmptyAir,
       adminIDs:       [],
-      permission:     LockPermission.NONE, // the lock itself can only be destroyed by the owner
+      permission:     lockData?.defaultPermission ?? LockPermission.NONE, // the lock itself can only be destroyed by the owner
+      ownedTiles:     []
     };
 
     let i = 0;
@@ -152,12 +153,13 @@ export class Floodfill {
       const b_pos = node.x + node.y * this.data.width;
       const block = world.data.blocks[b_pos];
 
+      this.data.s_block.lock.ownedTiles?.push(b_pos);
+
       block.lock = {
-        ownerFg:    this.data.s_block.fg,
+        ownerFg: this.data.s_block.fg,
         //ownerUserID: owner.data.id,
-        ownerX:     this.data.s_block.x,
-        ownerY:     this.data.s_block.y,
-        permission: lockData ? lockData.defaultPermission : LockPermission.NONE,
+        ownerX:  this.data.s_block.x,
+        ownerY:  this.data.s_block.y,
         //adminIDs: [],
       };
 
@@ -180,14 +182,7 @@ export class Floodfill {
     });
 
     world.every((p) => {
-      p.send(
-        Variant.from(
-          { netID: owner.data?.netID },
-          "OnPlayPositioned",
-          "audio/use_lock.wav"
-        ),
-        tank
-      );
+      p.send(tank);
     });
   }
 }
