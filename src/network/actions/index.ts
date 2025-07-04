@@ -9,6 +9,7 @@ import { Input } from "./Input";
 import { Respawn } from "./Respawn";
 import { RespawnSpike } from "./RespawnSpike";
 import { Drop } from "./Drop";
+import { Trash } from "./Trash";
 import { Wrench } from "./Wrench";
 import { StoreBuy } from "./StoreBuy";
 import { StoreHandler } from "./StoreHandler";
@@ -20,16 +21,17 @@ export const ActionMap: Record<
   }>
 > = {
   ["refresh_item_data"]: RefreshItemData,
-  ["enter_game"]:        EnterGame,
-  ["quit_to_exit"]:      QuitToExit,
-  ["quit"]:              Quit,
-  ["join_request"]:      JoinRequest,
-  ["dialog_return"]:     DialogReturn,
-  ["input"]:             Input,
-  ["respawn"]:           Respawn,
-  ["respawn_spike"]:     RespawnSpike,
-  ["drop"]:              Drop,
-  ["wrench"]:            Wrench,
-  ["buy"]:               StoreBuy,
-  ["store"]:             StoreHandler
+  ["enter_game"]: EnterGame,
+  ["quit_to_exit"]: QuitToExit,
+  ["quit"]: Quit,
+  ["join_request"]: JoinRequest,
+  ["dialog_return"]: DialogReturn,
+  ["input"]: Input,
+  ["respawn"]: Respawn,
+  ["respawn_spike"]: RespawnSpike,
+  ["drop"]: Drop,
+  ["trash"]: Trash,
+  ["wrench"]: Wrench,
+  ["buy"]: StoreBuy,
+  ["store"]: StoreHandler
 };
