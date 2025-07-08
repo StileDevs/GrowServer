@@ -21,17 +21,17 @@ export const ActionMap: Record<
   }>
 > = {
   ["refresh_item_data"]: RefreshItemData,
-  ["enter_game"]: EnterGame,
-  ["quit_to_exit"]: QuitToExit,
-  ["quit"]: Quit,
-  ["join_request"]: JoinRequest,
-  ["dialog_return"]: DialogReturn,
-  ["input"]: Input,
-  ["respawn"]: Respawn,
-  ["respawn_spike"]: RespawnSpike,
-  ["drop"]: Drop,
-  ["trash"]: Trash,
-  ["wrench"]: Wrench,
-  ["buy"]: StoreBuy,
-  ["store"]: StoreHandler
+  ["enter_game"]:        EnterGame,
+  ["quit_to_exit"]:      QuitToExit,
+  ["quit"]:              Quit,
+  ["join_request"]:      JoinRequest,
+  ["dialog_return"]:     DialogReturn,
+  ["input"]:             Input,
+  ["respawn"]:           Respawn,
+  ["respawn_spike"]:     RespawnSpike,
+  ["drop"]:              Drop,
+  ["trash"]:             Trash,
+  ["wrench"]:            Wrench,
+  ["buy"]:               StoreBuy,
+  ["store"]:             StoreHandler
 };
