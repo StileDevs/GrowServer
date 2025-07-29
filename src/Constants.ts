@@ -9,7 +9,7 @@ export enum PacketTypes {
 }
 
 export const WORLD_SIZE = {
-  WIDTH: 100,
+  WIDTH:  100,
   HEIGHT: 60
 };
 
@@ -20,7 +20,7 @@ export const Y_END_DIRT = 55;
 
 export const ROLE = {
   DEVELOPER: "1",
-  BASIC: "2",
+  BASIC:     "2",
   SUPPORTER: "3"
 };
 
@@ -38,16 +38,16 @@ export enum ClothTypes {
 }
 
 export const CLOTH_MAP: { [key in ClothTypes]: string } = {
-  [ClothTypes.ANCES]: "ances",
-  [ClothTypes.BACK]: "back",
-  [ClothTypes.FACE]: "face",
-  [ClothTypes.FEET]: "feet",
-  [ClothTypes.HAIR]: "hair",
-  [ClothTypes.HAND]: "hand",
-  [ClothTypes.MASK]: "mask",
+  [ClothTypes.ANCES]:    "ances",
+  [ClothTypes.BACK]:     "back",
+  [ClothTypes.FACE]:     "face",
+  [ClothTypes.FEET]:     "feet",
+  [ClothTypes.HAIR]:     "hair",
+  [ClothTypes.HAND]:     "hand",
+  [ClothTypes.MASK]:     "mask",
   [ClothTypes.NECKLACE]: "necklace",
-  [ClothTypes.PANTS]: "pants",
-  [ClothTypes.SHIRT]: "shirt"
+  [ClothTypes.PANTS]:    "pants",
+  [ClothTypes.SHIRT]:    "shirt"
 };
 
 export enum TankTypes {
@@ -337,25 +337,25 @@ export enum ActionTypes {
 
 export const LOCKS = [
   {
-    id: 202, // Small Lock
+    id:       202, // Small Lock
     maxTiles: 10
   },
   {
-    id: 204, // Big Lock
+    id:       204, // Big Lock
     maxTiles: 48
   },
   {
-    id: 206, // Huge Lock
+    id:       206, // Huge Lock
     maxTiles: 200
   },
   {
-    id: 4994, // Builder's Lock
+    id:       4994, // Builder's Lock
     maxTiles: 200
   }
 ];
 
 export const TileIgnore = {
-  blockIDsToIgnoreByLock: [6, 8],
+  blockIDsToIgnoreByLock:   [6, 8],
   blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR]
 };
 
@@ -459,37 +459,37 @@ export enum StateFlags {
 }
 
 export const weatherIdMap: Record<number, number> = {
-  3694: 28,
-  3832: 29,
-  5000: 34,
-  1490: 10,
-  934: 2,
-  946: 3,
-  932: 4,
-  984: 5,
-  1210: 8,
-  1364: 11,
-  1750: 15,
-  2046: 17,
-  2284: 18,
-  2744: 19,
-  3252: 20,
-  3446: 21,
-  3534: 22,
-  4242: 30,
-  4486: 31,
-  4776: 32,
-  4892: 33,
-  5112: 35,
-  5654: 36,
-  5716: 37,
-  5958: 38,
-  6854: 42,
-  7644: 44,
+  3694:  28,
+  3832:  29,
+  5000:  34,
+  1490:  10,
+  934:   2,
+  946:   3,
+  932:   4,
+  984:   5,
+  1210:  8,
+  1364:  11,
+  1750:  15,
+  2046:  17,
+  2284:  18,
+  2744:  19,
+  3252:  20,
+  3446:  21,
+  3534:  22,
+  4242:  30,
+  4486:  31,
+  4776:  32,
+  4892:  33,
+  5112:  35,
+  5654:  36,
+  5716:  37,
+  5958:  38,
+  6854:  42,
+  7644:  44,
   12054: 60,
   12056: 61,
-  8896: 47,
-  8836: 48,
+  8896:  47,
+  8836:  48,
   10286: 51,
   11880: 59,
   12408: 62,
