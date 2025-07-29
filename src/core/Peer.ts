@@ -21,8 +21,33 @@ import {
 } from "../Constants";
 import { getCurrentTimeInSeconds, manageArray } from "../utils/Utils";
 
+const PUNCH_ITEMS: Array<{ id: number; punchID: number; slot: keyof PeerData["clothing"] }> = [
+  { id: 2572, punchID: 42, slot: "hand" },  // Flame Scythe
+  { id: 472, punchID: 3, slot: "hand" },  // Tommygun
+  { id: 4464, punchID: 73, slot: "hand" },  // AK-8087
+  { id: 1204, punchID: 10, slot: "face" }   // Focused Eyes
+];
+
+const PUNCH_ID_MAP: { [key: number]: number } = Object.fromEntries(
+  PUNCH_ITEMS.map(item => [item.id, item.punchID])
+);
+
+const PUNCH_SLOT_MAP: { [key: number]: keyof PeerData["clothing"] } = Object.fromEntries(
+  PUNCH_ITEMS.map(item => [item.id, item.slot])
+);
+
 export class Peer extends OldPeer<PeerData> {
   public base;
+
+  public getPunchID(): number {
+    for (const [itemID, slot] of Object.entries(PUNCH_SLOT_MAP)) {
+      if (this.data.clothing[slot as keyof typeof this.data.clothing] === Number(itemID)) {
+        return PUNCH_ID_MAP[Number(itemID)];
+      }
+    }
+    return 0; // default punch
+  }
+
   constructor(base: Base, netID: number, channelID = 0) {
     super(base.server, netID, channelID);
     this.base = base;
@@ -31,24 +56,24 @@ export class Peer extends OldPeer<PeerData> {
     if (data)
       this.data = {
         channelID,
-        x:                 data.x,
-        y:                 data.y,
-        world:             data.world,
-        inventory:         data.inventory,
-        rotatedLeft:       data.rotatedLeft,
-        requestedName:     data.requestedName,
-        tankIDName:        data.tankIDName,
+        x: data.x,
+        y: data.y,
+        world: data.world,
+        inventory: data.inventory,
+        rotatedLeft: data.rotatedLeft,
+        requestedName: data.requestedName,
+        tankIDName: data.tankIDName,
         netID,
-        country:           data.country,
-        id_user:           data.id_user,
-        role:              data.role,
-        gems:              data.gems,
-        clothing:          data.clothing,
-        exp:               data.exp,
-        level:             data.level,
-        lastCheckpoint:    data.lastCheckpoint,
+        country: data.country,
+        id_user: data.id_user,
+        role: data.role,
+        gems: data.gems,
+        clothing: data.clothing,
+        exp: data.exp,
+        level: data.level,
+        lastCheckpoint: data.lastCheckpoint,
         lastVisitedWorlds: data.lastVisitedWorlds,
-        state:             data.state
+        state: data.state
       };
   }
 
@@ -118,7 +143,7 @@ export class Peer extends OldPeer<PeerData> {
       const block = world?.data.blocks[pos];
       const itemMeta =
         this.base.items.metadata.items[
-          (block?.fg as number) || (block?.bg as number)
+        (block?.fg as number) || (block?.bg as number)
         ];
 
       if (itemMeta && itemMeta.type === ActionTypes.CHECKPOINT) {
@@ -253,8 +278,8 @@ export class Peer extends OldPeer<PeerData> {
     if (this.data.inventory?.items.find((i) => i.id === id)?.amount !== 0) {
       const tank = TankPacket.from({
         packetType: 4,
-        type:       TankTypes.MODIFY_ITEM_INVENTORY,
-        info:       id,
+        type: TankTypes.MODIFY_ITEM_INVENTORY,
+        info: id,
         buildRange: amount < 0 ? amount * -1 : undefined,
         punchRange: amount < 0 ? undefined : amount
       }).parse() as Buffer;
@@ -486,34 +511,31 @@ export class Peer extends OldPeer<PeerData> {
   public sendEffect(eff: number, ...args: Variant[]) {
     this.every((p) => {
       if (p.data.world === this.data.world && p.data.world !== "EXIT") {
-        p.send(Variant.from("OnParticleEffect", eff, [(this.data.x as number) + 10, (this.data.y as number) + 16]), ...args);
+        p.send(Variant.from("OnParticleEffect", 2, [(this.data.x as number) + 10, (this.data.y as number) + 16]), ...args);
       }
     });
   }
 
   public sendState(punchID?: number, everyPeer = true) {
+    // Use punchID if provided, otherwise use getPunchID()
+    const punch = punchID !== undefined ? punchID : this.getPunchID();
     const tank = TankPacket.from({
-      type:   TankTypes.SET_CHARACTER_STATE,
-      netID:  this.data.netID,
-      info:   this.data.state.mod,
-      xPos:   1200,
-      yPos:   200,
+      type: TankTypes.SET_CHARACTER_STATE,
+      netID: this.data.netID,
+      info: this.data.state.mod,
+      xPos: 1200,
+      yPos: 200,
       xSpeed: 300,
       ySpeed: 600,
       xPunch: 0,
       yPunch: 0,
-      state:  0
+      state: 0
     }).parse() as Buffer;
 
-    tank.writeUint8(punchID || 0x0, 5);
+    tank.writeUint8(punch, 5);
     tank.writeUint8(0x80, 6);
     tank.writeUint8(0x80, 7);
     tank.writeFloatLE(125.0, 20);
-
-    // if (this.data.state.modsEffect & ModsEffects.HARVESTER) {
-    //   tank.writeFloatLE(150, 36);
-    //   tank.writeFloatLE(1000, 40);
-    // }
 
     this.send(tank);
     if (everyPeer) {
@@ -532,7 +554,7 @@ export class Peer extends OldPeer<PeerData> {
   public addXp(amount: number, bonus: boolean) {
     const playerLvl = this.data.level;
     const requiredXp = this.calculateRequiredLevelXp(playerLvl);
-    
+
     // Max level is 125
     if (this.data.level >= 125) {
       this.data.exp = 0;
@@ -556,8 +578,8 @@ export class Peer extends OldPeer<PeerData> {
     this.saveToCache();
   }
 
-  public calculateRequiredLevelXp(lvl: number): number{
-    const requiredXp = 50 * ((lvl * lvl) + 2); 
+  public calculateRequiredLevelXp(lvl: number): number {
+    const requiredXp = 50 * ((lvl * lvl) + 2);
     return requiredXp;
   }
 
