@@ -22,10 +22,20 @@ import {
 import { getCurrentTimeInSeconds, manageArray } from "../utils/Utils";
 
 const PUNCH_ITEMS: Array<{ id: number; punchID: number; slot: keyof PeerData["clothing"] }> = [
+
+  // HAND ITEMS
+
   { id: 2572, punchID: 42, slot: "hand" },  // Flame Scythe
   { id: 472, punchID: 3, slot: "hand" },  // Tommygun
   { id: 4464, punchID: 73, slot: "hand" },  // AK-8087
-  { id: 1204, punchID: 10, slot: "face" }   // Focused Eyes
+
+  // HEAD|FACE|HAIR ITEMS
+
+  { id: 1204, punchID: 10, slot: "face" },   // Focused Eyes
+  //  { id: 5004, punchID: 57, slot: "face" },   // Playful Wind Sprite
+  { id: 5006, punchID: 56, slot: "face" },   // Playful Wood Sprite
+  { id: 5002, punchID: 19, slot: "face" },   // Playful Fire Sprite
+  //  { id: 5008, punchID: 20, slot: "face" },   // Playful Water Sprite
 ];
 
 const PUNCH_ID_MAP: { [key: number]: number } = Object.fromEntries(
@@ -38,8 +48,12 @@ const PUNCH_SLOT_MAP: { [key: number]: keyof PeerData["clothing"] } = Object.fro
 
 export class Peer extends OldPeer<PeerData> {
   public base;
+  public customPunchID?: number;
 
   public getPunchID(): number {
+    if (typeof this.customPunchID === "number") {
+      return this.customPunchID;
+    }
     for (const [itemID, slot] of Object.entries(PUNCH_SLOT_MAP)) {
       if (this.data.clothing[slot as keyof typeof this.data.clothing] === Number(itemID)) {
         return PUNCH_ID_MAP[Number(itemID)];
