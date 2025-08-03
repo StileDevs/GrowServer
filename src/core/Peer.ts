@@ -1,11 +1,12 @@
 import { Block, PeerData } from "../types";
 import {
-  ItemDefinition,
   Peer as OldPeer,
   TankPacket,
   TextPacket,
   Variant
 } from "growtopia.js";
+
+import { ItemDefinition} from "grow-items"
 import { Base } from "./Base";
 import { World } from "./World";
 import {

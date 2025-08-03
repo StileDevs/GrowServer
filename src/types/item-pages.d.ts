@@ -1,4 +1,4 @@
-import type { ItemDefinition } from "growtopia.js";
+import type { ItemDefinition } from "grow-items";
 
 export interface ItemsInfo {
   id: number;

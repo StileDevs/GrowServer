@@ -1,4 +1,4 @@
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 import { Template, UnnamedParameter } from "mwparser";
 
 export class TemplateParser {
