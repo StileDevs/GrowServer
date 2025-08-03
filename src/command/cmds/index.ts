@@ -44,7 +44,7 @@ const loadCommands = async () => {
           CommandClass = module.default;
         } else {
           // In development, handle TS files
-          const module = await import(`./${commandName}`);
+          const module = await import(join(__dirname, file));
           CommandClass = module.default;
         }
 
@@ -96,8 +96,7 @@ export const registerAliases = async (): Promise<void> => {
     } catch (error) {
       // If we can't create an instance, log the error but continue with other commands
       consola.warn(
-        `Could not register aliases for ${commandName}: ${
-          error instanceof Error ? error.message : String(error)
+        `Could not register aliases for ${commandName}: ${error instanceof Error ? error.message : String(error)
         }`
       );
     }
