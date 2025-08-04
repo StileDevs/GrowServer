@@ -43,9 +43,14 @@ const loadCommands = async () => {
           const module = await import(join(__dirname, file));
           CommandClass = module.default;
         } else {
-          // In development, handle TS files
-          const module = await import(join(__dirname, file));
-          CommandClass = module.default;
+          //* In development, handle TS files*
+          if (process.platform === "win32") {
+            const module = await import(`./${commandName}`);
+            CommandClass = module.default;
+          } else {
+            const module = await import(join(__dirname, file));
+            CommandClass = module.default;
+          }
         }
 
         if (CommandClass) {
