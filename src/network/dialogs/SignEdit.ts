@@ -4,7 +4,7 @@ import { Peer } from "../../core/Peer";
 import { Block } from "../../types";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 
 export class SignEdit {
   private world: World;

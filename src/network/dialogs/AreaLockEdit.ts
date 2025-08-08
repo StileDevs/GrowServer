@@ -6,7 +6,7 @@ import { Block, Lock } from "../../types";
 import { Floodfill } from "../../utils/FloodFill";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 
 export class AreaLockEdit {
   private world: World;

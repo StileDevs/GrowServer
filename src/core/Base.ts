@@ -1,4 +1,4 @@
-import { Client, ItemsDat, ItemsDatMeta } from "growtopia.js";
+import { Client } from "growtopia.js";
 import { Web } from "./Web";
 import {
   downloadMkcert,
@@ -33,6 +33,7 @@ import { mkdir, writeFile, readFile } from "fs/promises";
 import chokidar from "chokidar";
 import ky from "ky";
 import { ITEMS_DAT_FETCH_URL } from "../Constants";
+import { ItemsDat, ItemsDatMeta } from "grow-items";
 __dirname = process.cwd();
 
 export class Base {
@@ -173,9 +174,9 @@ export class Base {
 
   private async loadItems() {
     const itemsDat = new ItemsDat(
-      await readFile(
+      Array.from((await readFile(
         join(__dirname, ".cache", "growtopia", "dat", this.cdn.itemsDatName)
-      )
+      )))
     );
     await itemsDat.decode();
     consola.start("Loading custom items...");
@@ -280,8 +281,9 @@ export class Base {
     }
 
     await itemsDat.encode();
-    const hash = hashItemsDat(itemsDat.data);
-    this.items.content = itemsDat.data;
+    const bufData = Buffer.from(itemsDat.buffer.data);
+    const hash = hashItemsDat(bufData);
+    this.items.content = bufData;
     this.items.hash = `${hash}`;
     this.items.metadata = itemsDat.meta;
     this.items.wiki = JSON.parse(
