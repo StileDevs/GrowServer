@@ -10,6 +10,10 @@ async function setup() {
   if (!fs.existsSync("./data")) {
     fs.mkdirSync("./data");
   }
+  if (!fs.existsSync("./.env")) {
+    fs.copyFileSync("./.env.schema", "./.env")
+  }
+
 }
   
 
