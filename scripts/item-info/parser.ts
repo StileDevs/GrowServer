@@ -1,7 +1,7 @@
 import { XMLParser } from "fast-xml-parser";
 import { TemplateParser } from "./template";
 import type { ItemsInfo, ItemsPage } from "../../src/types"
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 import { parse } from "mwparser";
 
 export class Parser {

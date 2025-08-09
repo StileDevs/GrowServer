@@ -1,5 +1,5 @@
 import type { Class } from "type-fest";
-import { ActionTypes } from "../../Constants";
+import { ActionTypes, TankTypes } from "../../Constants";
 import { DoorTile } from "./DoorTile";
 import { NormalTile } from "./NormalTile";
 import { SignTile } from "./SignTile";
@@ -9,28 +9,29 @@ import type { TileData } from "../../types";
 import consola from "consola";
 import { LockTile } from "./LockTile";
 import type { Base } from "../../core/Base";
-import { ItemDefinition } from "growtopia.js";
-// import { HeartMonitorTile } from "./HeartMonitorTile";
+import { HeartMonitorTile } from "./HeartMonitorTile";
 // import { DisplayBlockTile } from "./DisplayBlockTile";
 import { SwitcheROO } from "./SwitcheROO";
 import { WeatherTile } from "./WeatherTile";
 // import { DiceTile } from "./DiceTile";
 import { SeedTile } from "./SeedTile";
+import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { TankPacket } from "growtopia.js";
 
 const TileMap: Record<number, Class<Tile>> = {
-  [ActionTypes.DOOR]:            DoorTile,
-  [ActionTypes.MAIN_DOOR]:       DoorTile,
-  [ActionTypes.PORTAL]:          DoorTile,
-  [ActionTypes.SIGN]:            SignTile,
-  [ActionTypes.LOCK]:            LockTile,
-  // [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
+  [ActionTypes.DOOR]: DoorTile,
+  [ActionTypes.MAIN_DOOR]: DoorTile,
+  [ActionTypes.PORTAL]: DoorTile,
+  [ActionTypes.SIGN]: SignTile,
+  [ActionTypes.LOCK]: LockTile,
+  [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
   // [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
-  [ActionTypes.SWITCHEROO]:      SwitcheROO,
+  [ActionTypes.SWITCHEROO]: SwitcheROO,
   [ActionTypes.WEATHER_MACHINE]: WeatherTile,
   // [ActionTypes.DICE]: DiceTile,
-  [ActionTypes.BACKGROUND]:      NormalTile,
-  [ActionTypes.FOREGROUND]:      NormalTile,
-  [ActionTypes.SEED]:            SeedTile
+  [ActionTypes.BACKGROUND]: NormalTile,
+  [ActionTypes.FOREGROUND]: NormalTile,
+  [ActionTypes.SEED]: SeedTile
 };
 
 // constructs a new Tile subclass based on the ActionType.
@@ -52,6 +53,34 @@ const tileFrom = (
 
     return new NormalTile(base, world, data);
   }
+}
+
+//TOOD: Move this to appropriate place.
+async function tileUpdateMultiple(world: World, tiles: Tile[]): Promise<void> {
+  let finalBuffer = new ExtendBuffer(0);
+
+  for (const tile of tiles) {
+    let tileBuffer = await tile.parse();
+
+    finalBuffer.grow(tileBuffer.data.byteLength + 8);
+    finalBuffer.writeU32(tile.data.x);
+    finalBuffer.writeU32(tile.data.y);
+
+    tileBuffer.data.copy(finalBuffer.data, finalBuffer.mempos);
+
+    finalBuffer.mempos += tileBuffer.data.byteLength;
+  }
+
+  finalBuffer.grow(4);
+  finalBuffer.writeU32(0xFFFFFFFF);
+
+  world.every((p) =>
+    p.send(new TankPacket({
+      type: TankTypes.SEND_TILE_UPDATE_DATA_MULTIPLE,
+      data: () => finalBuffer.data
+    }))
+  );
+
 }
 
 // const tileParse = async (
@@ -81,4 +110,4 @@ const tileFrom = (
 //   }
 // };
 
-export { TileMap, tileFrom/*, tileParse*/ };
+export { TileMap, tileFrom, tileUpdateMultiple/*, tileParse*/ };

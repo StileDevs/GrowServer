@@ -1,4 +1,4 @@
-import { ItemDefinition, TankPacket, Variant } from "growtopia.js";
+import { TankPacket, Variant } from "growtopia.js";
 import { ActionTypes, BlockFlags, LockPermission, TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
@@ -17,7 +17,7 @@ export class SwitcheROO extends Tile {
     super(base, world, data);
   }
 
-  public async onPunch(peer: Peer): Promise<void> {
+  public async onPunch(peer: Peer): Promise<boolean> {
     if (this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK)) {
       // default punch behaviour, but with an exception
       this.data.flags ^= TileFlags.OPEN;
@@ -29,10 +29,10 @@ export class SwitcheROO extends Tile {
       }
     }
 
-    super.onPunch(peer);
+    return super.onPunch(peer);
   }
 
-  public async onWrench(peer: Peer): Promise<void> {
+  public async onWrench(peer: Peer): Promise<boolean> {
     const itemMeta = this.base.items.metadata.items[this.data.fg];
     if (this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD && (itemMeta.flags! & BlockFlags.WRENCHABLE))) {
       const dialog = new DialogBuilder()
@@ -49,6 +49,8 @@ export class SwitcheROO extends Tile {
         .str();
 
       peer.send(Variant.from("OnDialogRequest", dialog));
+      return true;
     }
+    return false;
   }
 }

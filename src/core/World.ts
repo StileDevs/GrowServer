@@ -25,12 +25,11 @@ export class World {
     if (data) this.data = data;
     else
       this.data = {
-        name:      "",
-        width:     0,
-        height:    0,
-        blocks:    [],
-        weatherId: 41,
-        minLevel:  1
+        name: "",
+        width: 0,
+        height: 0,
+        blocks: [],
+        weatherId: 41
       };
   }
 
@@ -77,7 +76,9 @@ export class World {
             Variant.from(
               "OnTalkBubble",
               peer.data.netID,
-              `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+              `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
+              0,
+              1
             ),
             TextPacket.from(
               PacketTypes.ACTION,
@@ -101,22 +102,22 @@ add_floater|START|0|0.5|3529161471
 add_floater|START1|0|0.5|3529161471
 add_floater|START2|0|0.5|3529161471
 ${Array.from(this.base.cache.worlds.values())
-  .sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0))
-  .slice(0, 6)
-  .map((v) => {
-    if (v.playerCount)
-      return `add_floater|${v.name}${v.playerCount ? ` (${v.playerCount})` : ""}|0|0.5|3529161471\n`;
-    else return "";
-  })
-  .join("\n")}
+            .sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0))
+            .slice(0, 6)
+            .map((v) => {
+              if (v.playerCount)
+                return `add_floater|${v.name}${v.playerCount ? ` (${v.playerCount})` : ""}|0|0.5|3529161471\n`;
+              else return "";
+            })
+            .join("\n")}
 add_heading|Recently Visited Worlds<CR>|
 ${peer.data.lastVisitedWorlds
-  ?.reverse()
-  .map((v) => {
-    const count = this.base.cache.worlds.get(v)?.playerCount || 0;
-    return `add_floater|${v}${count ? ` (${count})` : ""}|0|0.5|3417414143\n`;
-  })
-  .join("\n")}
+            ?.reverse()
+            .map((v) => {
+              const count = this.base.cache.worlds.get(v)?.playerCount || 0;
+              return `add_floater|${v}${count ? ` (${count})` : ""}|0|0.5|3417414143\n`;
+            })
+            .join("\n")}
 `
         ),
         Variant.from(
@@ -140,19 +141,20 @@ ${peer.data.lastVisitedWorlds
       const world = await this.base.database.worlds.get(this.worldName);
       if (world) {
         this.data = {
-          name:        world.name,
-          width:       world.width,
-          height:      world.height,
-          blocks:      JSON.parse((world.blocks as Buffer).toString()),
-          admins:      [],
+          name: world.name,
+          width: world.width,
+          height: world.height,
+          blocks: JSON.parse((world.blocks as Buffer).toString()),
+          // admins: [],
           playerCount: 0,
-          jammers:     [],
-          dropped:     world.dropped
+          jammers: [],
+          dropped: world.dropped
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
-          owner:     world.owner ? JSON.parse(world.owner.toString()) : null,
+          // owner: world.owner ? JSON.parse(world.owner.toString()) : null,
           weatherId: world.weather_id || 41,
-          minLevel:  world.minimum_level || 1,
+          worldLockIndex: world.worldlock_index ? world.worldlock_index : undefined
+          // minLevel: world.minimum_level || 1,
         };
       } else {
         await this.generate(true);
@@ -182,10 +184,10 @@ ${peer.data.lastVisitedWorlds
       peer.every((p) => {
         if (p.data?.world === this.data.name && p.data?.world !== "EXIT") {
           const packet = TankPacket.from({
-            type:   TankTypes.TILE_CHANGE_REQUEST,
-            netID:  peer.data?.netID,
+            type: TankTypes.TILE_CHANGE_REQUEST,
+            netID: peer.data?.netID,
             state,
-            info:   id,
+            info: id,
             xPunch: x,
             yPunch: y
           });
@@ -273,9 +275,9 @@ ${peer.data.lastVisitedWorlds
     ]);
 
     const tank = TankPacket.from({
-      type:  TankTypes.SEND_MAP_DATA,
+      type: TankTypes.SEND_MAP_DATA,
       state: 8,
-      data:  () => worldMap
+      data: () => worldMap
     });
 
     const mainDoor = this.data.blocks.find((block) => block.fg === 6);
@@ -320,11 +322,13 @@ ${peer.data.lastVisitedWorlds
       )
     );
 
-    if (this.data.owner) {
+    const ownerUserID = this.getOwnerUID();
+    if (ownerUserID) {
+      const ownerData = await this.base.database.players.getByUID(ownerUserID);
       peer.send(
         Variant.from(
           "OnConsoleMessage",
-          `\`#[\`0\`9World Locked by ${this.data.owner.displayName}\`#]`
+          `\`#[\`0\`9World Locked by ${ownerData?.display_name}\`#]`
         )
       );
     }
@@ -369,7 +373,9 @@ ${peer.data.lastVisitedWorlds
             Variant.from(
               "OnTalkBubble",
               peer.data.netID,
-              `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+              `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
+              0,
+              1
             ),
             TextPacket.from(
               PacketTypes.ACTION,
@@ -411,7 +417,7 @@ ${peer.data.lastVisitedWorlds
 
     this.data.playerCount = this.data.playerCount
       ? this.data.playerCount + 1
-      : 0;
+      : 1;
 
     this.saveToCache();
     peer.saveToCache();
@@ -435,13 +441,13 @@ ${peer.data.lastVisitedWorlds
     { tree, noSimilar }: { tree?: boolean; noSimilar?: boolean } = {}
   ) {
     const tank = TankPacket.from({
-      type:        TankTypes.ITEM_CHANGE_OBJECT,
-      netID:       -1,
+      type: TankTypes.ITEM_CHANGE_OBJECT,
+      netID: -1,
       targetNetID: tree ? -1 : peer.data?.netID,
-      state:       0,
-      info:        id,
-      xPos:        x,
-      yPos:        y
+      state: 0,
+      info: id,
+      xPos: x,
+      yPos: y
     });
 
     const position = Math.trunc(x / 32) + Math.trunc(y / 32) * this.data.width;
@@ -482,7 +488,7 @@ ${peer.data.lastVisitedWorlds
         amount,
         x,
         y,
-        uid:   ++this.data.dropped.uid,
+        uid: ++this.data.dropped.uid,
         block: { x: block.x, y: block.y }
       });
 
@@ -523,10 +529,10 @@ ${peer.data.lastVisitedWorlds
       world.every((p) => {
         p.send(
           TankPacket.from({
-            type:        TankTypes.ITEM_CHANGE_OBJECT,
-            netID:       peer.data?.netID,
+            type: TankTypes.ITEM_CHANGE_OBJECT,
+            netID: peer.data?.netID,
             targetNetID: -1,
-            info:        uid
+            info: uid
           })
         )
       })
@@ -545,7 +551,7 @@ ${peer.data.lastVisitedWorlds
 
         this.drop(peer, droppedItem.x, droppedItem.y, droppedItem.id, extra, {
           noSimilar: true,
-          tree:      true
+          tree: true
         });
       } else {
         if (droppedItem.id !== 112) {
@@ -602,11 +608,11 @@ ${peer.data.lastVisitedWorlds
           p.data?.world !== "EXIT" &&
           p.send(
             TankPacket.from({
-              type:        TankTypes.SEND_TILE_TREE_STATE,
-              netID:       peer.data?.netID,
+              type: TankTypes.SEND_TILE_TREE_STATE,
+              netID: peer.data?.netID,
               targetNetID: -1,
-              xPunch:      block.x,
-              yPunch:      block.y
+              xPunch: block.x,
+              yPunch: block.y
             })
           )
       );
@@ -617,13 +623,9 @@ ${peer.data.lastVisitedWorlds
   }
 
   public hasTilePermission(userID: number, tile: TileData, permissionType: LockPermission): boolean {
-    if (tile.lock) {
-      if (tile.lock.isOwner) {
-        if (userID == tile.lock.ownerUserID) return true;
-        else return false;
-      }
-
-      const owningLock = this.data.blocks[tile.lock!.ownerY! * this.data.width + tile.lock!.ownerX!];
+    // a lock owns this tile
+    if (tile.lockedBy) {
+      const owningLock = this.data.blocks[tile.lockedBy.parentY! * this.data.width + tile.lockedBy.parentX!];
       if (owningLock.lock) {
         if (owningLock.lock.ownerUserID == userID) {
           return true;
@@ -641,11 +643,18 @@ ${peer.data.lastVisitedWorlds
         }
       }
     }
-    else if (this.data.owner) {
-      if (this.data.admins && this.data.admins.includes(userID)) {
+    // the tile being asked is the lock itself. No one have permission except the owner
+    else if (tile.lock) {
+      return userID == tile.lock.ownerUserID;
+    }
+    else if (this.data.worldLockIndex) {
+      const worldLock = this.data.blocks[this.data.worldLockIndex];
+
+      if (worldLock.flags & TileFlags.PUBLIC) return true;
+      else if (worldLock.lock!.adminIDs && worldLock.lock!.adminIDs.includes(userID)) {
         return true;
       }
-      else if (this.data.owner.id == userID) {
+      else if (worldLock.lock!.ownerUserID == userID) {
         return true;
       }
     }
@@ -675,6 +684,16 @@ ${peer.data.lastVisitedWorlds
     })
 
     return peer;
+  }
+
+  public getOwnerUID(): number | undefined {
+    if (this.data.worldLockIndex) {
+      const lock = this.data.blocks[this.data.worldLockIndex];
+      if (lock.lock && lock.worldLockData) {
+        return lock.lock.ownerUserID;
+      }
+    }
+    return undefined;
   }
 
 }

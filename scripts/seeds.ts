@@ -23,7 +23,7 @@ async function hash(password) {
   const db = drizzle(sqlite);
   const dateNow = new Date().toISOString().slice(0, 19).replace("T", " ");
 
-  await db.delete(players);
+  // await db.delete(players);
   await db.insert(players).values([
     {
       name: "admin",
@@ -34,7 +34,8 @@ async function hash(password) {
       clothing: null,
       inventory: null,
       last_visited_worlds: null,
-      created_at: dateNow
+      created_at: dateNow,
+      heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
     },
     {
       name: "reimu",
@@ -45,7 +46,8 @@ async function hash(password) {
       clothing: null,
       inventory: null,
       last_visited_worlds: null,
-      created_at: dateNow
+      created_at: dateNow,
+      heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
     },
     {
       name: "jadlionhd",
@@ -56,7 +58,8 @@ async function hash(password) {
       clothing: null,
       inventory: null,
       last_visited_worlds: null,
-      created_at: dateNow
+      created_at: dateNow,
+      heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
     }
   ]);
 })();

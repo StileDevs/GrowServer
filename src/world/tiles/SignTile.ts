@@ -1,4 +1,4 @@
-import { ItemDefinition, Variant } from "growtopia.js";
+import { Variant } from "growtopia.js";
 import { BlockFlags, LockPermission, TileExtraTypes, TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
 import type { World } from "../../core/World";
@@ -7,6 +7,8 @@ import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { Tile } from "../Tile";
 import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
+import { ItemDefinition } from "grow-items";
+
 
 export class SignTile extends Tile {
   public extraType = TileExtraTypes.SIGN;
@@ -19,15 +21,13 @@ export class SignTile extends Tile {
     super(base, world, data);
   }
 
-  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
-    super.onPlaceForeground(peer, itemMeta);
-
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
-      return;
-    }
+  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
+    if (!super.onPlaceForeground(peer, itemMeta)) { return false; }
 
     this.data.flags |= TileFlags.TILEEXTRA;
     this.data.sign = { label: "" };
+
+    return true;
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
@@ -35,29 +35,30 @@ export class SignTile extends Tile {
     this.data.sign = undefined;
   }
 
-  public async onWrench(peer: Peer): Promise<void> {
-    const itemMeta = this.base.items.metadata.items[this.data.fg];
-    if (this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD && (itemMeta.flags! & BlockFlags.WRENCHABLE))) {
-      const dialog = new DialogBuilder()
-        .defaultColor()
-        .addLabelWithIcon(
-          `\`wEdit ${itemMeta.name}\`\``,
-          itemMeta.id as number,
-          "big"
-        )
-        .addTextBox("What would you like to write on this sign?")
-        .addInputBox("label", "", this.data.sign?.label, 100)
-        .embed("tilex", this.data.x)
-        .embed("tiley", this.data.y)
-        .embed("itemID", itemMeta.id)
-        .endDialog("sign_edit", "Cancel", "OK")
-        .str();
-
-      peer.send(Variant.from("OnDialogRequest", dialog));
-    }
-    else {
+  public async onWrench(peer: Peer): Promise<boolean> {
+    if (!super.onWrench(peer)) {
       this.onPlaceFail(peer);
+      return false;
     }
+
+    const itemMeta = this.base.items.metadata.items[this.data.fg];
+    const dialog = new DialogBuilder()
+      .defaultColor()
+      .addLabelWithIcon(
+        `\`wEdit ${itemMeta.name}\`\``,
+        itemMeta.id as number,
+        "big"
+      )
+      .addTextBox("What would you like to write on this sign?")
+      .addInputBox("label", "", this.data.sign?.label, 100)
+      .embed("tilex", this.data.x)
+      .embed("tiley", this.data.y)
+      .embed("itemID", itemMeta.id)
+      .endDialog("sign_edit", "Cancel", "OK")
+      .str();
+
+    peer.send(Variant.from("OnDialogRequest", dialog));
+    return true;
   }
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {

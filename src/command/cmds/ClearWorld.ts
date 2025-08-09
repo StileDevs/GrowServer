@@ -14,22 +14,23 @@ export default class ClearWorld extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["clearworld"],
+      command: ["clearworld"],
       description: "Clear a world",
-      cooldown:    60 * 10,
-      ratelimit:   1,
-      category:    "`oBasic",
-      usage:       "/clearworld",
-      example:     [],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
+      cooldown: 60 * 10,
+      ratelimit: 1,
+      category: "`oBasic",
+      usage: "/clearworld",
+      example: [],
+      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
     };
   }
 
   public async execute(): Promise<void> {
     const world = this.peer.currentWorld();
+    const ownerUID = world?.getOwnerUID();
 
-    if (world?.data.owner) {
-      if (world?.data.owner.id !== this.peer.data.userID) return;
+    if (ownerUID) {
+      if (ownerUID !== this.peer.data.userID) return;
       const dialog = new DialogBuilder()
         .addLabelWithIcon("Warning", "1432", "big")
         .addTextBox(

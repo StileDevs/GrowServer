@@ -1,4 +1,4 @@
-import { ItemDefinition, Variant } from "growtopia.js";
+import { Variant } from "growtopia.js";
 import { ActionTypes, BlockFlags, LockPermission, LOCKS, TileExtraTypes, TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
@@ -8,6 +8,7 @@ import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { Tile } from "../Tile";
 import { Floodfill } from "../../utils/FloodFill";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
+import { ItemDefinition } from "grow-items";
 
 export class LockTile extends Tile {
   public extraType = TileExtraTypes.LOCK;
@@ -20,27 +21,30 @@ export class LockTile extends Tile {
     super(base, world, data);
   }
 
-  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
+  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
     if (this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
-      if (this.world.data.owner && this.world.data.owner.id != peer.data.userID) {
-        this.notifyNoLocksAllowed(peer);
-        return;
-      }
-      else if (this.data.lock) {
-        const owningLock = this.world.data.blocks[this.data.lock.ownerY! * this.world.data.width + this.data.lock.ownerX!];
-        if (owningLock.lock?.ownerUserID != peer.data.userID) {
-          this.notifyNoLocksAllowed(peer);
-          return;
+      const worldOwnerUID = this.world.getOwnerUID();
+
+      if (worldOwnerUID) {
+        if (worldOwnerUID != peer.data.userID) {
+          await this.notifyNoLocksAllowed(peer);
+          return false;
         }
-      }
-      else if (this.world.data.owner) {
+
         this.notifyOnlyOneWorldLock(peer);
-        return;
+        return false;
+      }
+      else if (this.data.lockedBy) {
+        const owningLock = this.world.data.blocks[this.data.lockedBy.parentY * this.world.data.width + this.data.lockedBy.parentX];
+        if (owningLock.lock?.ownerUserID != peer.data.userID) {
+          await this.notifyNoLocksAllowed(peer);
+          return false;
+        }
       }
 
       if (this.data.x == 0 && this.data.y == 0) {
         peer.sendTextBubble("You can't use a lock here. Don't ask why. [JOURNEYS.]", false);
-        return;
+        return false;
       }
 
       super.onPlaceForeground(peer, itemMeta);
@@ -58,54 +62,57 @@ export class LockTile extends Tile {
 
       this.world.every((p) => p.sendOnPlayPositioned("audio/use_lock.wav", { netID: peer.data.netID }));
 
-      return;
+      return true;
     }
     else {
       this.onPlaceFail(peer);
     }
+
+    return false;
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
-    const areaLocker = LOCKS.find((l) => l.id === this.data.fg);
     super.onDestroy(peer);
 
-    if (areaLocker) {
+    if (this.data.worldLockData) {
+      this.notifyWorldLockRemove();
+
+      this.world.data.worldLockIndex = undefined;
+      this.data.worldLockData = undefined;
+    }
+    else {
       for (const ownedTile of this.data.lock!.ownedTiles!) {
         this.world.data.blocks[ownedTile].lock = undefined;
       }
-    }
-    else {
-      this.notifyWorldLockRemove();
-      this.world.data.owner = undefined;
     }
 
     this.data.lock = undefined;
   }
 
-  public async onWrench(peer: Peer): Promise<void> {
+  public async onWrench(peer: Peer): Promise<boolean> {
     const itemMeta = this.base.items.metadata.items[this.data.fg];
     // the one being wrenched is the lock itself.
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+    if (!super.onWrench(peer)) {
       if (this.data.lock?.adminIDs?.includes(peer.data.userID)) {
         const dialog = new DialogBuilder();
+        const worldOwnerData = await this.base.database.players.getByUID(this.data.lock.ownerUserID);
 
         dialog.defaultColor("`o")
           .addLabelWithIcon(`\`wEdit ${itemMeta.name}\`\``, itemMeta.id as number, "big")
           .embed("tilex", this.data.x)
           .embed("tiley", this.data.y)
           .embed("lockID", this.data.fg)
-          .addLabel(`This lock is owned by ${this.data.lock.ownerName}, but I have access on it.`)
+          .addLabel(`This lock is owned by ${worldOwnerData?.display_name}, but I have access on it.`)
           .endDialog("revoke_lock_access", "Cancel", "Remove My Access")
 
         peer.send(Variant.from("OnDialogRequest", dialog.str()));
 
-        return;
+        return true;
       }
       peer.sendTextBubble("I'm `4unable`` to pick the lock.", true);
-      return;
+      return false;
     }
 
-    const areaLocker = LOCKS.find((v) => v.id == this.data.fg);
     const dialog = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(
@@ -119,7 +126,7 @@ export class LockTile extends Tile {
       .addLabel("Access list:")
       .addSpacer("small");
 
-    const accessList = areaLocker ? this.data.lock?.adminIDs : this.world.data.admins;
+    const accessList = this.data.lock?.adminIDs;
 
     if (accessList && accessList.length > 0) {
       for (const admin of accessList) {
@@ -137,7 +144,7 @@ export class LockTile extends Tile {
         "Allow anyone to Build and Break",
         (this.data.flags & TileFlags.PUBLIC) ? "selected" : "not_selected"
       )
-    if (areaLocker) {
+    if (!this.data.worldLockData) {
       dialog.addCheckbox(
         "ignore_empty",
         "Ignore empty air",
@@ -169,13 +176,13 @@ export class LockTile extends Tile {
       }
     }
     else {
-      dialog.addCheckbox("disable_music", "Disable Custom Music Blocks (NOT IMPLEMENTED)", this.world.data.customMusicBlocksDisabled ? "selected" : "not_selected");
-      if (!this.world.data.customMusicBlocksDisabled) {
-        dialog.addInputBox("tempo", "Music BPM (NOT IMPLEMENTED)", this.world.data.bpm, 3);
+      dialog.addCheckbox("disable_music", "Disable Custom Music Blocks (NOT IMPLEMENTED)", this.data.worldLockData.customMusicBlocksDisabled ? "selected" : "not_selected");
+      if (!this.data.worldLockData.customMusicBlocksDisabled) {
+        dialog.addInputBox("tempo", "Music BPM (NOT IMPLEMENTED)", this.data.worldLockData.bpm, 3);
       }
-      dialog.addCheckbox("invisible_music", "Make Custom Music Block Invisible (NOT IMPLEMENTED)", this.world.data.invisMusicBlocks ? "selected" : "not_selected")
+      dialog.addCheckbox("invisible_music", "Make Custom Music Block Invisible (NOT IMPLEMENTED)", this.data.worldLockData.invisMusicBlocks ? "selected" : "not_selected")
         .addCheckbox("home_world", "Set as Home World (NOT IMPLEMENTED)", "not_selected")
-        .addInputBox("minimum_level", "World Level: (NOT IMPLEMENTED)", this.world.data.minLevel)
+        .addInputBox("minimum_level", "World Level: (NOT IMPLEMENTED)", this.data.worldLockData.minLevel)
         .addSmallText("Set minimum world entry level")
         .addButton("session_length", "Set World Timer (NOT IMPLEMENTED)")
         .addButton("set_category", `Category: None (NOT IMPLEMENTED)`)
@@ -185,27 +192,26 @@ export class LockTile extends Tile {
 
     peer.send(Variant.from("OnDialogRequest", dialog.str()));
 
+    return true;
   }
 
   public async onPunchFail(peer: Peer): Promise<void> {
     super.onPunchFail(peer);
 
     const itemMeta = this.base.items.metadata.items[this.data.fg];
-    const areaLocker = LOCKS.find((l) => l.id === itemMeta.id);
+    const ownerData = await this.base.database.players.getByUID(this.data.lock!.ownerUserID);
 
     let accessStatus = "`4No Access``";
-    if (this.data.lock) {
-      if (this.data.lock.adminIDs?.includes(peer.data.userID)) {
-        accessStatus = "Access Granted";
+    if (this.data.lock!.adminIDs?.includes(peer.data.userID)) {
+      accessStatus = "Access Granted";
 
-        if (!areaLocker) accessStatus = "`2Access Granted``";
-      }
-      else if (this.data.flags & TileFlags.PUBLIC) {
-        accessStatus = "Open To Public";
-      }
+      if (this.data.worldLockData) accessStatus = "`2Access Granted``";
+    }
+    else if (this.data.flags & TileFlags.PUBLIC) {
+      accessStatus = "Open To Public";
     }
 
-    peer.sendTextBubble(`${this.data.lock?.ownerName}'s \`o${itemMeta.name}\`\`. (${accessStatus})`, true);
+    peer.sendTextBubble(`${ownerData?.display_name}'s \`o${itemMeta.name}\`\`. (${accessStatus})`, true);
   }
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
@@ -232,13 +238,13 @@ export class LockTile extends Tile {
     defaultPermission: LockPermission;
   }) {
     const algo = new Floodfill({
-      s_node:     { x: this.data.x, y: this.data.y },
-      max:        lockData.maxTiles,
-      width:      this.world.data.width,
-      height:     this.world.data.height,
-      blocks:     this.world.data.blocks,
-      s_block:    this.data,
-      base:       this.base,
+      s_node: { x: this.data.x, y: this.data.y },
+      max: lockData.maxTiles,
+      width: this.world.data.width,
+      height: this.world.data.height,
+      blocks: this.world.data.blocks,
+      s_block: this.data,
+      base: this.base,
       noEmptyAir: false
     });
 
@@ -248,23 +254,26 @@ export class LockTile extends Tile {
   }
 
   private async handleWorldLock(peer: Peer) {
-    this.world.data.owner = {
-      id:          peer.data.userID,
-      name:        peer.data.tankIDName,
-      displayName: peer.name
-    }
-
     // i think ownerName should store the growid instead of the formatted name.
     const playerData = await this.base.database.players.getByUID(peer.data.userID);
 
     this.data.lock = {
-      isOwner:     true, // this is the lock itself.
-      ownerName:   playerData?.name,
       ownerUserID: peer.data.userID,
-      permission:  LockPermission.NONE
+      permission: LockPermission.NONE,
+      adminIDs: [],
+      adminLimited: false,
+      ignoreEmptyAir: false,
+      ownedTiles: []
     }
 
-    this.world.data.bpm = 100
+    this.data.worldLockData = {
+      bpm: 100,
+      customMusicBlocksDisabled: false,
+      invisMusicBlocks: false,
+      minLevel: 1
+    }
+
+    this.world.data.worldLockIndex = this.data.y * this.world.data.width + this.data.x;
 
     // performance reason.
     this.world.every((p) => {
@@ -272,11 +281,11 @@ export class LockTile extends Tile {
         Variant.from(
           "OnTalkBubble",
           peer.data.netID,
-          `\`5[\`w${this.world.worldName} \`ohas been \`$World Locked\`\` by ${peer.name}\`5]`
+          `\`5[\`w${this.world.worldName} \`ohas been \`$World Locked\`\` by ${playerData?.display_name}\`5]`
         ),
         Variant.from(
           "OnConsoleMessage",
-          `\`5[\`w${this.world.worldName} has been \`$World Locked\`\` by ${peer.name}\`5]`
+          `\`5[\`w${this.world.worldName} has been \`$World Locked\`\` by ${playerData?.display_name}\`5]`
         ),
         Variant.from(
           { netID: peer.data?.netID },
@@ -284,8 +293,8 @@ export class LockTile extends Tile {
           "audio/use_lock.wav"
         )
       );
+      this.tileUpdate(peer);
     })
-    this.tileUpdate(peer);
   }
 
   private notifyWorldLockRemove() {
@@ -298,12 +307,15 @@ export class LockTile extends Tile {
     peer.sendTextBubble("Only one `$World Lock`` can be placed in a world, you'd have to remove the other one first.", false);
   }
 
-  private notifyNoLocksAllowed(peer: Peer) {
-    const owningLock = this.world.data.blocks[this.data.lock!.ownerY! * this.world.data.width + this.data.lock!.ownerX!];
+  private async notifyNoLocksAllowed(peer: Peer) {
+    if (!(this.world.getOwnerUID() || this.data.lockedBy)) return;
 
-    const ownerName = this.world.data.owner?.name ?? owningLock.lock?.ownerName;
+    const ownerUserID = this.world.getOwnerUID() ??
+      this.world.data.blocks[this.data.lockedBy!.parentY * this.world.data.width + this.data.lockedBy!.parentX].lock!.ownerUserID;
 
-    peer.sendTextBubble(`\`w${ownerName}\`\` allows public building here, but no locks.`, false);
+    const ownerName = await this.base.database.players.getByUID(ownerUserID);
+
+    peer.sendTextBubble(`\`w${ownerName?.display_name}\`\` allows public building here, but no locks.`, false);
     this.sendLockSound(peer);
   }
 

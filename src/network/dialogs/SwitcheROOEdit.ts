@@ -4,7 +4,6 @@ import { Peer } from "../../core/Peer";
 import { TileData } from "../../types";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
-import { ItemDefinition } from "growtopia.js";
 import { tileFrom } from "../../world/tiles";
 import { LockPermission, TileFlags } from "../../Constants";
 
@@ -42,6 +41,7 @@ export class SwitcheROOEdit {
       this.block.flags &= ~TileFlags.PUBLIC; // unset PUBLIC flag
     }
 
-    tileFrom(this.base, this.world, this.block).tileUpdate(this.peer);
+    const switcheRooTile = tileFrom(this.base, this.world, this.block);
+    this.world.every((p) => switcheRooTile.tileUpdate(p));
   }
 }

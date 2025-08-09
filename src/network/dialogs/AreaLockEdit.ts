@@ -2,11 +2,11 @@ import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { LockPermission, LOCKS, TileFlags } from "../../Constants";
-import { TileData, Lock } from "../../types";
+import { TileData } from "../../types";
 import { Floodfill } from "../../utils/FloodFill";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
 
 export class AreaLockEdit {
@@ -58,27 +58,22 @@ export class AreaLockEdit {
     this.block.lock.permission = allowBuildOnly ? LockPermission.BUILD : mLock?.defaultPermission;
     this.block.lock.adminLimited = adminLimitedAccess;
 
-    if (this.action.buttonClicked === "reapply_lock") {
-      this.world.data.blocks?.forEach((b) => {
-        if (
-          b.lock &&
-          b.lock.ownerX === this.block.x &&
-          b.lock.ownerY === this.block.y
-        )
-          b.lock = undefined;
-      });
+    if (this.action.buttonClicked === "reapply_lock" && mLock) {
+      for (const ownedTiles of this.block.lock.ownedTiles ?? []) {
+        this.world.data.blocks[ownedTiles].lock = undefined;
+      }
 
       const algo = new Floodfill({
         s_node: {
           x: parseInt(this.action.tilex),
           y: parseInt(this.action.tiley)
         },
-        max:        (mLock as Lock).maxTiles || 0,
-        width:      this.world.data.width || 100,
-        height:     this.world.data.height || 60,
-        blocks:     this.world.data.blocks as TileData[],
-        s_block:    this.block,
-        base:       this.base,
+        max: mLock.maxTiles || 0,
+        width: this.world.data.width || 100,
+        height: this.world.data.height || 60,
+        blocks: this.world.data.blocks as TileData[],
+        s_block: this.block,
+        base: this.base,
         noEmptyAir: ignoreEmpty
       });
       algo.exec();

@@ -1,4 +1,4 @@
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 import consola from "consola";
 import type { ItemsPage } from "../../src/types"
 

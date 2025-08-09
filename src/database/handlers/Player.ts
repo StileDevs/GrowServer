@@ -49,9 +49,10 @@ export class PlayerDB {
 
     const res = await this.db.insert(players).values({
       display_name: name,
-      name:         name.toLowerCase(),
-      password:     hashPassword,
-      role:         ROLE.BASIC
+      name: name.toLowerCase(),
+      password: hashPassword,
+      role: ROLE.BASIC,
+      heart_monitors: Buffer.from("{}")
     });
 
     if (res && res.lastInsertRowid) return res.lastInsertRowid;
@@ -64,16 +65,17 @@ export class PlayerDB {
     const res = await this.db
       .update(players)
       .set({
-        role:                data.role,
-        inventory:           Buffer.from(JSON.stringify(data.inventory)),
-        clothing:            Buffer.from(JSON.stringify(data.clothing)),
-        gems:                data.gems,
-        level:               data.level,
-        exp:                 data.exp,
+        role: data.role,
+        inventory: Buffer.from(JSON.stringify(data.inventory)),
+        clothing: Buffer.from(JSON.stringify(data.clothing)),
+        gems: data.gems,
+        level: data.level,
+        exp: data.exp,
         last_visited_worlds: Buffer.from(
           JSON.stringify(data.lastVisitedWorlds)
         ),
-        updated_at: new Date().toISOString().slice(0, 19).replace("T", " ")
+        updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+        heart_monitors: Buffer.from(JSON.stringify(Object.fromEntries(data.heartMonitors))),
       })
       .where(eq(players.id, data.userID))
       .returning({ id: players.id });

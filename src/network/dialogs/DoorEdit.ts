@@ -4,7 +4,7 @@ import { Peer } from "../../core/Peer";
 import { TileData } from "../../types";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
 import { LockPermission, TileFlags } from "../../Constants";
 
@@ -44,9 +44,9 @@ export class DoorEdit {
     }
 
     this.block.door = {
-      label:       this.action.label || "",
+      label: this.action.label || "",
       destination: this.action.target?.toUpperCase() || "",
-      id:          this.action.id?.toUpperCase() || ""
+      id: this.action.id?.toUpperCase() || ""
     };
 
     if (this.action.checkbox_public == "1") {
@@ -56,6 +56,7 @@ export class DoorEdit {
       this.block.flags &= ~TileFlags.PUBLIC; // unset PUBLIC flag
     }
 
-    tileFrom(this.base, this.world, this.block).tileUpdate(this.peer);
+    let doorTile = tileFrom(this.base, this.world, this.block);
+    this.world.every((p) => doorTile.tileUpdate(p));
   }
 }

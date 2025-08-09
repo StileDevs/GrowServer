@@ -173,30 +173,30 @@ export class ITextPacket {
       );
 
       const defaultInventory = {
-        max:   32,
+        max: 32,
         items: [
           {
-            id:     18, // Fist
+            id: 18, // Fist
             amount: 1
           },
           {
-            id:     32, // Wrench
+            id: 32, // Wrench
             amount: 1
           }
         ]
       };
 
       const defaultClothing = {
-        hair:     0,
-        shirt:    0,
-        pants:    0,
-        feet:     0,
-        face:     0,
-        hand:     0,
-        back:     0,
-        mask:     0,
+        hair: 0,
+        shirt: 0,
+        pants: 0,
+        feet: 0,
+        face: 0,
+        hand: 0,
+        back: 0,
+        mask: 0,
         necklace: 0,
-        ances:    0
+        ances: 0
       };
 
       this.peer.data.tankIDName = player.display_name;
@@ -217,12 +217,14 @@ export class ITextPacket {
       this.peer.data.lastVisitedWorlds = player.last_visited_worlds
         ? JSON.parse(player.last_visited_worlds.toString())
         : [];
+      this.peer.data.heartMonitors = new Map<string, Array<number>>(Object.entries(JSON.parse(player.heart_monitors.toString())));
+
       this.peer.data.state = {
-        mod:             0,
+        mod: 0,
         canWalkInBlocks: false,
-        modsEffect:      0,
-        lava:            {
-          damage:       0,
+        modsEffect: 0,
+        lava: {
+          damage: 0,
           resetStateAt: 0
         }
       };

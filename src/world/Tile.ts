@@ -1,4 +1,4 @@
-import { ItemDefinition, TankPacket, Variant } from "growtopia.js";
+import { TankPacket, Variant } from "growtopia.js";
 import type { Peer } from "../core/Peer";
 import type { World } from "../core/World";
 import { type TileData } from "../types";
@@ -7,6 +7,7 @@ import { ExtendBuffer } from "../utils/ExtendBuffer";
 import { TileMap } from "./tiles";
 import { ActionTypes, BlockFlags, LockPermission, TankTypes, TileFlags } from "../Constants";
 import { NormalTile } from "./tiles/NormalTile";
+import { ItemDefinition } from "grow-items";
 
 export class Tile {
   constructor(
@@ -15,12 +16,17 @@ export class Tile {
     public data: TileData
   ) { }
 
-  // This is only applies to placed foreground blocks, as beckground block doesnt have any behaviour.
-  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
-    if (!peer.searchItem(itemMeta.id!)) return;
+  /**
+   * Triggered when a foreground block is placed. 
+   * @param peer Peer that places the block
+   * @param itemMeta what block is being placed
+   * @returns True if the block is successfully placed. False otherwise.
+   */
+  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
+    if (!peer.searchItem(itemMeta.id!)) return false;
     if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
       await this.onPlaceFail(peer);
-      return;
+      return false;
     }
 
     this.data.fg = itemMeta.id!;
@@ -33,11 +39,11 @@ export class Tile {
     }
 
     const tank = TankPacket.from({
-      type:   TankTypes.TILE_CHANGE_REQUEST,
+      type: TankTypes.TILE_CHANGE_REQUEST,
       xPunch: this.data.x,
       yPunch: this.data.y,
-      info:   this.data.fg,
-      state:  (this.data.flags & TileFlags.FLIPPED ? 0x10 : 0) // set the rotateLeft flag
+      info: this.data.fg,
+      state: (this.data.flags & TileFlags.FLIPPED ? 0x10 : 0) // set the rotateLeft flag
     });
 
     this.world.every((p) => {
@@ -45,22 +51,30 @@ export class Tile {
     })
 
     peer.removeItemInven(itemMeta.id!, 1);
+
+    return true;
   }
 
-  public async onPlaceBackground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
+  /**
+ * Triggered when a background block is placed. 
+ * @param peer Peer that places the block
+ * @param itemMeta what block is being placed
+ * @returns True if the block is successfully placed. False otherwise.
+ */
+  public async onPlaceBackground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
     if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !peer.searchItem(itemMeta.id!)) {
-      this.onPlaceFail(peer);
-      return;
+      await this.onPlaceFail(peer);
+      return false;
     }
 
     this.data.bg = itemMeta.id!;
     if (!this.data.fg) this.data.damage = 0;
 
     const tank = TankPacket.from({
-      type:   TankTypes.TILE_CHANGE_REQUEST,
+      type: TankTypes.TILE_CHANGE_REQUEST,
       xPunch: this.data.x,
       yPunch: this.data.y,
-      info:   this.data.bg
+      info: this.data.bg
     });
 
     this.world.every((p) => {
@@ -68,21 +82,30 @@ export class Tile {
     })
 
     peer.removeItemInven(itemMeta.id!, 1);
+    return true;
   }
 
   // Fail only means that the player doing it doesnt have sufficient permission. 
   //  (applies to all function with Fail suffix that handle tile interactions)
   public async onPlaceFail(peer: Peer): Promise<void> {
-    this.sendAreaOwner(peer);
+    await this.sendAreaOwner(peer);
     this.sendLockSound(peer);
   }
 
-  public async onPunch(peer: Peer): Promise<void> {
+
+  /**
+ * Triggered on punch. 
+ * @param peer Peer that punches the tile
+ * @returns True if the punch is successful. False otherwise.
+ */
+  public async onPunch(peer: Peer): Promise<boolean> {
     if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK)) {
       this.onPunchFail(peer);
-      return;
+      return false;
     }
-    if (this.data.fg == 0 && this.data.bg == 0) return;
+
+    // nothing is being punched, but the player also has access to the tile. Lets just return true
+    if (this.data.fg == 0 && this.data.bg == 0) return true;
 
     this.applyDamage(peer, 6);
 
@@ -91,13 +114,18 @@ export class Tile {
     if (this.data.damage && this.data.damage >= itemHealth) {
       this.onDestroy(peer);
     }
+
+    return true;
   }
 
   public async onPunchFail(peer: Peer): Promise<void> {
     this.sendLockSound(peer);
   }
 
-  // this is called on background and foreground block destroy
+  /**
+   * Triggered when a background or foregorund block is destroyed.
+   * @param peer Peer that destroys it
+   */
   public async onDestroy(peer: Peer): Promise<void> {
     let destroyedItemID = 0;
     if (this.data.fg == 0) {
@@ -116,8 +144,8 @@ export class Tile {
     this.onDrop(peer, destroyedItemID);
 
     const tank = TankPacket.from({
-      type:   TankTypes.TILE_CHANGE_REQUEST,
-      info:   18,
+      type: TankTypes.TILE_CHANGE_REQUEST,
+      info: 18,
       xPunch: this.data.x,
       yPunch: this.data.y
     });
@@ -132,13 +160,31 @@ export class Tile {
 
   }
 
+  /**
+   * Triggered when the peer tries to place item on a tile that already has block.
+   * Placing any background item does not trigger this method. This method can be triggered by:
+   * Placing seed on existing seed, Placing any block on existing display block, using consumables, 
+   * Placing clothes (weird way to wear clothes), Placing water, etc
+   * @param peer Peer that initiates the packet
+   * @param item Item that is being placed
+   */
   public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<void> {
     // TODO: Default behaviour when a player tries to place anything on an existing tile
     //  example: Display block, Splicing.
   }
 
-  public async onWrench(peer: Peer): Promise<void> {
-    // TODO: Default behaviour when a user tries to wrench the tile
+  /**
+   * Triggered when a peer is wrenching on a tile.
+   * @param peer Peer that initiates the wrenching
+   * @returns True if it passes basic sanity checks and permission checks. False otherwise
+   */
+  public async onWrench(peer: Peer): Promise<boolean> {
+    const itemMeta = this.base.items.metadata.items[this.data.fg];
+    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !(itemMeta.flags! & BlockFlags.WRENCHABLE)) {
+      return false;
+    }
+
+    return true;
   }
 
   // TOOD: Implement.
@@ -154,12 +200,13 @@ export class Tile {
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> { }
 
   // usually not needed to be overriden unless you want to do something funky
+  // also useful to set flags without modifying the actual tile flag (temporary)
   public async setFlags(flags: number): Promise<number> { return flags; }
 
   public async setParentTileIndex(tileIndex: number): Promise<number> {
-    return this.data.lock
-      ? (this.data.lock.ownerX as number) +
-      (this.data.lock.ownerY as number) * this.world.data.width
+    return this.data.lockedBy
+      ? (this.data.lockedBy.parentX as number) +
+      (this.data.lockedBy.parentY as number) * this.world.data.width
       : 0;
   }
 
@@ -175,9 +222,9 @@ export class Tile {
     if (flags & TileFlags.LOCKED) {
       dataBuffer.grow(2);
 
-      const lockPos = this.data.lock
-        ? (this.data.lock.ownerX as number) +
-        (this.data.lock.ownerY as number) * this.world.data.width
+      const lockPos = this.data.lockedBy
+        ? (this.data.lockedBy.parentX as number) +
+        (this.data.lockedBy.parentY as number) * this.world.data.width
         : 0;
 
       dataBuffer.writeU16(lockPos);
@@ -194,9 +241,9 @@ export class Tile {
 
       const tank = new TankPacket(
         {
-          type:   TankTypes.TILE_APPLY_DAMAGE,
-          netID:  peer.data.netID,
-          info:   damage,
+          type: TankTypes.TILE_APPLY_DAMAGE,
+          netID: peer.data.netID,
+          info: damage,
           xPunch: this.data.x,
           yPunch: this.data.y
         }
@@ -226,17 +273,15 @@ export class Tile {
 
   public async tileUpdate(peer: Peer) {
     const serializedData = await this.parse();
-
-    this.world.every((p) => {
-      p.send(
-        TankPacket.from({
-          type:   TankTypes.SEND_TILE_UPDATE_DATA,
-          xPunch: this.data.x,
-          yPunch: this.data.y,
-          data:   () => serializedData.data
-        })
-      );
-    })
+    
+    peer.send(
+      TankPacket.from({
+        type: TankTypes.SEND_TILE_UPDATE_DATA,
+        xPunch: this.data.x,
+        yPunch: this.data.y,
+        data: () => serializedData.data
+      })
+    );
   }
 
   protected sendLockSound(peer: Peer) {
@@ -247,12 +292,15 @@ export class Tile {
     }
   }
 
-  private sendAreaOwner(peer: Peer) {
-    const owningLock = this.world.data.blocks[this.data.lock!.ownerY! * this.world.data.width + this.data.lock!.ownerX!];
+  private async sendAreaOwner(peer: Peer) {
+    if (!(this.world.getOwnerUID() || this.data.lockedBy)) return;
 
-    const ownerName = this.world.data.owner?.name ?? owningLock.lock?.ownerName;
+    const ownerUserID = this.world.getOwnerUID() ??
+      this.world.data.blocks[this.data.lockedBy!.parentY * this.world.data.width + this.data.lockedBy!.parentX].lock!.ownerUserID;
 
-    peer.sendTextBubble(`That area is owned by ${ownerName}`, true, peer.data.netID);
+    const ownerName = await this.base.database.players.getByUID(ownerUserID);
+
+    peer.sendTextBubble(`That area is owned by ${ownerName?.display_name}`, true, peer.data.netID);
   }
 
 }

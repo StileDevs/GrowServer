@@ -2,11 +2,11 @@ import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { LockPermission, LOCKS, TileFlags } from "../../Constants";
-import { TileData, Lock } from "../../types";
+import { TileData } from "../../types";
 import { Floodfill } from "../../utils/FloodFill";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
 
 export class RevokeLockAccess {

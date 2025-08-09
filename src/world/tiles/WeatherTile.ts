@@ -1,4 +1,3 @@
-import { ItemDefinition } from "growtopia.js";
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";

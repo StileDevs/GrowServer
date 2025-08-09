@@ -4,7 +4,7 @@ import { Peer } from "../../core/Peer";
 import { TileData } from "../../types";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
-import { ItemDefinition } from "growtopia.js";
+import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
 
 export class SignEdit {
@@ -35,14 +35,17 @@ export class SignEdit {
   }
 
   public async execute(): Promise<void> {
-    if (this.world.data.owner) {
-      if (this.world.data.owner.id !== this.peer.data?.userID) return;
+    const ownerUID = this.world.getOwnerUID();
+
+    if (ownerUID) {
+      if (ownerUID !== this.peer.data?.userID) return;
     }
 
     this.block.sign = {
       label: this.action.label || ""
     };
 
-    tileFrom(this.base, this.world, this.block).tileUpdate(this.peer);
+    const signTile = tileFrom(this.base, this.world, this.block);
+    this.world.every((p) => signTile.tileUpdate(p));
   }
 }

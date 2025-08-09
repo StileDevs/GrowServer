@@ -1,12 +1,13 @@
 import { TileData, PeerData } from "../types";
 import {
-  ItemDefinition,
   Peer as OldPeer,
   TankPacket,
   TextPacket,
   Variant,
   VariantOptions
 } from "growtopia.js";
+
+import { ItemDefinition } from "grow-items"
 import { Base } from "./Base";
 import { World } from "./World";
 import {
@@ -32,24 +33,25 @@ export class Peer extends OldPeer<PeerData> {
     if (data)
       this.data = {
         channelID,
-        x:                 data.x,
-        y:                 data.y,
-        world:             data.world,
-        inventory:         data.inventory,
-        rotatedLeft:       data.rotatedLeft,
-        requestedName:     data.requestedName,
-        tankIDName:        data.tankIDName,
+        x: data.x,
+        y: data.y,
+        world: data.world,
+        inventory: data.inventory,
+        rotatedLeft: data.rotatedLeft,
+        requestedName: data.requestedName,
+        tankIDName: data.tankIDName,
         netID,
-        country:           data.country,
-        userID:            data.userID,
-        role:              data.role,
-        gems:              data.gems,
-        clothing:          data.clothing,
-        exp:               data.exp,
-        level:             data.level,
-        lastCheckpoint:    data.lastCheckpoint,
+        country: data.country,
+        userID: data.userID,
+        role: data.role,
+        gems: data.gems,
+        clothing: data.clothing,
+        exp: data.exp,
+        level: data.level,
+        lastCheckpoint: data.lastCheckpoint,
         lastVisitedWorlds: data.lastVisitedWorlds,
-        state:             data.state
+        state: data.state,
+        heartMonitors: data.heartMonitors,
       };
   }
 
@@ -125,7 +127,7 @@ export class Peer extends OldPeer<PeerData> {
       const block = world?.data.blocks[pos];
       const itemMeta =
         this.base.items.metadata.items[
-          (block?.fg as number) || (block?.bg as number)
+        (block?.fg as number) || (block?.bg as number)
         ];
 
       if (itemMeta && itemMeta.type === ActionTypes.CHECKPOINT) {
@@ -260,8 +262,8 @@ export class Peer extends OldPeer<PeerData> {
     if (this.data.inventory?.items.find((i) => i.id === id)?.amount !== 0) {
       const tank = TankPacket.from({
         packetType: 4,
-        type:       TankTypes.MODIFY_ITEM_INVENTORY,
-        info:       id,
+        type: TankTypes.MODIFY_ITEM_INVENTORY,
+        info: id,
         buildRange: amount < 0 ? amount * -1 : undefined,
         punchRange: amount < 0 ? undefined : amount
       }).parse() as Buffer;
@@ -472,16 +474,16 @@ export class Peer extends OldPeer<PeerData> {
 
   public sendState(punchID?: number, everyPeer = true) {
     const tank = TankPacket.from({
-      type:   TankTypes.SET_CHARACTER_STATE,
-      netID:  this.data.netID,
-      info:   this.data.state.mod,
-      xPos:   1200,
-      yPos:   200,
+      type: TankTypes.SET_CHARACTER_STATE,
+      netID: this.data.netID,
+      info: this.data.state.mod,
+      xPos: 1200,
+      yPos: 200,
       xSpeed: 300,
       ySpeed: 600,
       xPunch: 0,
       yPunch: 0,
-      state:  0
+      state: 0
     }).parse() as Buffer;
 
     tank.writeUint8(punchID || 0x0, 5);
@@ -597,7 +599,7 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   /**
-   * 
+   * Send `OnConsoleMessage` variant
    * @param message the message that is going to be sent
    */
   public sendConsoleMessage(message: string, opts?: VariantOptions) {

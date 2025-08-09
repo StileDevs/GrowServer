@@ -1,4 +1,4 @@
-import { ItemDefinition, TankPacket, Variant } from "growtopia.js";
+import { TankPacket, Variant } from "growtopia.js";
 import { LockPermission, TankTypes, TileExtraTypes, TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
 import type { World } from "../../core/World";
@@ -6,6 +6,7 @@ import type { TileData } from "../../types";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { Tile } from "../Tile";
 import { Peer } from "../../core/Peer";
+import { ItemDefinition } from "grow-items";
 
 export class SeedTile extends Tile {
   public extraType = TileExtraTypes.SEED;
@@ -18,17 +19,14 @@ export class SeedTile extends Tile {
     super(base, world, data);
   }
 
-  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<void> {
-    super.onPlaceForeground(peer, itemMeta);
-
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
-      return;
-    }
+  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
+    if (!super.onPlaceForeground(peer, itemMeta)) { return false };
 
     this.initializeTreeData(itemMeta);
     // actually, this is not nescessary. But since i have yet to figure out a way to set a field in the TileChangeReq packet
     //  - Badewen
-    this.tileUpdate(peer);
+    this.world.every((p) => this.tileUpdate(p));
+    return true;
   }
 
   public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<void> {
@@ -60,8 +58,11 @@ export class SeedTile extends Tile {
             this.initializeTreeData(spliceResultSeedMeta);
             this.data.tree!.isSpliced = true;
 
-            this.tileUpdate(peer);
-            this.notifySuccessfulSplice(peer, currentSeedMeta.name!, item.name!, spliceResultSeedMeta.name!);
+            this.world.every((p) => {
+              this.tileUpdate(p);
+              this.notifySuccessfulSplice(p, currentSeedMeta.name!, item.name!, spliceResultSeedMeta.name!);
+            });
+            
             return false;
           }
         }
@@ -72,7 +73,7 @@ export class SeedTile extends Tile {
     if (!spliceSuccessful) this.notifyFailedSplice(peer, currentSeedMeta.name!, item.name!);
   }
 
-  public async onPunch(peer: Peer): Promise<void> {
+  public async onPunch(peer: Peer): Promise<boolean> {
     if (this.data.tree && Date.now() >= this.data.tree.fullyGrownAt && this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
       const itemMeta = this.base.items.metadata.items[this.data.fg];
       this.world.drop(
@@ -99,11 +100,11 @@ export class SeedTile extends Tile {
       this.world.every((p) => {
         p.send(
           TankPacket.from({
-            type:        TankTypes.SEND_TILE_TREE_STATE,
-            netID:       peer.data?.netID,
+            type: TankTypes.SEND_TILE_TREE_STATE,
+            netID: peer.data?.netID,
             targetNetID: -1,
-            xPunch:      this.data.x,
-            yPunch:      this.data.y
+            xPunch: this.data.x,
+            yPunch: this.data.y
           })
         )
       })
@@ -111,9 +112,9 @@ export class SeedTile extends Tile {
       this.data.fg = 0;
       this.data.resetStateAt = 0;
       this.data.flags = this.data.flags & (TileFlags.LOCKED | TileFlags.WATER) // preserve LOCKED and WATER
-      return;
+      return true;
     }
-    super.onPunch(peer);
+    return super.onPunch(peer);
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
@@ -161,11 +162,11 @@ export class SeedTile extends Tile {
     this.data.damage = 0;
 
     this.data.tree = {
-      fruit:        seed.id! - 1,
+      fruit: seed.id! - 1,
       fruitCount,
       fullyGrownAt: (this.data.tree?.plantedAt ?? now) + (seed.growTime || 0) * 1000,
-      plantedAt:    now,
-      isSpliced:    false
+      plantedAt: now,
+      isSpliced: false
     }
   }
 

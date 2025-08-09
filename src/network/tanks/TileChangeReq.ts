@@ -1,4 +1,4 @@
-import { ItemDefinition, Tank, TankPacket, Variant } from "growtopia.js";
+import { Tank, TankPacket, Variant } from "growtopia.js";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
@@ -15,7 +15,9 @@ import consola from "consola";
 import { Floodfill } from "../../utils/FloodFill";
 import { Tile } from "../../world/Tile";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
+import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
+
 
 export class TileChangeReq {
   private pos: number;

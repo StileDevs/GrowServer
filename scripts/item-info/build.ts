@@ -1,6 +1,6 @@
 import consola from "consola";
 import { readFile, writeFile } from "fs/promises";
-import { ItemsDat } from "growtopia.js";
+import { ItemsDat } from "grow-items";
 import { join } from "path";
 import { Scraper } from "./scraper";
 import { Parser } from "./parser";
@@ -16,7 +16,7 @@ __dirname = process.cwd();
   const ITEMS_DAT_PATH = join(__dirname, ".cache", "growtopia", "dat", itemsDatName);
 
   const file = await readFile(ITEMS_DAT_PATH);
-  const itemsdat = new ItemsDat(file);
+  const itemsdat = new ItemsDat(Array.from(file));
   await itemsdat.decode();
 
   const scraper = new Scraper(itemsdat.meta.items);

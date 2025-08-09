@@ -2,7 +2,7 @@ import { PeerData } from "./peer";
 import { WorldData } from "./world";
 import { Collection } from "../utils/Collection";
 import { CooldownOptions } from "./commands";
-import { ItemsDatMeta } from "growtopia.js";
+import { ItemsDatMeta } from "grow-items";
 import { ItemsInfo } from "./item-pages";
 
 export interface CDNContent {

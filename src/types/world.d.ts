@@ -4,14 +4,16 @@ export interface TileData {
   x: number;
   y: number;
   flags: number;
-  lock?: LockedBlocked;
+  lock?: LockParent;
+  lockedBy?: LockChild;
+  worldLockData?: WorldLockData; // this stores bpm, hide music notes, etc
   door?: Door;
   sign?: Sign;
   heartMonitor?: HeartMonitor;
   dblockID?: number;
   damage?: number;
   resetStateAt?: number;
-  worldLock?: boolean;
+  // worldLock?: boolean;
   rotatedLeft?: boolean;
   entrace?: Entrance;
   tree?: Tree;
@@ -68,37 +70,49 @@ export interface WorldData {
   width: number;
   height: number;
   blocks: TileData[];
-  owner?: WorldOwnerData;
-  admins?: number[];
+  // owner?: number; // owner userID
+  // admins?: number[];
   playerCount?: number;
-  bpm?: number;
-  customMusicBlocksDisabled?: boolean;
-  invisMusicBlocks?: boolean;
+  // bpm?: number;
+  // customMusicBlocksDisabled?: boolean;
+  // invisMusicBlocks?: boolean;
   jammers?: Jammer[];
   dropped?: Dropped;
   weatherId: number;
-  minLevel: number;
-  openToPublic?: boolean;
+  worldLockIndex?: number;
+  // minLevel: number;
+  // openToPublic?: boolean;
 }
-export interface WorldOwnerData {
-  name: string;
-  displayName: string;
-  id: number;
+// export interface WorldOwnerData {
+//   name: string;
+//   displayName: string;
+//   id: number;
+// }
+
+// the tile that LockParent owns
+export interface LockChild {
+  parentX: number; // the lock X
+  parentY: number; // the lock Y
 }
 
-export interface LockedBlocked {
-  ownerFg?: number;
-  ownerUserID?: number;
-  ownerName?: string;
-  ownerX?: number; // the lock X
-  ownerY?: number; // the lock Y
-  ownedTiles?: number[]; // Tile indexes this lock owns
-  isOwner?: boolean; // indicates that this is the lock itself
-  ignoreEmptyAir?: boolean;
-  permission?: LockPermission; // this is available exclusively to the actual Lock(small lock, huge lock, etc), not locked tile  
-  adminLimited?: boolean;
-  adminIDs?: number[];
+// contains all WorldLock specific configuration.
+export interface WorldLockData {
+  bpm: number;
+  customMusicBlocksDisabled: boolean;
+  invisMusicBlocks: boolean;
+  minLevel: number;
 }
+
+// the lock itself
+export interface LockParent {
+  ownerUserID: number;
+  adminLimited: boolean;
+  adminIDs: number[];
+  ownedTiles: number[]; // Tile indexes this lock owns
+  ignoreEmptyAir: boolean;
+  permission: LockPermission; // this is available exclusively to the actual Lock(small lock, huge lock, etc), not locked tile  
+}
+
 
 export interface Door {
   label?: string;
@@ -123,18 +137,12 @@ export interface Tree {
 }
 
 export interface HeartMonitor {
-  name: string;
   userID: number;
 }
 
 export interface EnterArg {
   x?: number;
   y?: number;
-}
-
-export interface Lock {
-  id: number;
-  maxTiles: number;
 }
 
 export interface Ignore {
