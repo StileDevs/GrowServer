@@ -126,7 +126,7 @@ export class Base {
         }
       });
 
-      await this.loadItems();
+      // await this.loadItems();
       await this.loadEvents();
     } catch (err) {
       consola.error(`Failed to start server: ${err}`);
