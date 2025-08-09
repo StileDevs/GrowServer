@@ -126,7 +126,7 @@ export class Base {
         }
       });
 
-      // await this.loadItems();
+      await this.loadItems();
       await this.loadEvents();
     } catch (err) {
       consola.error(`Failed to start server: ${err}`);
@@ -283,7 +283,7 @@ export class Base {
     await itemsDat.encode();
     const bufData = Buffer.from(itemsDat.buffer.data);
     const hash = hashItemsDat(bufData);
-    this.items.content = bufData;
+    //this.items.content = bufData;
     this.items.hash = `${hash}`;
     this.items.metadata = itemsDat.meta;
     this.items.wiki = JSON.parse(
