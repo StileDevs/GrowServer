@@ -16,39 +16,59 @@ export const CommandMap: Record<
 export const CommandsAliasMap: Record<string, string> = {};
 
 const loadCommands = async () => {
-  // Get list of command files, filtering out the index file
-  const commandFiles = readdirSync(__dirname).filter(
-    (file) =>
-      (file.endsWith(".ts") || file.endsWith(".js")) &&
-      !file.endsWith(".d.ts") &&
-      file !== "index.ts" &&
-      file !== "index.js"
-  );
+  // Define the directories to scan
+  const directoriesToScan = [
+    __dirname, // Original directory
+    join(__dirname, "emotes"), // Added subdirectory 'emotes'
+  ];
 
-  consola.info(`Found ${commandFiles.length} command files`);
+  // Collect all command file paths from the specified directories first
+  const filesToProcess: { directoryPath: string; fileName: string }[] = [];
 
-  for (const file of commandFiles) {
+  for (const dir of directoriesToScan) {
+    try {
+      const filesInDir = readdirSync(dir).filter(
+        (file) =>
+          (file.endsWith(".ts") || file.endsWith(".js")) &&
+          !file.endsWith(".d.ts") &&
+          file !== "index.ts" &&
+          file !== "index.js"
+      );
+      filesInDir.forEach((fileName) => {
+        filesToProcess.push({ directoryPath: dir, fileName });
+      });
+    } catch (error) {
+      consola.error(`Error reading directory ${dir}:`, error);
+    }
+  }
+
+  consola.info(`Found ${filesToProcess.length} command files`);
+
+  for (const { directoryPath, fileName: file } of filesToProcess) {
     try {
       const commandName = file.split(".")[0].toLowerCase();
       const fileExt = file.split(".").pop();
 
+      const fullPathForImport = join(directoryPath, file);
+
       // Log which command is being loaded
-      consola.debug(`Loading command: ${commandName} from ${file}`);
+      consola.debug(`Loading command: ${commandName} from ${fullPathForImport}`);
 
       // Use dynamic import with proper path construction
       let CommandClass;
       try {
         // In production, handle JS files
         if (fileExt === "js") {
-          const module = await import(join(__dirname, file));
+          const module = await import(fullPathForImport);
           CommandClass = module.default;
         } else {
           //* In development, handle TS files*
           if (process.platform === "win32") {
-            const module = await import(`./${commandName}`);
+            const relativePath = relative(__dirname, fullPathForImport);
+            const module = await import(`./${relativePath.replace(/\\/g, '/')}`);
             CommandClass = module.default;
           } else {
-            const module = await import(join(__dirname, file));
+            const module = await import(fullPathForImport);
             CommandClass = module.default;
           }
         }
@@ -57,10 +77,10 @@ const loadCommands = async () => {
           CommandMap[commandName] = CommandClass;
           consola.success(`Loaded command: ${commandName}`);
         } else {
-          consola.warn(`Command class not found in ${file}`);
+          consola.warn(`Command class not found in ${fullPathForImport}`);
         }
       } catch (importError) {
-        consola.error(`Failed to import command ${file}:`, importError);
+        consola.error(`Failed to import command ${fullPathForImport}:`, importError);
       }
     } catch (error) {
       consola.error(`Error processing command file:`, error);
@@ -89,7 +109,6 @@ export const registerAliases = async (): Promise<void> => {
       if (tempCmd.opt && Array.isArray(tempCmd.opt.command)) {
         for (const alias of tempCmd.opt.command) {
           const aliasLower = alias.toLowerCase();
-
           // Don't register the main command name as an alias of itself
           if (aliasLower !== commandName) {
             CommandsAliasMap[aliasLower] = commandName;

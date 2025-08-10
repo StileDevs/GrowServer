@@ -18,7 +18,7 @@ export class Trash {
     // Prevent Trashing of Certain Items
     if (itemID === 18 || itemID === 32) {
       this.peer.send(
-        Variant.from("OnConsoleMessage", "You'd be sorry if you lost that.")
+        Variant.from("OnTextOverlay", "You'd be sorry if you lost that.")
       );
       return;
     }
@@ -44,7 +44,7 @@ export class Trash {
       .defaultColor()
       .addLabelWithIcon(`Trash ${item?.name}`, item?.id || 0, "big")
       .addTextBox("How many to `4destroy`o?")
-      .addInputBox("trash_count", "", peerItem?.amount, 5)
+      .addInputBox("trash_count", "", 0, 5)
       .embed("itemID", itemID)
       .endDialog("trash_end", "Cancel", "OK")
       .str();

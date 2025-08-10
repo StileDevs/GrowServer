@@ -6,7 +6,7 @@ import { CommandMap, CommandsAliasMap } from "../../command/cmds/index";
 import { Variant } from "growtopia.js";
 
 export class Input {
-  constructor(public base: Base, public peer: Peer) {}
+  constructor(public base: Base, public peer: Peer) { }
 
   public async execute(
     action: NonEmptyObject<Record<string, string>>
@@ -23,20 +23,23 @@ export class Input {
         let Class = CommandMap[commandName];
         let originalCmd = commandName;
 
+        // Send Peer's input
+        this.peer.send(Variant.from("OnConsoleMessage", `\`6${text}`));
+
         // If no direct command found, check if it's registered as an alias
         if (!Class && CommandsAliasMap[commandName]) {
           originalCmd = CommandsAliasMap[commandName];
           Class = CommandMap[originalCmd];
         }
 
-        // If we still can't find the command, notify the user
+        // If we still can't find the command, do nothing
         if (!Class) {
-          this.peer.send(
-            Variant.from(
-              "OnConsoleMessage",
-              "`4Unknown command.`` Enter `$/help`` for a list of valid commands"
-            )
-          );
+          //   this.peer.send(
+          //     Variant.from(
+          //       "OnConsoleMessage",
+          //       "`4Unknown command.`` Enter `$/help`` for a list of valid commands"
+          //     )
+          //   );
           return;
         }
 
