@@ -32,14 +32,14 @@ export class Input {
           Class = CommandMap[originalCmd];
         }
 
-        // If we still can't find the command, do nothing
+        // If we still can't find the command, notify the user
         if (!Class) {
-          //   this.peer.send(
-          //     Variant.from(
-          //       "OnConsoleMessage",
-          //       "`4Unknown command.`` Enter `$/help`` for a list of valid commands"
-          //     )
-          //   );
+          this.peer.send(
+            Variant.from(
+              "OnConsoleMessage",
+              "`4Unknown command. `oEnter /? for a list of valid commands."
+            )
+          );
           return;
         }
 
