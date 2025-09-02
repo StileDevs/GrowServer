@@ -33,8 +33,9 @@ export class GrowtopiaRoute {
         this.conf.web.ports[
           Math.floor(Math.random() * this.conf.web.ports.length)
         ];
-      str += `port|${randPort}\nloginurl|${this.conf.web.loginUrl}\ntype|1\n${this.conf.web.maintenance.enable ? "maint" : "#maint"}|${this.conf.web.maintenance.message
-      }\ntype2|1\nmeta|ignoremeta\nRTENDMARKERBS1001`;
+      str += `port|${randPort}\nloginurl|${this.conf.web.loginUrl}\ntype|1\n${this.conf.web.maintenance.enable ? "maint" : "#maint"}|
+        ${this.conf.web.maintenance.message}
+        \ntype2|1\nmeta|ignoremeta\nRTENDMARKERBS1001`;
 
       return ctx.body(str);
     });

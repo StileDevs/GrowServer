@@ -20,13 +20,15 @@ export default class Sb extends Command {
       category:    "`oBasic",
       usage:       "/sb <message>",
       example:     ["/sb hello"],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 
   public async execute(): Promise<void> {
-    if (!this.args.length)
-      return this.peer.send(Variant.from("Message are required."));
+    if (this.args.length === 0)
+      return this.peer.send(
+        Variant.from("OnConsoleMessage", "Message are required.")
+      );
 
     const world = this.peer.currentWorld();
     const msg = this.args.join(" ");
@@ -35,10 +37,15 @@ export default class Sb extends Command {
     )?.enabled;
 
     this.peer.every((p) => {
+      // Send message
       p.send(
         Variant.from(
           "OnConsoleMessage",
-          `CP:0_PL:4_OID:_CT:[SB]_ \`5**\`\` from \`$\`2${this.peer.name} \`\`\`\`(in \`$${jammed ? "`4JAMMED``" : this.peer.data.world}\`\`) ** :\`\` \`#${msg}`
+          `CP:0_PL:4_OID:_CT:[SB]_ \`5**\`\` from \`$\`2${
+            this.peer.name
+          } \`\`\`\`(in \`$${
+            jammed ? "`4JAMMED``" : this.peer.data.world
+          }\`\`) ** :\`\` \`#${msg}`
         ),
         TextPacket.from(
           PacketTypes.ACTION,

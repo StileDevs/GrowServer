@@ -1,7 +1,7 @@
 import { TextPacket, Variant } from "growtopia.js";
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
-import { parseAction } from "../utils/Utils";
+import { parseAction, getCurrentTimeInSeconds } from "../utils/Utils";
 import { PacketTypes } from "../Constants";
 import consola from "consola";
 import jwt from "jsonwebtoken";
@@ -81,6 +81,7 @@ export class ITextPacket {
         "growtopia/",
         "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
         "proto=216|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|",
+        0 // player_tribute.dat hash,
       )
     );
   }
@@ -230,7 +231,7 @@ export class ITextPacket {
       };
 
       // Load Gems
-      this.peer.send(Variant.from("OnSetBux", this.peer.data.gems));
+      this.peer.setGems(this.peer.data.gems);
 
       this.peer.saveToCache();
       this.peer.saveToDatabase();

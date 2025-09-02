@@ -8,7 +8,7 @@
 ## Requirements
 
 - [Node.js](https://nodejs.org) v20+ or [Bun.js](https://bun.sh) v1.2.9+
-- [pnpm](https://pnpm.io)
+- [pnpm](https://pnpm.io) v10
 - [mkcert](https://github.com/FiloSottile/mkcert)
 
 ## Setup

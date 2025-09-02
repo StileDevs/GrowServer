@@ -9,6 +9,7 @@ import { Input } from "./Input";
 import { Respawn } from "./Respawn";
 import { RespawnSpike } from "./RespawnSpike";
 import { Drop } from "./Drop";
+import { Trash } from "./Trash";
 import { Wrench } from "./Wrench";
 import { StoreBuy } from "./StoreBuy";
 import { StoreHandler } from "./StoreHandler";
@@ -29,6 +30,7 @@ export const ActionMap: Record<
   ["respawn"]:           Respawn,
   ["respawn_spike"]:     RespawnSpike,
   ["drop"]:              Drop,
+  ["trash"]:             Trash,
   ["wrench"]:            Wrench,
   ["buy"]:               StoreBuy,
   ["store"]:             StoreHandler

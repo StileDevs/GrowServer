@@ -21,10 +21,47 @@ import {
   ROLE,
   TankTypes
 } from "../Constants";
-import { manageArray } from "../utils/Utils";
+import { getCurrentTimeInSeconds, manageArray } from "../utils/Utils";
+
+const PUNCH_ITEMS: Array<{ id: number; punchID: number; slot: keyof PeerData["clothing"] }> = [
+
+  // HAND ITEMS
+
+  { id: 2572, punchID: 42, slot: "hand" },  // Flame Scythe
+  { id: 472, punchID: 3, slot: "hand" },  // Tommygun
+  { id: 4464, punchID: 73, slot: "hand" },  // AK-8087
+
+  // HEAD|FACE|HAIR ITEMS
+
+  { id: 1204, punchID: 10, slot: "face" },   // Focused Eyes
+  { id: 5006, punchID: 56, slot: "face" },   // Playful Wood Sprite
+  { id: 5002, punchID: 19, slot: "face" },   // Playful Fire Sprite
+];
+
+const PUNCH_ID_MAP: { [key: number]: number } = Object.fromEntries(
+  PUNCH_ITEMS.map(item => [item.id, item.punchID])
+);
+
+const PUNCH_SLOT_MAP: { [key: number]: keyof PeerData["clothing"] } = Object.fromEntries(
+  PUNCH_ITEMS.map(item => [item.id, item.slot])
+);
 
 export class Peer extends OldPeer<PeerData> {
   public base;
+  public customPunchID?: number;
+
+  public getPunchID(): number {
+    if (typeof this.customPunchID === "number") {
+      return this.customPunchID;
+    }
+    for (const [itemID, slot] of Object.entries(PUNCH_SLOT_MAP)) {
+      if (this.data.clothing[slot as keyof typeof this.data.clothing] === Number(itemID)) {
+        return PUNCH_ID_MAP[Number(itemID)];
+      }
+    }
+    return 0; // default punch
+  }
+
   constructor(base: Base, netID: number, channelID = 0) {
     super(base.server, netID, channelID);
     this.base = base;
@@ -473,6 +510,8 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public sendState(punchID?: number, everyPeer = true) {
+    // Use punchID if provided, otherwise use getPunchID()
+    const punch = punchID !== undefined ? punchID : this.getPunchID();
     const tank = TankPacket.from({
       type:   TankTypes.SET_CHARACTER_STATE,
       netID:  this.data.netID,
@@ -486,15 +525,10 @@ export class Peer extends OldPeer<PeerData> {
       state:  0
     }).parse() as Buffer;
 
-    tank.writeUint8(punchID || 0x0, 5);
+    tank.writeUint8(punch, 5);
     tank.writeUint8(0x80, 6);
     tank.writeUint8(0x80, 7);
     tank.writeFloatLE(125.0, 20);
-
-    // if (this.data.state.modsEffect & ModsEffects.HARVESTER) {
-    //   tank.writeFloatLE(150, 36);
-    //   tank.writeFloatLE(1000, 40);
-    // }
 
     this.send(tank);
     if (everyPeer) {
@@ -627,5 +661,35 @@ export class Peer extends OldPeer<PeerData> {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Updates the current peer's gem (bux) amount and update the timestamp chat.
+   *
+   * This method sends a Variant packet to the client to update the displayed gem count,
+   * control animation, and optionally indicate supporter status (maybe). It also updates the
+   * timestamp used for console chat.
+   *
+   * @param amount - The new gem (bux) amount to set for the player.
+   * @param skip_animation - Whether to skip the gem animation (0 = show animation, 1 = skip animation). Default is 0.
+   *
+   * ### OnSetBux Packet Structure:
+   * - Param 1: `number` — The gem (bux) amount.
+   * - Param 2: `number` — Animation flag.
+   * - Param 3: `number` — Supporter status.
+   * - Param 4: `number[]` — Additional data array:
+   *   - `[0]`: `number` (float) — Current timestamp in seconds (used for console chat).
+   *   - `[1]`: `number` (float) — Reserved, typically 0.00.
+   *   - `[2]`: `number` (float) — Reserved, typically 0.00.
+   *
+   * @example
+   * // Set gems to 1000, show animation
+   * peer.setGems(1000);
+   *
+   * // Set gems to 500 and skip animation
+   * peer.setGems(500, 1);
+   */
+  public setGems(amount: number, skip_animation: number = 0) {
+    this.send(Variant.from("OnSetBux", amount, skip_animation, 0, [getCurrentTimeInSeconds(), 0.00, 0.00])); // Param 2 maybe for supporter status?
   }
 }

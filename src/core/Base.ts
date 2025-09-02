@@ -7,7 +7,7 @@ import {
   downloadWebsite,
   setupWebsite,
   downloadItemsDat,
-  fetchJSON
+  fetchJSON,
 } from "../utils/Utils";
 import { join } from "path";
 import { ConnectListener } from "../events/Connect";
@@ -16,7 +16,13 @@ import { type PackageJson } from "type-fest";
 import { RawListener } from "../events/Raw";
 import consola from "consola";
 import { readFileSync } from "fs";
-import { Cache, CDNContent, CustomItemsConfig, ItemsData, ItemsInfo } from "../types";
+import {
+  Cache,
+  CDNContent,
+  CustomItemsConfig,
+  ItemsData,
+  ItemsInfo,
+} from "../types";
 import { Collection } from "../utils/Collection";
 import { Database } from "../database/Database";
 import { Peer } from "./Peer";
@@ -33,7 +39,7 @@ export class Base {
   public server: Client;
   public items: ItemsData;
   public package: PackageJson;
-  public config: typeof import('../../config.json');
+  public config: typeof import("../../config.json");
   public cdn: CDNContent;
   public cache: Cache;
   public database: Database;
@@ -42,7 +48,7 @@ export class Base {
     this.server = new Client({
       enet: {
         ip:                 "0.0.0.0",
-        useNewServerPacket: true,
+        useNewServerPacket: true
       },
     });
     this.package = JSON.parse(
@@ -56,12 +62,12 @@ export class Base {
       content:  Buffer.alloc(0),
       hash:     "",
       metadata: {} as ItemsDatMeta,
-      wiki:     []
-    }
+      wiki:     [],
+    };
     this.cache = {
       peers:    new Collection(),
       worlds:   new Collection(),
-      cooldown: new Collection()
+      cooldown: new Collection(),
     };
 
     this.database = new Database();
@@ -71,7 +77,9 @@ export class Base {
   public async start() {
     try {
       consola.box(
-        `GrowServer\nVersion: ${this.package.version}\n© JadlionHD 2022-${new Date().getFullYear()}`
+        `GrowServer\nVersion: ${
+          this.package.version
+        }\n© JadlionHD 2022-${new Date().getFullYear()}`
       );
 
       // Check if port is available
@@ -91,8 +99,8 @@ export class Base {
       await setupWebsite();
       this.cdn = await this.getLatestCdn();
       await downloadItemsDat(this.cdn.itemsDatName);
-
-      consola.info(`Parsing ${this.cdn.itemsDatName}`)
+      
+      consola.info(`Parsing ${this.cdn.itemsDatName}`);
       const datDir = join(__dirname, ".cache", "growtopia", "dat");
       const datName = join(datDir, this.cdn.itemsDatName);
       const itemsDat = readFileSync(datName);
@@ -101,8 +109,8 @@ export class Base {
         hash:     `${RTTEX.hash(itemsDat)}`,
         content:  itemsDat,
         metadata: {} as ItemsDatMeta,
-        wiki:     [] as ItemsInfo[]
-      }
+        wiki:     [] as ItemsInfo[],
+      };
       await Web(this);
 
       consola.log(`🔔Starting ENet server on port ${port}`);
@@ -136,6 +144,9 @@ export class Base {
       raw.run(netID, channelID, data)
     );
 
+    // Register command aliases after server has started
+    this.registerCommandAliases();
+
     // Check items-config.json file changes
     chokidar
       .watch(join(__dirname, "assets", "custom-items"), { persistent: true })
@@ -156,6 +167,17 @@ export class Base {
         consola.info(`Refreshing items data`);
         await this.loadItems();
       });
+  }
+
+  // Register command aliases after server initialization
+  private async registerCommandAliases() {
+    try {
+      const { registerAliases } = await import("../command/cmds/index");
+      await registerAliases();
+      consola.success("Command aliases registered successfully");
+    } catch (error) {
+      consola.error("Failed to register command aliases:", error);
+    }
   }
 
   private async loadItems() {
@@ -282,16 +304,19 @@ export class Base {
   }
 
   public async getLatestCdn() {
-
     try {
-      const cdnData = await fetchJSON("https://mari-project.jad.li/api/v1/growtopia/cache/latest") as CDNContent;
-      const itemsDat = await fetchJSON(ITEMS_DAT_FETCH_URL) as { content: string };
+      const cdnData = (await fetchJSON(
+        "https://mari-project.jad.li/api/v1/growtopia/cache/latest"
+      )) as CDNContent;
+      const itemsDat = (await fetchJSON(ITEMS_DAT_FETCH_URL)) as {
+        content: string;
+      };
 
       const data: CDNContent = {
         version:      cdnData.version,
         uri:          cdnData.uri,
-        itemsDatName: itemsDat.content
-      }
+        itemsDatName: itemsDat.content,
+      };
 
       return data;
     } catch (e) {

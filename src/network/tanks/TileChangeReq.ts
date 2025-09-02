@@ -17,6 +17,7 @@ import { Tile } from "../../world/Tile";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
+import { getCurrentTimeInSeconds } from "../../utils/Utils";
 
 
 export class TileChangeReq {
@@ -952,8 +953,6 @@ export class TileChangeReq {
   //       console.log("Successfully added gems");
   //       targetPeer.send(Variant.from("OnConsoleMessage", `\`2${this.peer.data.tankIDName} has added ${amount} gems to your account. You now have ${targetPlayer.gems} gems.`));
   //     }
-
-  //     this.peer.send(Variant.from("OnSetBux", this.peer.data.gems));
 
   //     this.peer.saveToCache();
   //     this.peer.saveToDatabase();
