@@ -8,7 +8,7 @@ export class Drop {
   constructor(
     public base: Base,
     public peer: Peer
-  ) {}
+  ) { }
 
   public async execute(
     action: NonEmptyObject<Record<string, string>>
@@ -23,7 +23,7 @@ export class Drop {
       return;
     }
 
-    const item = this.base.items.metadata.items.find((v) => v.id === itemID);
+    const item = this.base.items.metadata.items.get(itemID.toString());
 
     const peerItem = this.peer.data.inventory.items.find(
       (v) => v.id === itemID

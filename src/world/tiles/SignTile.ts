@@ -41,7 +41,7 @@ export class SignTile extends Tile {
       return false;
     }
 
-    const itemMeta = this.base.items.metadata.items[this.data.fg];
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
     const dialog = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(
@@ -53,7 +53,6 @@ export class SignTile extends Tile {
       .addInputBox("label", "", this.data.sign?.label, 100)
       .embed("tilex", this.data.x)
       .embed("tiley", this.data.y)
-      .embed("itemID", itemMeta.id)
       .endDialog("sign_edit", "Cancel", "OK")
       .str();
 

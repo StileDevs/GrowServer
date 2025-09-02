@@ -10,16 +10,17 @@ export interface TileData {
   door?: Door;
   sign?: Sign;
   heartMonitor?: HeartMonitor;
-  dblockID?: number;
-  damage?: number;
+  // dblockID?: number;
+  damage?: number; // this is a float. 1 damage is equal to 1 fist damage. 
   resetStateAt?: number;
   // worldLock?: boolean;
   rotatedLeft?: boolean;
   entrace?: Entrance;
   tree?: Tree;
   mannequin?: Mannequin;
-  dice?: number;
+  dice?: Dice;
   provider?: Provider;
+  displayBlock?: DisplayBlock
 }
 
 export interface Provider {
@@ -140,6 +141,15 @@ export interface HeartMonitor {
   userID: number;
 }
 
+export interface DisplayBlock {
+  displayedItem: number;
+}
+
+export interface Dice {
+  symbol: number;
+  lastRollTime: number; // limit dice rolling to 1 time per 3 seconds.
+}
+
 export interface EnterArg {
   x?: number;
   y?: number;
@@ -149,3 +159,4 @@ export interface Ignore {
   blockIDsToIgnoreByLock: number[];
   blockActionTypesToIgnore: number[];
 }
+

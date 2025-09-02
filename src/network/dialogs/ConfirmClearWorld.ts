@@ -1,7 +1,7 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { ActionTypes, LOCKS } from "../../Constants";
+import { ActionTypes, LOCKS, ROLE } from "../../Constants";
 import { World } from "../../core/World";
 
 export class ConfirmClearWorld {
@@ -18,12 +18,13 @@ export class ConfirmClearWorld {
   }
 
   public async execute(): Promise<void> {
+    if (!this.action.dialog_name) return;
     const ownerUID = this.world.getOwnerUID();
     if (ownerUID) {
-      if (ownerUID !== this.peer.data.userID) return;
+      if (ownerUID !== this.peer.data.userID && this.peer.data.role != ROLE.DEVELOPER) return;
       for (let i = 0; i < this.world.data.blocks.length; i++) {
         const b = this.world.data.blocks[i];
-        const itemMeta = this.base.items.metadata.items[b.fg || b.bg];
+        const itemMeta = this.base.items.metadata.items.get((b.fg || b.bg).toString())!;
         const mLock = LOCKS.find((l) => l.id === itemMeta.id);
 
         if (

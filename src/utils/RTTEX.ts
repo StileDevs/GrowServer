@@ -83,7 +83,7 @@ export class RTTEX {
     return data;
   }
 
-  public static async hash(buf: Buffer): Promise<number> {
+  public static hash(buf: Buffer): number {
     let hash = 0x55555555;
     buf.forEach((x) => (hash = (hash >>> 27) + (hash << 5) + x));
     return hash >>> 0;

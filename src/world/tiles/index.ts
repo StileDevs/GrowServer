@@ -10,28 +10,28 @@ import consola from "consola";
 import { LockTile } from "./LockTile";
 import type { Base } from "../../core/Base";
 import { HeartMonitorTile } from "./HeartMonitorTile";
-// import { DisplayBlockTile } from "./DisplayBlockTile";
+import { DisplayBlockTile } from "./DisplayBlockTile";
 import { SwitcheROO } from "./SwitcheROO";
 import { WeatherTile } from "./WeatherTile";
-// import { DiceTile } from "./DiceTile";
+import { DiceTile } from "./DiceTile";
 import { SeedTile } from "./SeedTile";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { TankPacket } from "growtopia.js";
 
 const TileMap: Record<number, Class<Tile>> = {
-  [ActionTypes.DOOR]: DoorTile,
-  [ActionTypes.MAIN_DOOR]: DoorTile,
-  [ActionTypes.PORTAL]: DoorTile,
-  [ActionTypes.SIGN]: SignTile,
-  [ActionTypes.LOCK]: LockTile,
-  [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
-  // [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
-  [ActionTypes.SWITCHEROO]: SwitcheROO,
+  [ActionTypes.DOOR]:            DoorTile,
+  [ActionTypes.MAIN_DOOR]:       DoorTile,
+  [ActionTypes.PORTAL]:          DoorTile,
+  [ActionTypes.SIGN]:            SignTile,
+  [ActionTypes.LOCK]:            LockTile,
+  [ActionTypes.HEART_MONITOR]:   HeartMonitorTile,
+  [ActionTypes.DISPLAY_BLOCK]:   DisplayBlockTile,
+  [ActionTypes.SWITCHEROO]:      SwitcheROO,
   [ActionTypes.WEATHER_MACHINE]: WeatherTile,
-  // [ActionTypes.DICE]: DiceTile,
-  [ActionTypes.BACKGROUND]: NormalTile,
-  [ActionTypes.FOREGROUND]: NormalTile,
-  [ActionTypes.SEED]: SeedTile
+  [ActionTypes.DICE]:            DiceTile,
+  [ActionTypes.BACKGROUND]:      NormalTile,
+  [ActionTypes.FOREGROUND]:      NormalTile,
+  [ActionTypes.SEED]:            SeedTile
 };
 
 // constructs a new Tile subclass based on the ActionType.
@@ -43,7 +43,7 @@ const tileFrom = (
   data: TileData,
   itemType?: ActionTypes
 ) => {
-  const type = itemType ?? base.items.metadata.items[data.fg].type!;
+  const type = itemType ?? base.items.metadata.items.get(data.fg.toString())!.type!;
   try {
     const tile = new TileMap[type](base, world, data);
     return tile;
@@ -57,10 +57,10 @@ const tileFrom = (
 
 //TOOD: Move this to appropriate place.
 async function tileUpdateMultiple(world: World, tiles: Tile[]): Promise<void> {
-  let finalBuffer = new ExtendBuffer(0);
+  const finalBuffer = new ExtendBuffer(0);
 
   for (const tile of tiles) {
-    let tileBuffer = await tile.parse();
+    const tileBuffer = await tile.parse();
 
     finalBuffer.grow(tileBuffer.data.byteLength + 8);
     finalBuffer.writeU32(tile.data.x);

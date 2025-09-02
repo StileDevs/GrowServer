@@ -3,7 +3,7 @@ import { TankTypes } from "../../Constants";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { NonEmptyObject } from "type-fest";
-import { deflateSync} from "zlib";
+import { deflateSync } from "zlib";
 
 export class RefreshItemData {
   constructor(

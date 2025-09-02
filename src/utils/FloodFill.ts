@@ -56,7 +56,7 @@ export class Floodfill {
             this.data.blocks[neighbour.x + neighbour.y * this.data.width];
 
           const meta =
-            this.data.base.items.metadata.items[block.fg || block.bg];
+            this.data.base.items.metadata.items.get((block.fg || block.bg).toString())!;
           if (
             this.totalNodes.find(
               (n) => n.x === neighbour.x && n.y === neighbour.y
@@ -132,16 +132,16 @@ export class Floodfill {
 
     this.data.s_block.lock = {
       // ownerFg: this.data.s_block.fg,
-      ownerUserID: owner.data?.userID,
+      ownerUserID:    owner.data?.userID,
       // ownerName: owner.name,
       // ownerX: this.data.s_block.x,
       // ownerY: this.data.s_block.y,
       // isOwner: true,
-      adminLimited: false,
+      adminLimited:   false,
       ignoreEmptyAir: this.data.noEmptyAir,
-      adminIDs: [],
-      permission: lockData?.defaultPermission ?? LockPermission.NONE, // the lock itself can only be destroyed by the owner
-      ownedTiles: []
+      adminIDs:       [],
+      permission:     lockData?.defaultPermission ?? LockPermission.NONE, // the lock itself can only be destroyed by the owner
+      ownedTiles:     []
     };
 
     let i = 0;
@@ -173,13 +173,13 @@ export class Floodfill {
     world.saveToCache();
 
     const tank = TankPacket.from({
-      type: TankTypes.SEND_LOCK,
-      netID: owner.data?.userID as number,
+      type:        TankTypes.SEND_LOCK,
+      netID:       owner.data?.userID as number,
       targetNetID: this.data.max,
-      info: this.data.s_block.fg,
-      xPunch: this.data.s_block.x,
-      yPunch: this.data.s_block.y,
-      data: () => buffer
+      info:        this.data.s_block.fg,
+      xPunch:      this.data.s_block.x,
+      yPunch:      this.data.s_block.y,
+      data:        () => buffer
     });
 
     world.every((p) => {

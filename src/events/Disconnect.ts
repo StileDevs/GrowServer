@@ -11,15 +11,15 @@ export class DisconnectListener {
   }
 
   public run(netID: number): void {
-    let peer = this.base.cache.peers.find((id) => id.netID == netID);
+    const peer = this.base.cache.peers.find((id) => id.netID == netID);
     if (peer && peer.heartMonitors) {
       peer.heartMonitors.forEach((indexes, worldName) => {
         const tiles = new Array<HeartMonitorTile>();
-        let worldData = this.base.cache.worlds.get(worldName);
+        const worldData = this.base.cache.worlds.get(worldName);
 
         if (!worldData || worldData.playerCount == 0) return;
 
-        let world = new World(this.base, worldName);
+        const world = new World(this.base, worldName);
 
         for (const index of indexes) {
           const heartMonitorTile = tileFrom(this.base, world, worldData.blocks[index]);

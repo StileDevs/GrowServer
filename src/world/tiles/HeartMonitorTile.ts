@@ -19,7 +19,7 @@ export class HeartMonitorTile extends Tile {
   }
 
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
-    if (!super.onPlaceForeground(peer, itemMeta)) { return false; }
+    if (!await super.onPlaceForeground(peer, itemMeta)) { return false; }
 
     this.data.heartMonitor = { userID: peer.data.userID }
     this.data.flags |= TileFlags.TILEEXTRA;
@@ -39,7 +39,7 @@ export class HeartMonitorTile extends Tile {
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
-    super.onDestroy(peer);
+    await super.onDestroy(peer);
 
     const idx = peer.data.heartMonitors.get(this.world.worldName)!.findIndex((v) =>
       v == this.data.y * this.world.data.width + this.data.x
@@ -54,7 +54,7 @@ export class HeartMonitorTile extends Tile {
 
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
-    super.serialize(dataBuffer);
+    await super.serialize(dataBuffer);
 
     const user = await this.base.database.players.getByUID(this.data.heartMonitor!.userID);
     dataBuffer.grow(7 + (user?.display_name.length ?? 0));

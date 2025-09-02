@@ -30,7 +30,8 @@ export class SwitcheROOEdit {
   }
 
   public async execute(): Promise<void> {
-    if (!this.world.hasTilePermission(this.peer.data.userID, this.block, LockPermission.BUILD)) {
+    if (!this.action.dialog_name || !this.action.tilex || !this.action.tiley || !this.action.checkbox_public) return;
+    if (!await this.world.hasTilePermission(this.peer.data.userID, this.block, LockPermission.BUILD)) {
       return;
     }
 

@@ -1,7 +1,7 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { LockPermission, LOCKS, TileFlags } from "../../Constants";
+import { ActionTypes, LockPermission, LOCKS, TileFlags } from "../../Constants";
 import { TileData } from "../../types";
 import { Floodfill } from "../../utils/FloodFill";
 import { World } from "../../core/World";
@@ -13,7 +13,7 @@ export class RevokeLockAccess {
   private world: World;
   private pos: number;
   private block: TileData;
-  private itemMeta: ItemDefinition;
+  private itemMeta?: ItemDefinition;
 
   constructor(
     public base: Base,
@@ -22,7 +22,6 @@ export class RevokeLockAccess {
       dialog_name: string;
       tilex: string;
       tiley: string;
-      lockID: string;
     }>
   ) {
     this.world = this.peer.currentWorld()!;
@@ -30,12 +29,11 @@ export class RevokeLockAccess {
       parseInt(this.action.tilex) +
       parseInt(this.action.tiley) * (this.world?.data.width as number);
     this.block = this.world?.data.blocks[this.pos] as TileData;
-    this.itemMeta = this.base.items.metadata.items.find(
-      (i) => i.id === parseInt(this.action.lockID)
-    )!;
+    this.itemMeta = this.base.items.metadata.items.get(this.block.fg.toString())!;
   }
 
   public async execute(): Promise<void> {
+    if (!this.action.dialog_name || this.itemMeta?.type != ActionTypes.LOCK || !this.action.tilex || !this.action.tiley) return;
     if (this.block.lock?.ownerUserID !== this.peer.data?.userID) {
       if (this.block.lock?.adminIDs?.includes(this.peer.data.userID)) {
         const index = this.block.lock.adminIDs.indexOf(this.peer.data.userID);
@@ -43,7 +41,7 @@ export class RevokeLockAccess {
 
         this.block.lock.adminIDs.splice(index, 1);
 
-        this.world.every((p) => p.sendConsoleMessage(`${this.peer.name} removed their access from a ${this.itemMeta.name}`))
+        this.world.every((p) => p.sendConsoleMessage(`${this.peer.name} removed their access from a ${this.itemMeta?.name}`))
 
         const tile = tileFrom(this.base, this.world, this.block);
         this.world.every((p) => tile.tileUpdate(p));

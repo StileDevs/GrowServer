@@ -33,25 +33,25 @@ export class Peer extends OldPeer<PeerData> {
     if (data)
       this.data = {
         channelID,
-        x: data.x,
-        y: data.y,
-        world: data.world,
-        inventory: data.inventory,
-        rotatedLeft: data.rotatedLeft,
-        requestedName: data.requestedName,
-        tankIDName: data.tankIDName,
+        x:                 data.x,
+        y:                 data.y,
+        world:             data.world,
+        inventory:         data.inventory,
+        rotatedLeft:       data.rotatedLeft,
+        requestedName:     data.requestedName,
+        tankIDName:        data.tankIDName,
         netID,
-        country: data.country,
-        userID: data.userID,
-        role: data.role,
-        gems: data.gems,
-        clothing: data.clothing,
-        exp: data.exp,
-        level: data.level,
-        lastCheckpoint: data.lastCheckpoint,
+        country:           data.country,
+        userID:            data.userID,
+        role:              data.role,
+        gems:              data.gems,
+        clothing:          data.clothing,
+        exp:               data.exp,
+        level:             data.level,
+        lastCheckpoint:    data.lastCheckpoint,
         lastVisitedWorlds: data.lastVisitedWorlds,
-        state: data.state,
-        heartMonitors: data.heartMonitors,
+        state:             data.state,
+        heartMonitors:     data.heartMonitors,
       };
   }
 
@@ -126,9 +126,9 @@ export class Peer extends OldPeer<PeerData> {
         this.data.lastCheckpoint.y * (world?.data.width as number);
       const block = world?.data.blocks[pos];
       const itemMeta =
-        this.base.items.metadata.items[
-        (block?.fg as number) || (block?.bg as number)
-        ];
+        this.base.items.metadata.items.get(
+          ((block?.fg as number).toString || (block?.bg as number)).toString()
+        );
 
       if (itemMeta && itemMeta.type === ActionTypes.CHECKPOINT) {
         mainDoor = this.data.lastCheckpoint as TileData; // only have x,y.
@@ -262,8 +262,8 @@ export class Peer extends OldPeer<PeerData> {
     if (this.data.inventory?.items.find((i) => i.id === id)?.amount !== 0) {
       const tank = TankPacket.from({
         packetType: 4,
-        type: TankTypes.MODIFY_ITEM_INVENTORY,
-        info: id,
+        type:       TankTypes.MODIFY_ITEM_INVENTORY,
+        info:       id,
         buildRange: amount < 0 ? amount * -1 : undefined,
         punchRange: amount < 0 ? undefined : amount
       }).parse() as Buffer;
@@ -303,7 +303,7 @@ export class Peer extends OldPeer<PeerData> {
         this.data.inventory.items = this.data.inventory.items.filter(
           (i) => i.id !== id
         );
-        if (this.base.items.metadata.items[id].type === ActionTypes.CLOTHES) {
+        if (this.base.items.metadata.items.get(id.toString())!.type === ActionTypes.CLOTHES) {
           this.unequipClothes(id);
         }
       }
@@ -388,7 +388,7 @@ export class Peer extends OldPeer<PeerData> {
     if (Object.values(this.data.clothing).includes(itemID))
       this.unequipClothes(itemID);
     else {
-      const item = this.base.items.metadata.items[itemID];
+      const item = this.base.items.metadata.items.get(itemID.toString())!;
       if (!isAnces(item)) {
         const clothKey = CLOTH_MAP[item?.bodyPartType as ClothTypes];
 
@@ -416,7 +416,7 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public unequipClothes(itemID: number) {
-    const item = this.base.items.metadata.items[itemID];
+    const item = this.base.items.metadata.items.get(itemID.toString())!;
 
     let unequiped: boolean = false;
 
@@ -474,16 +474,16 @@ export class Peer extends OldPeer<PeerData> {
 
   public sendState(punchID?: number, everyPeer = true) {
     const tank = TankPacket.from({
-      type: TankTypes.SET_CHARACTER_STATE,
-      netID: this.data.netID,
-      info: this.data.state.mod,
-      xPos: 1200,
-      yPos: 200,
+      type:   TankTypes.SET_CHARACTER_STATE,
+      netID:  this.data.netID,
+      info:   this.data.state.mod,
+      xPos:   1200,
+      yPos:   200,
       xSpeed: 300,
       ySpeed: 600,
       xPunch: 0,
       yPunch: 0,
-      state: 0
+      state:  0
     }).parse() as Buffer;
 
     tank.writeUint8(punchID || 0x0, 5);
@@ -608,5 +608,24 @@ export class Peer extends OldPeer<PeerData> {
       "OnConsoleMessage",
       message
     ))
+  }
+
+
+  /**
+   * Check if an item can fit into the user inventory
+   * @param itemID Item id to check
+   * @param amount amount of item to be addedd
+   * @returns Status if the item can fit in the user inventory
+   */
+  public canAddItemToInv(itemID: number, amount: number = 1): boolean {
+    const inventoryItem = this.data.inventory.items.find((invItem) => invItem.id == itemID);
+    const itemMeta = this.base.items.metadata.items.get(itemID.toString())!;
+
+    if ((inventoryItem && inventoryItem.amount >= itemMeta!.maxAmount!) ||
+      (!inventoryItem && this.data.inventory.items.length >= this.data.inventory.max)
+    ) {
+      return false;
+    }
+    return true;
   }
 }

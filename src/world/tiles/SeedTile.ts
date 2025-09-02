@@ -29,23 +29,22 @@ export class SeedTile extends Tile {
     return true;
   }
 
-  public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<void> {
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
-      this.onPlaceFail(peer);
-      return;
+  public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<boolean> {
+    if (!super.onItemPlace(peer, item)) {
+      return false;
     }
 
     if (Date.now() >= this.data.tree!.fullyGrownAt) {
       this.notifySplicingMatureTree(peer);
-      return;
+      return false;
     }
 
     if (this.data.tree!.isSpliced) {
       this.notifySplicing3Seeds(peer);
-      return;
+      return false;
     }
 
-    const currentSeedMeta = this.base.items.metadata.items[this.data.fg];
+    const currentSeedMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
 
     let spliceSuccessful = false
 
@@ -53,16 +52,16 @@ export class SeedTile extends Tile {
       this.base.items.wiki.every((itemWiki) => {
         if (itemWiki.recipe && itemWiki.recipe.splice.length == 2) {
           if (itemWiki.recipe.splice.includes(item.id! - 1) && itemWiki.recipe.splice.includes(this.data.fg! - 1)) {
-            const spliceResultSeedMeta = this.base.items.metadata.items[itemWiki.id! + 1];
+            const spliceResultSeedMeta = this.base.items.metadata.items.get((itemWiki.id! + 1).toString())!;
             spliceSuccessful = true
             this.initializeTreeData(spliceResultSeedMeta);
             this.data.tree!.isSpliced = true;
 
             this.world.every((p) => {
               this.tileUpdate(p);
-              this.notifySuccessfulSplice(p, currentSeedMeta.name!, item.name!, spliceResultSeedMeta.name!);
             });
-            
+            this.notifySuccessfulSplice(peer, currentSeedMeta.name!, item.name!, spliceResultSeedMeta.name!);
+
             return false;
           }
         }
@@ -70,41 +69,27 @@ export class SeedTile extends Tile {
       })
     }
 
-    if (!spliceSuccessful) this.notifyFailedSplice(peer, currentSeedMeta.name!, item.name!);
+    if (!spliceSuccessful) {
+      this.notifyFailedSplice(peer, currentSeedMeta.name!, item.name!);
+      return false;
+    }
+
+    return true;
   }
 
   public async onPunch(peer: Peer): Promise<boolean> {
-    if (this.data.tree && Date.now() >= this.data.tree.fullyGrownAt && this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
-      const itemMeta = this.base.items.metadata.items[this.data.fg];
-      this.world.drop(
-        peer,
-        this.data.x * 32 + Math.floor(Math.random() * 16),
-        this.data.y * 32 + Math.floor(Math.random() * 16),
-        this.data.tree.fruit,
-        this.data.tree.fruitCount,
-        { tree: true }
-      );
-
-      if (Math.random() <= 0.10) {
-        this.world.drop(
-          peer,
-          this.data.x * 32 + Math.floor(Math.random() * 16),
-          this.data.y * 32 + Math.floor(Math.random() * 16),
-          this.data.fg,
-          1,
-          { tree: true }
-        );
-        this.notifySeedFallout(peer, itemMeta.name!);
-      }
+    if (this.data.tree && Date.now() >= this.data.tree.fullyGrownAt && await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+      const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
+      this.dropHarvestGoodies(peer, itemMeta!);
 
       this.world.every((p) => {
         p.send(
           TankPacket.from({
-            type: TankTypes.SEND_TILE_TREE_STATE,
-            netID: peer.data?.netID,
+            type:        TankTypes.SEND_TILE_TREE_STATE,
+            netID:       peer.data?.netID,
             targetNetID: -1,
-            xPunch: this.data.x,
-            yPunch: this.data.y
+            xPunch:      this.data.x,
+            yPunch:      this.data.y
           })
         )
       })
@@ -152,6 +137,31 @@ export class SeedTile extends Tile {
     return;
   }
 
+  private dropHarvestGoodies(peer: Peer, itemMeta: ItemDefinition) {
+    this.world.drop(
+      peer,
+      this.data.x * 32 + Math.floor(Math.random() * 16),
+      this.data.y * 32 + Math.floor(Math.random() * 16),
+      this.data.tree!.fruit,
+      this.data.tree!.fruitCount,
+      { tree: true }
+    );
+
+    this.calculateAndSpawnGems(peer, itemMeta.rarity!);
+
+    if (Math.random() <= 0.10) {
+      this.world.drop(
+        peer,
+        this.data.x * 32 + Math.floor(Math.random() * 16),
+        this.data.y * 32 + Math.floor(Math.random() * 16),
+        this.data.fg,
+        1,
+        { tree: true }
+      );
+      this.notifySeedFallout(peer, itemMeta.name!);
+    }
+  }
+
   private initializeTreeData(seed: ItemDefinition) {
     this.data.flags |= TileFlags.TILEEXTRA | TileFlags.SEED;
     const fruitCount =
@@ -162,11 +172,11 @@ export class SeedTile extends Tile {
     this.data.damage = 0;
 
     this.data.tree = {
-      fruit: seed.id! - 1,
+      fruit:        seed.id! - 1,
       fruitCount,
       fullyGrownAt: (this.data.tree?.plantedAt ?? now) + (seed.growTime || 0) * 1000,
-      plantedAt: now,
-      isSpliced: false
+      plantedAt:    now,
+      isSpliced:    false
     }
   }
 

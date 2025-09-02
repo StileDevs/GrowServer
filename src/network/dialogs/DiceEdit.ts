@@ -8,11 +8,10 @@ import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
 import { LockPermission, TileFlags } from "../../Constants";
 
-export class DoorEdit {
+export class DiceEdit {
   private world: World;
   private pos: number;
   private block: TileData;
-  private itemMeta: ItemDefinition;
 
   constructor(
     public base: Base,
@@ -21,11 +20,8 @@ export class DoorEdit {
       dialog_name: string;
       tilex: string;
       tiley: string;
-      itemID: string;
-      label: string;
-      target: string;
-      checkbox_public: string;
-      id: string;
+      checkbox_public?: string;
+      checkbox_silence?: string;
     }>
   ) {
     this.world = this.peer.currentWorld()!;
@@ -33,31 +29,24 @@ export class DoorEdit {
       parseInt(this.action.tilex) +
       parseInt(this.action.tiley) * (this.world?.data.width as number);
     this.block = this.world?.data.blocks[this.pos] as TileData;
-    this.itemMeta = this.base.items.metadata.items.find(
-      (i) => i.id === parseInt(action.itemID)
-    )!;
   }
 
   public async execute(): Promise<void> {
-    if (!this.action.dialog_name || !this.action.tilex || !this.action.tiley || !this.action.itemID || !this.action.label || !this.action.target || !this.action.checkbox_public || !this.action.id) return;
-    if (!await this.world.hasTilePermission(this.peer.data.userID, this.block, LockPermission.BUILD) || !this.block.door) {
+    if (!this.action.checkbox_public || !this.action.checkbox_silence || !this.action.dialog_name || !this.action.tilex || !this.action.tiley) return;
+    if (!await this.world.hasTilePermission(this.peer.data.userID, this.block, LockPermission.BUILD) || !this.block.dice) {
       return;
     }
 
-    this.block.door = {
-      label:       this.action.label || "",
-      destination: this.action.target?.toUpperCase() || "",
-      id:          this.action.id?.toUpperCase() || ""
-    };
 
     if (this.action.checkbox_public == "1") {
       this.block.flags |= TileFlags.PUBLIC;
-    }
-    else {
-      this.block.flags &= ~TileFlags.PUBLIC; // unset PUBLIC flag
-    }
+    } else { this.block.flags &= ~(TileFlags.PUBLIC); }
 
-    const doorTile = tileFrom(this.base, this.world, this.block);
-    this.world.every((p) => doorTile.tileUpdate(p));
+    if (this.action.checkbox_silence == "1") {
+      this.block.flags |= TileFlags.SILENCED
+    } else { this.block.flags &= ~(TileFlags.SILENCED); }
+
+    const diceTile = tileFrom(this.base, this.world, this.block);
+    this.world.every((p) => diceTile.tileUpdate(p));
   }
 }

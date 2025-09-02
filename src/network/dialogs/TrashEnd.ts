@@ -14,6 +14,7 @@ export class TrashEnd {
   ) {}
 
   public async execute(): Promise<void> {
+    if (!this.action.dialog_name || !this.action.trash_count || !this.action.itemID) return;
     const itemID = parseInt(this.action.itemID);
     const invenItem = this.peer.data.inventory.items.find(
       (item) => item.id === itemID

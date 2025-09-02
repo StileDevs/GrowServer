@@ -21,22 +21,27 @@ export class DoorTile extends Tile {
   }
 
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
-    if (!super.onPlaceForeground(peer, itemMeta)) { return false; }
+    if (!await super.onPlaceForeground(peer, itemMeta)) { return false; }
 
     // by default, it is public
     // in real growtopia server, they dont use this. But because im lazy, im gonna use TileFlags instead - Badewen
     this.data.flags |= TileFlags.TILEEXTRA | TileFlags.PUBLIC;
     this.data.door = {
       destination: "",
-      id: "",
-      label: ""
+      id:          "",
+      label:       ""
     }
 
     return true;
   }
 
+  public async onDestroy(peer: Peer): Promise<void> {
+    await super.onDestroy(peer);
+    this.data.door = undefined;
+  }
+
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
-    super.serialize(dataBuffer);
+    await super.serialize(dataBuffer);
     const labelTotalSize = 2 + (this.data.door!.label ?? "").length;
     dataBuffer.grow(1 + labelTotalSize + 1);
 
@@ -48,12 +53,12 @@ export class DoorTile extends Tile {
   }
 
   public async onWrench(peer: Peer): Promise<boolean> {
-    if (!super.onWrench(peer)) {
+    if (!await super.onWrench(peer)) {
       this.onPlaceFail(peer);
       return false;
     }
 
-    const itemMeta = this.base.items.metadata.items[this.data.fg];
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
     const dialog = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(

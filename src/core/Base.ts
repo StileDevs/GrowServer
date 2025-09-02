@@ -2,7 +2,6 @@ import { Client } from "growtopia.js";
 import { Web } from "./Web";
 import {
   downloadMkcert,
-  hashItemsDat,
   setupMkcert,
   checkPortInUse,
   downloadWebsite,
@@ -42,7 +41,7 @@ export class Base {
   constructor() {
     this.server = new Client({
       enet: {
-        ip: "0.0.0.0",
+        ip:                 "0.0.0.0",
         useNewServerPacket: true,
       },
     });
@@ -54,14 +53,14 @@ export class Base {
     );
     this.cdn = { version: "", uri: "0000/0000", itemsDatName: "" };
     this.items = {
-      content: Buffer.alloc(0),
-      hash: "",
+      content:  Buffer.alloc(0),
+      hash:     "",
       metadata: {} as ItemsDatMeta,
-      wiki: []
+      wiki:     []
     }
     this.cache = {
-      peers: new Collection(),
-      worlds: new Collection(),
+      peers:    new Collection(),
+      worlds:   new Collection(),
       cooldown: new Collection()
     };
 
@@ -99,10 +98,10 @@ export class Base {
       const itemsDat = readFileSync(datName);
 
       this.items = {
-        hash: `${hashItemsDat(itemsDat)}`,
-        content: itemsDat,
+        hash:     `${RTTEX.hash(itemsDat)}`,
+        content:  itemsDat,
         metadata: {} as ItemsDatMeta,
-        wiki: [] as ItemsInfo[]
+        wiki:     [] as ItemsInfo[]
       }
       await Web(this);
 
@@ -138,25 +137,25 @@ export class Base {
     );
 
     // Check items-config.json file changes
-    // chokidar
-    //   .watch(join(__dirname, "assets", "custom-items"), { persistent: true })
-    //   .on("change", async (path) => {
-    //     const pathArr = path.split("\\");
-    //     const fileName = pathArr[pathArr.length - 1];
-    // chokidar
-    //   .watch(join(__dirname, "assets", "custom-items"), { persistent: true })
-    //   .on("change", async (path) => {
-    //     const pathArr = path.split("\\");
-    //     const fileName = pathArr[pathArr.length - 1];
+    chokidar
+      .watch(join(__dirname, "assets", "custom-items"), { persistent: true })
+      .on("change", async (path) => {
+        const pathArr = path.split("\\");
+        const fileName = pathArr[pathArr.length - 1];
+        chokidar
+          .watch(join(__dirname, "assets", "custom-items"), { persistent: true })
+          .on("change", async (path) => {
+            const pathArr = path.split("\\");
+            const fileName = pathArr[pathArr.length - 1];
 
-    //     consola.info(`Detected custom-items directory changes | ${fileName}`);
-    //     consola.info(`Refreshing items data`);
-    //     await this.loadItems();
-    //   });
-    //     consola.info(`Detected custom-items directory changes | ${fileName}`);
-    //     consola.info(`Refreshing items data`);
-    //     await this.loadItems();
-    //   });
+            consola.info(`Detected custom-items directory changes | ${fileName}`);
+            consola.info(`Refreshing items data`);
+            await this.loadItems();
+          });
+        consola.info(`Detected custom-items directory changes | ${fileName}`);
+        consola.info(`Refreshing items data`);
+        await this.loadItems();
+      });
   }
 
   private async loadItems() {
@@ -168,108 +167,109 @@ export class Base {
     await itemsDat.decode();
     consola.start("Loading custom items...");
 
-    // try {
-    //   const itemsConf = JSON.parse(
-    //     await readFile(
-    //       join(__dirname, "assets", "custom-items", "items-config.json"),
-    //       "utf-8"
-    //     )
-    //   ) as CustomItemsConfig;
+    try {
+      const itemsConf = JSON.parse(
+        await readFile(
+          join(__dirname, "assets", "custom-items", "items-config.json"),
+          "utf-8"
+        )
+      ) as CustomItemsConfig;
 
-    //   for (const asset of itemsConf.assets) {
-    //     if (!asset.id) throw "Item ID are required to replace specific item";
+      for (const asset of itemsConf.assets) {
+        if (!asset.id) throw "Item ID are required to replace specific item";
 
-    //     const item = itemsDat.meta.items[asset.id];
+        const item = itemsDat.meta.items.get(asset.id.toString())!;
 
-    //     consola.start(`Modifying item ID: ${item.id} | ${item.name}`);
+        consola.start(`Modifying item ID: ${item.id} | ${item.name}`);
 
-    //     Object.assign(item, {
-    //       ...asset.item,
-    //     });
+        Object.assign(item, {
+          ...asset.item,
+        });
 
-    //     if (asset.item.extraFile) {
-    //       const image = await readFile(
-    //         join(
-    //           __dirname,
-    //           "assets",
-    //           "custom-items",
-    //           asset.item.extraFile.pathAsset
-    //         )
-    //       );
-    //       const rttex = await RTTEX.encode(image);
+        if (asset.item.extraFile) {
+          const image = await readFile(
+            join(
+              __dirname,
+              "assets",
+              "custom-items",
+              asset.item.extraFile.pathAsset
+            )
+          );
+          const rttex = await RTTEX.encode(image);
 
-    //       item.extraFile = asset.item.extraFile.pathResult;
-    //       item.extraFileHash = hashItemsDat(rttex);
+          item.extraFile = asset.item.extraFile.pathResult;
+          item.extraFileHash = RTTEX.hash(rttex);
 
-    //       await mkdir(
-    //         join(__dirname, ".cache", "growtopia", "cache", asset.storePath),
-    //         {
-    //           recursive: true,
-    //         }
-    //       );
-    //       await writeFile(
-    //         join(
-    //           __dirname,
-    //           ".cache",
-    //           "growtopia",
-    //           "cache",
-    //           asset.storePath,
-    //           asset.item.extraFile.fileName
-    //         ),
-    //         rttex,
-    //         {
-    //           flush: true,
-    //         }
-    //       );
-    //     }
+          await mkdir(
+            join(__dirname, ".cache", "growtopia", "cache", asset.storePath),
+            {
+              recursive: true,
+            }
+          );
+          await writeFile(
+            join(
+              __dirname,
+              ".cache",
+              "growtopia",
+              "cache",
+              asset.storePath,
+              asset.item.extraFile.fileName
+            ),
+            rttex,
+            {
+              flush: true,
+            }
+          );
+        }
 
-    //     if (asset.item.texture) {
-    //       const image = await readFile(
-    //         join(
-    //           __dirname,
-    //           "assets",
-    //           "custom-items",
-    //           asset.item.texture.pathAsset
-    //         )
-    //       );
-    //       const rttex = await RTTEX.encode(image);
+        if (asset.item.texture) {
+          const image = await readFile(
+            join(
+              __dirname,
+              "assets",
+              "custom-items",
+              asset.item.texture.pathAsset
+            )
+          );
+          const rttex = await RTTEX.encode(image);
 
-    //       item.texture = asset.item.texture.pathResult;
-    //       item.textureHash = hashItemsDat(rttex);
+          item.texture = asset.item.texture.pathResult;
+          item.textureHash = RTTEX.hash(rttex);
 
-    //       await mkdir(
-    //         join(__dirname, ".cache", "growtopia", "cache", asset.storePath),
-    //         {
-    //           recursive: true,
-    //         }
-    //       );
-    //       await writeFile(
-    //         join(
-    //           __dirname,
-    //           ".cache",
-    //           "growtopia",
-    //           "cache",
-    //           asset.storePath,
-    //           asset.item.texture.fileName
-    //         ),
-    //         rttex,
-    //         {
-    //           flush: true,
-    //         }
-    //       );
-    //     }
+          await mkdir(
+            join(__dirname, ".cache", "growtopia", "cache", asset.storePath),
+            {
+              recursive: true,
+            }
+          );
+          await writeFile(
+            join(
+              __dirname,
+              ".cache",
+              "growtopia",
+              "cache",
+              asset.storePath,
+              asset.item.texture.fileName
+            ),
+            rttex,
+            {
+              flush: true,
+            }
+          );
+        }
 
-    //     consola.success(
-    //       `Successfully modifying item ID: ${item.id} | ${item.name}`
-    //     );
-    //   }
-    // } catch (e) {
-    //   consola.error("Failed to load custom items: " + e);
-    // }
+        consola.success(
+          `Successfully modifying item ID: ${item.id} | ${item.name}`
+        );
+      }
+    } catch (e) {
+      consola.error("Failed to load custom items: " + e);
+    }
 
-    // await itemsDat.encode();
+    await itemsDat.encode();
+
     const bufData = Buffer.from(itemsDat.buffer.data);
-    const hash = hashItemsDat(bufData);
+    const hash = RTTEX.hash(bufData);
     this.items.content = bufData;
     this.items.hash = `${hash}`;
     this.items.metadata = itemsDat.meta;
@@ -288,8 +288,8 @@ export class Base {
       const itemsDat = await fetchJSON(ITEMS_DAT_FETCH_URL) as { content: string };
 
       const data: CDNContent = {
-        version: cdnData.version,
-        uri: cdnData.uri,
+        version:      cdnData.version,
+        uri:          cdnData.uri,
         itemsDatName: itemsDat.content
       }
 

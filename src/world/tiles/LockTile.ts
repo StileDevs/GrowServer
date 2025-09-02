@@ -1,5 +1,5 @@
 import { Variant } from "growtopia.js";
-import { ActionTypes, BlockFlags, LockPermission, LOCKS, TileExtraTypes, TileFlags } from "../../Constants";
+import { ActionTypes, BlockFlags, LockPermission, LOCKS, ROLE, TileExtraTypes, TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
@@ -22,11 +22,11 @@ export class LockTile extends Tile {
   }
 
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
-    if (this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+    if (await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
       const worldOwnerUID = this.world.getOwnerUID();
 
       if (worldOwnerUID) {
-        if (worldOwnerUID != peer.data.userID) {
+        if (worldOwnerUID != peer.data.userID && peer.data.role != ROLE.DEVELOPER) {
           await this.notifyNoLocksAllowed(peer);
           return false;
         }
@@ -47,7 +47,7 @@ export class LockTile extends Tile {
         return false;
       }
 
-      super.onPlaceForeground(peer, itemMeta);
+      await super.onPlaceForeground(peer, itemMeta);
       this.data.flags |= TileFlags.TILEEXTRA;
 
       const areaLocker = LOCKS.find((l) => l.id === itemMeta.id);
@@ -65,14 +65,14 @@ export class LockTile extends Tile {
       return true;
     }
     else {
-      this.onPlaceFail(peer);
+      await this.onPlaceFail(peer);
     }
 
     return false;
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
-    super.onDestroy(peer);
+    await super.onDestroy(peer);
 
     if (this.data.worldLockData) {
       this.notifyWorldLockRemove();
@@ -90,9 +90,9 @@ export class LockTile extends Tile {
   }
 
   public async onWrench(peer: Peer): Promise<boolean> {
-    const itemMeta = this.base.items.metadata.items[this.data.fg];
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
     // the one being wrenched is the lock itself.
-    if (!super.onWrench(peer)) {
+    if (!await super.onWrench(peer)) {
       if (this.data.lock?.adminIDs?.includes(peer.data.userID)) {
         const dialog = new DialogBuilder();
         const worldOwnerData = await this.base.database.players.getByUID(this.data.lock.ownerUserID);
@@ -101,7 +101,6 @@ export class LockTile extends Tile {
           .addLabelWithIcon(`\`wEdit ${itemMeta.name}\`\``, itemMeta.id as number, "big")
           .embed("tilex", this.data.x)
           .embed("tiley", this.data.y)
-          .embed("lockID", this.data.fg)
           .addLabel(`This lock is owned by ${worldOwnerData?.display_name}, but I have access on it.`)
           .endDialog("revoke_lock_access", "Cancel", "Remove My Access")
 
@@ -120,7 +119,6 @@ export class LockTile extends Tile {
         itemMeta.id as number,
         "big"
       )
-      .embed("lockID", itemMeta.id)
       .embed("tilex", this.data.x)
       .embed("tiley", this.data.y)
       .addLabel("Access list:")
@@ -196,9 +194,9 @@ export class LockTile extends Tile {
   }
 
   public async onPunchFail(peer: Peer): Promise<void> {
-    super.onPunchFail(peer);
+    await super.onPunchFail(peer);
 
-    const itemMeta = this.base.items.metadata.items[this.data.fg];
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
     const ownerData = await this.base.database.players.getByUID(this.data.lock!.ownerUserID);
 
     let accessStatus = "`4No Access``";
@@ -215,7 +213,7 @@ export class LockTile extends Tile {
   }
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
-    super.serialize(dataBuffer);
+    await super.serialize(dataBuffer);
 
     dataBuffer.grow(10);
     dataBuffer.writeU8(this.extraType);
@@ -238,13 +236,13 @@ export class LockTile extends Tile {
     defaultPermission: LockPermission;
   }) {
     const algo = new Floodfill({
-      s_node: { x: this.data.x, y: this.data.y },
-      max: lockData.maxTiles,
-      width: this.world.data.width,
-      height: this.world.data.height,
-      blocks: this.world.data.blocks,
-      s_block: this.data,
-      base: this.base,
+      s_node:     { x: this.data.x, y: this.data.y },
+      max:        lockData.maxTiles,
+      width:      this.world.data.width,
+      height:     this.world.data.height,
+      blocks:     this.world.data.blocks,
+      s_block:    this.data,
+      base:       this.base,
       noEmptyAir: false
     });
 
@@ -258,19 +256,19 @@ export class LockTile extends Tile {
     const playerData = await this.base.database.players.getByUID(peer.data.userID);
 
     this.data.lock = {
-      ownerUserID: peer.data.userID,
-      permission: LockPermission.NONE,
-      adminIDs: [],
-      adminLimited: false,
+      ownerUserID:    peer.data.userID,
+      permission:     LockPermission.NONE,
+      adminIDs:       [],
+      adminLimited:   false,
       ignoreEmptyAir: false,
-      ownedTiles: []
+      ownedTiles:     []
     }
 
     this.data.worldLockData = {
-      bpm: 100,
+      bpm:                       100,
       customMusicBlocksDisabled: false,
-      invisMusicBlocks: false,
-      minLevel: 1
+      invisMusicBlocks:          false,
+      minLevel:                  1
     }
 
     this.world.data.worldLockIndex = this.data.y * this.world.data.width + this.data.x;

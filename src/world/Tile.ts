@@ -1,19 +1,20 @@
 import { TankPacket, Variant } from "growtopia.js";
-import type { Peer } from "../core/Peer";
+import { Peer } from "../core/Peer";
 import type { World } from "../core/World";
 import { type TileData } from "../types";
 import type { Base } from "../core/Base";
 import { ExtendBuffer } from "../utils/ExtendBuffer";
 import { TileMap } from "./tiles";
-import { ActionTypes, BlockFlags, LockPermission, TankTypes, TileFlags } from "../Constants";
+import { ActionTypes, BlockFlags, BlockFlags2, LockPermission, ROLE, TankTypes, TileFlags } from "../Constants";
 import { NormalTile } from "./tiles/NormalTile";
 import { ItemDefinition } from "grow-items";
 
 export class Tile {
+
   constructor(
     public base: Base,
     public world: World,
-    public data: TileData
+    public data: TileData,
   ) { }
 
   /**
@@ -24,7 +25,7 @@ export class Tile {
    */
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
     if (!peer.searchItem(itemMeta.id!)) return false;
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+    if (!await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
       await this.onPlaceFail(peer);
       return false;
     }
@@ -39,11 +40,11 @@ export class Tile {
     }
 
     const tank = TankPacket.from({
-      type: TankTypes.TILE_CHANGE_REQUEST,
+      type:   TankTypes.TILE_CHANGE_REQUEST,
       xPunch: this.data.x,
       yPunch: this.data.y,
-      info: this.data.fg,
-      state: (this.data.flags & TileFlags.FLIPPED ? 0x10 : 0) // set the rotateLeft flag
+      info:   this.data.fg,
+      state:  (this.data.flags & TileFlags.FLIPPED ? 0x10 : 0) // set the rotateLeft flag
     });
 
     this.world.every((p) => {
@@ -62,7 +63,7 @@ export class Tile {
  * @returns True if the block is successfully placed. False otherwise.
  */
   public async onPlaceBackground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !peer.searchItem(itemMeta.id!)) {
+    if (!await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !peer.searchItem(itemMeta.id!)) {
       await this.onPlaceFail(peer);
       return false;
     }
@@ -71,10 +72,10 @@ export class Tile {
     if (!this.data.fg) this.data.damage = 0;
 
     const tank = TankPacket.from({
-      type: TankTypes.TILE_CHANGE_REQUEST,
+      type:   TankTypes.TILE_CHANGE_REQUEST,
       xPunch: this.data.x,
       yPunch: this.data.y,
-      info: this.data.bg
+      info:   this.data.bg
     });
 
     this.world.every((p) => {
@@ -99,19 +100,29 @@ export class Tile {
  * @returns True if the punch is successful. False otherwise.
  */
   public async onPunch(peer: Peer): Promise<boolean> {
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK)) {
-      this.onPunchFail(peer);
-      return false;
-    }
-
     // nothing is being punched, but the player also has access to the tile. Lets just return true
     if (this.data.fg == 0 && this.data.bg == 0) return true;
 
+    const itemMeta = this.base.items.metadata.items.get((this.data.fg ? this.data.fg : this.data.bg).toString())!;
+    if (peer.data.role != ROLE.DEVELOPER) {
+      if (!(await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK)) && !(itemMeta.flags! & BlockFlags.PUBLIC)) {
+        this.onPunchFail(peer);
+        return false;
+      }
+
+      if ((itemMeta.flags! & BlockFlags.PERMANENT) && !peer.canAddItemToInv(itemMeta.id!)) {
+        peer.sendTextBubble("I better not break that, I have no room to pick it up.", true);
+        return false;
+      }
+      else if ((itemMeta.flags! & BlockFlags.MOD)) {
+        peer.sendTextBubble("It's too strong to break.", true);
+        return false;
+      }
+    }
+
     this.applyDamage(peer, 6);
 
-    const itemHealth = this.base.items.metadata.items[this.data.fg ?? this.data.bg].breakHits!;
-
-    if (this.data.damage && this.data.damage >= itemHealth) {
+    if (this.data.damage && this.data.damage >= itemMeta.breakHits!) {
       this.onDestroy(peer);
     }
 
@@ -144,8 +155,8 @@ export class Tile {
     this.onDrop(peer, destroyedItemID);
 
     const tank = TankPacket.from({
-      type: TankTypes.TILE_CHANGE_REQUEST,
-      info: 18,
+      type:   TankTypes.TILE_CHANGE_REQUEST,
+      info:   18,
       xPunch: this.data.x,
       yPunch: this.data.y
     });
@@ -157,7 +168,48 @@ export class Tile {
   }
 
   public async onDrop(peer: Peer, destroyedItemID: number) {
+    const itemMeta = this.base.items.metadata.items.get(destroyedItemID.toString());
+    if (!itemMeta) return;
 
+    if (itemMeta.flags! & BlockFlags.DROPLESS) return;
+    else if (itemMeta.flags! & BlockFlags.PERMANENT) {
+      peer.addItemInven(destroyedItemID);
+      return;
+    }
+
+    // Tried to find info about drop rates, here's an info on seeds: https://growtopia.fandom.com/wiki/Gems
+    // https://www.growtopiagame.com/forums/forum/general/guidebook/273543-farming-calculator%E2%80%94estimate-seeds-gems-xp-with-formula-explanations
+    // https://www.growtopiagame.com/forums/forum/general/guidebook/284860-beastly-s-calculator-hub/page12
+    const rand = Math.random();
+    if (rand <= 0.11) {        // 1/9 chance
+      this.world.drop(
+        peer,
+        this.data.x * 32 + Math.floor(Math.random() * 16),
+        this.data.y * 32 + Math.floor(Math.random() * 16),
+        itemMeta.id!, 1,
+        { tree: true }
+      ); // block
+      return;
+    }
+    else if (rand <= 0.33) { // 2/9 chance
+      if (itemMeta.flags! & BlockFlags.SEEDLESS) return;
+      this.world.drop(
+        peer,
+        this.data.x * 32 + Math.floor(Math.random() * 16),
+        this.data.y * 32 + Math.floor(Math.random() * 16),
+        itemMeta.id! + 1, 1,
+        { tree: true }
+      ); // seed
+      return;
+    }
+    else if (!(itemMeta.flags2! & BlockFlags2.GEMLESS)) { // check if it is not GEMLESS
+      // Prevent no rarity items drop gems
+      if (itemMeta.rarity! >= 999) {
+        return;
+      }
+
+      this.calculateAndSpawnGems(peer, itemMeta.rarity!);
+    }
   }
 
   /**
@@ -168,9 +220,12 @@ export class Tile {
    * @param peer Peer that initiates the packet
    * @param item Item that is being placed
    */
-  public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<void> {
-    // TODO: Default behaviour when a player tries to place anything on an existing tile
-    //  example: Display block, Splicing.
+  public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<boolean> {
+    if (!await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+      this.onPlaceFail(peer)
+      return false;
+    }
+    return true;
   }
 
   /**
@@ -179,8 +234,8 @@ export class Tile {
    * @returns True if it passes basic sanity checks and permission checks. False otherwise
    */
   public async onWrench(peer: Peer): Promise<boolean> {
-    const itemMeta = this.base.items.metadata.items[this.data.fg];
-    if (!this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !(itemMeta.flags! & BlockFlags.WRENCHABLE)) {
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
+    if (!await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD) || !(itemMeta.flags! & BlockFlags.WRENCHABLE)) {
       return false;
     }
 
@@ -231,7 +286,13 @@ export class Tile {
     }
   }
 
-  public async applyDamage(peer: Peer, damage: number): Promise<void> {
+  /**
+   * Apply damage on this tile and broadcast it
+   * @param peer peer that applied the damage
+   * @param damage damage to the tile
+   * @param baseTankPkt You can provide your own TankPacket here. Fields that will be overidden are: `type`, `netID`, `info`, `xPunch`, and `yPunch`. (Optional)
+   */
+  public async applyDamage(peer: Peer, damage: number, baseTankPkt?: TankPacket): Promise<void> {
     if (peer.data.world == this.world.worldName) {
       if (!this.data.resetStateAt || this.data.resetStateAt as number <= Date.now()) this.data.damage = 0;
       // i dont like how there are no health field in the item meta. But atleast there is a workaround :) - Badewen
@@ -239,17 +300,15 @@ export class Tile {
         (this.data.damage as number) += damage / 6;
       }
 
-      const tank = new TankPacket(
-        {
-          type: TankTypes.TILE_APPLY_DAMAGE,
-          netID: peer.data.netID,
-          info: damage,
-          xPunch: this.data.x,
-          yPunch: this.data.y
-        }
-      )
+      const tank = baseTankPkt ?? new TankPacket({});
 
-      const itemMeta = this.base.items.metadata.items[this.data.fg ? this.data.fg : this.data.bg];
+      tank!.data!.type = TankTypes.TILE_APPLY_DAMAGE;
+      tank!.data!.netID = peer.data.netID;
+      tank!.data!.info = damage;
+      tank!.data!.xPunch = this.data.x;
+      tank!.data!.yPunch = this.data.y;
+
+      const itemMeta = this.base.items.metadata.items.get((this.data.fg ? this.data.fg : this.data.bg).toString())!;
 
       this.data.resetStateAt =
         Date.now() + (itemMeta.resetStateAfter as number) * 1000;
@@ -273,13 +332,13 @@ export class Tile {
 
   public async tileUpdate(peer: Peer) {
     const serializedData = await this.parse();
-    
+
     peer.send(
       TankPacket.from({
-        type: TankTypes.SEND_TILE_UPDATE_DATA,
+        type:   TankTypes.SEND_TILE_UPDATE_DATA,
         xPunch: this.data.x,
         yPunch: this.data.y,
-        data: () => serializedData.data
+        data:   () => serializedData.data
       })
     );
   }
@@ -301,6 +360,66 @@ export class Tile {
     const ownerName = await this.base.database.players.getByUID(ownerUserID);
 
     peer.sendTextBubble(`That area is owned by ${ownerName?.display_name}`, true, peer.data.netID);
+  }
+
+  // Trying to add more gems, because https://growtopia.fandom.com/wiki/Chandelier
+  // some items may drop more than gem calculation based on rarity
+  private randomizeGemsDrop(rarity: number): number {
+    const max = Math.random();
+    let bonus = 0;
+    const threshold = Math.min(0.1 + (rarity / 100), 0.5); // Linear increase, caps on 0.5
+    // How it works: For rarity 5, threshold = 0.15, For rarity 30, threshold = 0.2
+    if (max <= threshold) {
+      bonus = 1;
+    }
+    if (rarity >= 30 && max <= 0.5) {
+      bonus = 5;
+    } else if (rarity >= 60 && max <= 0.6) {
+      bonus = 12;
+    } else if (rarity >= 60 && max <= 0.3) {
+      bonus = 5;
+    }
+
+    // Gem Calculation based on Rarity
+    let gems: number;
+    if (rarity < 30) {
+      gems = rarity / 12;
+    } else {
+      gems = rarity / 8;
+    }
+
+    return Math.floor(gems + bonus);
+  }
+
+  private splitGemsDrop(totalGems: number): number[] {
+    // List of gems limit. 1 for normal gems and 10 for red gems.
+    const GEMS_LIMITS = [100, 50, 10, 5, 1];
+    let ret: Array<number> = [];
+    let currentGems = totalGems;
+
+    for (const limit of GEMS_LIMITS) {
+      // Create an array with the length of Math.floor(currentGems / limit) 
+      //  and fill it with limit the push it to ret
+      ret = ret.concat(Array(Math.floor(currentGems / limit)).fill(limit));
+      currentGems = currentGems % limit;
+    }
+
+    return ret;
+  }
+
+  protected calculateAndSpawnGems(peer: Peer, rarity: number) {
+    const gemList = this.splitGemsDrop(this.randomizeGemsDrop(rarity));
+
+    for (const gem of gemList) {
+      this.world.drop(
+        peer,
+        this.data.x * 32 + Math.floor(Math.random() * 16),
+        this.data.y * 32 + Math.floor(Math.random() * 16),
+        112,
+        gem,
+        { tree: true, noSimilar: true }
+      );
+    }
   }
 
 }

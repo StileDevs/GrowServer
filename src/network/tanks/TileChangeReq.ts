@@ -36,7 +36,7 @@ export class TileChangeReq {
       (this.tank.data?.yPunch as number) * this.world.data.width;
     this.block = this.world.data.blocks[this.pos];
     this.itemMeta =
-      this.base.items.metadata.items[this.block.fg || this.block.bg];
+      this.base.items.metadata.items.get((this.block.fg || this.block.bg).toString())!;
   }
 
   // this verifies the packet and the tile state.
@@ -54,9 +54,9 @@ export class TileChangeReq {
     }
     // Others
     else {
-      const itemMeta = this.base.items.metadata.items.find((item) => item.id == this.tank.data?.info)
+      const itemMeta = this.base.items.metadata.items.get(this.tank.data?.info.toString());
 
-      if (itemMeta == undefined) return;
+      if (!itemMeta) return;
 
       if (itemMeta.type == ActionTypes.BACKGROUND) {
         // we dont want to give the itemType here as to not override current foreground itemType.

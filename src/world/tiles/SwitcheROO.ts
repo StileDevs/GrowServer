@@ -18,7 +18,7 @@ export class SwitcheROO extends Tile {
   }
 
   public async onPunch(peer: Peer): Promise<boolean> {
-    if (this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK)) {
+    if (await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK)) {
       // default punch behaviour, but with an exception
       this.data.flags ^= TileFlags.OPEN;
     }
@@ -33,8 +33,8 @@ export class SwitcheROO extends Tile {
   }
 
   public async onWrench(peer: Peer): Promise<boolean> {
-    const itemMeta = this.base.items.metadata.items[this.data.fg];
-    if (this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD && (itemMeta.flags! & BlockFlags.WRENCHABLE))) {
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
+    if (await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD && (itemMeta.flags! & BlockFlags.WRENCHABLE))) {
       const dialog = new DialogBuilder()
         .defaultColor()
         .addLabelWithIcon(

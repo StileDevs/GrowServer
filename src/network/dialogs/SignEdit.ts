@@ -6,6 +6,7 @@ import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
 import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
+import { ROLE } from "../../Constants";
 
 export class SignEdit {
   private world: World;
@@ -20,8 +21,7 @@ export class SignEdit {
       dialog_name: string;
       tilex: string;
       tiley: string;
-      itemID: string;
-      label?: string;
+      label: string;
     }>
   ) {
     this.world = this.peer.currentWorld()!;
@@ -29,17 +29,18 @@ export class SignEdit {
       parseInt(this.action.tilex) +
       parseInt(this.action.tiley) * (this.world?.data.width as number);
     this.block = this.world?.data.blocks[this.pos] as TileData;
-    this.itemMeta = this.base.items.metadata.items.find(
-      (i) => i.id === parseInt(action.itemID)
-    )!;
+    this.itemMeta = this.base.items.metadata.items.get(this.block.fg.toString())!;
   }
 
   public async execute(): Promise<void> {
+    if (!this.action.dialog_name || !this.action.tilex || !this.action.tiley || !this.action.label) return;
     const ownerUID = this.world.getOwnerUID();
 
     if (ownerUID) {
-      if (ownerUID !== this.peer.data?.userID) return;
+      if (ownerUID !== this.peer.data?.userID && this.peer.data.role == ROLE.DEVELOPER) return;
     }
+
+    if (!this.block.sign) return;
 
     this.block.sign = {
       label: this.action.label || ""

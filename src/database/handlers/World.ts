@@ -35,15 +35,15 @@ export class WorldDB {
     const worldLockData = data.worldLockIndex ? data.blocks[data.worldLockIndex].lock : null;
 
     const res = await this.db.insert(worlds).values({
-      name: data.name,
-      ownedBy: worldLockData?.ownerUserID ?? null,
-      width: data.width,
-      height: data.height,
-      blocks: Buffer.from(JSON.stringify(data.blocks)),
+      name:            data.name,
+      ownedBy:         worldLockData?.ownerUserID ?? null,
+      width:           data.width,
+      height:          data.height,
+      blocks:          Buffer.from(JSON.stringify(data.blocks)),
       // owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
-      dropped: Buffer.from(JSON.stringify(data.dropped)),
-      updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
-      weather_id: data.weatherId,
+      dropped:         Buffer.from(JSON.stringify(data.dropped)),
+      updated_at:      new Date().toISOString().slice(0, 19).replace("T", " "),
+      weather_id:      data.weatherId,
       worldlock_index: data.worldLockIndex,
       // minimum_level: data.minLevel
     });
@@ -60,12 +60,12 @@ export class WorldDB {
     const res = await this.db
       .update(worlds)
       .set({
-        ownedBy: worldLockData?.ownerUserID ?? null,
-        width: data.width,
-        height: data.height,
-        blocks: Buffer.from(JSON.stringify(data.blocks)), // only save tile data here.
+        ownedBy:    worldLockData?.ownerUserID ?? null,
+        width:      data.width,
+        height:     data.height,
+        blocks:     Buffer.from(JSON.stringify(data.blocks)), // only save tile data here.
         // owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
-        dropped: Buffer.from(JSON.stringify(data.dropped)),
+        dropped:    Buffer.from(JSON.stringify(data.dropped)),
         updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
         weather_id: data.weatherId,
         // minimum_level: data.minLevel

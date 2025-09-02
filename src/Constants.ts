@@ -393,6 +393,39 @@ export enum BlockFlags {
   UNTRADEABLE = 1 << 15, // This item can't be dropped or traded.
 }
 
+export enum BlockFlags2 {
+  ROBOT_DEADLY = 1 << 1,
+  ROBOT_SHOOT_LEFT = 1 << 2,
+  ROBOT_SHOOT_RIGHT = 1 << 3,
+  ROBOT_SHOOT_DOWN = 1 << 4,
+  ROBOT_SHOOT_UP = 1 << 5,
+  ROBOT_CAN_SHOOT = 1 << 6,
+  ROBOT_LAVA = 1 << 7,
+  ROBOT_POINTY = 1 << 8,
+  ROBOT_SHOOT_DEADLY = 1 << 9,
+  GUILD_ITEM = 1 << 10,
+  GUILD_FLAG = 1 << 11,
+  STARSHIP_HELM = 1 << 12,
+  STARSHIP_REACTOR = 1 << 13,
+  STARSHIP_VIEW_SCREEN = 1 << 14,
+  SUPER_MOD = 1 << 15,
+  TILE_DEADLY_IF_ON = 1 << 16,
+  LONG_HAND_ITEM64X32 = 1 << 17,
+  GEMLESS = 1 << 18,
+  TRANSMUTABLE = 1 << 19,
+  DUNGEON_ITEM = 1 << 20,
+  PVE_MELEE = 1 << 21,
+  PVE_RANGED = 1 << 22,
+  PVE_AUTO_AIM = 1 << 23,
+  ONE_IN_WORLD = 1 << 24,
+  ONLY_FOR_WORLD_OWNER = 1 << 25,
+  NO_UPGRADE = 1 << 26,
+  EXTINGUISH_FIRE = 1 << 27,
+  EXTINGUISH_FIRE_NO_DAMAGE = 1 << 28,
+  NEED_RECEPTION_DESK = 1 << 29,
+  USE_PAINT = 1 << 30,
+}
+
 export enum NameStyles {
   // Titles
   MAX_LEVEL = "maxLevel",

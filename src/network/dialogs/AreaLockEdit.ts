@@ -1,7 +1,7 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { LockPermission, LOCKS, TileFlags } from "../../Constants";
+import { ActionTypes, LockPermission, LOCKS, ROLE, TileFlags } from "../../Constants";
 import { TileData } from "../../types";
 import { Floodfill } from "../../utils/FloodFill";
 import { World } from "../../core/World";
@@ -27,7 +27,6 @@ export class AreaLockEdit {
       ignore_empty: string;
       build_only: string;
       limit_admin: string;
-      lockID: string;
       buttonClicked: string;
     }>
   ) {
@@ -36,15 +35,15 @@ export class AreaLockEdit {
       parseInt(this.action.tilex) +
       parseInt(this.action.tiley) * (this.world?.data.width as number);
     this.block = this.world?.data.blocks[this.pos] as TileData;
-    this.itemMeta = this.base.items.metadata.items.find(
-      (i) => i.id === parseInt(this.action.lockID)
-    )!;
+    this.itemMeta = this.base.items.metadata.items.get(this.block.fg.toString())!;
   }
 
   public async execute(): Promise<void> {
-    const mLock = LOCKS.find((l) => l.id === parseInt(this.action.lockID));
+    if (!this.block.lock || this.itemMeta?.type != ActionTypes.LOCK) return;
+    const mLock = LOCKS.find((l) => l.id === this.block.fg);
 
-    if (this.block.lock?.ownerUserID !== this.peer.data?.userID) return;
+    if (this.block.lock?.ownerUserID !== this.peer.data?.userID && this.peer.data.role != ROLE.DEVELOPER) 
+      return;
 
     const openToPublic = this.action.allow_break_build === "1" ? true : false;
     const ignoreEmpty = this.action.ignore_empty === "1" ? true : false;
@@ -68,12 +67,12 @@ export class AreaLockEdit {
           x: parseInt(this.action.tilex),
           y: parseInt(this.action.tiley)
         },
-        max: mLock.maxTiles || 0,
-        width: this.world.data.width || 100,
-        height: this.world.data.height || 60,
-        blocks: this.world.data.blocks as TileData[],
-        s_block: this.block,
-        base: this.base,
+        max:        mLock.maxTiles || 0,
+        width:      this.world.data.width || 100,
+        height:     this.world.data.height || 60,
+        blocks:     this.world.data.blocks as TileData[],
+        s_block:    this.block,
+        base:       this.base,
         noEmptyAir: ignoreEmpty
       });
       algo.exec();
@@ -83,7 +82,10 @@ export class AreaLockEdit {
     }
     else if (this.action.playerNetID) {
       const targetPeer = this.world.getPeerByNetID(parseInt(this.action.playerNetID));
-      if (!targetPeer) return;
+      if (!targetPeer) {
+        this.peer.sendTextBubble("Oops, it looks like that player has already left the world.", false);
+        return;
+      };
 
       if (targetPeer.data.userID == this.block.lock.ownerUserID) {
         this.peer.sendTextBubble("I already have access!", false);
