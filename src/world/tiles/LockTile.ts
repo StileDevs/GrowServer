@@ -82,7 +82,7 @@ export class LockTile extends Tile {
     }
     else {
       for (const ownedTile of this.data.lock!.ownedTiles!) {
-        this.world.data.blocks[ownedTile].lock = undefined;
+        this.world.data.blocks[ownedTile].lockedBy = undefined;
       }
     }
 

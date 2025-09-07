@@ -579,7 +579,11 @@ ${peer.data.lastVisitedWorlds
     const userData = await this.base.database.players.getByUID(userID);
     if (userData && userData.role == ROLE.DEVELOPER) return true;
 
-    if (tile.lockedBy) {
+    // the tile being asked is the lock itself. No one have permission except the owner
+    if (tile.lock) {
+      return userID == tile.lock.ownerUserID;
+    }
+    else if (tile.lockedBy) {
       const owningLock = this.data.blocks[tile.lockedBy.parentY! * this.data.width + tile.lockedBy.parentX!];
       if (owningLock.lock) {
         if (owningLock.lock.ownerUserID == userID) {
@@ -597,10 +601,6 @@ ${peer.data.lastVisitedWorlds
           return !!(owningLock.lock.permission & permissionType) || owningLock.lock.permission == permissionType;
         }
       }
-    }
-    // the tile being asked is the lock itself. No one have permission except the owner
-    else if (tile.lock) {
-      return userID == tile.lock.ownerUserID;
     }
     else if (this.data.worldLockIndex) {
       const worldLock = this.data.blocks[this.data.worldLockIndex];

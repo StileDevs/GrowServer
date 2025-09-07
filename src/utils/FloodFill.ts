@@ -11,10 +11,10 @@ const directions = [
   { x: 0, y: 1 }, // S
   { x: 1, y: 0 }, //E
 
-  { x: -1, y: -1 }, //NW
-  { x: -1, y: 1 }, //SW
-  { x: 1, y: -1 }, // NE
-  { x: 1, y: 1 } // SE
+  // { x: -1, y: -1 }, //NW
+  // { x: -1, y: 1 }, //SW
+  // { x: 1, y: -1 }, // NE
+  // { x: 1, y: 1 } // SE
 ];
 
 interface Node {
@@ -45,7 +45,7 @@ export class Floodfill {
     const nodes: Node[] = [];
     nodes.push(this.data.s_node);
 
-    while (this.totalNodes.length < this.data.max) {
+    while (this.totalNodes.length <= this.data.max) {
       const tempNodes: Node[] = [];
 
       for (const node of nodes) {
@@ -62,6 +62,7 @@ export class Floodfill {
               (n) => n.x === neighbour.x && n.y === neighbour.y
             ) ||
             block.lock ||
+            block.lockedBy ||
             block.worldLockData ||
             TileIgnore.blockIDsToIgnoreByLock.includes(meta.id || 0) ||
             (this.data.noEmptyAir &&
@@ -96,7 +97,7 @@ export class Floodfill {
 
       const block = this.data.blocks[x + y * this.data.width];
 
-      if (block.lock) continue;
+      if (block.lock || block.lockedBy) continue;
       if (i >= directions.length / 2) {
         // corners
         if (this.data.noEmptyAir && !this.isConnectedToFaces({ x, y }))
