@@ -457,7 +457,7 @@ export class TileChangeReq {
                 1
               )
             );
-            return false;
+            return true;
           }
 
           if (

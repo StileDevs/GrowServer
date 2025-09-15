@@ -100,7 +100,7 @@ ${Array.from(this.base.cache.worlds.values())
   .slice(0, 6)
   .map((v) => {
     if (v.playerCount)
-      return `add_floater|${v.name}${v.playerCount ? ` (${v.playerCount})` : ""}|0|0.5|3529161471\n`;
+      return `add_floater|${v.name}|${v.playerCount ? ` (${v.playerCount})` : 0}|0.5|3529161471\n`;
     else return "";
   })
   .join("\n")}
@@ -109,7 +109,7 @@ ${peer.data.lastVisitedWorlds
   ?.reverse()
   .map((v) => {
     const count = this.base.cache.worlds.get(v)?.playerCount || 0;
-    return `add_floater|${v}${count ? ` (${count})` : ""}|0|0.5|3417414143\n`;
+    return `add_floater|${v}|${count ? ` (${count})` : 0}|0.5|3417414143\n`;
   })
   .join("\n")}
 `
@@ -117,7 +117,7 @@ ${peer.data.lastVisitedWorlds
         Variant.from(
           { delay: 500 },
           "OnConsoleMessage",
-          "Where do you want to go?"
+          "Where would you like to go? (`w${totalOnline} `oonline)"
         )
       );
 
@@ -317,7 +317,7 @@ ${peer.data.lastVisitedWorlds
       peer.send(
         Variant.from(
           "OnConsoleMessage",
-          `\`#[\`0\`9World Locked by ${this.data.owner.displayName}\`#]`
+          `\`p[\`0${this.data.name} \`oWorld Locked by ${this.data.owner.displayName}\`#]`
         )
       );
     }
