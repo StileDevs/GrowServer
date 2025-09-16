@@ -24,15 +24,17 @@ export class LockTile extends Tile {
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
     if (await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
       const worldOwnerUID = this.world.getOwnerUID();
+      const areaLocker = LOCKS.find((l) => l.id === itemMeta.id);
 
       if (worldOwnerUID) {
         if (worldOwnerUID != peer.data.userID && peer.data.role != ROLE.DEVELOPER) {
           await this.notifyNoLocksAllowed(peer);
           return false;
         }
-
-        this.notifyOnlyOneWorldLock(peer);
-        return false;
+        else if (!areaLocker) {
+          this.notifyOnlyOneWorldLock(peer);
+          return false;
+        }
       }
       else if (this.data.lockedBy) {
         const owningLock = this.world.data.blocks[this.data.lockedBy.parentY * this.world.data.width + this.data.lockedBy.parentX];
@@ -47,10 +49,19 @@ export class LockTile extends Tile {
         return false;
       }
 
+      const othersAreaLock = this.world.data.blocks.find((v) => {
+        return v.lock && v.lock.ownerUserID != peer.data.userID
+      });
+
+      // if there is other people "Area Locker" ex: Small lock, Big lock, etc
+      if (othersAreaLock && !areaLocker) {
+        peer.sendTextBubble("Your `$World Lock`` can't be placed in this world unless everyone else's locks are removed.", false);
+        return false;
+      }
+
       await super.onPlaceForeground(peer, itemMeta);
       this.data.flags |= TileFlags.TILEEXTRA;
 
-      const areaLocker = LOCKS.find((l) => l.id === itemMeta.id);
 
       if (areaLocker) {
         this.handleAreaLock(peer, areaLocker);

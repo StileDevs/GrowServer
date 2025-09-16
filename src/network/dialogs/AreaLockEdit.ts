@@ -42,7 +42,7 @@ export class AreaLockEdit {
     if (!this.block.lock || this.itemMeta?.type != ActionTypes.LOCK) return;
     const mLock = LOCKS.find((l) => l.id === this.block.fg);
 
-    if (this.block.lock?.ownerUserID !== this.peer.data?.userID && this.peer.data.role != ROLE.DEVELOPER) 
+    if (this.block.lock?.ownerUserID !== this.peer.data?.userID && this.peer.data.role != ROLE.DEVELOPER)
       return;
 
     const openToPublic = this.action.allow_break_build === "1" ? true : false;
@@ -58,19 +58,20 @@ export class AreaLockEdit {
     this.block.lock.adminLimited = adminLimitedAccess;
 
     if (this.action.buttonClicked === "reapply_lock" && mLock) {
-      for (const ownedTiles of this.block.lock.ownedTiles ?? []) {
-        this.world.data.blocks[ownedTiles].lock = undefined;
+      for (const ownedTiles of this.block.lock.ownedTiles) {
+        this.world.data.blocks[ownedTiles].lockedBy = undefined;
       }
 
+      this.block.lock.ownedTiles = [];
       const algo = new Floodfill({
         s_node: {
           x: parseInt(this.action.tilex),
           y: parseInt(this.action.tiley)
         },
-        max:        mLock.maxTiles || 0,
-        width:      this.world.data.width || 100,
-        height:     this.world.data.height || 60,
-        blocks:     this.world.data.blocks as TileData[],
+        max:        mLock.maxTiles,
+        width:      this.world.data.width,
+        height:     this.world.data.height,
+        blocks:     this.world.data.blocks,
         s_block:    this.block,
         base:       this.base,
         noEmptyAir: ignoreEmpty
@@ -107,10 +108,10 @@ export class AreaLockEdit {
       const playerData = await this.base.database.players.getByUID(unaccessedPlayer);
       if (!playerData) continue;
 
-      const index = this.block.lock.adminIDs!.indexOf(unaccessedPlayer);
+      const index = this.block.lock!.adminIDs!.indexOf(unaccessedPlayer);
       if (index == -1) continue;
 
-      this.block.lock.adminIDs?.splice(index, 1);
+      this.block.lock!.adminIDs?.splice(index, 1);
 
       this.world.every((p) => {
         p.sendConsoleMessage(`${playerData.name} was removed from a ${this.itemMeta.name}`);

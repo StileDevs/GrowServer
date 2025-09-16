@@ -89,7 +89,17 @@ export class Tile {
   // Fail only means that the player doing it doesnt have sufficient permission. 
   //  (applies to all function with Fail suffix that handle tile interactions)
   public async onPlaceFail(peer: Peer): Promise<void> {
-    await this.sendAreaOwner(peer);
+    if (this.data.lockedBy) {
+      const lockParent = this.world.data.blocks[this.data.lockedBy.parentY * this.world.data.width + this.data.lockedBy.parentX];
+      // Builder's lock
+      if (lockParent.lock && lockParent.fg == 4994) {
+        peer.sendTextBubble("This lock allows building only!", false);
+      }
+    }
+    // not a builder's lock, so we just send the area owner :D
+    else {
+      await this.sendAreaOwner(peer);
+    }
     this.sendLockSound(peer);
   }
 
@@ -130,6 +140,13 @@ export class Tile {
   }
 
   public async onPunchFail(peer: Peer): Promise<void> {
+    if (this.data.lockedBy) {
+      const lockParent = this.world.data.blocks[this.data.lockedBy.parentY * this.world.data.width + this.data.lockedBy.parentX];
+      // Builder's lock
+      if (lockParent.lock && lockParent.fg == 4994) {
+        peer.sendTextBubble("This lock allows building only!", false);
+      }
+    }
     this.sendLockSound(peer);
   }
 
@@ -269,6 +286,7 @@ export class Tile {
     dataBuffer.writeU16(this.data.fg);
     dataBuffer.writeU16(this.data.bg);
     dataBuffer.writeU16(await this.setParentTileIndex(0));
+
 
     const flags = await this.setFlags(this.data.flags);
 

@@ -77,8 +77,7 @@ export class Base {
   public async start() {
     try {
       consola.box(
-        `GrowServer\nVersion: ${
-          this.package.version
+        `GrowServer\nVersion: ${this.package.version
         }\n© JadlionHD 2022-${new Date().getFullYear()}`
       );
 
@@ -375,6 +374,22 @@ export class Base {
       return false;
     }
   }
+
+  // Added from your updated version (version 2)
+  public getPlayersOnline(ignoredNetIDs: number[] = [0]): number {
+    if (!this.cache.peers || this.cache.peers.size === 0) {
+      return 0;
+    }
+
+    let playerCount = 0;
+    this.cache.peers.forEach((peerData, netID) => {
+      if (!ignoredNetIDs.includes(netID)) {
+        playerCount++;
+      }
+    });
+    return playerCount;
+  }
+
 
   public async shutdown() {
     consola.info("Shutting down server...");

@@ -49,9 +49,9 @@ export class TileChangeReq {
 
     // Fist
     if (this.tank.data?.info === 18) {
-      tileFrom(this.base, this.world, tileData).onPunch(this.peer);
+      await tileFrom(this.base, this.world, tileData).onPunch(this.peer);
     } else if (this.tank.data?.info === 32) {
-      tileFrom(this.base, this.world, tileData).onWrench(this.peer);
+      await tileFrom(this.base, this.world, tileData).onWrench(this.peer);
     }
     // Others
     else {
@@ -61,15 +61,15 @@ export class TileChangeReq {
 
       if (itemMeta.type == ActionTypes.BACKGROUND) {
         // we dont want to give the itemType here as to not override current foreground itemType.
-        tileFrom(this.base, this.world, tileData).onPlaceBackground(this.peer, itemMeta);
+        await tileFrom(this.base, this.world, tileData).onPlaceBackground(this.peer, itemMeta);
       }
       else if (tileData.fg == 0) {
-        tileFrom(this.base, this.world, tileData, itemMeta.type!).onPlaceForeground(this.peer, itemMeta);
+        await tileFrom(this.base, this.world, tileData, itemMeta.type!).onPlaceForeground(this.peer, itemMeta);
       }
       else {
         // we also dont want to specify it here as to not override the current foreground block behaviour with
         //  the placed item behaviour
-        tileFrom(this.base, this.world, tileData).onItemPlace(this.peer, itemMeta);
+        await tileFrom(this.base, this.world, tileData).onItemPlace(this.peer, itemMeta);
       }
     }
   }

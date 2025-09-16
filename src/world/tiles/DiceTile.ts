@@ -92,7 +92,7 @@ export class DiceTile extends Tile {
 
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
-    super.serialize(dataBuffer);
+    await super.serialize(dataBuffer);
     dataBuffer.grow(2);
     dataBuffer.writeU8(this.extraType);
     dataBuffer.writeU8(this.block.dice!.symbol!); // the actual role is offset by -1

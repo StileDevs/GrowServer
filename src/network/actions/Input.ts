@@ -26,6 +26,9 @@ export class Input {
         let Class = CommandMap[commandName];
         let originalCmd = commandName;
 
+        // Send Peer's input
+        this.peer.send(Variant.from("OnConsoleMessage", `\`6${text}`));
+
         // If no direct command found, check if it's registered as an alias
         if (!Class && CommandsAliasMap[commandName]) {
           originalCmd = CommandsAliasMap[commandName];
@@ -37,7 +40,7 @@ export class Input {
           this.peer.send(
             Variant.from(
               "OnConsoleMessage",
-              "`4Unknown command.`` Enter `$/help`` for a list of valid commands"
+              "`4Unknown command. `oEnter /? for a list of valid commands."
             )
           );
           return;

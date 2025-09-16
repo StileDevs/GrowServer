@@ -22,7 +22,7 @@ export class SignTile extends Tile {
   }
 
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
-    if (!super.onPlaceForeground(peer, itemMeta)) { return false; }
+    if (!await super.onPlaceForeground(peer, itemMeta)) { return false; }
 
     this.data.flags |= TileFlags.TILEEXTRA;
     this.data.sign = { label: "" };
@@ -31,12 +31,12 @@ export class SignTile extends Tile {
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
-    super.onDestroy(peer);
+    await super.onDestroy(peer);
     this.data.sign = undefined;
   }
 
   public async onWrench(peer: Peer): Promise<boolean> {
-    if (!super.onWrench(peer)) {
+    if (!await super.onWrench(peer)) {
       this.onPlaceFail(peer);
       return false;
     }
@@ -61,7 +61,7 @@ export class SignTile extends Tile {
   }
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
-    super.serialize(dataBuffer);
+    await super.serialize(dataBuffer);
     dataBuffer.grow(1 + 2 + (this.data.sign?.label?.length ?? 0) + 4);
     dataBuffer.writeU8(this.extraType);
     dataBuffer.writeString(this.data.sign?.label || "");

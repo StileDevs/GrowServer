@@ -41,7 +41,7 @@ ${Array.from(this.base.cache.worlds.values())
   .slice(0, 6)
   .map((v) => {
     if (v.playerCount)
-      return `add_floater|${v.name}|${v.playerCount}|0.5|3529161471\n`;
+      return `add_floater|${v.name}|${v.playerCount ?? 0}|0.5|3529161471\n`;
     else return "";
   })
   .join("\n")}
@@ -50,14 +50,14 @@ ${this.peer.data.lastVisitedWorlds
   ?.reverse()
   .map((v) => {
     const count = this.base.cache.worlds.get(v)?.playerCount || 0;
-    return `add_floater|${v}|${count}|0.5|3417414143\n`;
+    return `add_floater|${v}|${count ?? 0}|0.5|3417414143\n`;
   })
   .join("\n")}
 `
       ),
       Variant.from(
         "OnConsoleMessage",
-        `Welcome ${this.peer.name} Where would you like to go?`
+        `Welcome ${this.peer.name} There are \`w${this.base.getPlayersOnline()}\`\` players online.`
       ),
       Variant.from({ delay: 100 }, "OnDialogRequest", tes)
     );

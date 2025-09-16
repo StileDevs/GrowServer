@@ -95,7 +95,9 @@ export enum TankTypes {
 
 export enum TileFlags {
   TILEEXTRA = 0x0001,
-  LOCKED = 0x0002,
+  LOCKED = 0x0002,    
+  WAS_SPLICED = 0x0004,
+  WILL_SPAWN_SEEDS_TOO = 0x0008,
   SEED = 0x0010,
   TREE = 0x0019,
   FLIPPED = 0x0020,
@@ -371,7 +373,7 @@ export const LOCKS = [
 
 export const TileIgnore = {
   blockIDsToIgnoreByLock:   [6, 8],
-  blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR]
+  blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR, ActionTypes.BEDROCK]
 };
 
 export enum BlockFlags {

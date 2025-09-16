@@ -13,6 +13,18 @@ export class DialogBuilder {
   }
 
   /**
+   * Sets the scalable text
+   * @param {string} scale
+   * @returns {DialogBuilder}
+   */
+
+  public textScaling(text?: string): DialogBuilder {
+    this.#str += `text_scaling_string|${text || ""}\n`;
+    return this;
+  }
+
+
+  /**
    * Adds a spacer for the dialog
    * @param {string} type Spacer type, 'big' or 'small'
    * @returns {DialogBuilder}
@@ -236,18 +248,6 @@ export class DialogBuilder {
   }
 
   /**
-   * Adds player picker "button"
-   * @param name The id of the player picker
-   * @param label The label that is shown to the player
-   * @returns {DialogBuilder}
-   */
-
-  public addPlayerPicker(name: string, label: string): DialogBuilder {
-    this.#str += `add_player_picker|${name}|${label}\n`;
-    return this;
-  }
-
-  /**
    * Adds buttons at the end of the dialog
    * @param {string} name The id of the dialog
    * @param {string} nvm The value of the button when you want it closed/cancelled.
@@ -259,6 +259,99 @@ export class DialogBuilder {
     this.#str += `end_dialog|${name || ""}|${nvm || ""}|${accept || ""}|\n`;
     return this;
   }
+
+  /**
+   * Adds an achievement display.
+   * @param {string} title The title of the achievement.
+   * @param {string} description The description of the achievement.
+   * @param {string | number} itemID The item ID to use as an achievement icon.
+   * @returns {DialogBuilder}
+   */
+  public addAchieve(title: string, description: string, itemID: string | number): DialogBuilder {
+    this.#str += `add_achieve|${title}|${description}|${itemID}|\n`;
+    return this;
+  }
+
+  /**
+   * Adds an image button, often used for banners.
+   * @param {string} imagePath The path to the image resource.
+   * @returns {DialogBuilder}
+   */
+  public addImageButton(imagePath: string): DialogBuilder {
+    this.#str += `add_image_button|banner|${imagePath}|noflags|\n`;
+    return this;
+  }
+
+  /**
+   * Adds an item picker.
+   * @param {string} message The instructional message for the item picker.
+   * @param {string} title The title displayed above the item picker.
+   * @param {string} pickerText Item Picker text.
+   * @returns {DialogBuilder}
+   */
+  public addItemPicker(message: string, title: string, pickerText: string): DialogBuilder {
+    this.#str += `add_item_picker|${message}|${title}|${pickerText}|\n`;
+    return this;
+  }
+
+  /**
+   * Adds a player picker.
+   * @param {string} name The internal name (ID) for this player picker.
+   * @param {string} pickerText The text on the button that opens the player picker.
+   * @returns {DialogBuilder}
+   */
+  public addPlayerPicker(name: string, pickerText: string): DialogBuilder {
+    this.#str += `add_player_picker|${name}|${pickerText}|\n`;
+    return this;
+  }
+
+  /**
+   * Adds a button that opens a URL.
+   * @param {string} buttonText The visible text on the button.
+   * @param {string} url The URL to open.
+   * @param {string} tooltipText Text that appears on hover or as a subtitle.
+   * @returns {DialogBuilder}
+   */
+  public addURLButton(buttonText: string, url: string, tooltipText: string): DialogBuilder {
+    this.#str += `add_url_button|${buttonText}|${url}|${tooltipText}|\n`;
+    return this;
+  }
+
+  /**
+   * Adds a button that redirects to another world.
+   * @param {string} buttonText The visible text on the button.
+   * @param {string} targetWorldName The name of the world to redirect to.
+   * @param {string} buttonName The internal name (ID) of the button (can be empty).
+   * @returns {DialogBuilder}
+   */
+  public addWorldLinkButton(
+    buttonText: string,
+    targetWorldName: string,
+    buttonName: string = "",
+  ): DialogBuilder {
+    this.#str += `add_url_button|${buttonName}|${buttonText}|NOFLAGS|OPENWORLD|${targetWorldName}|\n`;
+    return this;
+  }
+
+  /**
+   * Adds player information display.
+   * Format: add_player_info|PlayerName|Level|CurrentExp|RequiredExp|
+   * @param {string} playerName The name of the player.
+   * @param {string | number} level The player's level.
+   * @param {string | number} currentExp The player's current experience.
+   * @param {string | number} requiredExp The experience required for the player's next level.
+   * @returns {DialogBuilder}
+   */
+  public addPlayerInfo(
+    playerName: string,
+    level: string | number,
+    currentExp: string | number,
+    requiredExp: string | number
+  ): DialogBuilder {
+    this.#str += `add_player_info|${playerName}|${level}|${currentExp}|${requiredExp}|\n`;
+    return this;
+  }
+
 
   /**
    * Adds a raw dialog, useful if the function for that specific dialog would not be here

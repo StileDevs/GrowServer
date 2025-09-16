@@ -20,17 +20,17 @@ export class SeedTile extends Tile {
   }
 
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
-    if (!super.onPlaceForeground(peer, itemMeta)) { return false };
+    if (!await super.onPlaceForeground(peer, itemMeta)) { return false };
 
     this.initializeTreeData(itemMeta);
     // actually, this is not nescessary. But since i have yet to figure out a way to set a field in the TileChangeReq packet
     //  - Badewen
-    this.world.every((p) => this.tileUpdate(p));
+    this.world.every((p) => this.tileUpdate(p));          
     return true;
   }
 
   public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<boolean> {
-    if (!super.onItemPlace(peer, item)) {
+    if (!await super.onItemPlace(peer, item)) {
       return false;
     }
 
@@ -78,7 +78,7 @@ export class SeedTile extends Tile {
   }
 
   public async onPunch(peer: Peer): Promise<boolean> {
-    if (this.data.tree && Date.now() >= this.data.tree.fullyGrownAt && await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD)) {
+    if (this.data.tree && Date.now() >= this.data.tree.fullyGrownAt && await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK)) {
       const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
       this.dropHarvestGoodies(peer, itemMeta!);
 
@@ -103,7 +103,7 @@ export class SeedTile extends Tile {
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
-    super.onDestroy(peer);
+    await super.onDestroy(peer);
     this.deinitializeTreeData();
   }
 
@@ -122,7 +122,7 @@ export class SeedTile extends Tile {
   }
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
-    super.serialize(dataBuffer);
+    await super.serialize(dataBuffer);
     dataBuffer.grow(1 + 4 + 1);
     dataBuffer.writeU8(this.extraType);
     dataBuffer.writeU32(

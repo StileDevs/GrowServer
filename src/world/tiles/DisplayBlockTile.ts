@@ -21,7 +21,7 @@ export class DisplayBlockTile extends Tile {
   }
 
   public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
-    if (!super.onPlaceForeground(peer, itemMeta)) {
+    if (!await super.onPlaceForeground(peer, itemMeta)) {
       return false;
     }
 
@@ -31,7 +31,7 @@ export class DisplayBlockTile extends Tile {
   }
 
   public async onDestroy(peer: Peer): Promise<void> {
-    super.onDestroy(peer);
+    await super.onDestroy(peer);
 
     if (this.data.displayBlock!.displayedItem) {
       const itemMeta = this.base.items.metadata.items.get(this.data.displayBlock!.displayedItem.toString());
@@ -54,7 +54,7 @@ export class DisplayBlockTile extends Tile {
         }
       }
       else {
-        return super.onPunch(peer);
+        return await super.onPunch(peer);
       }
 
       if (!peer.canAddItemToInv(this.block.displayBlock!.displayedItem!)) {
@@ -62,7 +62,7 @@ export class DisplayBlockTile extends Tile {
         return false;
       }
     }
-    return super.onPunch(peer);
+    return await super.onPunch(peer);
   }
 
   public async onPlaceBackground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
@@ -74,7 +74,7 @@ export class DisplayBlockTile extends Tile {
   }
 
   public async onWrench(peer: Peer): Promise<boolean> {
-    if (!super.onWrench(peer)) return false;
+    if (!await super.onWrench(peer)) return false;
 
     const baseDialog = new DialogBuilder()
       .defaultColor("`o")
@@ -108,7 +108,7 @@ export class DisplayBlockTile extends Tile {
   }
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
-    super.serialize(dataBuffer);
+    await super.serialize(dataBuffer);
     dataBuffer.grow(5);
     dataBuffer.writeU8(this.extraType);
     dataBuffer.writeU32(this.data.displayBlock!.displayedItem);
