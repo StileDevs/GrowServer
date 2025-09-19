@@ -3,12 +3,13 @@ import { TankTypes } from "../../Constants";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { NonEmptyObject } from "type-fest";
+import { deflateSync } from "zlib";
 
 export class RefreshItemData {
   constructor(
     public base: Base,
     public peer: Peer
-  ) {}
+  ) { }
 
   public async execute(
     _action: NonEmptyObject<Record<string, string>>
@@ -17,7 +18,8 @@ export class RefreshItemData {
       Variant.from("OnConsoleMessage", "One moment. Updating item data..."),
       TankPacket.from({
         type: TankTypes.SEND_ITEM_DATABASE_DATA,
-        data: () => this.base.items.content
+        info: this.base.items.content.length,
+        data: () => deflateSync(this.base.items.content)
       })
     );
   }

@@ -81,7 +81,7 @@ export class ITextPacket {
         "growtopia/",
         "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
         "proto=216|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|",
-        0 // player_tribute.dat hash
+        0 // player_tribute.dat hash,
       )
     );
   }
@@ -105,7 +105,7 @@ export class ITextPacket {
       if (!isValid) throw new Error("Password are invalid");
 
       const targetPeerId = this.base.cache.peers.find(
-        (v) => v.id_user === player.id
+        (v) => v.userID === player.id
       );
       if (targetPeerId) {
         const targetPeer = new Peer(this.base, targetPeerId.netID);
@@ -153,7 +153,7 @@ export class ITextPacket {
       if (!isValid) throw new Error("Password are invalid");
 
       const targetPeerId = this.base.cache.peers.find(
-        (v) => v.id_user === player.id
+        (v) => v.userID === player.id
       );
       if (targetPeerId) {
         const targetPeer = new Peer(this.base, targetPeerId.netID);
@@ -203,7 +203,7 @@ export class ITextPacket {
       this.peer.data.tankIDName = player.display_name;
       this.peer.data.rotatedLeft = false;
       this.peer.data.country = this.obj.country as string;
-      this.peer.data.id_user = player.id;
+      this.peer.data.userID = player.id;
       this.peer.data.role = player.role;
       this.peer.data.inventory = player.inventory?.length
         ? JSON.parse(player.inventory.toString())
@@ -218,6 +218,8 @@ export class ITextPacket {
       this.peer.data.lastVisitedWorlds = player.last_visited_worlds
         ? JSON.parse(player.last_visited_worlds.toString())
         : [];
+      this.peer.data.heartMonitors = new Map<string, Array<number>>(Object.entries(JSON.parse(player.heart_monitors.toString())));
+
       this.peer.data.state = {
         mod:             0,
         canWalkInBlocks: false,

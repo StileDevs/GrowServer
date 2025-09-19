@@ -95,7 +95,9 @@ export enum TankTypes {
 
 export enum TileFlags {
   TILEEXTRA = 0x0001,
-  LOCKED = 0x0002,
+  LOCKED = 0x0002,    
+  WAS_SPLICED = 0x0004,
+  WILL_SPAWN_SEEDS_TOO = 0x0008,
   SEED = 0x0010,
   TREE = 0x0019,
   FLIPPED = 0x0020,
@@ -334,29 +336,44 @@ export enum ActionTypes {
   KRANKENS_BLOCK = 141,
   FRIENDS_ENTRANCE = 142
 }
+// allowed actions from the lock
+export enum LockPermission {
+  NONE = 0, // those who dont have any access, will not be allowed to do anything
+  BUILD = (1 << 0), // BUILD, means they can place item AND configure them with wrench
+  BREAK = (1 << 1),
+  FULL = BUILD | BREAK,
+}
 
+// NOTE: defaultPermission here means what action is allowed for those who has access.
+// For example, Small lock allows the ones with access to do anything (Break & Build), 
+//  and by default, doesnt allow the ones without access to do anything to it, unless 
+//  if the TileFlags.PUBLIC is set.
 export const LOCKS = [
   {
-    id:       202, // Small Lock
-    maxTiles: 10
+    id:                202, // Small Lock
+    maxTiles:          10,
+    defaultPermission: LockPermission.FULL,
   },
   {
-    id:       204, // Big Lock
-    maxTiles: 48
+    id:                204, // Big Lock
+    maxTiles:          48,
+    defaultPermission: LockPermission.FULL,
   },
   {
-    id:       206, // Huge Lock
-    maxTiles: 200
+    id:                206, // Huge Lock
+    maxTiles:          200,
+    defaultPermission: LockPermission.FULL,
   },
   {
-    id:       4994, // Builder's Lock
-    maxTiles: 200
+    id:                4994, // Builder's Lock
+    maxTiles:          200,
+    defaultPermission: LockPermission.BREAK,
   }
 ];
 
 export const TileIgnore = {
   blockIDsToIgnoreByLock:   [6, 8],
-  blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR]
+  blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR, ActionTypes.BEDROCK]
 };
 
 export enum BlockFlags {
@@ -376,6 +393,39 @@ export enum BlockFlags {
   FOREGROUND = 1 << 13, // This item is a foreground item.
   HOLIDAY = 1 << 14, // This item can only be created during WinterFest!
   UNTRADEABLE = 1 << 15, // This item can't be dropped or traded.
+}
+
+export enum BlockFlags2 {
+  ROBOT_DEADLY = 1 << 1,
+  ROBOT_SHOOT_LEFT = 1 << 2,
+  ROBOT_SHOOT_RIGHT = 1 << 3,
+  ROBOT_SHOOT_DOWN = 1 << 4,
+  ROBOT_SHOOT_UP = 1 << 5,
+  ROBOT_CAN_SHOOT = 1 << 6,
+  ROBOT_LAVA = 1 << 7,
+  ROBOT_POINTY = 1 << 8,
+  ROBOT_SHOOT_DEADLY = 1 << 9,
+  GUILD_ITEM = 1 << 10,
+  GUILD_FLAG = 1 << 11,
+  STARSHIP_HELM = 1 << 12,
+  STARSHIP_REACTOR = 1 << 13,
+  STARSHIP_VIEW_SCREEN = 1 << 14,
+  SUPER_MOD = 1 << 15,
+  TILE_DEADLY_IF_ON = 1 << 16,
+  LONG_HAND_ITEM64X32 = 1 << 17,
+  GEMLESS = 1 << 18,
+  TRANSMUTABLE = 1 << 19,
+  DUNGEON_ITEM = 1 << 20,
+  PVE_MELEE = 1 << 21,
+  PVE_RANGED = 1 << 22,
+  PVE_AUTO_AIM = 1 << 23,
+  ONE_IN_WORLD = 1 << 24,
+  ONLY_FOR_WORLD_OWNER = 1 << 25,
+  NO_UPGRADE = 1 << 26,
+  EXTINGUISH_FIRE = 1 << 27,
+  EXTINGUISH_FIRE_NO_DAMAGE = 1 << 28,
+  NEED_RECEPTION_DESK = 1 << 29,
+  USE_PAINT = 1 << 30,
 }
 
 export enum NameStyles {

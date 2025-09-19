@@ -13,9 +13,10 @@ export class FindItem {
       find_item_name: string;
       seed_only: string;
     }>
-  ) {}
+  ) { }
 
   public async execute(): Promise<void> {
+    if (!this.action.dialog_name || !this.action.find_item_name || !this.action.seed_only) return;
     const isSeed = parseInt(this.action.seed_only) ? true : false;
     const dialog = new DialogBuilder()
       .defaultColor()

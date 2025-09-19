@@ -26,7 +26,7 @@ export default class SaveServer extends Command {
 
   public async execute(): Promise<void> {
     this.peer.send(
-      Variant.from("OnConsoleMessage", "Saving all worlds & players...")
+      Variant.from("On%Message", "Saving all worlds & players...")
     );
 
     // Use the existing base instance instead of creating a new one

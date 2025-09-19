@@ -8,6 +8,10 @@ import { DoorEdit } from "./DoorEdit";
 import { DropEnd } from "./DropEnd";
 import { SignEdit } from "./SignEdit";
 import { TrashEnd } from "./TrashEnd";
+import { SwitcheROOEdit } from "./SwitcheROOEdit";
+import { RevokeLockAccess } from "./RevokeLockAccess";
+import { DisplayBlockEdit } from "./DisplayBlockEdit";
+import { DiceEdit } from "./DiceEdit";
 
 export const DialogMap: Record<
   string,
@@ -23,5 +27,9 @@ export const DialogMap: Record<
   ["door_edit"]:          DoorEdit,
   ["drop_end"]:           DropEnd,
   ["sign_edit"]:          SignEdit,
-  ["trash_end"]:          TrashEnd
+  ["trash_end"]:          TrashEnd,
+  ["switcheroo_edit"]:    SwitcheROOEdit,
+  ["revoke_lock_access"]: RevokeLockAccess,
+  ["displayblock_edit"]:  DisplayBlockEdit,
+  ["dice_edit"]:          DiceEdit
 };

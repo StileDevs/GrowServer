@@ -1,29 +1,18 @@
 import type { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
-import type { Block } from "../../types";
+import type { TileData } from "../../types";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { Tile } from "../Tile";
+import { TileExtraTypes } from "../../Constants";
 
 export class WeatherTile extends Tile {
-  public data: ExtendBuffer;
-
   constructor(
     public base: Base,
     public world: World,
-    public block: Block,
-    public alloc = 8
+    public data: TileData,
   ) {
-    super(base, world, block, alloc);
-    this.data = new ExtendBuffer(this.alloc);
+    super(base, world, data);
   }
-
-  public async serialize(): Promise<void> {
-    // nothing todo here :>
-    return;
-  }
-
-  public async setFlags(): Promise<void> {
-    // nothing todo here too :>
-    return;
-  }
+  // TODO: Implement weather related data.
 }

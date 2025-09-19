@@ -47,19 +47,20 @@ export class DialogBuilder {
   /**
    * Adds a label
    * @param {string} text Title of the label
+   * @param {string} size Type of the label. "small" or "big". default is small
    * @returns {DialogBuilder}
    */
 
-  public addLabel(text: string): DialogBuilder {
-    this.#str += `add_label|${text}|\n`;
+  public addLabel(text: string, size?: string): DialogBuilder {
+    this.#str += `add_label|${size ?? "small"}|${text}|\n`;
     return this;
   }
 
   /**
    * Adds a label with an icon
    * @param {string} text Title of the label
-   * @param {string} titleid The icon to add to the label
-   * @param {string | number} type The type of the label, 'big' or 'small'
+   * @param {string | number} titleid The icon to add to the label
+   * @param {string} type The type of the label, 'big' or 'small'
    * @returns {DialogBuilder}
    */
 
@@ -173,7 +174,7 @@ export class DialogBuilder {
    * Adds a checkbox
    * @param {string} name The name of the checkbox
    * @param {string} string The text in the checkbox
-   * @param {string} type The type of the checkbox 'select' or 'not_selected'
+   * @param {string} type The type of the checkbox 'selected' or 'not_selected'
    * @returns {DialogBuilder}
    */
 
@@ -289,7 +290,7 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
   public addItemPicker(message: string, title: string, pickerText: string): DialogBuilder {
-    this.#str += `add_item_picker|${message}|${title}|${pickerText || "Pick an Item"}|\n`;
+    this.#str += `add_item_picker|${message}|${title}|${pickerText}|\n`;
     return this;
   }
 
@@ -300,7 +301,7 @@ export class DialogBuilder {
    * @returns {DialogBuilder}
    */
   public addPlayerPicker(name: string, pickerText: string): DialogBuilder {
-    this.#str += `add_player_picker|${name}|${pickerText || "Pick an Item"}|\n`;
+    this.#str += `add_player_picker|${name}|${pickerText}|\n`;
     return this;
   }
 

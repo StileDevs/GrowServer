@@ -15,6 +15,7 @@ export class TrashEnd {
   ) { }
 
   public async execute(): Promise<void> {
+    if (!this.action.dialog_name || !this.action.trash_count || !this.action.itemID) return;
     if (!/\d/.test(this.action.trash_count) || !/\d/.test(this.action.itemID)) {
       this.peer.send(
         Variant.from(

@@ -1,9 +1,10 @@
-import { Block, PeerData } from "../types";
+import { TileData, PeerData } from "../types";
 import {
   Peer as OldPeer,
   TankPacket,
   TextPacket,
-  Variant
+  Variant,
+  VariantOptions
 } from "growtopia.js";
 
 import { ItemDefinition } from "grow-items"
@@ -386,7 +387,7 @@ export class Peer extends OldPeer<PeerData> {
         tankIDName:        data.tankIDName,
         netID,
         country:           data.country,
-        id_user:           data.id_user,
+        userID:            data.userID,
         role:              data.role,
         gems:              data.gems,
         clothing:          data.clothing,
@@ -394,7 +395,8 @@ export class Peer extends OldPeer<PeerData> {
         level:             data.level,
         lastCheckpoint:    data.lastCheckpoint,
         lastVisitedWorlds: data.lastVisitedWorlds,
-        state:             data.state
+        state:             data.state,
+        heartMonitors:     data.heartMonitors,
       };
   }
 
@@ -436,14 +438,20 @@ export class Peer extends OldPeer<PeerData> {
     const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? NameStyles.MAX_LEVEL : ""}`;
 
     this.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
-    this.every((p) => {
-      if (p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") {
-        p.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
-        this.send(Variant.from({ netID: p.data.netID }, "OnCountryState", country(p)));
-      }
-    });
+    const world = this.currentWorld();
+    if (world) {
+      world.every((p) => {
+        if (p.data.netID !== this.data.netID) {
+          p.send(Variant.from({ netID: this.data.netID }, "OnCountryState", country(this)));
+          this.send(Variant.from({ netID: p.data.netID }, "OnCountryState", country(p)));
+        }
+      })
+    }
   }
 
+  // i kinda hate how this is called everytime just to send packets to a specific world. 
+  // Perhaps, having each world storing peers would be more logical IMO.
+  // - Badewen
   public every(callbackfn: (peer: Peer, netID: number) => void): void {
     this.base.cache.peers.forEach((p, k) => {
       const pp = new Peer(this.base, p.netID);
@@ -463,12 +471,12 @@ export class Peer extends OldPeer<PeerData> {
         this.data.lastCheckpoint.y * (world?.data.width as number);
       const block = world?.data.blocks[pos];
       const itemMeta =
-        this.base.items.metadata.items[
-          (block?.fg as number) || (block?.bg as number)
-        ];
+        this.base.items.metadata.items.get(
+          ((block?.fg as number).toString || (block?.bg as number)).toString()
+        );
 
       if (itemMeta && itemMeta.type === ActionTypes.CHECKPOINT) {
-        mainDoor = this.data.lastCheckpoint as Block; // only have x,y.
+        mainDoor = this.data.lastCheckpoint as TileData; // only have x,y.
       } else {
         this.data.lastCheckpoint = undefined;
         this.send(
@@ -640,7 +648,7 @@ export class Peer extends OldPeer<PeerData> {
         this.data.inventory.items = this.data.inventory.items.filter(
           (i) => i.id !== id
         );
-        if (this.base.items.metadata.items[id].type === ActionTypes.CLOTHES) {
+        if (this.base.items.metadata.items.get(id.toString())!.type === ActionTypes.CLOTHES) {
           this.unequipClothes(id);
         }
       }
@@ -657,38 +665,9 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public sendClothes() {
-    this.send(
-      Variant.from(
-        {
-          netID: this.data.netID
-        },
-        "OnSetClothing",
-        [
-          this.data.clothing.hair,
-          this.data.clothing.shirt,
-          this.data.clothing.pants
-        ],
-        [
-          this.data.clothing.feet,
-          this.data.clothing.face,
-          this.data.clothing.hand
-        ],
-        [
-          this.data.clothing.back,
-          this.data.clothing.mask,
-          this.data.clothing.necklace
-        ],
-        0x8295c3ff,
-        [this.data.clothing.ances, 0.0, 0.0]
-      )
-    );
-
-    this.every((p) => {
-      if (
-        p.data?.world === this.data.world &&
-        p.data?.netID !== this.data.netID &&
-        p.data?.world !== "EXIT"
-      ) {
+    const world = this.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(
           Variant.from(
             {
@@ -714,8 +693,8 @@ export class Peer extends OldPeer<PeerData> {
             [this.data.clothing.ances, 0.0, 0.0]
           )
         );
-      }
-    });
+      })
+    }
   }
 
 
@@ -754,7 +733,7 @@ export class Peer extends OldPeer<PeerData> {
     if (Object.values(this.data.clothing).includes(itemID))
       this.unequipClothes(itemID);
     else {
-      const item = this.base.items.metadata.items[itemID];
+      const item = this.base.items.metadata.items.get(itemID.toString())!;
       if (!isAnces(item)) {
         const clothKey = CLOTH_MAP[item?.bodyPartType as ClothTypes];
 
@@ -782,7 +761,7 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public unequipClothes(itemID: number) {
-    const item = this.base.items.metadata.items[itemID];
+    const item = this.base.items.metadata.items.get(itemID.toString())!;
 
     let unequiped: boolean = false;
 
@@ -830,11 +809,12 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public sendEffect(eff: number, ...args: Variant[]) {
-    this.every((p) => {
-      if (p.data.world === this.data.world && p.data.world !== "EXIT") {
-        p.send(Variant.from("OnParticleEffect", 2, [(this.data.x as number) + 10, (this.data.y as number) + 16]), ...args);
-      }
-    });
+    const world = this.currentWorld();
+    if (world) {
+      world.every((p) => {
+        p.send(Variant.from("OnParticleEffect", eff, [(this.data.x as number) + 10, (this.data.y as number) + 16]), ...args);
+      });
+    };
   }
 
   public sendState(punchID?: number, everyPeer = true) {
@@ -860,11 +840,14 @@ export class Peer extends OldPeer<PeerData> {
 
     this.send(tank);
     if (everyPeer) {
-      this.every((p) => {
-        if (p.data.netID !== this.data.netID && p.data.world === this.data.world && p.data.world !== "EXIT") {
-          p.send(tank);
-        }
-      });
+      const world = this.currentWorld();
+      if (world) {
+        world.every((p) => {
+          if (p.data.netID !== this.data.netID) {
+            p.send(tank);
+          }
+        })
+      }
     }
   }
 
@@ -889,11 +872,12 @@ export class Peer extends OldPeer<PeerData> {
       this.data.level++;
       this.data.exp = 0;
       this.sendEffect(46);
-      this.every((p) => {
-        if (p.data.world === this.data.world && p.data.world !== "EXIT") {
+      const world = this.currentWorld();
+      if (world) {
+        world.every((p) => {
           p.send(Variant.from("OnTalkBubble", this.data.netID, `${this.name} is now level ${this.data.level}!`), Variant.from("OnConsoleMessage", `${this.name} is now level ${this.data.level}!`));
-        }
-      });
+        })
+      }
     }
     this.countryState();
     this.saveToCache();
@@ -902,6 +886,89 @@ export class Peer extends OldPeer<PeerData> {
   public calculateRequiredLevelXp(lvl: number): number {
     const requiredXp = 50 * ((lvl * lvl) + 2);
     return requiredXp;
+  }
+
+
+  /**
+   * Send OnTextBubble variant
+   * 
+   * @param message The message to send 
+   * @param stacked If true, it will override the current OnTextBubble that is being displayed on the client
+   * @param netID what netid the OnTalkBubble is for.
+   */
+
+  public sendTextBubble(message: string, stacked: boolean, netID?: number) {
+    this.send(
+      Variant.from(
+        "OnTalkBubble",
+        netID ?? this.data.netID,
+        message,
+        0,
+        stacked ? 1 : 0
+      )
+    )
+  }
+
+  /**
+   * Send `action|play_sfx` to the client
+   * @param file the file that will be played
+   * @param delay the delay in milliseconds
+   */
+  public sendSFX(file: string, delayMs: number) {
+    this.send(
+      TextPacket.from(
+        PacketTypes.ACTION,
+        "action|play_sfx",
+        `file|${file}`,
+        `delayMS|${delayMs}`
+      )
+    );
+  }
+
+  /**
+   * Send `OnPlayPositioned` variant
+   * @param file the file that will be played
+   * @param opts the Variant options. Set delay and or netID
+   */
+  public sendOnPlayPositioned(file: string, opts?: VariantOptions) {
+    this.send(
+      Variant.from(
+        opts,
+        "OnPlayPositioned",
+        file
+      )
+    )
+  }
+
+  /**
+   * Send `OnConsoleMessage` variant
+   * @param message the message that is going to be sent
+   */
+  public sendConsoleMessage(message: string, opts?: VariantOptions) {
+    this.send(Variant.from(
+      opts,
+      "OnConsoleMessage",
+      message
+    ))
+  }
+
+
+  /**
+   * Check if an item can fit into the user inventory
+   * @param itemID Item id to check
+   * @param amount amount of item to be addedd
+   * @returns Status if the item can fit in the user inventory
+   */
+  public canAddItemToInv(itemID: number, amount: number = 1): boolean {
+    const inventoryItem = this.data.inventory.items.find((invItem) => invItem.id == itemID);
+    const itemMeta = this.base.items.metadata.items.get(itemID.toString())!;
+
+    if ((inventoryItem && inventoryItem.amount >= itemMeta!.maxAmount!) ||
+      (!inventoryItem && this.data.inventory.items.length >= this.data.inventory.max)
+    ) {
+      return false;
+    }
+    return true;
   }
 
   /**

@@ -1,5 +1,5 @@
-import { Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../../Constants";
-import { Block, WorldData } from "../../types";
+import { TileFlags, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../../Constants";
+import { TileData, WorldData } from "../../types";
 import { WorldGen } from "../WorldGen";
 
 export class Default extends WorldGen {
@@ -19,7 +19,6 @@ export class Default extends WorldGen {
       width:       this.width,
       height:      this.height,
       blocks:      [],
-      admins:      [], // separate to different table
       playerCount: 0,
       jammers:     [], // separate to different table
       dropped:     {
@@ -46,11 +45,12 @@ export class Default extends WorldGen {
           x = 0;
         }
 
-        const block: Block = {
+        const block: TileData = {
           x,
           y,
-          fg: 0,
-          bg: 0
+          fg:    0,
+          bg:    0,
+          flags: 0,
         };
 
         if (block.y === Y_START_DIRT - 1 && block.x === mainDoorPosition) {
@@ -59,6 +59,7 @@ export class Default extends WorldGen {
             label:       "EXIT",
             destination: "EXIT"
           };
+          block.flags |= (TileFlags.PUBLIC | TileFlags.TILEEXTRA);
         } else if (block.y >= Y_START_DIRT) {
           block.fg =
             block.x === mainDoorPosition && block.y === Y_START_DIRT

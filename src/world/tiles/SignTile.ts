@@ -1,42 +1,71 @@
-import { TileExtraTypes, TileFlags } from "../../Constants";
+import { Variant } from "growtopia.js";
+import { BlockFlags, LockPermission, TileExtraTypes, TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
 import type { World } from "../../core/World";
-import type { Block } from "../../types";
+import type { TileData } from "../../types";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { Tile } from "../Tile";
+import { Peer } from "../../core/Peer";
+import { DialogBuilder } from "../../utils/builders/DialogBuilder";
+import { ItemDefinition } from "grow-items";
+
 
 export class SignTile extends Tile {
-  public data: ExtendBuffer;
   public extraType = TileExtraTypes.SIGN;
-  private label: string;
 
   constructor(
     public base: Base,
     public world: World,
-    public block: Block,
-    public alloc = 15
+    public data: TileData
   ) {
-    super(base, world, block, alloc);
-
-    this.label = this.block.sign?.label || "";
-    this.alloc += this.label.length;
-
-    this.data = new ExtendBuffer(this.alloc);
+    super(base, world, data);
   }
 
-  public async serialize(): Promise<void> {
-    this.data.writeU8(this.extraType);
-    this.data.writeString(this.label);
-    this.data.writeI32(-1);
+  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
+    if (!await super.onPlaceForeground(peer, itemMeta)) { return false; }
 
-    return;
+    this.data.flags |= TileFlags.TILEEXTRA;
+    this.data.sign = { label: "" };
+
+    return true;
   }
 
-  public async setFlags(): Promise<void> {
-    this.flags |= TileFlags.TILEEXTRA;
-
-    if (this.block.rotatedLeft) this.flags |= TileFlags.ROTATED_LEFT;
-
-    return;
+  public async onDestroy(peer: Peer): Promise<void> {
+    await super.onDestroy(peer);
+    this.data.sign = undefined;
   }
+
+  public async onWrench(peer: Peer): Promise<boolean> {
+    if (!await super.onWrench(peer)) {
+      this.onPlaceFail(peer);
+      return false;
+    }
+
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
+    const dialog = new DialogBuilder()
+      .defaultColor()
+      .addLabelWithIcon(
+        `\`wEdit ${itemMeta.name}\`\``,
+        itemMeta.id as number,
+        "big"
+      )
+      .addTextBox("What would you like to write on this sign?")
+      .addInputBox("label", "", this.data.sign?.label, 100)
+      .embed("tilex", this.data.x)
+      .embed("tiley", this.data.y)
+      .endDialog("sign_edit", "Cancel", "OK")
+      .str();
+
+    peer.send(Variant.from("OnDialogRequest", dialog));
+    return true;
+  }
+
+  public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
+    await super.serialize(dataBuffer);
+    dataBuffer.grow(1 + 2 + (this.data.sign?.label?.length ?? 0) + 4);
+    dataBuffer.writeU8(this.extraType);
+    dataBuffer.writeString(this.data.sign?.label || "");
+    dataBuffer.writeI32(-1);
+  }
+
 }

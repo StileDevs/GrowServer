@@ -1,24 +1,26 @@
-export interface Block {
+export interface TileData {
   fg: number;
   bg: number;
   x: number;
   y: number;
-  lock?: LockedBlocked;
+  flags: number;
+  lock?: LockParent;
+  lockedBy?: LockChild;
+  worldLockData?: WorldLockData; // this stores bpm, hide music notes, etc
   door?: Door;
   sign?: Sign;
   heartMonitor?: HeartMonitor;
-  dblockID?: number;
-  damage?: number;
+  // dblockID?: number;
+  damage?: number; // this is a float. 1 damage is equal to 1 fist damage. 
   resetStateAt?: number;
-  worldLock?: boolean;
-  boombox?: Toggleable;
+  // worldLock?: boolean;
   rotatedLeft?: boolean;
   entrace?: Entrance;
   tree?: Tree;
-  toggleable?: Toggleable;
   mannequin?: Mannequin;
-  dice?: number;
+  dice?: Dice;
   provider?: Provider;
+  displayBlock?: DisplayBlock
 }
 
 export interface Provider {
@@ -68,42 +70,55 @@ export interface WorldData {
   name: string;
   width: number;
   height: number;
-  blocks: Block[];
-  owner?: WorldOwnerData;
-  admins?: number[];
+  blocks: TileData[];
+  // owner?: number; // owner userID
+  // admins?: number[];
   playerCount?: number;
-  bpm?: number;
-  customMusicBlocksDisabled?: boolean;
-  invisMusicBlocks?: boolean;
+  // bpm?: number;
+  // customMusicBlocksDisabled?: boolean;
+  // invisMusicBlocks?: boolean;
   jammers?: Jammer[];
   dropped?: Dropped;
   weatherId: number;
+  worldLockIndex?: number;
+  // minLevel: number;
+  // openToPublic?: boolean;
 }
-export interface WorldOwnerData {
-  name: string;
-  displayName: string;
-  id: number;
+// export interface WorldOwnerData {
+//   name: string;
+//   displayName: string;
+//   id: number;
+// }
+
+// the tile that LockParent owns
+export interface LockChild {
+  parentX: number; // the lock X
+  parentY: number; // the lock Y
 }
 
-export interface LockedBlocked {
-  ownerFg?: number;
-  ownerUserID?: number;
-  ownerName?: string;
-  ownerX?: number;
-  ownerY?: number;
-  isOwner?: boolean;
-  openToPublic?: boolean;
-  ignoreEmptyAir?: boolean;
-  onlyAllowBuild?: boolean;
-  adminLimited?: boolean;
-  adminIDs?: number[];
+// contains all WorldLock specific configuration.
+export interface WorldLockData {
+  bpm: number;
+  customMusicBlocksDisabled: boolean;
+  invisMusicBlocks: boolean;
+  minLevel: number;
 }
+
+// the lock itself
+export interface LockParent {
+  ownerUserID: number;
+  adminLimited: boolean;
+  adminIDs: number[];
+  ownedTiles: number[]; // Tile indexes this lock owns
+  ignoreEmptyAir: boolean;
+  permission: LockPermission; // this is available exclusively to the actual Lock(small lock, huge lock, etc), not locked tile  
+}
+
 
 export interface Door {
   label?: string;
   destination?: string;
   id?: string;
-  locked?: boolean;
 }
 
 export interface Sign {
@@ -123,14 +138,16 @@ export interface Tree {
 }
 
 export interface HeartMonitor {
-  name: string;
   userID: number;
 }
 
-export interface Toggleable {
-  open?: boolean;
-  public?: boolean;
-  silenced?: boolean;
+export interface DisplayBlock {
+  displayedItem: number;
+}
+
+export interface Dice {
+  symbol: number;
+  lastRollTime: number; // limit dice rolling to 1 time per 3 seconds.
 }
 
 export interface EnterArg {
@@ -138,12 +155,8 @@ export interface EnterArg {
   y?: number;
 }
 
-export interface Lock {
-  id: number;
-  maxTiles: number;
-}
-
 export interface Ignore {
   blockIDsToIgnoreByLock: number[];
   blockActionTypesToIgnore: number[];
 }
+

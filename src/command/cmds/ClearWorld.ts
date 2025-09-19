@@ -27,9 +27,10 @@ export default class ClearWorld extends Command {
 
   public async execute(): Promise<void> {
     const world = this.peer.currentWorld();
+    const ownerUID = world?.getOwnerUID();
 
-    if (world?.data.owner) {
-      if (world?.data.owner.id !== this.peer.data.id_user) return;
+    if (ownerUID) {
+      if (ownerUID !== this.peer.data.userID) return;
       const dialog = new DialogBuilder()
         .addLabelWithIcon("Warning", "1432", "big")
         .addTextBox(

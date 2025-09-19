@@ -2,12 +2,12 @@ import { TankPacket, Variant } from "growtopia.js";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
-import { Block } from "../../types";
+import { TileData } from "../../types";
 import { ActionTypes } from "../../Constants";
 
 export class State {
   private pos: number;
-  private block: Block;
+  private block: TileData;
 
   constructor(
     public base: Base,
@@ -32,11 +32,13 @@ export class State {
     );
 
     this.peer.saveToCache();
-    this.peer.every((p) => {
-      if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") {
+
+    const world = this.peer.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(this.tank);
-      }
-    });
+      })
+    }
 
     this.onPlayerMove();
   }
@@ -50,7 +52,7 @@ export class State {
     if (this.block === undefined) return;
 
     const itemMeta =
-      this.base.items.metadata.items[this.block.fg || this.block.bg];
+      this.base.items.metadata.items.get((this.block.fg || this.block.bg).toString())!;
 
     switch (itemMeta.type) {
       case ActionTypes.CHECKPOINT: {

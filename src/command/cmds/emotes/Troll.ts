@@ -23,16 +23,17 @@ export default class Troll extends Command {
     };
   }
   public async execute(): Promise<void> {
-    this.peer.every((otherPeerInCache: Peer) => {
-      if (
-        otherPeerInCache.data.world === this.peer.data.world
-      ) {
-        otherPeerInCache.send(Variant.from(
-          { netID: this.peer.data.netID },
-          "OnAction",
-          this.opt.usage
-        ));
-      }
-    });
+    const world = this.peer.currentWorld();
+    const varlist = Variant.from(
+      { netID: this.peer.data.netID },
+      "OnAction",
+      this.opt.usage
+    );
+
+    if (world) {
+      world.every((p) => {
+        p.send(varlist);
+      });
+    };
   }
 }

@@ -23,18 +23,22 @@ export default class Sad extends Command {
     };
   }
   public async execute(): Promise<void> {
-    this.peer.every((otherPeerInCache: Peer) => {
-      if (otherPeerInCache.data.world === this.peer.data.world) {
-        otherPeerInCache.send(Variant.from(
-          { netID: this.peer.data.netID },
-          "OnAction",
-          this.opt.usage
-        ));
-        otherPeerInCache.send(Variant.from(
-          "OnTalkBubble",
-          this.peer.data.netID,
-          "CP:0_PL:0_OID:_:(", 0));
-      }
-    });
+    const world = this.peer.currentWorld();
+    const varlist = Variant.from(
+      { netID: this.peer.data.netID },
+      "OnAction",
+      this.opt.usage
+    );
+    const talkBubbleVarlist = Variant.from(
+      "OnTalkBubble",
+      this.peer.data.netID,
+      "CP:0_PL:0_OID:_:(",
+      0
+    );
+    if (world) {
+      world.every((p) => {
+        p.send(varlist, talkBubbleVarlist);
+      });
+    };
   }
 }

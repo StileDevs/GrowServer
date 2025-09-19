@@ -12,9 +12,10 @@ export class DropEnd {
       drop_count: string;
       itemID: string;
     }>
-  ) {}
+  ) { }
 
   public async execute(): Promise<void> {
+    if (!this.action.dialog_name || !this.action.drop_count || !this.action.itemID) return;
     if (!/\d/.test(this.action.drop_count) || !/\d/.test(this.action.itemID)) {
       this.peer.send(
         Variant.from(
@@ -35,7 +36,7 @@ export class DropEnd {
         Variant.from(
           "OnTalkBubble",
           this.peer.data.netID,
-          "That item, seems not exist in your inventory"
+          "That item, does not exist in your inventory"
         )
       );
       return;

@@ -1,31 +1,56 @@
-import { TileFlags } from "../../Constants";
+import { TankPacket, Variant } from "growtopia.js";
+import { ActionTypes, BlockFlags, LockPermission, TileFlags } from "../../Constants";
 import type { Base } from "../../core/Base";
+import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
-import type { Block } from "../../types";
+import type { TileData } from "../../types";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { Tile } from "../Tile";
+import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 
 export class SwitcheROO extends Tile {
-  public data: ExtendBuffer;
-
   constructor(
     public base: Base,
     public world: World,
-    public block: Block,
-    public alloc = 8
+    public data: TileData
   ) {
-    super(base, world, block, alloc);
-    this.data = new ExtendBuffer(this.alloc);
+    super(base, world, data);
   }
 
-  public async serialize(): Promise<void> {
-    // nothing to do here
-    return;
+  public async onPunch(peer: Peer): Promise<boolean> {
+    if (await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK)) {
+      // default punch behaviour, but with an exception
+      this.data.flags ^= TileFlags.OPEN;
+    }
+    else {
+      if (this.data.flags & TileFlags.PUBLIC) {
+        this.data.flags ^= TileFlags.OPEN;
+        this.applyDamage(peer, 0);
+      }
+    }
+
+    return super.onPunch(peer);
   }
 
-  public async setFlags(): Promise<void> {
-    if (this.block.toggleable?.open) this.flags |= TileFlags.OPEN;
-    if (this.block.toggleable?.public) this.flags |= TileFlags.PUBLIC;
-    return;
+  public async onWrench(peer: Peer): Promise<boolean> {
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString())!;
+    if (await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BUILD && (itemMeta.flags! & BlockFlags.WRENCHABLE))) {
+      const dialog = new DialogBuilder()
+        .defaultColor()
+        .addLabelWithIcon(
+          `\`wEdit ${itemMeta.name}\`\``,
+          itemMeta.id as number,
+          "big"
+        )
+        .addCheckbox("checkbox_public", "Usable by public", (this.data.flags & TileFlags.PUBLIC) ? "selected" : "not_selected")
+        .embed("tilex", this.data.x)
+        .embed("tiley", this.data.y) // i dont think this is included in the official one, but not very sure on it too.
+        .endDialog("switcheroo_edit", "Cancel", "OK")
+        .str();
+
+      peer.send(Variant.from("OnDialogRequest", dialog));
+      return true;
+    }
+    return false;
   }
 }

@@ -2,11 +2,11 @@ import { TankPacket } from "growtopia.js";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
-import { Block } from "../../types";
+import { TileData } from "../../types";
 
 export class SetIconState {
   private pos: number;
-  private block: Block;
+  private block: TileData;
 
   constructor(
     public base: Base,
@@ -23,10 +23,11 @@ export class SetIconState {
   public async execute() {
     this.tank.data!.state = this.peer.data?.rotatedLeft ? 16 : 0;
 
-    this.peer.every((p) => {
-      if (p.data?.world === this.peer.data?.world && p.data?.world !== "EXIT") {
+    const world = this.peer.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(this.tank);
-      }
-    });
+      })
+    }
   }
 }

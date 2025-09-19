@@ -37,7 +37,7 @@ async function downloadFile(url: string, filePath: string) {
     }
 
     const fileStream = createWriteStream(filePath);
-    
+
     for await (const chunk of response.body!) {
       fileStream.write(chunk);
     }
@@ -74,13 +74,13 @@ export async function fetchJSON(url: string) {
 export async function downloadItemsDat(itemsDatName: string) {
   const datDir = join(__dirname, ".cache", "growtopia", "dat");
 
-  
+
   if (!existsSync(datDir)) {
     mkdirSync(datDir, { recursive: true });
   }
-  
+
   const currentVersion = itemsDatName.match(/items-v(\d+\.\d+)\.dat/)?.[1];
-  
+
   if (!currentVersion) {
     consola.error("Invalid items.dat filename format");
     return;
@@ -88,12 +88,12 @@ export async function downloadItemsDat(itemsDatName: string) {
 
   const existingFiles = readdirSync(datDir);
   const versionRegex = /items-v(\d+\.\d+)\.dat/;
-  
+
   for (const file of existingFiles) {
     const match = file.match(versionRegex);
     if (match) {
       const existingVersion = match[1];
-      
+
       if (parseFloat(currentVersion) > parseFloat(existingVersion)) {
         unlinkSync(join(datDir, file));
         consola.info(`Removed older version: ${file}`);
@@ -199,12 +199,6 @@ export function parseAction(chunk: Buffer): Record<string, string> {
   });
 
   return data;
-}
-
-export function hashItemsDat(file: Buffer) {
-  let hash = 0x55555555;
-  file.forEach((x) => (hash = (hash >>> 27) + (hash << 5) + x));
-  return hash;
 }
 
 export function manageArray(

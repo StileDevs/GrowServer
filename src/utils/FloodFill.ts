@@ -1,7 +1,7 @@
 import { TankPacket, Variant } from "growtopia.js";
-import type { Block } from "../types";
+import { type TileData } from "../types";
 import { Base } from "../core/Base";
-import { TankTypes, TileIgnore } from "../Constants";
+import { BlockFlags2, LockPermission, LOCKS, TankTypes, TileIgnore } from "../Constants";
 import { World } from "../core/World";
 import { Peer } from "../core/Peer";
 
@@ -27,8 +27,8 @@ interface FloodFillData {
   max: number;
   width: number;
   height: number;
-  blocks: Block[];
-  s_block: Block;
+  blocks: TileData[];
+  s_block: TileData;
   base: Base;
   noEmptyAir: boolean;
 }
@@ -37,54 +37,105 @@ export class Floodfill {
   public totalNodes: Node[] = [];
   public count = 0;
 
-  constructor(public data: FloodFillData) {}
+  constructor(public data: FloodFillData) { }
 
   async exec() {
-    if (this.data.s_block.lock) return;
+    const toBeExplored: Node[] = [];
+    toBeExplored.push(this.data.s_node);
 
-    const nodes: Node[] = [];
-    nodes.push(this.data.s_node);
+    // push starting node. Will be "shifted" later
+    this.totalNodes.push(this.data.s_node);
 
-    while (this.totalNodes.length < this.data.max) {
-      const tempNodes: Node[] = [];
+    // need 1 extra space for starting node
+    while (this.totalNodes.length <= this.data.max + 1) {
+      const node = toBeExplored.shift();
+      if (!node) break;
 
-      for (const node of nodes) {
-        const neighbours = this.neighbours(node);
+      let neighbours = undefined;
 
-        for (const neighbour of neighbours) {
-          const block =
-            this.data.blocks[neighbour.x + neighbour.y * this.data.width];
+      // if (node.x == this.data.s_block.x && node.y == this.data.s_block.y)
+      //   neighbours = this.neighbours(node, true);
+      // else
+      neighbours = this.neighbours(node);
 
-          const meta =
-            this.data.base.items.metadata.items[block.fg || block.bg];
-          if (
-            this.totalNodes.find(
-              (n) => n.x === neighbour.x && n.y === neighbour.y
-            ) ||
-            block.lock ||
-            block.worldLock ||
-            TileIgnore.blockIDsToIgnoreByLock.includes(meta.id || 0) ||
-            (this.data.noEmptyAir &&
-              (!meta.id ||
-                TileIgnore.blockActionTypesToIgnore.includes(meta.type || 0)))
-          )
-            continue;
+      for (const neighbour of neighbours) {
+        if (!this.isConnectedToFaces(neighbour)) continue;
 
-          tempNodes.push(neighbour);
-          this.totalNodes.push(neighbour);
+        const block =
+          this.data.blocks[neighbour.x + neighbour.y * this.data.width];
 
-          if (this.totalNodes.length >= this.data.max - 1) break;
-        }
+        const meta =
+          this.data.base.items.metadata.items.get((block.fg || block.bg).toString())!;
+        if (
+          this.totalNodes.find(
+            (n) => n.x === neighbour.x && n.y === neighbour.y
+          ) ||
+          block.lockedBy ||
+          TileIgnore.blockIDsToIgnoreByLock.includes(meta.id || 0) ||
+          (this.data.noEmptyAir && !meta.id) ||
+          TileIgnore.blockActionTypesToIgnore.includes(meta.type || 0)
+        )
+          continue;
+
+        // if adding one more nodes means going over the max, we break;
+        // +1 on the this.data.max because we need 1 extra space to account for the extra node 
+        //  (will be deleted at the end of the function)
+        // (i prefer clarity over performance in this case) - badewen
+        if (this.totalNodes.length + 1 > this.data.max + 1) break;
+
+        toBeExplored.push(neighbour);
+        this.totalNodes.push(neighbour);
       }
-
-      if (nodes.length < 1) break;
-      nodes.shift();
-
-      for (const node of tempNodes) nodes.push(node);
     }
+
+    this.totalNodes.shift();
+
+    // if (this.data.s_block.lock) return;
+
+    // const nodes: Node[] = [];
+    // nodes.push(this.data.s_node);
+
+    // while (this.totalNodes.length <= this.data.max) {
+    //   const tempNodes: Node[] = [];
+
+    //   for (const node of nodes) {
+    //     const neighbours = this.neighbours(node);
+
+    //     for (const neighbour of neighbours) {
+    //       const block =
+    //         this.data.blocks[neighbour.x + neighbour.y * this.data.width];
+
+    //       const meta =
+    //         this.data.base.items.metadata.items.get((block.fg || block.bg).toString())!;
+    //       if (
+    //         this.totalNodes.find(
+    //           (n) => n.x === neighbour.x && n.y === neighbour.y
+    //         ) ||
+    //         block.lock ||
+    //         block.lockedBy ||
+    //         block.worldLockData ||
+    //         TileIgnore.blockIDsToIgnoreByLock.includes(meta.id || 0) ||
+    //         (this.data.noEmptyAir &&
+    //           (!meta.id ||
+    //             TileIgnore.blockActionTypesToIgnore.includes(meta.type || 0)))
+    //       )
+    //         continue;
+
+    //       tempNodes.push(neighbour);
+    //       this.totalNodes.push(neighbour);
+
+    //       if (this.totalNodes.length >= this.data.max - 1) break;
+    //     }
+    //   }
+
+    //   if (nodes.length < 1) break;
+    //   nodes.shift();
+
+    //   for (const node of tempNodes) nodes.push(node);
+    // }
   }
 
-  private neighbours(node: Node) {
+  private neighbours(node: Node, discoverCorner: boolean = false): Node[] {
     const nodes: Node[] = [];
 
     for (let i = 0; i < directions.length; i++) {
@@ -96,11 +147,10 @@ export class Floodfill {
 
       const block = this.data.blocks[x + y * this.data.width];
 
-      if (block.lock) continue;
-      if (i >= directions.length / 2) {
-        // corners
-        if (this.data.noEmptyAir && !this.isConnectedToFaces({ x, y }))
-          continue;
+      if (block.lockedBy) continue;
+
+      if (i >= directions.length / 2 && !discoverCorner) {
+        break;
       }
 
       if (block) nodes.push({ x, y });
@@ -114,11 +164,20 @@ export class Floodfill {
     for (let i = 0; i < 4; i++) {
       const x = node.x + directions[i].x;
       const y = node.y + directions[i].y;
+      const block = this.data.blocks[(y * this.data.width) + x];
 
       if (x < 0 || x >= this.data.width || y < 0 || y >= this.data.height)
         continue;
 
-      res = !!this.totalNodes.find((i) => i.x === x && i.y === y);
+      // check if the neighbouring block has the same parent
+      if (block.lockedBy && block.lockedBy.parentX == node.x && block.lockedBy.parentY == node.y) {
+        return true;
+      }
+
+      res = !!this.totalNodes.find((i) =>
+        (i.x === x && i.y === y)
+        // (i.x == this.data.s_block.x && i.y == this.data.s_block.y)
+      );
       if (res) break;
     }
 
@@ -128,20 +187,23 @@ export class Floodfill {
   public async apply(world: World, owner: Peer) {
     const buffer = Buffer.alloc(this.data.max * 2);
     let pos = 0;
+    const lockData = LOCKS.find((v) => v.id == this.data.s_block.fg);
 
-    this.data.s_block.lock = {
-      ownerFg: this.data.s_block.fg,
-      ownerUserID:
-        typeof owner.data?.id_user === "string"
-          ? parseInt(owner.data.id_user)
-          : owner.data?.id_user,
-      ownerName:      owner.name,
-      ownerX:         this.data.s_block.x,
-      ownerY:         this.data.s_block.y,
-      isOwner:        true,
-      ignoreEmptyAir: this.data.noEmptyAir,
-      adminIDs:       []
-    };
+    if (!this.data.s_block.lock) {
+      this.data.s_block.lock = {
+        // ownerFg: this.data.s_block.fg,
+        ownerUserID:    owner.data?.userID,
+        // ownerName: owner.name,
+        // ownerX: this.data.s_block.x,
+        // ownerY: this.data.s_block.y,
+        // isOwner: true,
+        adminLimited:   false,
+        ignoreEmptyAir: this.data.noEmptyAir,
+        adminIDs:       [],
+        permission:     lockData?.defaultPermission ?? LockPermission.NONE, // the lock itself can only be destroyed by the owner
+        ownedTiles:     []
+      };
+    }
 
     let i = 0;
 
@@ -153,11 +215,13 @@ export class Floodfill {
       const b_pos = node.x + node.y * this.data.width;
       const block = world.data.blocks[b_pos];
 
-      block.lock = {
-        ownerFg: this.data.s_block.fg,
+      this.data.s_block.lock.ownedTiles?.push(b_pos);
+
+      block.lockedBy = {
+        // ownerFg: this.data.s_block.fg,
         //ownerUserID: owner.data.id,
-        ownerX:  this.data.s_block.x,
-        ownerY:  this.data.s_block.y
+        parentX: this.data.s_block.x,
+        parentY: this.data.s_block.y,
         //adminIDs: [],
       };
 
@@ -171,7 +235,7 @@ export class Floodfill {
 
     const tank = TankPacket.from({
       type:        TankTypes.SEND_LOCK,
-      netID:       owner.data?.id_user as number,
+      netID:       owner.data?.userID as number,
       targetNetID: this.data.max,
       info:        this.data.s_block.fg,
       xPunch:      this.data.s_block.x,
@@ -179,17 +243,8 @@ export class Floodfill {
       data:        () => buffer
     });
 
-    owner.every((p) => {
-      if (p.data?.world === owner.data?.world && p.data?.world !== "EXIT") {
-        p.send(
-          Variant.from(
-            { netID: owner.data?.netID },
-            "OnPlayPositioned",
-            "audio/use_lock.wav"
-          ),
-          tank
-        );
-      }
+    world.every((p) => {
+      p.send(tank);
     });
   }
 }

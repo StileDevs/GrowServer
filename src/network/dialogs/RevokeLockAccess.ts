@@ -1,18 +1,19 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
+import { ActionTypes, LockPermission, LOCKS, TileFlags } from "../../Constants";
 import { TileData } from "../../types";
+import { Floodfill } from "../../utils/FloodFill";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
 import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
-import { ROLE } from "../../Constants";
 
-export class SignEdit {
+export class RevokeLockAccess {
   private world: World;
   private pos: number;
   private block: TileData;
-  private itemMeta: ItemDefinition;
+  private itemMeta?: ItemDefinition;
 
   constructor(
     public base: Base,
@@ -21,7 +22,6 @@ export class SignEdit {
       dialog_name: string;
       tilex: string;
       tiley: string;
-      label: string;
     }>
   ) {
     this.world = this.peer.currentWorld()!;
@@ -33,20 +33,20 @@ export class SignEdit {
   }
 
   public async execute(): Promise<void> {
-    if (!this.action.dialog_name || !this.action.tilex || !this.action.tiley || !this.action.label) return;
-    const ownerUID = this.world.getOwnerUID();
+    if (!this.action.dialog_name || this.itemMeta?.type != ActionTypes.LOCK || !this.action.tilex || !this.action.tiley) return;
+    if (this.block.lock?.ownerUserID !== this.peer.data?.userID) {
+      if (this.block.lock?.adminIDs?.includes(this.peer.data.userID)) {
+        const index = this.block.lock.adminIDs.indexOf(this.peer.data.userID);
+        if (index == -1) return;
 
-    if (ownerUID) {
-      if (ownerUID !== this.peer.data?.userID && this.peer.data.role == ROLE.DEVELOPER) return;
+        this.block.lock.adminIDs.splice(index, 1);
+
+        this.world.every((p) => p.sendConsoleMessage(`${this.peer.name} removed their access from a ${this.itemMeta?.name}`))
+
+        const tile = tileFrom(this.base, this.world, this.block);
+        this.world.every((p) => tile.tileUpdate(p));
+      }
+      return;
     }
-
-    if (!this.block.sign) return;
-
-    this.block.sign = {
-      label: this.action.label || ""
-    };
-
-    const signTile = tileFrom(this.base, this.world, this.block);
-    this.world.every((p) => signTile.tileUpdate(p));
   }
 }

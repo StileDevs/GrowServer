@@ -22,9 +22,9 @@ export class ItemActiveReq {
     this.tank.data!.state = this.peer.data.rotatedLeft ? 16 : 0;
     const isItemExist = (id: number) =>
       this.peer.data.inventory.items.find((i) => i.id === id);
-    const item = this.base.items.metadata.items.find(
-      (v) => v.id === this.tank.data?.info
-    );
+    const item = this.base.items.metadata.items.get(this.tank.data!.info!.toString())
+
+    if (!item) return;
 
     const itemExist = isItemExist(this.tank.data?.info as number);
 

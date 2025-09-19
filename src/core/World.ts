@@ -1,10 +1,15 @@
-import { TankPacket, TextPacket, Variant } from "growtopia.js";
-import { Block, WorldData } from "../types";
+import { PeerData, TankPacket, TextPacket, Variant } from "growtopia.js";
+import { TileData, WorldData } from "../types";
 import { Base } from "./Base";
-import { PacketTypes, TankTypes } from "../Constants";
+import { ActionTypes, LockPermission, PacketTypes, ROLE, TankTypes, TileCollisionTypes, TileFlags } from "../Constants";
 import { Peer } from "./Peer";
-import { tileParse } from "../world/tiles";
+// import { tileParse } from "../world/tiles";
 import { Default } from "../world/generation/Default";
+import { Tile } from "../world/Tile";
+import { tileFrom } from "../world/tiles";
+import { writeFileSync } from "fs";
+import { permission } from "process";
+import { ItemDefinition, ItemsDatMeta } from "grow-items";
 
 export class World {
   public data: WorldData;
@@ -55,35 +60,37 @@ export class World {
         "delayMS|0"
       )
     );
-    peer.every((p) => {
-      if (
-        p.data?.netID !== peer.data?.netID &&
-        p.data?.world !== "EXIT" &&
-        p.data?.world === peer.data?.world
-      )
-        p.send(
-          Variant.from(
-            "OnRemove",
-            `netID|${peer.data?.netID}`,
-            `pId|${peer.data?.id_user}`
-          ),
-          Variant.from(
-            "OnConsoleMessage",
-            `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
-          ),
-          Variant.from(
-            "OnTalkBubble",
-            peer.data.netID,
-            `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
-          ),
-          TextPacket.from(
-            PacketTypes.ACTION,
-            "action|play_sfx",
-            "file|audio/door_shut.wav",
-            "delayMS|0"
-          )
-        );
-    });
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
+        if (p.data.netID !== peer.data.netID) {
+          p.send(
+            Variant.from(
+              "OnRemove",
+              `netID|${peer.data?.netID}`,
+              `pId|${peer.data?.userID}`
+            ),
+            Variant.from(
+              "OnConsoleMessage",
+              `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+            ),
+            Variant.from(
+              "OnTalkBubble",
+              peer.data.netID,
+              `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
+              0,
+              1
+            ),
+            TextPacket.from(
+              PacketTypes.ACTION,
+              "action|play_sfx",
+              "file|audio/door_shut.wav",
+              "delayMS|0"
+            )
+          );
+        }
+      })
+    }
 
     if (sendMenu)
       peer.send(
@@ -100,7 +107,7 @@ ${Array.from(this.base.cache.worlds.values())
   .slice(0, 6)
   .map((v) => {
     if (v.playerCount)
-      return `add_floater|${v.name}|${v.playerCount ? ` (${v.playerCount})` : 0}|0.5|3529161471\n`;
+      return `add_floater|${v.name}|${v.playerCount ?? 0}|0.5|3529161471\n`;
     else return "";
   })
   .join("\n")}
@@ -109,7 +116,7 @@ ${peer.data.lastVisitedWorlds
   ?.reverse()
   .map((v) => {
     const count = this.base.cache.worlds.get(v)?.playerCount || 0;
-    return `add_floater|${v}|${count ? ` (${count})` : 0}|0.5|3417414143\n`;
+    return `add_floater|${v}|${count ?? 0}|0.5|3417414143\n`;
   })
   .join("\n")}
 `
@@ -117,7 +124,7 @@ ${peer.data.lastVisitedWorlds
         Variant.from(
           { delay: 500 },
           "OnConsoleMessage",
-          "Where would you like to go? (`w${totalOnline} `oonline)"
+          `Where would you like to go? (\`w${this.base.getPlayersOnline()}\`\` online)`
         )
       );
 
@@ -139,14 +146,16 @@ ${peer.data.lastVisitedWorlds
           width:       world.width,
           height:      world.height,
           blocks:      JSON.parse((world.blocks as Buffer).toString()),
-          admins:      [],
+          // admins: [],
           playerCount: 0,
           jammers:     [],
           dropped:     world.dropped
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
-          owner:     world.owner ? JSON.parse(world.owner.toString()) : null,
-          weatherId: world.weather_id || 41
+          // owner: world.owner ? JSON.parse(world.owner.toString()) : null,
+          weatherId:      world.weather_id || 41,
+          worldLockIndex: world.worldlock_index ? world.worldlock_index : undefined
+          // minLevel: world.minimum_level || 1,
         };
       } else {
         await this.generate(true);
@@ -154,42 +163,32 @@ ${peer.data.lastVisitedWorlds
     } else this.data = this.base.cache.worlds.get(this.worldName) as WorldData;
   }
 
+
+  /**
+   * Emulate TileChangeReq 
+   * 
+   * if `overrideTile` is true, the target tile will be replaced.
+   * else it will simulate TileChangeReq behaviour.
+   * @param peer peer that initiate the place.
+   * @param param2 See the function description.
+   */
   public async place(
     peer: Peer,
     x: number,
     y: number,
-    id: number,
-    isBg: boolean,
-    { fruitCount, dontSendTileChange }: { fruitCount?: number, dontSendTileChange?: boolean } = {},
-  ) {
-    let state = 0x8;
+    itemID: ItemDefinition,
+    { overrideTile }: { overrideTile: boolean } = { overrideTile: false }
+  ): Promise<boolean> {
+    const targetTile = tileFrom(this.base, this, this.data.blocks[y * this.data.width + x]);
 
-    const block = this.data.blocks[x + y * this.data.width];
-    block[isBg ? "bg" : "fg"] = id;
-
-    if (peer.data?.rotatedLeft) {
-      state |= 0x10;
-      block.rotatedLeft = true;
+    if (itemID.type == ActionTypes.BACKGROUND) {
+      return targetTile.onPlaceBackground(peer, itemID);
     }
-
-    if (!dontSendTileChange) {
-      peer.every((p) => {
-        if (p.data?.world === this.data.name && p.data?.world !== "EXIT") {
-          const packet = TankPacket.from({
-            type:   TankTypes.TILE_CHANGE_REQUEST,
-            netID:  peer.data?.netID,
-            state,
-            info:   id,
-            xPunch: x,
-            yPunch: y
-          });
-
-          const buffer = packet.parse() as Buffer;
-
-          buffer[7] = fruitCount || 0;
-          p.send(buffer);
-        }
-      });
+    else if (targetTile.data.fg == 0) {
+      return targetTile.onPlaceForeground(peer, itemID);
+    }
+    else {
+      return targetTile.onItemPlace(peer, itemID);
     }
   }
 
@@ -219,13 +218,14 @@ ${peer.data.lastVisitedWorlds
     const blockBytes: number[] = [];
 
     for (const block of this.data.blocks) {
-      const item = this.base.items.metadata.items.find(
-        (i) => i.id === block.fg
-      );
+      // const item = this.base.items.metadata.items.find(
+      //   (i) => i.id === block.fg
+      // );
 
       // const blockBuf = new Tile(this.base, this, block).serialize(item?.type as number);
-      const type = item?.type as number;
-      const blockBuf = await tileParse(type, this.base, this, block);
+      // const type = item?.type as number;
+      // const blockBuf = await tileParse(type, this.base, this, block);
+      const blockBuf = (await tileFrom(this.base, this, block).parse()).data;
 
       blockBuf.forEach((b) => blockBytes.push(b));
     }
@@ -285,7 +285,7 @@ ${peer.data.lastVisitedWorlds
       Variant.from(
         { delay: -1 },
         "OnSpawn",
-        `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.id_user}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`
+        `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`
       ),
 
       Variant.from(
@@ -313,98 +313,102 @@ ${peer.data.lastVisitedWorlds
       )
     );
 
-    if (this.data.owner) {
+    const ownerUserID = this.getOwnerUID();
+    if (ownerUserID) {
+      const ownerData = await this.base.database.players.getByUID(ownerUserID);
       peer.send(
         Variant.from(
           "OnConsoleMessage",
-          `\`p[\`0${this.data.name} \`oWorld Locked by ${this.data.owner.displayName}\`#]`
+          `\`p[\`0${this.data.name} \`oWorld Locked by ${ownerData?.display_name}\`#]`
         )
       );
     }
 
-    peer.every((p) => {
-      if (
-        p.data?.netID !== peer.data?.netID &&
-        p.data?.world === peer.data?.world &&
-        p.data?.world !== "EXIT"
-      ) {
-        p.send(
-          Variant.from(
-            { delay: -1 },
-            "OnSpawn",
-            `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.id_user}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
-          ),
-          Variant.from(
-            {
-              netID: peer.data?.netID
-            },
-            "OnSetClothing",
-            [
-              peer.data.clothing.hair,
-              peer.data.clothing.shirt,
-              peer.data.clothing.pants
-            ],
-            [
-              peer.data.clothing.feet,
-              peer.data.clothing.face,
-              peer.data.clothing.hand
-            ],
-            [
-              peer.data.clothing.back,
-              peer.data.clothing.mask,
-              peer.data.clothing.necklace
-            ],
-            0x8295c3ff,
-            [peer.data.clothing.ances, 0.0, 0.0]
-          ),
-          Variant.from(
-            "OnConsoleMessage",
-            `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
-          ),
-          Variant.from(
-            "OnTalkBubble",
-            peer.data.netID,
-            `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
-          ),
-          TextPacket.from(
-            PacketTypes.ACTION,
-            "action|play_sfx",
-            "file|audio/door_open.wav",
-            "delayMS|0"
-          )
-        );
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
+        if (p.data.netID !== peer.data.netID) {
+          p.send(
+            Variant.from(
+              { delay: -1 },
+              "OnSpawn",
+              `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+            ),
+            Variant.from(
+              {
+                netID: peer.data?.netID
+              },
+              "OnSetClothing",
+              [
+                peer.data.clothing.hair,
+                peer.data.clothing.shirt,
+                peer.data.clothing.pants
+              ],
+              [
+                peer.data.clothing.feet,
+                peer.data.clothing.face,
+                peer.data.clothing.hand
+              ],
+              [
+                peer.data.clothing.back,
+                peer.data.clothing.mask,
+                peer.data.clothing.necklace
+              ],
+              0x8295c3ff,
+              [peer.data.clothing.ances, 0.0, 0.0]
+            ),
+            Variant.from(
+              "OnConsoleMessage",
+              `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+            ),
+            Variant.from(
+              "OnTalkBubble",
+              peer.data.netID,
+              `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
+              0,
+              1
+            ),
+            TextPacket.from(
+              PacketTypes.ACTION,
+              "action|play_sfx",
+              "file|audio/door_open.wav",
+              "delayMS|0"
+            )
+          );
 
-        peer.send(
-          Variant.from(
-            { delay: -1 },
-            "OnSpawn",
-            `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.id_user}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
-          ),
-          Variant.from(
-            {
-              netID: p.data?.netID
-            },
-            "OnSetClothing",
-            [
-              p.data.clothing.hair,
-              p.data.clothing.shirt,
-              p.data.clothing.pants
-            ],
-            [p.data.clothing.feet, p.data.clothing.face, p.data.clothing.hand],
-            [
-              p.data.clothing.back,
-              p.data.clothing.mask,
-              p.data.clothing.necklace
-            ],
-            0x8295c3ff,
-            [p.data.clothing.ances, 0.0, 0.0]
-          )
-        );
-      }
-    });
+          peer.send(
+            Variant.from(
+              { delay: -1 },
+              "OnSpawn",
+              `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.userID}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+            ),
+            Variant.from(
+              {
+                netID: p.data?.netID
+              },
+              "OnSetClothing",
+              [
+                p.data.clothing.hair,
+                p.data.clothing.shirt,
+                p.data.clothing.pants
+              ],
+              [p.data.clothing.feet, p.data.clothing.face, p.data.clothing.hand],
+              [
+                p.data.clothing.back,
+                p.data.clothing.mask,
+                p.data.clothing.necklace
+              ],
+              0x8295c3ff,
+              [p.data.clothing.ances, 0.0, 0.0]
+            )
+          );
+        }
+      })
+    }
+
     this.data.playerCount = this.data.playerCount
       ? this.data.playerCount + 1
-      : 0;
+      : 1;
 
     this.saveToCache();
     peer.saveToCache();
@@ -482,12 +486,9 @@ ${peer.data.lastVisitedWorlds
     const buffer = tank.parse() as Buffer;
     buffer.writeFloatLE(amount, 20);
 
-    peer.every(
-      (p) =>
-        p.data?.world === peer.data?.world &&
-        p.data?.world !== "EXIT" &&
-        p.send(buffer)
-    );
+    this.every((p) => {
+      p.send(buffer);
+    })
 
     this.saveToCache();
   }
@@ -495,9 +496,7 @@ ${peer.data.lastVisitedWorlds
   public collect(peer: Peer, uid: number) {
     const droppedItem = this.data.dropped?.items.find((i) => i.uid === uid);
     if (!droppedItem) return;
-    const item = this.base.items.metadata.items.find(
-      (i) => i.id === droppedItem.id
-    );
+    const item = this.base.items.metadata.items.get(droppedItem.id.toString());
     if ((item?.id ?? 0) <= 1) return;
 
     const itemInInv = peer.data.inventory.items.find(
@@ -511,10 +510,9 @@ ${peer.data.lastVisitedWorlds
     )
       return;
 
-    peer.every(
-      (p) =>
-        p.data?.world === peer.data?.world &&
-        p.data?.world !== "EXIT" &&
+    const world = peer.currentWorld();
+    if (world) {
+      world.every((p) => {
         p.send(
           TankPacket.from({
             type:        TankTypes.ITEM_CHANGE_OBJECT,
@@ -523,7 +521,8 @@ ${peer.data.lastVisitedWorlds
             info:        uid
           })
         )
-    );
+      })
+    }
 
     if (itemInInv) {
       if (droppedItem.amount + itemInInv.amount > 200) {
@@ -575,37 +574,103 @@ ${peer.data.lastVisitedWorlds
     this.saveToCache();
   }
 
-  public harvest(peer: Peer, block: Block) {
-    if (block.tree && Date.now() >= block.tree.fullyGrownAt) {
-      this.drop(
-        peer,
-        block.x * 32 + Math.floor(Math.random() * 16),
-        block.y * 32 + Math.floor(Math.random() * 16),
-        block.tree.fruit,
-        block.tree.fruitCount,
-        { tree: true }
-      );
+  public async hasTilePermission(userID: number, tile: TileData, permissionType: LockPermission): Promise<boolean> {
+    // a lock owns this tile
+    const userData = await this.base.database.players.getByUID(userID);
+    if (userData && userData.role == ROLE.DEVELOPER) return true;
 
-      block.tree = undefined;
-      block.fg = 0x0;
+    // the tile being asked is the lock itself. No one have permission except the owner
+    if (tile.lock) {
+      return userID == tile.lock.ownerUserID;
+    }
+    else if (tile.lockedBy) {
+      const owningLock = this.data.blocks[tile.lockedBy.parentY! * this.data.width + tile.lockedBy.parentX!];
+      if (owningLock.lock) {
+        if (owningLock.lock.ownerUserID == userID) {
+          return true;
+        }
 
-      peer.every(
-        (p) =>
-          p.data?.world === peer.data?.world &&
-          p.data?.world !== "EXIT" &&
-          p.send(
-            TankPacket.from({
-              type:        TankTypes.SEND_TILE_TREE_STATE,
-              netID:       peer.data?.netID,
-              targetNetID: -1,
-              xPunch:      block.x,
-              yPunch:      block.y
-            })
-          )
-      );
+        if (owningLock.lock.adminIDs && owningLock.lock.adminIDs.includes(userID)) {
+          if (owningLock.lock.adminLimited) {
+            return !!(owningLock.lock.permission & permissionType) || owningLock.lock.permission == permissionType;
+          }
+          return true;
+        }
+        // not admin?
+        if (owningLock.flags & TileFlags.PUBLIC) {
+          return !!(owningLock.lock.permission & permissionType) || owningLock.lock.permission == permissionType;
+        }
+      }
+    }
+    else if (this.data.worldLockIndex) {
+      const worldLock = this.data.blocks[this.data.worldLockIndex];
 
+      if (worldLock.flags & TileFlags.PUBLIC) return true;
+      else if (worldLock.lock!.adminIDs && worldLock.lock!.adminIDs.includes(userID)) {
+        return true;
+      }
+      else if (worldLock.lock!.ownerUserID == userID) {
+        return true;
+      }
+    }
+    else {
+      // no locks and no owner
       return true;
     }
-    return false;
+
+    return permissionType == LockPermission.NONE || false;
+  }
+
+  public async every(callbackfn: (peer: Peer, netID: number) => void): Promise<void> {
+    if (this.data.playerCount == 0) { return; }
+    this.base.cache.peers.forEach((p, k) => {
+      const pp = new Peer(this.base, p.netID);
+      if (pp.data.world == this.data.name) {
+        callbackfn(pp, p.netID);
+      }
+    });
+  }
+
+  public getPeerByNetID(netID: number): Peer | undefined {
+    let peer = undefined;
+    this.every((p) => {
+      if (p.data.netID == netID) {
+        peer = p;
+      }
+    })
+
+    return peer;
+  }
+
+  public getOwnerUID(): number | undefined {
+    if (this.data.worldLockIndex) {
+      const lock = this.data.blocks[this.data.worldLockIndex];
+      if (lock.lock && lock.worldLockData) {
+        return lock.lock.ownerUserID;
+      }
+    }
+    return undefined;
+  }
+
+  // Helper functino to get lock owner user ID on a specific tile.
+  public getTileOwnerUID(tile: TileData): number | undefined {
+    if (tile.lockedBy) {
+      const owningLock = this.data.blocks[tile.lockedBy.parentY! * this.data.width + tile.lockedBy.parentX!];
+      if (owningLock.lock) {
+        return owningLock.lock.ownerUserID;
+      }
+    }
+    // the tile being asked is the lock itself. No one have permission except the owner
+    else if (tile.lock) {
+      return tile.lock.ownerUserID;
+    }
+    else if (this.data.worldLockIndex) {
+      const worldLock = this.data.blocks[this.data.worldLockIndex];
+      return worldLock.lock?.ownerUserID;
+    }
+    else {
+      // no locks and no owner
+      return undefined;
+    }
   }
 }
