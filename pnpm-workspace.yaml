@@ -1,6 +1,3 @@
-# I dont know what this "packages" does, but it fixed the `pnpm install` problem. - Badewen 
 packages:
-  - "**/**"
-
-onlyBuiltDependencies:
-  - esbuild
+  - "apps/*"
+  - "packages/*"

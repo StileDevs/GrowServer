@@ -1,42 +1,38 @@
-.env
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# Dependencies
 node_modules
-dist
-dist-ssr
-yarn.lock
-data
-assets/website/
-assets/build.zip
+.pnp
+.pnp.js
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Testing
+coverage
+
+# Turbo
+.turbo
+
+# Vercel
+.vercel
+
+# Build Outputs
+.next/
+out/
 build
-.cache
-data.db
-data
+dist
 
 
-
-# Ignore ssl
-assets/ssl/_wildcard.growserver.app.pem
-assets/ssl/_wildcard.growserver.app-key.pem
-
-# Logs
-logs
-*.log
+# Debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
 
-*.local
-
-# Editor directories and files
-!.vscode/extensions.json
-.idea
+# Misc
 .DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-items_info_new.json
-.vs/
+*.pem
