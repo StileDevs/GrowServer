@@ -194,7 +194,6 @@ ${peer.data.lastVisitedWorlds
 
   public async enter(peer: Peer, x: number, y: number) {
     await this.getData();
-    peer.sendConsoleMessage(`[Weather] Entering ${this.worldName} with weatherId=${this.data.weatherId}`);
 
     if (typeof x !== "number") x = -1;
     if (typeof y !== "number") y = -1;
