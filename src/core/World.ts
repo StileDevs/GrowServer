@@ -194,6 +194,7 @@ ${peer.data.lastVisitedWorlds
 
   public async enter(peer: Peer, x: number, y: number) {
     await this.getData();
+    peer.sendConsoleMessage(`[Weather] Entering ${this.worldName} with weatherId=${this.data.weatherId}`);
 
     if (typeof x !== "number") x = -1;
     if (typeof y !== "number") y = -1;
@@ -255,7 +256,8 @@ ${peer.data.lastVisitedWorlds
     // Weather
     const weatherData = Buffer.alloc(12);
     weatherData.writeUint16LE(this.data.weatherId); // weather id
-    weatherData.writeUint16LE(0x1, 2); // on atau off (mungkin)
+    const weatherOnOff = this.data.weatherId === 41 ? 0x0 : 0x1; // 0 = off when clear, 1 = on otherwise
+    weatherData.writeUint16LE(weatherOnOff, 2);
     weatherData.writeUint32LE(0x0, 4); // ??
     weatherData.writeUint32LE(0x0, 8); // ??
 
@@ -277,6 +279,8 @@ ${peer.data.lastVisitedWorlds
     const yPos = (y < 0 ? mainDoor?.y || 0 : y) * 32;
 
     peer.send(tank);
+    // Applly current weather on join
+    peer.send(Variant.from("OnSetCurrentWeather", this.data.weatherId));
     peer.data.x = xPos;
     peer.data.y = yPos;
     peer.data.world = this.worldName;
