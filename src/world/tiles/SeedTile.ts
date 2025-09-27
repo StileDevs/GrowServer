@@ -25,12 +25,17 @@ export class SeedTile extends Tile {
     this.initializeTreeData(itemMeta);
     // actually, this is not nescessary. But since i have yet to figure out a way to set a field in the TileChangeReq packet
     //  - Badewen
-    this.world.every((p) => this.tileUpdate(p));          
+    this.world.every((p) => this.tileUpdate(p));
     return true;
   }
 
   public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<boolean> {
     if (!await super.onItemPlace(peer, item)) {
+      return false;
+    }
+
+    // Ensure player actually has the seed being used to splice
+    if (!peer.searchItem(item.id!)) {
       return false;
     }
 
@@ -49,18 +54,27 @@ export class SeedTile extends Tile {
     let spliceSuccessful = false
 
     if (item.id! != this.data.fg) {
+      const originalPlantedAt = this.data.tree?.plantedAt;
       this.base.items.wiki.every((itemWiki) => {
         if (itemWiki.recipe && itemWiki.recipe.splice.length == 2) {
           if (itemWiki.recipe.splice.includes(item.id! - 1) && itemWiki.recipe.splice.includes(this.data.fg! - 1)) {
             const spliceResultSeedMeta = this.base.items.metadata.items.get((itemWiki.id! + 1).toString())!;
             spliceSuccessful = true
             this.initializeTreeData(spliceResultSeedMeta);
+            // Preserve original plantedAt so growth timer does not reset on splice
+            if (originalPlantedAt) {
+              this.data.tree!.plantedAt = originalPlantedAt;
+              this.data.tree!.fullyGrownAt = originalPlantedAt + (spliceResultSeedMeta.growTime || 0) * 1000;
+            }
             this.data.tree!.isSpliced = true;
 
             this.world.every((p) => {
               this.tileUpdate(p);
             });
             this.notifySuccessfulSplice(peer, currentSeedMeta.name!, item.name!, spliceResultSeedMeta.name!);
+
+            // Consume the splicer seed from inventory on successful splice
+            peer.removeItemInven(item.id!, 1);
 
             return false;
           }
