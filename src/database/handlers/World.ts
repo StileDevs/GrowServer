@@ -43,7 +43,7 @@ export class WorldDB {
       // owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
       dropped:         Buffer.from(JSON.stringify(data.dropped)),
       updated_at:      new Date().toISOString().slice(0, 19).replace("T", " "),
-      weather_id:      data.weatherId,
+      weather_id:      data.weather.id,
       worldlock_index: data.worldLockIndex,
       // minimum_level: data.minLevel
     });
@@ -67,7 +67,7 @@ export class WorldDB {
         // owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
         dropped:    Buffer.from(JSON.stringify(data.dropped)),
         updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
-        weather_id: data.weatherId,
+        weather_id: data.weather.id,
         // minimum_level: data.minLevel
       })
       .where(eq(worlds.name, data.name))
