@@ -54,18 +54,16 @@ export class SeedTile extends Tile {
     let spliceSuccessful = false
 
     if (item.id! != this.data.fg) {
-      const originalPlantedAt = this.data.tree?.plantedAt;
+      const now = Date.now();
       this.base.items.wiki.every((itemWiki) => {
         if (itemWiki.recipe && itemWiki.recipe.splice.length == 2) {
           if (itemWiki.recipe.splice.includes(item.id! - 1) && itemWiki.recipe.splice.includes(this.data.fg! - 1)) {
             const spliceResultSeedMeta = this.base.items.metadata.items.get((itemWiki.id! + 1).toString())!;
             spliceSuccessful = true
             this.initializeTreeData(spliceResultSeedMeta);
-            // Preserve original plantedAt so growth timer does not reset on splice
-            if (originalPlantedAt) {
-              this.data.tree!.plantedAt = originalPlantedAt;
-              this.data.tree!.fullyGrownAt = originalPlantedAt + (spliceResultSeedMeta.growTime || 0) * 1000;
-            }
+            // Reset growth timer on splice to match official behavior
+            this.data.tree!.plantedAt = now;
+            this.data.tree!.fullyGrownAt = now + (spliceResultSeedMeta.growTime || 0) * 1000;
             this.data.tree!.isSpliced = true;
 
             this.world.every((p) => {
