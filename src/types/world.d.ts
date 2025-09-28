@@ -66,6 +66,11 @@ export interface Dropped {
   items: DroppedItem[];
 }
 
+export interface WeatherData {
+  id: number;
+  cooldowns?: Record<string, number>;
+}
+
 export interface WorldData {
   name: string;
   width: number;
@@ -79,7 +84,7 @@ export interface WorldData {
   // invisMusicBlocks?: boolean;
   jammers?: Jammer[];
   dropped?: Dropped;
-  weatherId: number;
+  weather: WeatherData;
   worldLockIndex?: number;
   // minLevel: number;
   // openToPublic?: boolean;

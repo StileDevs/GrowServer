@@ -8,8 +8,6 @@ import { ActionTypes, LockPermission, TileExtraTypes } from "../../Constants";
 import { Variant } from "growtopia.js";
 import { getWeatherId } from "../../utils/Utils";
 
-const weatherToggleCooldown = new Map<string, number>();
-
 export class WeatherTile extends Tile {
   constructor(
     public base: Base,
@@ -31,9 +29,9 @@ export class WeatherTile extends Tile {
     }
 
     // Calculate target weather
-    const key = `${this.world.worldName}:${this.data.x},${this.data.y}`;
+    const key = `${this.data.x},${this.data.y}`;
     const now = Date.now();
-    const until = weatherToggleCooldown.get(key) || 0;
+    const until = this.world.data.weather.cooldowns?.[key] || 0;
 
     // toggle cooldown
     if (now < until) {
@@ -42,17 +40,17 @@ export class WeatherTile extends Tile {
 
     const targetWeatherId = getWeatherId(itemMeta.id!);
     if (!targetWeatherId) {
-      peer.sendConsoleMessage(`[Weather] Unknown mapping for item ${itemMeta.id}. Keeping weather: ${this.world.data.weatherId}`);
+      peer.sendConsoleMessage(`[Weather] Unknown mapping for item ${itemMeta.id}. Keeping weather: ${this.world.data.weather.id}`);
       return await super.onPunch(peer);
     }
 
     // Toggle: if already active, set to default 41 (clear); else set to mapped id
-    const newWeatherId = this.world.data.weatherId === targetWeatherId ? 41 : targetWeatherId;
-    this.world.data.weatherId = newWeatherId;
+    const newWeatherId = this.world.data.weather.id === targetWeatherId ? 41 : targetWeatherId;
+    this.world.data.weather.id = newWeatherId;
 
     // Broadcast change to all peers in the world
     this.world.every((p) => {
-      p.send(Variant.from("OnSetCurrentWeather", this.world.data.weatherId));
+      p.send(Variant.from("OnSetCurrentWeather", this.world.data.weather.id));
     });
 
     // Persist world state (cache and database)
@@ -60,7 +58,8 @@ export class WeatherTile extends Tile {
     await this.world.saveToDatabase();
 
     // Set cooldown to 2 seconds to allow break without re-toggling
-    weatherToggleCooldown.set(key, now + 2000);
+    this.world.data.weather.cooldowns = this.world.data.weather.cooldowns || {};
+    this.world.data.weather.cooldowns[key] = now + 2000;
 
     // Also apply normal damage/break flow so the machine can be broken
     return await super.onPunch(peer);
@@ -84,8 +83,8 @@ export class WeatherTile extends Tile {
   // Clear weather when weather machine is broken
   public async onDestroy(peer: Peer): Promise<void> {
     await super.onDestroy(peer);
-    if (this.world.data.weatherId !== 41) {
-      this.world.data.weatherId = 41;
+    if (this.world.data.weather.id !== 41) {
+      this.world.data.weather.id = 41;
       this.world.every((p) => {
         p.send(Variant.from("OnSetCurrentWeather", 41));
       });

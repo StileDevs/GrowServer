@@ -26,7 +26,7 @@ export class Default extends WorldGen {
         uid:   0,
         items: []
       },
-      weatherId: 41
+      weather: { id: 41, cooldowns: {} }
     };
   }
 
