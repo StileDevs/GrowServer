@@ -1,7 +1,6 @@
 import { InferSelectModel, sql } from "drizzle-orm";
 import { text, integer, sqliteTable, blob } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { buffer } from "stream/consumers";
 
 export const players = sqliteTable("players", {
   id:                  integer("id").primaryKey({ autoIncrement: true }),
@@ -10,6 +9,7 @@ export const players = sqliteTable("players", {
   password:            text("password", { length: 255 }).notNull(),
   role:                text("role", { length: 255 }).notNull(),
   gems:                integer("gems").default(0),
+  growtokens:          integer("growtokens").default(0),
   level:               integer("level").default(0),
   exp:                 integer("exp").default(0),
   clothing:            blob("clothing", { mode: "buffer" }),

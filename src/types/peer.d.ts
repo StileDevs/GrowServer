@@ -12,6 +12,7 @@ export interface PeerData {
   userID: number;
   role: string;
   gems: number;
+  growtokens?: number;
   clothing: Clothing;
   exp: number;
   level: number;

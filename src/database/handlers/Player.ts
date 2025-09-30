@@ -69,6 +69,7 @@ export class PlayerDB {
         inventory:           Buffer.from(JSON.stringify(data.inventory)),
         clothing:            Buffer.from(JSON.stringify(data.clothing)),
         gems:                data.gems,
+        growtokens:          data.growtokens,
         level:               data.level,
         exp:                 data.exp,
         last_visited_worlds: Buffer.from(

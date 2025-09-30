@@ -390,6 +390,7 @@ export class Peer extends OldPeer<PeerData> {
         userID:            data.userID,
         role:              data.role,
         gems:              data.gems,
+        growtokens:        data.growtokens,
         clothing:          data.clothing,
         exp:               data.exp,
         level:             data.level,
@@ -999,5 +1000,10 @@ export class Peer extends OldPeer<PeerData> {
    */
   public setGems(amount: number, skip_animation: number = 0) {
     this.send(Variant.from("OnSetBux", amount, skip_animation, 0, [getCurrentTimeInSeconds(), 0.00, 0.00])); // Param 2 maybe for supporter status?
+  }
+
+  public setGrowtokens(amount: number) {
+    // There is no known explicit variant for tokens in this codebase; use console update for now
+    this.send(Variant.from("OnConsoleMessage", `Growtokens: ${amount}`));
   }
 }

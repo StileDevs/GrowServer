@@ -212,6 +212,7 @@ export class ITextPacket {
         ? JSON.parse(player.clothing.toString())
         : defaultClothing;
       this.peer.data.gems = player.gems ? player.gems : 0;
+      this.peer.data.growtokens = player.growtokens ? player.growtokens : 0;
       this.peer.data.world = "EXIT";
       this.peer.data.level = player.level ? player.level : 0;
       this.peer.data.exp = player.exp ? player.exp : 0;
@@ -230,7 +231,7 @@ export class ITextPacket {
         }
       };
 
-      // Load Gems
+      // Load currencies
       this.peer.setGems(this.peer.data.gems);
 
       this.peer.saveToCache();

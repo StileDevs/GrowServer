@@ -19,7 +19,7 @@ export class IActionPacket {
     if (!this.obj.action) return;
     consola.debug("[DEBUG] Receive action packet:\n", this.obj);
 
-    const actionType = this.obj.action;
+    const actionType = this.obj.action.toLowerCase();
 
     try {
       const Class = ActionMap[actionType];

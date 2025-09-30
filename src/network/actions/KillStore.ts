@@ -3,7 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { Variant } from "growtopia.js";
 
-export class Quit {
+export class KillStore {
   constructor(
     public base: Base,
     public peer: Peer
@@ -13,6 +13,7 @@ export class Quit {
     _action: NonEmptyObject<Record<string, string>>
   ): Promise<void> {
     this.peer.send(Variant.from("OnStorePurchaseResult"));
-    this.peer.disconnect();
   }
 }
+
+
