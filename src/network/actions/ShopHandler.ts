@@ -4,7 +4,7 @@ import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 
-export class StoreHandler {
+export class ShopHandler {
   constructor(
     public base: Base,
     public peer: Peer

@@ -3,11 +3,10 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
-import { ActionTypes } from "../../Constants";
-import { type StoreItemConfig, type StoreCatalog } from "../../types/store";
+import { type ShopCatalog } from "../../types/shop";
 
 
-type StoreItem = {
+type ShopItem = {
   name: string;
   title: string;
   description: string;
@@ -17,8 +16,8 @@ type StoreItem = {
   itemId?: number;
 };
 
-export class StoreBuy {
-  private catalog: StoreCatalog | null = null; // Populated from DB per request
+export class ShopBuy {
+  private catalog: ShopCatalog | null = null; // Populated from DB per request
 
   constructor(
     public base: Base,
@@ -38,10 +37,10 @@ export class StoreBuy {
     return dialog.str();
   }
 
-  findStoreItemByName(name: string): StoreItem | undefined {
-    const catalog = this.catalog as StoreCatalog;
+  findShopItemByName(name: string): ShopItem | undefined {
+    const catalog = this.catalog as ShopCatalog;
     for (const category in catalog.items) {
-      const item = catalog.items[category].find(item => item.name === name) as StoreItem | undefined;
+      const item = catalog.items[category].find(item => item.name === name) as ShopItem | undefined;
       if (item) {
         return item;
       }
@@ -49,7 +48,7 @@ export class StoreBuy {
     return undefined;
   }
 
-  private async addStoreItems(
+  private async addShopItems(
     dialog: DialogBuilder,
     category: string
   ): Promise<DialogBuilder> {
@@ -68,7 +67,7 @@ export class StoreBuy {
     return dialog;
   }
 
-  private async createStoreDialog(activeKey: string, category: string): Promise<string> {
+  private async createShopDialog(activeKey: string, category: string): Promise<string> {
     const dialog = new DialogBuilder()
       .defaultColor()
       .raw("enable_tabs|1")
@@ -77,15 +76,15 @@ export class StoreBuy {
       .raw("add_banner|interface/large/gui_shop_featured_header.rttex|0|1|")
       .addSpacer("small");
 
-    await this.addStoreItems(dialog, category);
+    await this.addShopItems(dialog, category);
 
-    return dialog.endDialog("store_end", "Cancel", "OK").addQuickExit().str();
+    return dialog.endDialog("Shop_end", "Cancel", "OK").addQuickExit().str();
   }
 
   public async execute(
     action: NonEmptyObject<Record<string, string>>
   ): Promise<void> {
-    // DB-backed; no JSON load
+    // DB-backed;
 
     const labelToCategory: Record<string, string> = {
       main:      "main",
@@ -98,12 +97,27 @@ export class StoreBuy {
       growtoken: "token",
     };
 
-    const requested = action.item;
-    const isTabSwitch = requested
+    // Normalize item: tabs come through as `${tab.key}_menu`
+    const rawItem = action.item;
+    const requested = typeof rawItem === "string" ? rawItem.replace(/_menu$/, "") : undefined;
+    const isTabSwitch = requested !== undefined && requested in labelToCategory;
 
     if (isTabSwitch) {
       const category = labelToCategory[requested];
-      const dialog = await this.createStoreDialog(category, category);
+      const activeKey = category ?? (await this.base.database.shop.getTabs()).at(0)?.key ?? "main";
+      const selectedCategory = category ?? activeKey;
+      const dialog = await this.createShopDialog(activeKey, selectedCategory);
+      this.peer.send(
+        Variant.from("OnSetVouchers", 0),
+        Variant.from("OnStoreRequest", dialog)
+      );
+      return;
+    }
+
+    if (!requested) {
+      // Safety: if nothing requested, just re-open the first tab to avoid undefined DB arg
+      const firstKey = (await this.base.database.shop.getTabs()).at(0)?.key ?? "main";
+      const dialog = await this.createShopDialog(firstKey, firstKey);
       this.peer.send(
         Variant.from("OnSetVouchers", 0),
         Variant.from("OnStoreRequest", dialog)
@@ -121,7 +135,7 @@ export class StoreBuy {
           "OnConsoleMessage",
           `Open this URL to purchase: ${itemRow.iapUrl}`
         ),
-        Variant.from("OnStorePurchaseResult")
+        Variant.from("OnShopPurchaseResult")
       );
       return;
     }
@@ -134,7 +148,7 @@ export class StoreBuy {
             "OnConsoleMessage",
             "`4Not enough growtokens`` to complete this purchase."
           ),
-          Variant.from("OnStorePurchaseResult")
+          Variant.from("OnShopPurchaseResult")
         );
         return;
       }
@@ -145,7 +159,7 @@ export class StoreBuy {
             "OnConsoleMessage",
             "`4Not enough gems`` to complete this purchase."
           ),
-          Variant.from("OnStorePurchaseResult")
+          Variant.from("OnShopPurchaseResult")
         );
         return;
       }
@@ -161,7 +175,7 @@ export class StoreBuy {
               "OnConsoleMessage",
               "`4Your inventory is full. Make some space and try again."
             ),
-            Variant.from("OnStorePurchaseResult")
+            Variant.from("OnShopPurchaseResult")
           );
           return;
         }
@@ -179,7 +193,7 @@ export class StoreBuy {
       this.peer.data.gems = (this.peer.data.gems ?? 0) - cost;
       this.peer.setGems(this.peer.data.gems);
     }
-    this.peer.send(Variant.from("OnStorePurchaseResult"));
+    this.peer.send(Variant.from("OnShopPurchaseResult"));
 
     this.peer.saveToCache();
     this.peer.saveToDatabase();

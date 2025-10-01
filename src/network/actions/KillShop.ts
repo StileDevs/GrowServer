@@ -3,7 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { Variant } from "growtopia.js";
 
-export class KillStore {
+export class KillShop {
   constructor(
     public base: Base,
     public peer: Peer
