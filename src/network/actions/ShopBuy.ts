@@ -42,7 +42,6 @@ export class ShopBuy {
         const positionIndex = SHOP_TAB_INDEX[tab.key] ?? 0;
         return `add_tab_button|${tab.key}_menu|${tab.label}|interface/large/btn_shop2.rttex|${desc}|${isActive}|${positionIndex}|0|0||||-1|-1|||0|0|CustomParams:|\n`;
       });
-    consola.debug(lines);
     const dialog = new DialogBuilder();
     lines.forEach((line) => dialog.raw(line).addSpacer("small"));
     return dialog.str();

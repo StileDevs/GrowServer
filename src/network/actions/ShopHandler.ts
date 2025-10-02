@@ -3,7 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
-import { SHOP_TABS_ORDER, SHOP_TAB_INDEX, SHOP_WEATHER_TAB_DESC } from "../../Constants";
+import { SHOP_TABS_ORDER, SHOP_TAB_INDEX, SHOP_WEATHER_TAB_DESC, SHOP_LABEL_TO_CATEGORY } from "../../Constants";
 
 export class ShopHandler {
   constructor(
@@ -12,7 +12,7 @@ export class ShopHandler {
   ) { }
 
   public async execute(
-    _action: NonEmptyObject<Record<string, string>>
+    action: NonEmptyObject<Record<string, string>>
   ): Promise<void> {
     const tabs = await this.base.database.shop.getTabs();
     const dialog = new DialogBuilder()
@@ -21,10 +21,15 @@ export class ShopHandler {
       .addSpacer("small");
 
     const byKey = new Map(tabs.map(t => [t.key, t] as const));
-    // Choose default active: prefer main, else first available in order
-    const activeKey = byKey.has("main")
-      ? "main"
-      : (SHOP_TABS_ORDER.find(k => byKey.has(k)) ?? tabs[0]?.key ?? "main");
+    // Determine requested tab from action if provided
+    const rawItem = action?.item;
+    const requested = typeof rawItem === "string" ? rawItem.replace(/_menu$/, "") : undefined;
+    const requestedKey = requested && SHOP_LABEL_TO_CATEGORY[requested] ? SHOP_LABEL_TO_CATEGORY[requested] : undefined;
+
+    // Choose active tab: requested if valid, else main, else first available
+    const activeKey = (requestedKey && byKey.has(requestedKey))
+      ? requestedKey
+      : (byKey.has("main") ? "main" : (SHOP_TABS_ORDER.find(k => byKey.has(k)) ?? tabs[0]?.key ?? "main"));
 
     SHOP_TABS_ORDER
       .map((key) => byKey.get(key))
