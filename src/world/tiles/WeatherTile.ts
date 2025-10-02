@@ -4,7 +4,8 @@ import type { World } from "../../core/World";
 import type { TileData } from "../../types";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { Tile } from "../Tile";
-import { ActionTypes, LockPermission, TileExtraTypes } from "../../Constants";
+import { ActionTypes, LockPermission } from "../../Constants";
+import { ItemDefinition } from "grow-items";
 import { Variant } from "growtopia.js";
 import { getWeatherId } from "../../utils/Utils";
 
@@ -15,6 +16,13 @@ export class WeatherTile extends Tile {
     public data: TileData,
   ) {
     super(base, world, data);
+  }
+
+  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
+    const placed = await super.onPlaceForeground(peer, itemMeta);
+    if (!placed) return false;
+    this.data.weatherMachine = { cooldownUntil: 0 };
+    return true;
   }
 
   public async onPunch(peer: Peer): Promise<boolean> {
@@ -28,15 +36,10 @@ export class WeatherTile extends Tile {
       return await super.onPunch(peer);
     }
 
-    // Calculate target weather
-    const key = `${this.data.x},${this.data.y}`;
+    // Per-tile cooldown
     const now = Date.now();
-    const until = this.world.data.weather.cooldowns?.[key] || 0;
-
-    // toggle cooldown
-    if (now < until) {
-      return await super.onPunch(peer);
-    }
+    const cooldownUntil = this.data.weatherMachine?.cooldownUntil || 0;
+    if (now < cooldownUntil) return await super.onPunch(peer);
 
     const targetWeatherId = getWeatherId(itemMeta.id!);
     if (!targetWeatherId) {
@@ -53,13 +56,13 @@ export class WeatherTile extends Tile {
       p.send(Variant.from("OnSetCurrentWeather", this.world.data.weather.id));
     });
 
-    // Persist world state (cache and database)
+    // Set per-tile cooldown to 2 seconds
+    this.data.weatherMachine = this.data.weatherMachine || { cooldownUntil: 0 };
+    this.data.weatherMachine.cooldownUntil = now + 2000;
+
+    // Persist
     await this.world.saveToCache();
     await this.world.saveToDatabase();
-
-    // Set cooldown to 2 seconds to allow break without re-toggling
-    this.world.data.weather.cooldowns = this.world.data.weather.cooldowns || {};
-    this.world.data.weather.cooldowns[key] = now + 2000;
 
     // Also apply normal damage/break flow so the machine can be broken
     return await super.onPunch(peer);
@@ -67,6 +70,7 @@ export class WeatherTile extends Tile {
 
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
     await super.serialize(dataBuffer);
+    // For now weather machine has no extra serialization; handled later when extra data format is defined
   }
 
   // Return to inventory when weather machine is broken
@@ -83,6 +87,8 @@ export class WeatherTile extends Tile {
   // Clear weather when weather machine is broken
   public async onDestroy(peer: Peer): Promise<void> {
     await super.onDestroy(peer);
+    // clear tile extra to avoid dangling data
+    this.data.weatherMachine = undefined;
     if (this.world.data.weather.id !== 41) {
       this.world.data.weather.id = 41;
       this.world.every((p) => {
