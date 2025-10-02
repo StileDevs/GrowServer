@@ -3,6 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
+import { SHOP_TABS_ORDER, SHOP_TAB_INDEX, SHOP_WEATHER_TAB_DESC } from "../../Constants";
 
 export class ShopHandler {
   constructor(
@@ -19,19 +20,30 @@ export class ShopHandler {
       .raw("enable_tabs|1")
       .addSpacer("small");
 
-    tabs.forEach((tab, idx) => {
-      dialog
-        .raw(
-          `add_tab_button|${tab.key}_menu|${tab.label}|interface/large/btn_shop2.rttex||${idx === 0 ? 1 : 0}|${tab.position}|0|0||||-1|-1|||0|0|`
-        )
-        .addSpacer("small");
-    });
+    const byKey = new Map(tabs.map(t => [t.key, t] as const));
+    // Choose default active: prefer main, else first available in order
+    const activeKey = byKey.has("main")
+      ? "main"
+      : (SHOP_TABS_ORDER.find(k => byKey.has(k)) ?? tabs[0]?.key ?? "main");
+
+    SHOP_TABS_ORDER
+      .map((key) => byKey.get(key))
+      .filter((t): t is typeof tabs[number] => Boolean(t))
+      .forEach((tab) => {
+        const isActive = tab.key === activeKey ? 1 : 0;
+        const desc = tab.key === "weather" ? SHOP_WEATHER_TAB_DESC : "";
+        const positionIndex = SHOP_TAB_INDEX[tab.key] ?? 0;
+        dialog
+          .raw(
+            `add_tab_button|${tab.key}_menu|${tab.label}|interface/large/btn_shop2.rttex|${desc}|${isActive}|${positionIndex}|0|0||||-1|-1|||0|0|CustomParams:|\n`
+          )
+          .addSpacer("small");
+      });
 
     dialog.raw("add_banner|interface/large/gui_shop_featured_header.rttex|0|1|").addSpacer("small");
 
-    const firstKey = tabs[0]?.key;
-    if (firstKey) {
-      const items = await this.base.database.shop.getItemsByTab(firstKey);
+    if (activeKey) {
+      const items = await this.base.database.shop.getItemsByTab(activeKey);
       items.forEach((item) => {
         const displayCost = item.currency === "GROWTOKEN" ? -(item.cost ?? 0) : (item.cost ?? 0);
         dialog.addStoreButton(

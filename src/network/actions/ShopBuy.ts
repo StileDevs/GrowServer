@@ -4,6 +4,8 @@ import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 import { type ShopCatalog } from "../../types/shop";
+import { SHOP_TABS_ORDER, SHOP_TAB_INDEX, SHOP_WEATHER_TAB_DESC, SHOP_LABEL_TO_CATEGORY } from "../../Constants";
+import consola from "consola";
 
 
 type ShopItem = {
@@ -27,13 +29,22 @@ export class ShopBuy {
   private async createTabButtons(activeKey: string): Promise<string> {
     const tabs = await this.base.database.shop.getTabs();
 
-    const buttons = tabs.map((tab) => {
-      const isActive = tab.key === activeKey ? 1 : 0;
-      return `add_tab_button|${tab.key}_menu|${tab.label}|interface/large/btn_shop2.rttex||${isActive}|${tab.position}|0|0||||-1|-1|||0|0|\n`;
-    });
+    const byKey = new Map(tabs.map(t => [t.key, t] as const));
 
+    const lines = SHOP_TABS_ORDER
+      .map((key) => byKey.get(key))
+      .filter((t): t is typeof tabs[number] => Boolean(t))
+      .map((tab) => {
+        const isActive = tab.key === activeKey ? 1 : 0;
+        const desc = tab.key === "weather"
+          ? SHOP_WEATHER_TAB_DESC
+          : "";
+        const positionIndex = SHOP_TAB_INDEX[tab.key] ?? 0;
+        return `add_tab_button|${tab.key}_menu|${tab.label}|interface/large/btn_shop2.rttex|${desc}|${isActive}|${positionIndex}|0|0||||-1|-1|||0|0|CustomParams:|\n`;
+      });
+    consola.debug(lines);
     const dialog = new DialogBuilder();
-    buttons.forEach((button) => dialog.raw(button).addSpacer("small"));
+    lines.forEach((line) => dialog.raw(line).addSpacer("small"));
     return dialog.str();
   }
 
@@ -78,7 +89,7 @@ export class ShopBuy {
 
     await this.addShopItems(dialog, category);
 
-    return dialog.endDialog("Shop_end", "Cancel", "OK").addQuickExit().str();
+    return dialog.endDialog("store_end", "Cancel", "OK").addQuickExit().str();
   }
 
   public async execute(
@@ -86,16 +97,7 @@ export class ShopBuy {
   ): Promise<void> {
     // DB-backed;
 
-    const labelToCategory: Record<string, string> = {
-      main:      "main",
-      locks:     "locks",
-      packs:     "locks",
-      bigitems:  "bigitems",
-      itempack:  "itempack",
-      weather:   "weather",
-      token:     "token",
-      growtoken: "token",
-    };
+    const labelToCategory: Record<string, string> = SHOP_LABEL_TO_CATEGORY;
 
     // Normalize item: tabs come through as `${tab.key}_menu`
     const rawItem = action.item;
@@ -135,7 +137,7 @@ export class ShopBuy {
           "OnConsoleMessage",
           `Open this URL to purchase: ${itemRow.iapUrl}`
         ),
-        Variant.from("OnShopPurchaseResult")
+        Variant.from("OnStorePurchaseResult")
       );
       return;
     }
@@ -148,7 +150,7 @@ export class ShopBuy {
             "OnConsoleMessage",
             "`4Not enough growtokens`` to complete this purchase."
           ),
-          Variant.from("OnShopPurchaseResult")
+          Variant.from("OnStorePurchaseResult")
         );
         return;
       }
@@ -159,7 +161,7 @@ export class ShopBuy {
             "OnConsoleMessage",
             "`4Not enough gems`` to complete this purchase."
           ),
-          Variant.from("OnShopPurchaseResult")
+          Variant.from("OnStorePurchaseResult")
         );
         return;
       }
@@ -175,15 +177,19 @@ export class ShopBuy {
               "OnConsoleMessage",
               "`4Your inventory is full. Make some space and try again."
             ),
-            Variant.from("OnShopPurchaseResult")
+            Variant.from("OnStorePurchaseResult")
           );
           return;
         }
       }
-      for (const reward of rewards) this.peer.addItemInven(reward.itemId, reward.amount);
+      for (const reward of rewards) {
+        this.peer.addItemInven(reward.itemId, reward.amount);
+      }
     } else {
       const legacyItemId = (itemRow as unknown as { itemId?: number }).itemId;
-      if (legacyItemId) this.peer.addItemInven(legacyItemId, 1);
+      if (legacyItemId) {
+        this.peer.addItemInven(legacyItemId, 1);
+      }
     }
 
     if (itemRow.currency === "GROWTOKEN") {
@@ -193,7 +199,40 @@ export class ShopBuy {
       this.peer.data.gems = (this.peer.data.gems ?? 0) - cost;
       this.peer.setGems(this.peer.data.gems);
     }
-    this.peer.send(Variant.from("OnShopPurchaseResult"));
+
+    // Build OnStorePurchaseResult body like official client
+    const receivedList: Array<{ name: string; amount: number }> = [];
+    if (rewards && rewards.length > 0) {
+      for (const reward of rewards) {
+        const meta = this.base.items.metadata.items.get(String(reward.itemId));
+        const itemName = meta?.name ?? `Item ${reward.itemId}`;
+        receivedList.push({ name: itemName, amount: reward.amount });
+      }
+    } else {
+      const legacyItemId = (itemRow as unknown as { itemId?: number }).itemId;
+      if (legacyItemId) {
+        const meta = this.base.items.metadata.items.get(String(legacyItemId));
+        const itemName = meta?.name ?? `Item ${legacyItemId}`;
+        receivedList.push({ name: itemName, amount: 1 });
+      }
+    }
+
+    const formatNum = (n: number) => (Number.isFinite(n) ? n.toLocaleString("en-US") : String(n));
+    const currencyLower = itemRow.currency === "GEMS" ? "gems" : "growtokens";
+    const currencyTitle = itemRow.currency === "GEMS" ? "Gems" : "Growtokens";
+    const purchasedLine = `You've purchased ${itemRow.title} for ${formatNum(cost)} ${currencyLower}.`;
+    const remaining = (itemRow.currency === "GEMS" ? (this.peer.data.gems ?? 0) : (this.peer.data.growtokens ?? 0));
+    const remainingLine = `You have ${formatNum(remaining)} ${currencyTitle} left.`;
+
+    let body = `${purchasedLine}\n${remainingLine}`;
+    if (receivedList.length > 0) {
+      const receivedText = receivedList
+        .map((it) => (it.amount > 1 ? `${it.amount} ${it.name}` : it.name))
+        .join(", ");
+      body += `\n\n\`5Received: \`\`${receivedText}`;
+    }
+
+    this.peer.send(Variant.from("OnStorePurchaseResult", body));
 
     this.peer.saveToCache();
     this.peer.saveToDatabase();

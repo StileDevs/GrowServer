@@ -9,7 +9,7 @@ export enum PacketTypes {
 }
 
 export const WORLD_SIZE = {
-  WIDTH:  100,
+  WIDTH: 100,
   HEIGHT: 60
 };
 
@@ -20,7 +20,7 @@ export const Y_END_DIRT = 55;
 
 export const ROLE = {
   DEVELOPER: "1",
-  BASIC:     "2",
+  BASIC: "2",
   SUPPORTER: "3"
 };
 
@@ -38,16 +38,16 @@ export enum ClothTypes {
 }
 
 export const CLOTH_MAP: { [key in ClothTypes]: string } = {
-  [ClothTypes.ANCES]:    "ances",
-  [ClothTypes.BACK]:     "back",
-  [ClothTypes.FACE]:     "face",
-  [ClothTypes.FEET]:     "feet",
-  [ClothTypes.HAIR]:     "hair",
-  [ClothTypes.HAND]:     "hand",
-  [ClothTypes.MASK]:     "mask",
+  [ClothTypes.ANCES]: "ances",
+  [ClothTypes.BACK]: "back",
+  [ClothTypes.FACE]: "face",
+  [ClothTypes.FEET]: "feet",
+  [ClothTypes.HAIR]: "hair",
+  [ClothTypes.HAND]: "hand",
+  [ClothTypes.MASK]: "mask",
   [ClothTypes.NECKLACE]: "necklace",
-  [ClothTypes.PANTS]:    "pants",
-  [ClothTypes.SHIRT]:    "shirt"
+  [ClothTypes.PANTS]: "pants",
+  [ClothTypes.SHIRT]: "shirt"
 };
 
 export enum TankTypes {
@@ -95,7 +95,7 @@ export enum TankTypes {
 
 export enum TileFlags {
   TILEEXTRA = 0x0001,
-  LOCKED = 0x0002,    
+  LOCKED = 0x0002,
   WAS_SPLICED = 0x0004,
   WILL_SPAWN_SEEDS_TOO = 0x0008,
   SEED = 0x0010,
@@ -350,29 +350,29 @@ export enum LockPermission {
 //  if the TileFlags.PUBLIC is set.
 export const LOCKS = [
   {
-    id:                202, // Small Lock
-    maxTiles:          10,
+    id: 202, // Small Lock
+    maxTiles: 10,
     defaultPermission: LockPermission.FULL,
   },
   {
-    id:                204, // Big Lock
-    maxTiles:          48,
+    id: 204, // Big Lock
+    maxTiles: 48,
     defaultPermission: LockPermission.FULL,
   },
   {
-    id:                206, // Huge Lock
-    maxTiles:          200,
+    id: 206, // Huge Lock
+    maxTiles: 200,
     defaultPermission: LockPermission.FULL,
   },
   {
-    id:                4994, // Builder's Lock
-    maxTiles:          200,
+    id: 4994, // Builder's Lock
+    maxTiles: 200,
     defaultPermission: LockPermission.BREAK,
   }
 ];
 
 export const TileIgnore = {
-  blockIDsToIgnoreByLock:   [6, 8],
+  blockIDsToIgnoreByLock: [6, 8],
   blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR, ActionTypes.BEDROCK]
 };
 
@@ -453,6 +453,40 @@ export enum NameStyles {
   GAME = "`a"
 }
 
+// Shop configuration
+// Tab display Order
+export const SHOP_TABS_ORDER = [
+  "main",
+  "locks",
+  "itempack",
+  "bigitems",
+  "weather",
+  "token"
+] as const;
+
+// Location for the Icon + Text
+export const SHOP_TAB_INDEX: Record<string, number> = {
+  main: 0,
+  locks: 1,
+  token: 2,
+  itempack: 3,
+  bigitems: 4,
+  weather: 5
+};
+
+export const SHOP_WEATHER_TAB_DESC = "Tired of the same sunny sky?  We offer alternatives within...";
+
+export const SHOP_LABEL_TO_CATEGORY: Record<string, string> = {
+  main: "main",
+  locks: "locks",
+  packs: "locks",
+  bigitems: "bigitems",
+  itempack: "itempack",
+  weather: "weather",
+  token: "token",
+  growtoken: "token",
+};
+
 export enum CharacterState {
   WALK_IN_BLOCKS = 1 << 0,
   DOUBLE_JUMP = 1 << 1,
@@ -509,37 +543,37 @@ export enum StateFlags {
 }
 
 export const weatherIdMap: Record<number, number> = {
-  3694:  28,
-  3832:  29,
-  5000:  34,
-  1490:  10,
-  934:   2,
-  946:   3,
-  932:   4,
-  984:   5,
-  1210:  8,
-  1364:  11,
-  1750:  15,
-  2046:  17,
-  2284:  18,
-  2744:  19,
-  3252:  20,
-  3446:  21,
-  3534:  22,
-  4242:  30,
-  4486:  31,
-  4776:  32,
-  4892:  33,
-  5112:  35,
-  5654:  36,
-  5716:  37,
-  5958:  38,
-  6854:  42,
-  7644:  44,
+  3694: 28,
+  3832: 29,
+  5000: 34,
+  1490: 10,
+  934: 2,
+  946: 3,
+  932: 4,
+  984: 5,
+  1210: 8,
+  1364: 11,
+  1750: 15,
+  2046: 17,
+  2284: 18,
+  2744: 19,
+  3252: 20,
+  3446: 21,
+  3534: 22,
+  4242: 30,
+  4486: 31,
+  4776: 32,
+  4892: 33,
+  5112: 35,
+  5654: 36,
+  5716: 37,
+  5958: 38,
+  6854: 42,
+  7644: 44,
   12054: 60,
   12056: 61,
-  8896:  47,
-  8836:  48,
+  8896: 47,
+  8836: 48,
   10286: 51,
   11880: 59,
   12408: 62,
