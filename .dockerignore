@@ -3,13 +3,11 @@ node_modules
 dist
 dist-ssr
 yarn.lock
-data
 assets/website/
 assets/build.zip
 build
 .cache
-data.db
-data
+
 
 
 
