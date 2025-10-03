@@ -38,4 +38,3 @@ lerna-debug.log*
 
 items_info_new.json
 .vs/
-!data/
