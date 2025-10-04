@@ -4,6 +4,8 @@ import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 import { type ShopCatalog } from "../../types/shop";
+import { getNextBackpackUpgrade, getBackpackMaxSlots, formatNumber } from "../../utils/backpack";
+import { isBackpackUpgradeItem } from "../../utils/shop";
 import { SHOP_TABS_ORDER, SHOP_TAB_INDEX, SHOP_WEATHER_TAB_DESC, SHOP_LABEL_TO_CATEGORY } from "../../Constants";
 import consola from "consola";
 
@@ -82,9 +84,12 @@ export class ShopBuy {
       .defaultColor()
       .raw("enable_tabs|1")
       .addSpacer("small")
-      .raw(await this.createTabButtons(activeKey))
-      .raw("add_banner|interface/large/gui_shop_featured_header.rttex|0|1|")
-      .addSpacer("small");
+      .raw(await this.createTabButtons(activeKey));
+
+    const shouldAddBanner = activeKey === "main";
+    if (shouldAddBanner) {
+      dialog.raw("add_banner|interface/large/gui_shop_featured_header.rttex|0|1|").addSpacer("small");
+    }
 
     await this.addShopItems(dialog, category);
 
@@ -94,7 +99,6 @@ export class ShopBuy {
   public async execute(
     action: NonEmptyObject<Record<string, string>>
   ): Promise<void> {
-    // DB-backed;
 
     const labelToCategory: Record<string, string> = SHOP_LABEL_TO_CATEGORY;
 
@@ -107,22 +111,22 @@ export class ShopBuy {
       const category = labelToCategory[requested];
       const activeKey = category ?? (await this.base.database.shop.getTabs()).at(0)?.key ?? "main";
       const selectedCategory = category ?? activeKey;
+      //
       const dialog = await this.createShopDialog(activeKey, selectedCategory);
-      this.peer.send(
-        Variant.from("OnSetVouchers", 0),
-        Variant.from("OnStoreRequest", dialog)
+      this.peer.send(Variant.from("OnSetVouchers", 0)
       );
+      this.peer.send(Variant.from("OnStoreRequest", dialog));
       return;
     }
 
     if (!requested) {
       // Safety: if nothing requested, just re-open the first tab to avoid undefined DB arg
       const firstKey = (await this.base.database.shop.getTabs()).at(0)?.key ?? "main";
+      //
       const dialog = await this.createShopDialog(firstKey, firstKey);
-      this.peer.send(
-        Variant.from("OnSetVouchers", 0),
-        Variant.from("OnStoreRequest", dialog)
+      this.peer.send(Variant.from("OnSetVouchers", 0)
       );
+      this.peer.send(Variant.from("OnStoreRequest", dialog));
       return;
     }
 
@@ -131,37 +135,74 @@ export class ShopBuy {
 
     // IAP URL case - show URL info
     if (itemRow.iapUrl) {
-      this.peer.send(
-        Variant.from(
-          "OnConsoleMessage",
-          `Open this URL to purchase: ${itemRow.iapUrl}`
-        ),
-        Variant.from("OnStorePurchaseResult")
-      );
+      this.peer.send(Variant.from("OnConsoleMessage", `Open this URL to purchase: ${itemRow.iapUrl}`));
+      this.peer.send(Variant.from("OnStorePurchaseResult", `Open this URL to purchase: ${itemRow.iapUrl}`));
+      return;
+    }
+
+    if (isBackpackUpgradeItem(itemRow)) {
+      const currentSlots = this.peer.data.inventory.max;
+      const maxSlots = getBackpackMaxSlots();
+      if (currentSlots >= maxSlots) {
+        this.peer.send(Variant.from("OnConsoleMessage", `You have reached the maximum backpack capacity (${maxSlots} slots).`));
+        this.peer.send(Variant.from("OnStorePurchaseResult", `You have reached the maximum backpack capacity (${maxSlots} slots).`));
+        return;
+      }
+
+      const next = getNextBackpackUpgrade(currentSlots);
+      if (!next) {
+        this.peer.send(Variant.from("OnConsoleMessage", `You have reached the maximum backpack capacity (${maxSlots} slots).`));
+        this.peer.send(Variant.from("OnStorePurchaseResult", `You have reached the maximum backpack capacity (${maxSlots} slots).`));
+        return;
+      }
+
+      // Override any DB-set price with dynamic tier price
+      const price = next.price;
+      const playerGems = this.peer.data.gems ?? 0;
+      if (playerGems < price) {
+        const short = price - playerGems;
+        const itemTitle = itemRow.title;
+        const msg = `You can't afford \`o${itemTitle}\`\`!  You're \`$${formatNumber(short)}\`\` Gems short.`;
+        this.peer.send(Variant.from("OnConsoleMessage", msg));
+        this.peer.send(Variant.from("OnStorePurchaseResult", msg));
+        return;
+      }
+
+      // Deduct gems and apply upgrade to next tier
+      this.peer.data.gems = (this.peer.data.gems ?? 0) - price;
+      this.peer.setGems(this.peer.data.gems);
+      this.peer.data.inventory.max = Math.min(next.nextSlots, maxSlots);
+      this.peer.inventory();
+
+      const purchasedLine = `You've purchased ${itemRow.title} for ${formatNumber(price)} gems.`;
+      const remainingLine = `You have ${formatNumber(this.peer.data.gems ?? 0)} Gems left.`;
+      const effectLine = `Your backpack capacity increased to ${this.peer.data.inventory.max} slots.`;
+      this.peer.send(Variant.from("OnStorePurchaseResult", `${purchasedLine}\n${remainingLine}\n\n\`5${effectLine}`));
+
+      this.peer.saveToCache();
+      this.peer.saveToDatabase();
       return;
     }
 
     const cost = Number(itemRow.cost ?? 0) || 0;
     if (itemRow.currency === "GROWTOKEN") {
-      if ((this.peer.data.growtokens ?? 0) < cost) {
-        this.peer.send(
-          Variant.from(
-            "OnConsoleMessage",
-            "`4Not enough growtokens`` to complete this purchase."
-          ),
-          Variant.from("OnStorePurchaseResult")
-        );
+      const haveTokens = this.peer.data.growtokens ?? 0;
+      if (haveTokens < cost) {
+        const short = cost - haveTokens;
+        const itemTitle = itemRow.title;
+        const msg = `You can't afford \`o${itemTitle}\`\`!  You're \`$${formatNumber(short)}\`\` Growtokens short.`;
+        this.peer.send(Variant.from("OnConsoleMessage", msg));
+        this.peer.send(Variant.from("OnStorePurchaseResult", msg));
         return;
       }
     } else if (itemRow.currency === "GEMS") {
-      if ((this.peer.data.gems ?? 0) < cost) {
-        this.peer.send(
-          Variant.from(
-            "OnConsoleMessage",
-            "`4Not enough gems`` to complete this purchase."
-          ),
-          Variant.from("OnStorePurchaseResult")
-        );
+      const haveGems = this.peer.data.gems ?? 0;
+      if (haveGems < cost) {
+        const short = cost - haveGems;
+        const itemTitle = itemRow.title;
+        const msg = `You can't afford \`o${itemTitle}\`\`!  You're \`$${formatNumber(short)}\`\` Gems short.`;
+        this.peer.send(Variant.from("OnConsoleMessage", msg));
+        this.peer.send(Variant.from("OnStorePurchaseResult", msg));
         return;
       }
     }
@@ -169,15 +210,21 @@ export class ShopBuy {
     const rewardsRows = await this.base.database.shop.getRewardsByName(itemRow.name);
     const rewards = rewardsRows?.map(r => ({ itemId: r.rewardItemId, amount: r.amount }));
     if (rewards && rewards.length > 0) {
+      // Cumulative capacity check: ensure all new unique rewards fit at once
+      const inventoryItems = this.peer.data.inventory.items;
+      const currentSlots = inventoryItems.length;
+      const maxSlots = this.peer.data.inventory.max;
+      const freeSlots = Math.max(0, maxSlots - currentSlots);
+      const newUniqueRewards = rewards.filter((r) => !inventoryItems.some((i) => i.id === r.itemId)).length;
+      if (newUniqueRewards > freeSlots) {
+        this.peer.send(Variant.from("OnConsoleMessage", "`4Your inventory is full. Make some space and try again."));
+        this.peer.send(Variant.from("OnStorePurchaseResult", "`4Your inventory is full. Make some space and try again."));
+        return;
+      }
       for (const reward of rewards) {
         if (!this.peer.canAddItemToInv(reward.itemId, reward.amount)) {
-          this.peer.send(
-            Variant.from(
-              "OnConsoleMessage",
-              "`4Your inventory is full. Make some space and try again."
-            ),
-            Variant.from("OnStorePurchaseResult")
-          );
+          this.peer.send(Variant.from("OnConsoleMessage", "`4Your inventory is full. Make some space and try again."));
+          this.peer.send(Variant.from("OnStorePurchaseResult", "`4Your inventory is full. Make some space and try again."));
           return;
         }
       }
@@ -187,6 +234,13 @@ export class ShopBuy {
     } else {
       const legacyItemId = (itemRow as unknown as { itemId?: number }).itemId;
       if (legacyItemId) {
+        // Capacity check for legacy single-item purchases
+        const alreadyHas = Boolean(this.peer.searchItem?.(legacyItemId));
+        if (!alreadyHas && this.peer.data.inventory.items.length >= this.peer.data.inventory.max) {
+          this.peer.send(Variant.from("OnConsoleMessage", "`4Your inventory is full. Make some space and try again."));
+          this.peer.send(Variant.from("OnStorePurchaseResult", "`4Your inventory is full. Make some space and try again."));
+          return;
+        }
         this.peer.addItemInven(legacyItemId, 1);
       }
     }

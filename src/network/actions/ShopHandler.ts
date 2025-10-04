@@ -4,6 +4,8 @@ import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { Variant } from "growtopia.js";
 import { SHOP_TABS_ORDER, SHOP_TAB_INDEX, SHOP_WEATHER_TAB_DESC, SHOP_LABEL_TO_CATEGORY } from "../../Constants";
+import { getNextBackpackUpgrade } from "../../utils/backpack";
+import { isBackpackUpgradeItem } from "../../utils/shop";
 
 export class ShopHandler {
   constructor(
@@ -45,12 +47,24 @@ export class ShopHandler {
           .addSpacer("small");
       });
 
-    dialog.raw("add_banner|interface/large/gui_shop_featured_header.rttex|0|1|").addSpacer("small");
+    if (activeKey === "main") {
+      dialog.raw("add_banner|interface/large/gui_shop_featured_header.rttex|0|1|").addSpacer("small");
+    }
 
     if (activeKey) {
       const items = await this.base.database.shop.getItemsByTab(activeKey);
       items.forEach((item) => {
-        const displayCost = item.currency === "GROWTOKEN" ? -(item.cost ?? 0) : (item.cost ?? 0);
+        let displayCost = item.currency === "GROWTOKEN" ? -(item.cost ?? 0) : (item.cost ?? 0);
+        // Dynamic price for Backpack Upgrade: reflect the next tier price and override DB price
+        if (isBackpackUpgradeItem(item)) {
+          const next = getNextBackpackUpgrade(this.peer.data.inventory.max);
+          if (next) {
+            displayCost = next.price;
+            // Override cost/currency from DB for catalog rendering
+            item.cost = next.price;
+            item.currency = "GEMS";
+          }
+        }
         dialog.addStoreButton(
           item.name,
           item.title,
@@ -64,6 +78,7 @@ export class ShopHandler {
 
     const finalDialog = dialog.endDialog("store_end", "Cancel", "OK").addQuickExit().str();
 
-    this.peer.send(Variant.from("OnSetVouchers", 0), Variant.from("OnStoreRequest", finalDialog));
+    this.peer.send(Variant.from("OnSetVouchers", 0));
+    this.peer.send(Variant.from("OnStoreRequest", finalDialog));
   }
 }

@@ -581,3 +581,55 @@ export const weatherIdMap: Record<number, number> = {
   13004: 65,
   13070: 66
 };
+
+export interface BackpackTier {
+  index: number;
+  slots: number;
+  price: number; // Gems required for this upgrade from previous tier
+}
+
+// Backpack tiers from 16 to 396 slots, +10 each step, with per-step gem costs
+export const BACKPACK_TIERS: BackpackTier[] = [
+  { index: 0, slots: 16, price: 0 },
+  { index: 1, slots: 26, price: 100 },
+  { index: 2, slots: 36, price: 200 },
+  { index: 3, slots: 46, price: 500 },
+  { index: 4, slots: 56, price: 1000 },
+  { index: 5, slots: 66, price: 1700 },
+  { index: 6, slots: 76, price: 2600 },
+  { index: 7, slots: 86, price: 3700 },
+  { index: 8, slots: 96, price: 5000 },
+  { index: 9, slots: 106, price: 6500 },
+  { index: 10, slots: 116, price: 8200 },
+  { index: 11, slots: 126, price: 10100 },
+  { index: 12, slots: 136, price: 12200 },
+  { index: 13, slots: 146, price: 14500 },
+  { index: 14, slots: 156, price: 17000 },
+  { index: 15, slots: 166, price: 19700 },
+  { index: 16, slots: 176, price: 22600 },
+  { index: 17, slots: 186, price: 25700 },
+  { index: 18, slots: 196, price: 29000 },
+  { index: 19, slots: 206, price: 32500 },
+  { index: 20, slots: 216, price: 36200 },
+  { index: 21, slots: 226, price: 40100 },
+  { index: 22, slots: 236, price: 44200 },
+  { index: 23, slots: 246, price: 48500 },
+  { index: 24, slots: 256, price: 53000 },
+  { index: 25, slots: 266, price: 57700 },
+  { index: 26, slots: 276, price: 62600 },
+  { index: 27, slots: 286, price: 67700 },
+  { index: 28, slots: 296, price: 73000 },
+  { index: 29, slots: 306, price: 78500 },
+  { index: 30, slots: 316, price: 84200 },
+  { index: 31, slots: 326, price: 90100 },
+  { index: 32, slots: 336, price: 96200 },
+  { index: 33, slots: 346, price: 102500 },
+  { index: 34, slots: 356, price: 109000 },
+  { index: 35, slots: 366, price: 115700 },
+  { index: 36, slots: 376, price: 122600 },
+  { index: 37, slots: 386, price: 129700 },
+  { index: 38, slots: 396, price: 137000 },
+];
+
+export const BACKPACK_MIN_SLOTS = BACKPACK_TIERS[0].slots;
+export const BACKPACK_MAX_SLOTS = BACKPACK_TIERS[BACKPACK_TIERS.length - 1].slots;
