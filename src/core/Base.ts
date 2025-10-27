@@ -188,104 +188,105 @@ export class Base {
     await itemsDat.decode();
     consola.start("Loading custom items...");
 
-    try {
-      const itemsConf = JSON.parse(
-        await readFile(
-          join(__dirname, "assets", "custom-items", "items-config.json"),
-          "utf-8"
-        )
-      ) as CustomItemsConfig;
+    // Disable temporarily (TODO: remaking this later)
+    // try {
+    //   const itemsConf = JSON.parse(
+    //     await readFile(
+    //       join(__dirname, "assets", "custom-items", "items-config.json"),
+    //       "utf-8"
+    //     )
+    //   ) as CustomItemsConfig;
 
-      for (const asset of itemsConf.assets) {
-        if (!asset.id) throw "Item ID are required to replace specific item";
+    //   for (const asset of itemsConf.assets) {
+    //     if (!asset.id) throw "Item ID are required to replace specific item";
 
-        const item = itemsDat.meta.items.get(asset.id.toString())!;
+    //     const item = itemsDat.meta.items.get(asset.id.toString())!;
 
-        consola.start(`Modifying item ID: ${item.id} | ${item.name}`);
+    //     consola.start(`Modifying item ID: ${item.id} | ${item.name}`);
 
-        Object.assign(item, {
-          ...asset.item,
-        });
+    //     Object.assign(item, {
+    //       ...asset.item,
+    //     });
 
-        if (asset.item.extraFile) {
-          const image = await readFile(
-            join(
-              __dirname,
-              "assets",
-              "custom-items",
-              asset.item.extraFile.pathAsset
-            )
-          );
-          const rttex = await RTTEX.encode(image);
+    //     if (asset.item.extraFile) {
+    //       const image = await readFile(
+    //         join(
+    //           __dirname,
+    //           "assets",
+    //           "custom-items",
+    //           asset.item.extraFile.pathAsset
+    //         )
+    //       );
+    //       const rttex = await RTTEX.encode(image);
 
-          item.extraFile = asset.item.extraFile.pathResult;
-          item.extraFileHash = RTTEX.hash(rttex);
+    //       item.extraFile = asset.item.extraFile.pathResult;
+    //       item.extraFileHash = RTTEX.hash(rttex);
 
-          await mkdir(
-            join(__dirname, ".cache", "growtopia", "cache", asset.storePath),
-            {
-              recursive: true,
-            }
-          );
-          await writeFile(
-            join(
-              __dirname,
-              ".cache",
-              "growtopia",
-              "cache",
-              asset.storePath,
-              asset.item.extraFile.fileName
-            ),
-            rttex,
-            {
-              flush: true,
-            }
-          );
-        }
+    //       await mkdir(
+    //         join(__dirname, ".cache", "growtopia", "cache", asset.storePath),
+    //         {
+    //           recursive: true,
+    //         }
+    //       );
+    //       await writeFile(
+    //         join(
+    //           __dirname,
+    //           ".cache",
+    //           "growtopia",
+    //           "cache",
+    //           asset.storePath,
+    //           asset.item.extraFile.fileName
+    //         ),
+    //         rttex,
+    //         {
+    //           flush: true,
+    //         }
+    //       );
+    //     }
 
-        if (asset.item.texture) {
-          const image = await readFile(
-            join(
-              __dirname,
-              "assets",
-              "custom-items",
-              asset.item.texture.pathAsset
-            )
-          );
-          const rttex = await RTTEX.encode(image);
+    //     if (asset.item.texture) {
+    //       const image = await readFile(
+    //         join(
+    //           __dirname,
+    //           "assets",
+    //           "custom-items",
+    //           asset.item.texture.pathAsset
+    //         )
+    //       );
+    //       const rttex = await RTTEX.encode(image);
 
-          item.texture = asset.item.texture.pathResult;
-          item.textureHash = RTTEX.hash(rttex);
+    //       item.texture = asset.item.texture.pathResult;
+    //       item.textureHash = RTTEX.hash(rttex);
 
-          await mkdir(
-            join(__dirname, ".cache", "growtopia", "cache", asset.storePath),
-            {
-              recursive: true,
-            }
-          );
-          await writeFile(
-            join(
-              __dirname,
-              ".cache",
-              "growtopia",
-              "cache",
-              asset.storePath,
-              asset.item.texture.fileName
-            ),
-            rttex,
-            {
-              flush: true,
-            }
-          );
-        }
+    //       await mkdir(
+    //         join(__dirname, ".cache", "growtopia", "cache", asset.storePath),
+    //         {
+    //           recursive: true,
+    //         }
+    //       );
+    //       await writeFile(
+    //         join(
+    //           __dirname,
+    //           ".cache",
+    //           "growtopia",
+    //           "cache",
+    //           asset.storePath,
+    //           asset.item.texture.fileName
+    //         ),
+    //         rttex,
+    //         {
+    //           flush: true,
+    //         }
+    //       );
+    //     }
 
-        consola.success(
-          `Successfully modifying item ID: ${item.id} | ${item.name}`
-        );
-      }
-    } catch (e) {
-      consola.error("Failed to load custom items: " + e);
-    }
+    //     consola.success(
+    //       `Successfully modifying item ID: ${item.id} | ${item.name}`
+    //     );
+    //   }
+    // } catch (e) {
+    //   consola.error("Failed to load custom items: " + e);
+    // }
 
     await itemsDat.encode();
 
