@@ -23,15 +23,17 @@ export class World {
     this.worldName = worldName;
 
     const data = this.base.cache.worlds.get(worldName);
-    if (data) this.data = data;
+    if (data) {
+      // normalize legacy cache shape { weatherId } -> { weather: { id } }
+      const anyData = data as unknown as { weatherId?: number; weather?: { id: number } };
+      if (!anyData.weather && typeof anyData.weatherId === "number") {
+        this.data = { ...(data as WorldData), weather: { id: anyData.weatherId, cooldowns: {} } } as WorldData;
+      } else {
+        this.data = data;
+      }
+    }
     else
-      this.data = {
-        name:      "",
-        width:     0,
-        height:    0,
-        blocks:    [],
-        weatherId: 41
-      };
+      this.data = { name: "", width: 0, height: 0, blocks: [], weather: { id: 41, cooldowns: {} } };
   }
 
   public async saveToCache() {
@@ -153,7 +155,7 @@ ${peer.data.lastVisitedWorlds
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
           // owner: world.owner ? JSON.parse(world.owner.toString()) : null,
-          weatherId:      world.weather_id || 41,
+          weather:        { id: world.weather_id || 41, cooldowns: {} },
           worldLockIndex: world.worldlock_index ? world.worldlock_index : undefined
           // minLevel: world.minimum_level || 1,
         };
@@ -254,8 +256,9 @@ ${peer.data.lastVisitedWorlds
 
     // Weather
     const weatherData = Buffer.alloc(12);
-    weatherData.writeUint16LE(this.data.weatherId); // weather id
-    weatherData.writeUint16LE(0x1, 2); // on atau off (mungkin)
+    weatherData.writeUint16LE(this.data.weather.id); // weather id
+    const weatherOnOff = this.data.weather.id === 41 ? 0x0 : 0x1; // 0 = off when clear, 1 = on otherwise
+    weatherData.writeUint16LE(weatherOnOff, 2);
     weatherData.writeUint32LE(0x0, 4); // ??
     weatherData.writeUint32LE(0x0, 8); // ??
 
@@ -277,6 +280,8 @@ ${peer.data.lastVisitedWorlds
     const yPos = (y < 0 ? mainDoor?.y || 0 : y) * 32;
 
     peer.send(tank);
+    // Applly current weather on join
+    peer.send(Variant.from("OnSetCurrentWeather", this.data.weather.id));
     peer.data.x = xPos;
     peer.data.y = yPos;
     peer.data.world = this.worldName;

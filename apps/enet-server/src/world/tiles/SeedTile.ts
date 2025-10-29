@@ -25,12 +25,17 @@ export class SeedTile extends Tile {
     this.initializeTreeData(itemMeta);
     // actually, this is not nescessary. But since i have yet to figure out a way to set a field in the TileChangeReq packet
     //  - Badewen
-    this.world.every((p) => this.tileUpdate(p));          
+    this.world.every((p) => this.tileUpdate(p));
     return true;
   }
 
   public async onItemPlace(peer: Peer, item: ItemDefinition): Promise<boolean> {
     if (!await super.onItemPlace(peer, item)) {
+      return false;
+    }
+
+    // Ensure player actually has the seed being used to splice
+    if (!peer.searchItem(item.id!)) {
       return false;
     }
 
@@ -61,6 +66,9 @@ export class SeedTile extends Tile {
               this.tileUpdate(p);
             });
             this.notifySuccessfulSplice(peer, currentSeedMeta.name!, item.name!, spliceResultSeedMeta.name!);
+
+            // Consume the splicer seed from inventory on successful splice
+            peer.removeItemInven(item.id!, 1);
 
             return false;
           }

@@ -9,7 +9,7 @@ import { downloadItemsDat, getLatestItemsDatName } from "../utils";
 
 __dirname = process.cwd();
 
-(async() => {
+(async () => {
   const itemsDatName = await getLatestItemsDatName();
   await downloadItemsDat(itemsDatName);
 
@@ -19,11 +19,12 @@ __dirname = process.cwd();
   const itemsdat = new ItemsDat(Array.from(file));
   await itemsdat.decode();
 
-  const scraper = new Scraper(itemsdat.meta.items);
-  
+  const allItems = Array.from(itemsdat.meta.items.values());
+  const scraper = new Scraper(allItems);
+
   const itemPages = await scraper.getItemPages();
 
-  const parser = new Parser(itemPages, itemsdat.meta.items);
+  const parser = new Parser(itemPages, allItems);
   const items = await parser.pagesToItems();
 
   consola.info("Writing ItemsInfo file into ./assets/items_info_new.json");
