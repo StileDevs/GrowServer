@@ -1,4 +1,4 @@
-![Example](/assets/ignore/banner.png)
+![Example](/apps/server/assets/ignore/banner.png)
 
 > A Growtopia private server built with Node.js and Bun.js, powered by [growtopia.js](https://github.com/JadlionHD/growtopia.js)
 
