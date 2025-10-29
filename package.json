@@ -1,6 +1,12 @@
 {
   "name": "growserver",
+<<<<<<< HEAD
   "private": true,
+=======
+  "version": "3.1.4",
+  "description": "A Growtopia private server built with Node.js and Bun.js, powered by growtopia.js",
+  "main": "dist/src/app.js",
+>>>>>>> fc06c30e6844593bd5cd429b87ace18140f3aeed
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
