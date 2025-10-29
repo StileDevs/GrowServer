@@ -1,0 +1,42 @@
+.env
+node_modules
+dist
+dist-ssr
+yarn.lock
+data
+assets/website/
+assets/build.zip
+build
+.cache
+data.db
+data
+
+
+
+# Ignore ssl
+assets/ssl/_wildcard.growserver.app.pem
+assets/ssl/_wildcard.growserver.app-key.pem
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+*.local
+
+# Editor directories and files
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+items_info_new.json
+.vs/
