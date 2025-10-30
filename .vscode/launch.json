@@ -6,7 +6,7 @@
       "type": "node",
       "request": "launch",
       // Debug current file in VSCode
-      "program": "${workspaceFolder}/src/app.ts",
+      "program": "${workspaceFolder}/apps/server/src/app.ts",
       /*
        * Path to tsx binary
        * Assuming locally installed
