@@ -5,7 +5,7 @@ import { execSync } from "child_process";
 import net from "net";
 import ky from "ky";
 import decompress from "decompress";
-import { ITEMS_DAT_URL } from "../Constants";
+import { ITEMS_DAT_URL, MACOS_ITEMS_DAT_URL } from "../Constants";
 
 __dirname = process.cwd();
 
@@ -106,6 +106,23 @@ export async function downloadItemsDat(itemsDatName: string) {
 
   consola.info(`Downloading items.dat version ${currentVersion}`);
   await downloadFile(`${ITEMS_DAT_URL}/${itemsDatName}`, join(__dirname, ".cache", "growtopia", "dat", itemsDatName));
+}
+
+export async function downloadMacOSItemsDat() {
+  const datDir = join(__dirname, ".cache", "growtopia", "dat");
+  const macosItemsDatPath = join(datDir, "items-macos.dat");
+
+  if (!existsSync(datDir)) {
+    mkdirSync(datDir, { recursive: true });
+  }
+
+  if (existsSync(macosItemsDatPath)) {
+    consola.info("macOS items.dat already exists");
+    return;
+  }
+
+  consola.info("Downloading macOS items.dat");
+  await downloadFile(MACOS_ITEMS_DAT_URL, macosItemsDatPath);
 }
 
 export async function downloadMkcert() {

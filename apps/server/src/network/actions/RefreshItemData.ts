@@ -14,12 +14,16 @@ export class RefreshItemData {
   public async execute(
     _action: NonEmptyObject<Record<string, string>>
   ): Promise<void> {
+    // Check if platformID is "2" (macOS) and send appropriate items.dat
+    const isMacOS = this.peer.data.platformID === "2";
+    const itemsData = isMacOS ? this.base.macosItems : this.base.items;
+    
     this.peer.send(
-      Variant.from("OnConsoleMessage", "One moment. Updating item data..."),
+      Variant.from("OnConsoleMessage", `One moment. Updating item data${isMacOS ? ' (macOS)' : ''}...`),
       TankPacket.from({
         type: TankTypes.SEND_ITEM_DATABASE_DATA,
-        info: this.base.items.content.length,
-        data: () => deflateSync(this.base.items.content)
+        info: itemsData.content.length,
+        data: () => deflateSync(itemsData.content)
       })
     );
   }

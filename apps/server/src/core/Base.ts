@@ -7,6 +7,7 @@ import {
   downloadWebsite,
   setupWebsite,
   downloadItemsDat,
+  downloadMacOSItemsDat,
   fetchJSON,
 } from "../utils/Utils";
 import { join } from "path";
@@ -21,6 +22,7 @@ import {
   CDNContent,
   CustomItemsConfig,
   ItemsData,
+  MacOSItemsData,
   ItemsInfo,
 } from "../types";
 import { Collection } from "../utils/Collection";
@@ -38,6 +40,7 @@ __dirname = process.cwd();
 export class Base {
   public server: Client;
   public items: ItemsData;
+  public macosItems: MacOSItemsData;
   public package: PackageJson;
   public config: typeof import("../../config.json");
   public cdn: CDNContent;
@@ -63,6 +66,11 @@ export class Base {
       hash:     "",
       metadata: {} as ItemsDatMeta,
       wiki:     [],
+    };
+    this.macosItems = {
+      content:  Buffer.alloc(0),
+      hash:     "",
+      metadata: {} as ItemsDatMeta,
     };
     this.cache = {
       peers:    new Collection(),
@@ -98,6 +106,7 @@ export class Base {
       await setupWebsite();
       this.cdn = await this.getLatestCdn();
       await downloadItemsDat(this.cdn.itemsDatName);
+      await downloadMacOSItemsDat();
       
       consola.info(`Parsing ${this.cdn.itemsDatName}`);
       const datDir = join(__dirname, ".cache", "growtopia", "dat");
@@ -110,6 +119,18 @@ export class Base {
         metadata: {} as ItemsDatMeta,
         wiki:     [] as ItemsInfo[],
       };
+
+      // Load macOS items.dat
+      consola.info("Parsing macOS items.dat");
+      const macosItemsDatPath = join(datDir, "items-macos.dat");
+      const macosItemsDat = readFileSync(macosItemsDatPath);
+      
+      this.macosItems = {
+        hash:     `${RTTEX.hash(macosItemsDat)}`,
+        content:  macosItemsDat,
+        metadata: {} as ItemsDatMeta,
+      };
+
       await Web(this);
 
       consola.log(`🔔Starting ENet server on port ${port}`);

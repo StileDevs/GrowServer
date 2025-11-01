@@ -18,6 +18,12 @@ export interface ItemsData {
   wiki:     ItemsInfo[]
 }
 
+export interface MacOSItemsData {
+  hash:     string,
+  content:  Buffer,
+  metadata:  ItemsDatMeta
+}
+
 
 export interface Cache {
   peers: Collection<number, PeerData>;
