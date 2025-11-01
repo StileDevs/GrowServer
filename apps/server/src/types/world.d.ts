@@ -21,7 +21,6 @@ export interface TileData {
   dice?: Dice;
   provider?: Provider;
   displayBlock?: DisplayBlock
-  weatherMachine?: WeatherMachine
 }
 
 export interface Provider {
@@ -69,11 +68,6 @@ export interface Dropped {
 
 export interface WeatherData {
   id: number;
-  cooldowns?: Record<string, number>;
-}
-
-export interface WeatherMachine {
-  cooldownUntil: number; // epoch ms until next toggle allowed
 }
 
 export interface WorldData {
@@ -88,7 +82,7 @@ export interface WorldData {
   // customMusicBlocksDisabled?: boolean;
   // invisMusicBlocks?: boolean;
   jammers?: Jammer[];
-  dropped?: Dropped;
+  dropped: Dropped;
   weather: WeatherData;
   worldLockIndex?: number;
   // minLevel: number;

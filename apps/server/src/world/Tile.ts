@@ -188,11 +188,30 @@ export class Tile {
     const itemMeta = this.base.items.metadata.items.get(destroyedItemID.toString());
     if (!itemMeta) return;
 
-    if (itemMeta.flags! & BlockFlags.DROPLESS) return;
-    else if (itemMeta.flags! & BlockFlags.PERMANENT) {
+    if (itemMeta.flags! & BlockFlags.PERMANENT) {
+      const objectID = ++this.world.data.dropped.uid;
+      const dropPkt = new TankPacket({
+        type:        TankTypes.ITEM_CHANGE_OBJECT,
+        netID:       -1,
+        targetNetID: -1,
+        info:        destroyedItemID,
+        xPos:        this.data.x * 32,
+        yPos:        this.data.y * 32,
+      })
+      const collectPkt = new TankPacket({
+        type:        TankTypes.ITEM_CHANGE_OBJECT,
+        netID:       peer.data.netID,
+        targetNetID: -1,
+        info:        objectID,
+      })
+      this.world.every((p) => {
+        p.send(dropPkt, collectPkt);
+      })
       peer.addItemInven(destroyedItemID);
+      peer.sendConsoleMessage(`Collected \`w1 ${itemMeta.name}\`\`.\`\``)
       return;
     }
+    else if (itemMeta.flags! & BlockFlags.DROPLESS) return;
 
     // Tried to find info about drop rates, here's an info on seeds: https://growtopia.fandom.com/wiki/Gems
     // https://www.growtopiagame.com/forums/forum/general/guidebook/273543-farming-calculator%E2%80%94estimate-seeds-gems-xp-with-formula-explanations

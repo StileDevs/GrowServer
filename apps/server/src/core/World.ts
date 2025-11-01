@@ -24,16 +24,10 @@ export class World {
 
     const data = this.base.cache.worlds.get(worldName);
     if (data) {
-      // normalize legacy cache shape { weatherId } -> { weather: { id } }
-      const anyData = data as unknown as { weatherId?: number; weather?: { id: number } };
-      if (!anyData.weather && typeof anyData.weatherId === "number") {
-        this.data = { ...(data as WorldData), weather: { id: anyData.weatherId, cooldowns: {} } } as WorldData;
-      } else {
-        this.data = data;
-      }
+      this.data = data;
     }
     else
-      this.data = { name: "", width: 0, height: 0, blocks: [], weather: { id: 41, cooldowns: {} } };
+      this.data = { name: "", width: 0, height: 0, blocks: [], weather: { id: 41 }, dropped: { items: [], uid: 0 } };
   }
 
   public async saveToCache() {
@@ -155,7 +149,7 @@ ${peer.data.lastVisitedWorlds
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
           // owner: world.owner ? JSON.parse(world.owner.toString()) : null,
-          weather:        { id: world.weather_id || 41, cooldowns: {} },
+          weather:        { id: world.weather_id || 41 },
           worldLockIndex: world.worldlock_index ? world.worldlock_index : undefined
           // minLevel: world.minimum_level || 1,
         };
