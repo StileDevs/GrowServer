@@ -540,7 +540,12 @@ export class Peer extends OldPeer<PeerData> {
 
           inventory.items.forEach((item) => {
             buffer.writeUInt16LE(item.id, offset);
-            buffer.writeUInt16LE(item.amount, offset + 2); // use bitwise OR (1 << 8) if item is equipped. could be wrong
+            
+            // Check if item is equipped in any clothing slot
+            const isEquipped = Object.values(this.data.clothing).includes(item.id);
+            const amount = isEquipped ? item.amount | (1 << 8) : item.amount;
+            
+            buffer.writeUInt16LE(amount, offset + 2);
 
             offset += 4;
           });
