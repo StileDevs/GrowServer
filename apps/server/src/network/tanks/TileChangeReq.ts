@@ -10,7 +10,6 @@ import {
   ROLE,
   TankTypes
 } from "../../Constants";
-import { getWeatherId } from "../../utils/WeatherIds";
 import consola from "consola";
 import { Floodfill } from "../../utils/FloodFill";
 import { Tile } from "../../world/Tile";
