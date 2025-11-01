@@ -7,6 +7,7 @@ import {
   downloadWebsite,
   setupWebsite,
   downloadItemsDat,
+  downloadMacOSItemsDat,
   fetchJSON,
 } from "../utils/Utils";
 import { join } from "path";
@@ -99,6 +100,7 @@ export class Base {
       await setupWebsite();
       this.cdn = await this.getLatestCdn();
       await downloadItemsDat(this.cdn.itemsDatName);
+      await downloadMacOSItemsDat(this.cdn.itemsDatName);
       
       consola.info(`Parsing ${this.cdn.itemsDatName}`);
       const datDir = join(__dirname, ".cache", "growtopia", "dat");
@@ -111,6 +113,7 @@ export class Base {
         metadata: {} as ItemsDatMeta,
         wiki:     [] as ItemsInfo[],
       };
+
       await Web(this);
 
       consola.log(`🔔Starting ENet server on port ${port}`);
