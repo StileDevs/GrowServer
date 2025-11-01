@@ -7,7 +7,6 @@ import { Tile } from "../Tile";
 import { ActionTypes, LockPermission, TileExtraTypes } from "../../Constants";
 import { ItemDefinition } from "grow-items";
 import { Variant } from "growtopia.js";
-import { getWeatherId } from "../../utils/Utils";
 
 export class WeatherTile extends Tile {
   constructor(
@@ -24,10 +23,13 @@ export class WeatherTile extends Tile {
       return super.onPunch(peer);
     }
 
+    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString());
+
     // if the block still has any damage, do not toggle.
     if (this.data.resetStateAt && this.data.resetStateAt > Date.now()) return super.onPunch(peer);
 
-    const targetWeatherId = getWeatherId(this.data.fg!);
+    // they used this as the weather id. Lol
+    const targetWeatherId = itemMeta?.audioVolume;
     if (!targetWeatherId) {
       peer.sendConsoleMessage(`[Weather] Unknown mapping for item ${this.data.fg}. Keeping weather: ${this.world.data.weather.id}`);
       return await super.onPunch(peer);
@@ -58,6 +60,7 @@ export class WeatherTile extends Tile {
   // Clear weather when weather machine is broken
   public async onDestroy(peer: Peer): Promise<void> {
     await super.onDestroy(peer);
+    // this is the old default backgound with no ads and things.
     if (this.world.data.weather.id !== 41) {
       this.world.data.weather.id = 41;
       this.world.every((p) => {
