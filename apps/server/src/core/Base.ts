@@ -106,7 +106,7 @@ export class Base {
       await setupWebsite();
       this.cdn = await this.getLatestCdn();
       await downloadItemsDat(this.cdn.itemsDatName);
-      await downloadMacOSItemsDat();
+      await downloadMacOSItemsDat(this.cdn.itemsDatName);
       
       consola.info(`Parsing ${this.cdn.itemsDatName}`);
       const datDir = join(__dirname, ".cache", "growtopia", "dat");
@@ -122,7 +122,8 @@ export class Base {
 
       // Load macOS items.dat
       consola.info("Parsing macOS items.dat");
-      const macosItemsDatPath = join(datDir, "items-macos.dat");
+      const macosItemsDatName = this.cdn.itemsDatName.replace('.dat', '-osx.dat');
+      const macosItemsDatPath = join(datDir, macosItemsDatName);
       const macosItemsDat = readFileSync(macosItemsDatPath);
       
       this.macosItems = {

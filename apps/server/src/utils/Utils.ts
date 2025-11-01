@@ -5,7 +5,7 @@ import { execSync } from "child_process";
 import net from "net";
 import ky from "ky";
 import decompress from "decompress";
-import { ITEMS_DAT_URL, MACOS_ITEMS_DAT_URL } from "../Constants";
+import { ITEMS_DAT_URL } from "../Constants";
 
 __dirname = process.cwd();
 
@@ -108,21 +108,44 @@ export async function downloadItemsDat(itemsDatName: string) {
   await downloadFile(`${ITEMS_DAT_URL}/${itemsDatName}`, join(__dirname, ".cache", "growtopia", "dat", itemsDatName));
 }
 
-export async function downloadMacOSItemsDat() {
+export async function downloadMacOSItemsDat(itemsDatName: string) {
   const datDir = join(__dirname, ".cache", "growtopia", "dat");
-  const macosItemsDatPath = join(datDir, "items-macos.dat");
 
   if (!existsSync(datDir)) {
     mkdirSync(datDir, { recursive: true });
   }
 
-  if (existsSync(macosItemsDatPath)) {
-    consola.info("macOS items.dat already exists");
+  // Convert items-v{version}.dat to items-v{version}-osx.dat
+  const macosItemsDatName = itemsDatName.replace('.dat', '-osx.dat');
+  const macosItemsDatPath = join(datDir, macosItemsDatName);
+
+  const currentVersion = itemsDatName.match(/items-v(\d+\.\d+)\.dat/)?.[1];
+
+  if (!currentVersion) {
+    consola.error("Invalid items.dat filename format");
     return;
   }
 
-  consola.info("Downloading macOS items.dat");
-  await downloadFile(MACOS_ITEMS_DAT_URL, macosItemsDatPath);
+  const existingFiles = readdirSync(datDir);
+  const versionRegex = /items-v(\d+\.\d+)-osx\.dat/;
+
+  for (const file of existingFiles) {
+    const match = file.match(versionRegex);
+    if (match) {
+      const existingVersion = match[1];
+
+      if (parseFloat(currentVersion) > parseFloat(existingVersion)) {
+        unlinkSync(join(datDir, file));
+        consola.info(`Removed older macOS version: ${file}`);
+      } else if (currentVersion === existingVersion) {
+        consola.info(`macOS items.dat version ${currentVersion} already exists`);
+        return;
+      }
+    }
+  }
+
+  consola.info(`Downloading macOS items.dat version ${currentVersion}`);
+  await downloadFile(`${ITEMS_DAT_URL}/${macosItemsDatName}`, macosItemsDatPath);
 }
 
 export async function downloadMkcert() {

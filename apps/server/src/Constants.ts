@@ -1,6 +1,5 @@
 export const ITEMS_DAT_URL = "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main";
 export const ITEMS_DAT_FETCH_URL = "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main/latest.json";
-export const MACOS_ITEMS_DAT_URL = "https://github.com/drifter987/GrowServer-macOS-cdn/raw/refs/heads/main/items.dat";
 
 export enum PacketTypes {
   HELLO = 1,
