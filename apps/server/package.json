@@ -27,6 +27,8 @@
   "license": "MIT",
   "dependencies": {
     "@antfu/ni": "^25.0.0",
+    "@growserver/config": "workspace:*",
+    "@growserver/const": "workspace:*",
     "@hono/node-server": "^1.19.1",
     "@libsql/client": "^0.15.14",
     "bcryptjs": "^3.0.2",
@@ -47,6 +49,7 @@
     "mwparser": "^1.3.3",
     "nanoid": "5.1.5",
     "rimraf": "^6.0.1",
+    "smol-toml": "^1.4.2",
     "tsx": "^4.20.5",
     "zod": "^4.1.5"
   },

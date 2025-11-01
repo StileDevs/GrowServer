@@ -39,7 +39,7 @@ export class Base {
   public server: Client;
   public items: ItemsData;
   public package: PackageJson;
-  public config: typeof import("../../config.json");
+  public config: typeof import("@growserver/config/config.json");
   public cdn: CDNContent;
   public cache: Cache;
   public database: Database;
@@ -55,8 +55,9 @@ export class Base {
       readFileSync(join(__dirname, "package.json"), "utf-8")
     );
     this.config = JSON.parse(
-      readFileSync(join(__dirname, "config.json"), "utf-8")
+      readFileSync(join(__dirname, "..", "..", "packages", "config", "config.json"), "utf-8")
     );
+    console.log({config: this.config})
     this.cdn = { version: "", uri: "0000/0000", itemsDatName: "" };
     this.items = {
       content:  Buffer.alloc(0),

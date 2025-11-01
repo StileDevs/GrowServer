@@ -9,7 +9,7 @@ __dirname = process.cwd();
 export class GrowtopiaRoute {
   public app = new Hono().basePath("/growtopia");
   public conf = JSON.parse(
-    readFileSync(join(__dirname, "config.json"), "utf-8")
+    readFileSync(join(__dirname, "..", "..", "packages", "config", "config.json"), "utf-8")
   );
 
   constructor(public base: Base) { }

@@ -18,11 +18,61 @@ importers:
         specifier: 5.9.2
         version: 5.9.2
 
+  apps/login-page:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.19.6
+        version: 1.19.6(hono@4.10.4)
+      hono:
+        specifier: ^4.10.4
+        version: 4.10.4
+      smol-toml:
+        specifier: ^1.4.2
+        version: 1.4.2
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.19.24
+      tsx:
+        specifier: ^4.7.1
+        version: 4.20.6
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.2
+
+  apps/logon:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^1.19.6
+        version: 1.19.6(hono@4.10.4)
+      hono:
+        specifier: ^4.10.4
+        version: 4.10.4
+      smol-toml:
+        specifier: ^1.4.2
+        version: 1.4.2
+    devDependencies:
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.19.24
+      tsx:
+        specifier: ^4.7.1
+        version: 4.20.6
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.2
+
   apps/server:
     dependencies:
       '@antfu/ni':
         specifier: ^25.0.0
         version: 25.0.0
+      '@growserver/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@growserver/const':
+        specifier: workspace:*
+        version: link:../../packages/const
       '@hono/node-server':
         specifier: ^1.19.1
         version: 1.19.5(hono@4.10.3)
@@ -83,6 +133,9 @@ importers:
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
+      smol-toml:
+        specifier: ^1.4.2
+        version: 1.4.2
       tsx:
         specifier: ^4.20.5
         version: 4.20.6
@@ -126,6 +179,70 @@ importers:
       typescript-eslint:
         specifier: ^8.42.0
         version: 8.46.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.2)
+
+  packages/config:
+    devDependencies:
+      '@types/node':
+        specifier: ^24.9.2
+        version: 24.9.2
+
+  packages/const:
+    devDependencies:
+      '@types/bun':
+        specifier: ^1.2.21
+        version: 1.3.1(@types/react@19.2.2)
+      '@types/node':
+        specifier: ^24.3.1
+        version: 24.9.2
+
+  packages/db:
+    dependencies:
+      '@antfu/ni':
+        specifier: ^25.0.0
+        version: 25.0.0
+      '@growserver/config':
+        specifier: workspace:*
+        version: link:../config
+      '@libsql/client':
+        specifier: ^0.15.14
+        version: 0.15.15
+      bcryptjs:
+        specifier: ^3.0.2
+        version: 3.0.2
+      consola:
+        specifier: ^3.4.2
+        version: 3.4.2
+      drizzle-orm:
+        specifier: ^0.44.5
+        version: 0.44.7(@libsql/client@0.15.15)(bun-types@1.3.1(@types/react@19.2.2))
+      drizzle-zod:
+        specifier: ^0.8.3
+        version: 0.8.3(drizzle-orm@0.44.7(@libsql/client@0.15.15)(bun-types@1.3.1(@types/react@19.2.2)))(zod@4.1.12)
+      nanoid:
+        specifier: 5.1.5
+        version: 5.1.5
+      rimraf:
+        specifier: ^6.0.1
+        version: 6.0.1
+      tsx:
+        specifier: ^4.20.5
+        version: 4.20.6
+      zod:
+        specifier: ^4.1.5
+        version: 4.1.12
+    devDependencies:
+      '@types/bun':
+        specifier: ^1.2.21
+        version: 1.3.1(@types/react@19.2.2)
+      '@types/node':
+        specifier: ^24.3.1
+        version: 24.9.2
+      drizzle-kit:
+        specifier: ^0.31.4
+        version: 0.31.6
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
 
 packages:
 
@@ -479,6 +596,12 @@ packages:
     peerDependencies:
       hono: ^4
 
+  '@hono/node-server@1.19.6':
+    resolution: {integrity: sha512-Shz/KjlIeAhfiuE93NDKVdZ7HdBVLQAfdbaXEaoAVO3ic9ibRSLGIQGkcBbFyuLr+7/1D5ZCINM8B+6IvXeMtw==}
+    engines: {node: '>=18.14.1'}
+    peerDependencies:
+      hono: ^4
+
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
     engines: {node: '>=18.18.0'}
@@ -606,6 +729,9 @@ packages:
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
+
+  '@types/node@20.19.24':
+    resolution: {integrity: sha512-FE5u0ezmi6y9OZEzlJfg37mqqf6ZDSF2V/NLjUyGrR9uTZ7Sb9F7bLNZ03S4XVUNRWGA7Ck4c1kK+YnuWjl+DA==}
 
   '@types/node@24.9.2':
     resolution: {integrity: sha512-uWN8YqxXxqFMX2RqGOrumsKeti4LlmIMIyV0lgut4jx7KQBcBiW6vkDtIBvHnHIquwNfJhk8v2OtmO8zXWHfPA==}
@@ -1314,6 +1440,10 @@ packages:
     resolution: {integrity: sha512-2LOYWUbnhdxdL8MNbNg9XZig6k+cZXm5IjHn2Aviv7honhBMOHb+jxrKIeJRZJRmn+htUCKhaicxwXuUDlchRA==}
     engines: {node: '>=16.9.0'}
 
+  hono@4.10.4:
+    resolution: {integrity: sha512-YG/fo7zlU3KwrBL5vDpWKisLYiM+nVstBQqfr7gCPbSYURnNEP9BDxEMz8KfsDR9JX0lJWDRNc6nXX31v7ZEyg==}
+    engines: {node: '>=16.9.0'}
+
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
 
@@ -1668,6 +1798,10 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
+  smol-toml@1.4.2:
+    resolution: {integrity: sha512-rInDH6lCNiEyn3+hH8KVGFdbjc099j47+OSgbMrfDYX1CmXLfdKd7qi6IfcWj2wFxvSVkuI46M+wPGYfEOEj6g==}
+    engines: {node: '>= 18'}
+
   source-map-support@0.5.21:
     resolution: {integrity: sha512-uBHU3L3czsIyYXKX88fdrGovxdSCoTGDRZ6SYXtSRxLZUzHg5P/66Ht6uoUlHu9EZod+inXhKo3qQgwXUT/y1w==}
 
@@ -1797,6 +1931,9 @@ packages:
 
   unbzip2-stream@1.4.3:
     resolution: {integrity: sha512-mlExGW4w71ebDJviH16lQLtZS32VKqsSfk80GCfUlwT/4/hNRFsoscrF/c++9xinkMzECL1uL9DDwXqFWkruPg==}
+
+  undici-types@6.21.0:
+    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
@@ -2078,6 +2215,10 @@ snapshots:
     dependencies:
       hono: 4.10.3
 
+  '@hono/node-server@1.19.6(hono@4.10.4)':
+    dependencies:
+      hono: 4.10.4
+
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.7':
@@ -2210,6 +2351,10 @@ snapshots:
       '@types/node': 24.9.2
 
   '@types/ms@2.1.0': {}
+
+  '@types/node@20.19.24':
+    dependencies:
+      undici-types: 6.21.0
 
   '@types/node@24.9.2':
     dependencies:
@@ -2903,6 +3048,8 @@ snapshots:
 
   hono@4.10.3: {}
 
+  hono@4.10.4: {}
+
   ieee754@1.2.1: {}
 
   ignore@5.3.2: {}
@@ -3205,6 +3352,8 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
+  smol-toml@1.4.2: {}
+
   source-map-support@0.5.21:
     dependencies:
       buffer-from: 1.1.2
@@ -3339,6 +3488,8 @@ snapshots:
     dependencies:
       buffer: 5.7.1
       through: 2.3.8
+
+  undici-types@6.21.0: {}
 
   undici-types@7.16.0: {}
 
