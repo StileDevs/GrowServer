@@ -8,6 +8,9 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { type JsonObject } from "type-fest";
 import { customAlphabet } from "nanoid";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { RTTEX } from "../utils/RTTEX";
 
 export class ITextPacket {
   public obj: Record<string, string | number>;
@@ -73,9 +76,19 @@ export class ITextPacket {
   }
 
   private async sendSuperMain() {
-    // Check if platformID is "2" (macOS) and send appropriate items.dat hash
+    // Check if platformID is "2" (macOS) and calculate appropriate items.dat hash
     const isMacOS = this.obj.platformID === "2";
-    const itemsHash = isMacOS ? this.base.macosItems.hash : this.base.items.hash;
+    let itemsHash: string;
+    
+    if (isMacOS) {
+      // Load and hash macOS items.dat at runtime
+      const datDir = join(process.cwd(), ".cache", "growtopia", "dat");
+      const macosItemsDatName = this.base.cdn.itemsDatName.replace('.dat', '-osx.dat');
+      const macosItemsDat = readFileSync(join(datDir, macosItemsDatName));
+      itemsHash = `${RTTEX.hash(macosItemsDat)}`;
+    } else {
+      itemsHash = this.base.items.hash;
+    }
     
     return this.peer.send(
       Variant.from(

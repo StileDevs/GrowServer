@@ -22,7 +22,6 @@ import {
   CDNContent,
   CustomItemsConfig,
   ItemsData,
-  MacOSItemsData,
   ItemsInfo,
 } from "../types";
 import { Collection } from "../utils/Collection";
@@ -40,7 +39,6 @@ __dirname = process.cwd();
 export class Base {
   public server: Client;
   public items: ItemsData;
-  public macosItems: MacOSItemsData;
   public package: PackageJson;
   public config: typeof import("../../config.json");
   public cdn: CDNContent;
@@ -66,11 +64,6 @@ export class Base {
       hash:     "",
       metadata: {} as ItemsDatMeta,
       wiki:     [],
-    };
-    this.macosItems = {
-      content:  Buffer.alloc(0),
-      hash:     "",
-      metadata: {} as ItemsDatMeta,
     };
     this.cache = {
       peers:    new Collection(),
@@ -118,18 +111,6 @@ export class Base {
         content:  itemsDat,
         metadata: {} as ItemsDatMeta,
         wiki:     [] as ItemsInfo[],
-      };
-
-      // Load macOS items.dat
-      consola.info("Parsing macOS items.dat");
-      const macosItemsDatName = this.cdn.itemsDatName.replace('.dat', '-osx.dat');
-      const macosItemsDatPath = join(datDir, macosItemsDatName);
-      const macosItemsDat = readFileSync(macosItemsDatPath);
-      
-      this.macosItems = {
-        hash:     `${RTTEX.hash(macosItemsDat)}`,
-        content:  macosItemsDat,
-        metadata: {} as ItemsDatMeta,
       };
 
       await Web(this);
