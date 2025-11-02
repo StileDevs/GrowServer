@@ -15,7 +15,6 @@ import { ConnectListener } from "../events/Connect";
 import { DisconnectListener } from "../events/Disconnect";
 import { type PackageJson } from "type-fest";
 import { RawListener } from "../events/Raw";
-import consola from "consola";
 import { readFileSync } from "fs";
 import {
   Cache,
@@ -35,6 +34,8 @@ import ky from "ky";
 import { ITEMS_DAT_FETCH_URL } from "../Constants";
 import { ItemsDat, ItemsDatMeta } from "grow-items";
 import { config as configServer } from "@growserver/config";
+import logger from "@growserver/logger";
+
 __dirname = process.cwd();
 
 export class Base {
@@ -71,14 +72,12 @@ export class Base {
     };
 
     this.database = new Database();
-    consola.level = 4;
   }
 
   public async start() {
     try {
-      consola.box(
-        `GrowServer\nVersion: ${this.package.version
-        }\n© JadlionHD 2022-${new Date().getFullYear()}`
+      logger.info(
+        `GrowServer | Version: ${this.package.version} | Copyright JadlionHD 2022-${new Date().getFullYear()}`
       );
 
       // Check if port is available
@@ -100,7 +99,7 @@ export class Base {
       await downloadItemsDat(this.cdn.itemsDatName);
       await downloadMacOSItemsDat(this.cdn.itemsDatName);
       
-      consola.info(`Parsing ${this.cdn.itemsDatName}`);
+      logger.info(`Parsing ${this.cdn.itemsDatName}`);
       const datDir = join(__dirname, ".cache", "growtopia", "dat");
       const datName = join(datDir, this.cdn.itemsDatName);
       const itemsDat = readFileSync(datName);
@@ -114,7 +113,7 @@ export class Base {
 
       await Web(this);
 
-      consola.log(`🔔Starting ENet server on port ${port}`);
+      logger.info(`Starting ENet server on port ${port}`);
 
       // Add error handling for server start
       await new Promise((resolve, reject) => {
@@ -129,7 +128,7 @@ export class Base {
       await this.loadItems();
       await this.loadEvents();
     } catch (err) {
-      consola.error(`Failed to start server: ${err}`);
+      logger.error(`Failed to start server: ${err}`);
       process.exit(1);
     }
   }
@@ -160,12 +159,12 @@ export class Base {
             const pathArr = path.split("\\");
             const fileName = pathArr[pathArr.length - 1];
 
-            consola.info(`Detected custom-items directory changes | ${fileName}`);
-            consola.info(`Refreshing items data`);
+            logger.info(`Detected custom-items directory changes | ${fileName}`);
+            logger.info(`Refreshing items data`);
             await this.loadItems();
           });
-        consola.info(`Detected custom-items directory changes | ${fileName}`);
-        consola.info(`Refreshing items data`);
+        logger.info(`Detected custom-items directory changes | ${fileName}`);
+        logger.info(`Refreshing items data`);
         await this.loadItems();
       });
   }
@@ -175,9 +174,9 @@ export class Base {
     try {
       const { registerAliases } = await import("../command/cmds/index");
       await registerAliases();
-      consola.success("Command aliases registered successfully");
+      logger.info("Command aliases registered successfully");
     } catch (error) {
-      consola.error("Failed to register command aliases:", error);
+      logger.error("Failed to register command aliases");
     }
   }
 
@@ -188,7 +187,7 @@ export class Base {
       )))
     );
     await itemsDat.decode();
-    consola.start("Loading custom items...");
+    logger.info("Loading custom items...");
 
     // Disable temporarily (TODO: remaking this later)
     // try {
@@ -301,8 +300,8 @@ export class Base {
       await readFile(join(__dirname, "assets", "items_info_new.json"), "utf-8")
     ) as ItemsInfo[];
 
-    consola.info(`Items data hash: ${hash}`);
-    consola.success("Successfully parsing items data");
+    logger.info(`Items data hash: ${hash}`);
+    logger.info("Successfully parsing items data");
   }
 
   public async getLatestCdn() {
@@ -322,13 +321,13 @@ export class Base {
 
       return data;
     } catch (e) {
-      consola.error(`Failed to get latest CDN: ${e}`);
+      logger.error(`Failed to get latest CDN: ${e}`);
       return { version: "", uri: "", itemsDatName: "" };
     }
   }
 
   public async saveAll(disconnectAll = false): Promise<boolean> {
-    consola.info(
+    logger.info(
       `Saving ${this.cache.peers.size} peers & ${this.cache.worlds.size} worlds`
     );
 
@@ -344,17 +343,17 @@ export class Base {
       for (const [, world] of this.cache.worlds) {
         const wrld = new World(this, world.name);
         if (typeof wrld.worldName === "string")
-          await wrld.saveToDatabase().catch((e) => consola.error(e));
+          await wrld.saveToDatabase().catch((e) => logger.error(e));
         else
-          consola.warn(
+          logger.warn(
             `Oh no there's undefined (${savedCount}) world, skipping..`
           );
         savedCount++;
       }
-      consola.success(`Saved ${savedCount} worlds`);
+      logger.info(`Saved ${savedCount} worlds`);
       return true;
     } catch (err) {
-      consola.error(`Failed to save worlds: ${err}`);
+      logger.error(`Failed to save worlds: ${err}`);
       return false;
     }
   }
@@ -370,10 +369,10 @@ export class Base {
         }
         savedCount++;
       }
-      consola.success(`Saved ${savedCount} players`);
+      logger.info(`Saved ${savedCount} players`);
       return true;
     } catch (err) {
-      consola.error(`Failed to save players: ${err}`);
+      logger.error(`Failed to save players: ${err}`);
       return false;
     }
   }
@@ -395,7 +394,7 @@ export class Base {
 
 
   public async shutdown() {
-    consola.info("Shutting down server...");
+    logger.info("Shutting down server...");
     await this.saveAll(true);
     process.exit(0);
   }

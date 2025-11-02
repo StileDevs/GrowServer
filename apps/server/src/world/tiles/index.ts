@@ -6,7 +6,6 @@ import { SignTile } from "./SignTile";
 import { Tile } from "../Tile";
 import type { World } from "../../core/World";
 import type { TileData } from "../../types";
-import consola from "consola";
 import { LockTile } from "./LockTile";
 import type { Base } from "../../core/Base";
 import { HeartMonitorTile } from "./HeartMonitorTile";
@@ -17,6 +16,7 @@ import { DiceTile } from "./DiceTile";
 import { SeedTile } from "./SeedTile";
 import { ExtendBuffer } from "../../utils/ExtendBuffer";
 import { TankPacket } from "growtopia.js";
+import logger from "@growserver/logger";
 
 const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.DOOR]:            DoorTile,
@@ -49,7 +49,7 @@ const tileFrom = (
     return tile;
   }
   catch (e) {
-    consola.warn(e);
+    logger.warn(e);
 
     return new NormalTile(base, world, data);
   }

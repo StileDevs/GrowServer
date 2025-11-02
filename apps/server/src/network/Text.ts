@@ -3,7 +3,6 @@ import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
 import { parseAction, getCurrentTimeInSeconds } from "../utils/Utils";
 import { PacketTypes } from "../Constants";
-import consola from "consola";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { type JsonObject } from "type-fest";
@@ -11,6 +10,7 @@ import { customAlphabet } from "nanoid";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { RTTEX } from "../utils/RTTEX";
+import logger from "@growserver/logger";
 
 export class ITextPacket {
   public obj: Record<string, string | number>;
@@ -26,7 +26,7 @@ export class ITextPacket {
   public async execute() {
     if (this.obj.action) return;
 
-    consola.debug("[DEBUG] Receive text packet:\n", this.obj);
+    logger.debug(`[DEBUG] Receive text packet:\n ${this.obj}`);
 
     await this.checkVersion();
     if (this.obj.ltoken) await this.validateLtoken();
@@ -153,7 +153,7 @@ export class ITextPacket {
         )
       );
     } catch (e) {
-      consola.error(e);
+      logger.error(e);
       return await this.invalidInfoResponse();
     }
   }
@@ -254,7 +254,7 @@ export class ITextPacket {
       this.peer.saveToCache();
       this.peer.saveToDatabase();
     } catch (e) {
-      consola.error(e);
+      logger.error(e);
       return await this.invalidInfoResponse();
     }
   }

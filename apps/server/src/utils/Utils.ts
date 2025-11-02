@@ -1,11 +1,11 @@
 import { createWriteStream, existsSync, mkdirSync, readdirSync, unlinkSync } from "fs";
 import { join } from "path";
-import consola from "consola";
 import { execSync } from "child_process";
 import net from "net";
 import ky from "ky";
 import decompress from "decompress";
 import { ITEMS_DAT_URL } from "../Constants";
+import logger from "@growserver/logger";
 
 __dirname = process.cwd();
 
@@ -48,9 +48,9 @@ async function downloadFile(url: string, filePath: string) {
       fileStream.on("error", reject);
     });
 
-    consola.info(`File downloaded successfully to ${filePath}`);
+    logger.info(`File downloaded successfully to ${filePath}`);
   } catch (error) {
-    consola.error("Error downloading file:", error);
+    logger.error(`Error downloading file: ${error}`);
   }
 }
 
@@ -67,7 +67,7 @@ export async function fetchJSON(url: string) {
     const json = await response.json();
     return json;
   } catch (error) {
-    consola.error("Error fetching JSON:", error);
+    logger.error(`Error fetching JSON: ${error}`);
   }
 }
 
@@ -82,7 +82,7 @@ export async function downloadItemsDat(itemsDatName: string) {
   const currentVersion = itemsDatName.match(/items-v(\d+\.\d+)\.dat/)?.[1];
 
   if (!currentVersion) {
-    consola.error("Invalid items.dat filename format");
+    logger.error("Invalid items.dat filename format");
     return;
   }
 
@@ -96,15 +96,15 @@ export async function downloadItemsDat(itemsDatName: string) {
 
       if (parseFloat(currentVersion) > parseFloat(existingVersion)) {
         unlinkSync(join(datDir, file));
-        consola.info(`Removed older version: ${file}`);
+        logger.info(`Removed older version: ${file}`);
       } else if (currentVersion === existingVersion) {
-        consola.info(`items.dat version ${currentVersion} already exists`);
+        logger.info(`items.dat version ${currentVersion} already exists`);
         return;
       }
     }
   }
 
-  consola.info(`Downloading items.dat version ${currentVersion}`);
+  logger.info(`Downloading items.dat version ${currentVersion}`);
   await downloadFile(`${ITEMS_DAT_URL}/${itemsDatName}`, join(__dirname, ".cache", "growtopia", "dat", itemsDatName));
 }
 
@@ -122,7 +122,7 @@ export async function downloadMacOSItemsDat(itemsDatName: string) {
   const currentVersion = itemsDatName.match(/items-v(\d+\.\d+)\.dat/)?.[1];
 
   if (!currentVersion) {
-    consola.error("Invalid items.dat filename format");
+    logger.error("Invalid items.dat filename format");
     return;
   }
 
@@ -136,15 +136,15 @@ export async function downloadMacOSItemsDat(itemsDatName: string) {
 
       if (parseFloat(currentVersion) > parseFloat(existingVersion)) {
         unlinkSync(join(datDir, file));
-        consola.info(`Removed older macOS version: ${file}`);
+        logger.info(`Removed older macOS version: ${file}`);
       } else if (currentVersion === existingVersion) {
-        consola.info(`macOS items.dat version ${currentVersion} already exists`);
+        logger.info(`macOS items.dat version ${currentVersion} already exists`);
         return;
       }
     }
   }
 
-  consola.info(`Downloading macOS items.dat version ${currentVersion}`);
+  logger.info(`Downloading macOS items.dat version ${currentVersion}`);
   await downloadFile(`${ITEMS_DAT_URL}/${macosItemsDatName}`, macosItemsDatPath);
 }
 
@@ -159,7 +159,7 @@ export async function downloadMkcert() {
     mkdirSync(join(__dirname, ".cache", "bin"), { recursive: true });
   else return;
 
-  consola.info("Downloading mkcert");
+  logger.info("Downloading mkcert");
   await downloadFile(
     mkcertObj[checkPlatform],
     join(__dirname, ".cache", "bin", name)
@@ -179,14 +179,14 @@ export async function setupMkcert() {
     mkdirSync(sslDir, { recursive: true });
   else return;
 
-  consola.info("Setup mkcert certificate");
+  logger.info("Setup mkcert certificate");
   try {
     execSync(
       `${mkcertExecuteable} -install && cd ${join(__dirname, ".cache", "ssl")} && ${mkcertExecuteable} *.growserver.app`,
       { stdio: "inherit" }
     );
   } catch (e) {
-    consola.error("Something wrong when setup mkcert", e);
+    logger.error(`Something wrong when setup mkcert: ${e}`);
   }
 }
 
@@ -195,7 +195,7 @@ export async function downloadWebsite() {
     mkdirSync(join(__dirname, ".cache", "compressed"), { recursive: true });
   else return;
 
-  consola.info("Downloading compiled website assets");
+  logger.info("Downloading compiled website assets");
   await downloadFile(
     WEBSITE_BUILD_URL,
     join(__dirname, ".cache", "compressed", "build.zip")
@@ -207,14 +207,14 @@ export async function setupWebsite() {
     mkdirSync(join(__dirname, ".cache", "website"), { recursive: true });
   else return;
 
-  consola.info("Setup website assets");
+  logger.info("Setup website assets");
   try {
     decompress(
       join(__dirname, ".cache", "compressed", "build.zip"),
       join(__dirname, ".cache")
     );
   } catch (e) {
-    consola.error("Something wrong when setup website", e);
+    logger.error(`Something wrong when setup website: ${e}`);
   }
 }
 

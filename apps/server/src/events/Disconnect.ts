@@ -1,13 +1,13 @@
 import { Base } from "../core/Base";
-import consola from "consola";
 import { World } from "../core/World";
 import { tileFrom, tileUpdateMultiple } from "../world/tiles";
 import { TileFlags } from "../Constants";
 import { HeartMonitorTile } from "../world/tiles/HeartMonitorTile";
+import logger from "@growserver/logger";
 
 export class DisconnectListener {
   constructor(public base: Base) {
-    consola.log('🧷Listening ENet "disconnect" event');
+    logger.info('Listening ENet "disconnect" event');
   }
 
   public run(netID: number): void {
@@ -31,7 +31,7 @@ export class DisconnectListener {
       })
     }
 
-    consola.log(`➖Peer ${netID} disconnected`);
+    logger.info(`➖Peer ${netID} disconnected`);
     this.base.cache.peers.delete(netID);
   }
 }

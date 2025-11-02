@@ -10,7 +10,6 @@ import {
   ROLE,
   TankTypes
 } from "../../Constants";
-import consola from "consola";
 import { Floodfill } from "../../utils/FloodFill";
 import { Tile } from "../../world/Tile";
 import { DialogBuilder } from "../../utils/builders/DialogBuilder";

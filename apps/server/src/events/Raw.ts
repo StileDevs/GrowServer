@@ -1,15 +1,15 @@
 import { PacketTypes } from "../Constants";
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
-import consola from "consola";
 import { IActionPacket } from "../network/Action";
 import { ITextPacket } from "../network/Text";
 import { ITankPacket } from "../network/Tank";
 import { Variant } from "growtopia.js";
+import logger from "@growserver/logger";
 
 export class RawListener {
   constructor(public base: Base) {
-    consola.log('🧷Listening ENet "raw" event');
+    logger.info('Listening ENet "raw" event');
   }
 
   public run(netID: number, _channelID: number, chunk: Buffer): void {
@@ -37,7 +37,7 @@ export class RawListener {
       }
 
       default: {
-        consola.debug(`Unknown PacketType of ${type}`, chunk);
+        logger.debug(`Unknown PacketType of ${type}: ${chunk.toString("hex")}`);
         break;
       }
     }
