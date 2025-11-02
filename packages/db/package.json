@@ -16,7 +16,6 @@
     "@growserver/config": "workspace:*",
     "@libsql/client": "^0.15.14",
     "bcryptjs": "^3.0.2",
-    "consola": "^3.4.2",
     "drizzle-orm": "^0.44.5",
     "drizzle-zod": "^0.8.3",
     "nanoid": "5.1.5",
