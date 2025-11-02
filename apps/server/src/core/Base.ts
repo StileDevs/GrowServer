@@ -34,13 +34,14 @@ import chokidar from "chokidar";
 import ky from "ky";
 import { ITEMS_DAT_FETCH_URL } from "../Constants";
 import { ItemsDat, ItemsDatMeta } from "grow-items";
+import { config as configServer } from "@growserver/config";
 __dirname = process.cwd();
 
 export class Base {
   public server: Client;
   public items: ItemsData;
   public package: PackageJson;
-  public config: typeof import("@growserver/config/config.json");
+  public config;
   public cdn: CDNContent;
   public cache: Cache;
   public database: Database;
@@ -55,10 +56,7 @@ export class Base {
     this.package = JSON.parse(
       readFileSync(join(__dirname, "package.json"), "utf-8")
     );
-    this.config = JSON.parse(
-      readFileSync(join(__dirname, "..", "..", "packages", "config", "config.json"), "utf-8")
-    );
-    console.log({config: this.config})
+    this.config = configServer;
     this.cdn = { version: "", uri: "0000/0000", itemsDatName: "" };
     this.items = {
       content:  Buffer.alloc(0),

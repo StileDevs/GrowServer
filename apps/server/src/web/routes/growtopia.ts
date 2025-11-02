@@ -3,14 +3,14 @@ import { type Base } from "../../core/Base";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { config as configServer } from "@growserver/config";
+
 
 __dirname = process.cwd();
 
 export class GrowtopiaRoute {
   public app = new Hono().basePath("/growtopia");
-  public conf = JSON.parse(
-    readFileSync(join(__dirname, "..", "..", "packages", "config", "config.json"), "utf-8")
-  );
+  public conf = configServer;
 
   constructor(public base: Base) { }
 
