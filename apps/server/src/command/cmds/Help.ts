@@ -4,7 +4,7 @@ import { Peer } from "../../core/Peer";
 import { ROLE } from "../../Constants";
 import { Variant } from "growtopia.js";
 import { CommandMap } from ".";
-import { DialogBuilder } from "../../utils/builders/DialogBuilder";
+import { DialogBuilder } from "@growserver/utils";
 
 export default class Help extends Command {
   constructor(base: Base, peer: Peer, text: string, args: string[]) {

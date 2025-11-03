@@ -1,3 +1,5 @@
+import type { LockPermission } from "@growserver/const";
+
 export interface TileData {
   fg: number;
   bg: number;

@@ -4,9 +4,8 @@ import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
 import type { TileData } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { ExtendBuffer, DialogBuilder } from "@growserver/utils";
 import { Tile } from "../Tile";
-import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { ItemDefinition } from "grow-items";
 
 export class DiceTile extends Tile {

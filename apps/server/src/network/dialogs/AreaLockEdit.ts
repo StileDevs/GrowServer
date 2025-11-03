@@ -3,7 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { ActionTypes, LockPermission, LOCKS, ROLE, TileFlags } from "../../Constants";
 import { TileData } from "../../types";
-import { Floodfill } from "../../utils/FloodFill";
+import { Floodfill } from "@growserver/utils";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
 import { ItemDefinition } from "grow-items";

@@ -14,7 +14,7 @@ import { SwitcheROO } from "./SwitcheROO";
 import { WeatherTile } from "./WeatherTile";
 import { DiceTile } from "./DiceTile";
 import { SeedTile } from "./SeedTile";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { ExtendBuffer } from "@growserver/utils";
 import { TankPacket } from "growtopia.js";
 import logger from "@growserver/logger";
 

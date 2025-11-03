@@ -3,7 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { ROLE } from "../../Constants";
 import { Variant } from "growtopia.js";
-import { DialogBuilder } from "../../utils/builders/DialogBuilder";
+import { DialogBuilder } from "@growserver/utils";
 
 export default class Find extends Command {
   constructor(

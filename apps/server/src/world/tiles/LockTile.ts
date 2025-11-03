@@ -4,10 +4,8 @@ import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
 import type { TileData } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { ExtendBuffer, Floodfill, DialogBuilder } from "@growserver/utils";
 import { Tile } from "../Tile";
-import { Floodfill } from "../../utils/FloodFill";
-import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { ItemDefinition } from "grow-items";
 
 export class LockTile extends Tile {

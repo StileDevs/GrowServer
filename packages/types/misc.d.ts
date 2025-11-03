@@ -1,14 +1,18 @@
-import { PeerData } from "./peer";
-import { WorldData } from "./world";
-import { Collection } from "../utils/Collection";
-import { CooldownOptions } from "./commands";
+import { PeerData } from "./structures/peer";
+import { WorldData } from "./structures/world";
+import { Collection, CooldownOptions } from "./index";
 import { ItemsDatMeta } from "grow-items";
-import { ItemsInfo } from "./item-pages";
+import { ItemsInfo } from "./structures/item-pages";
 
 export interface CDNContent {
   version: string;
   uri: string;
   itemsDatName: string;
+}
+
+export interface StringOptions {
+  id?: number;
+  encoded?: boolean;
 }
 
 export interface ItemsData {

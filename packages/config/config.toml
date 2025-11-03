@@ -24,3 +24,4 @@ cert = "./.cache/ssl/_wildcard.growserver.app.pem"
 
 [server]
 bypassVersionCheck = true
+logLevel = "info"

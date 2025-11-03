@@ -2,7 +2,7 @@ import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
 import type { TileData } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { ExtendBuffer } from "@growserver/utils";
 import { Tile } from "../Tile";
 import { ActionTypes, LockPermission, TileExtraTypes } from "../../Constants";
 import { ItemDefinition } from "grow-items";

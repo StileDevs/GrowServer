@@ -21,7 +21,7 @@ import {
   ROLE,
   TankTypes
 } from "../Constants";
-import { getCurrentTimeInSeconds, manageArray } from "../utils/Utils";
+import { getCurrentTimeInSeconds, manageArray } from "@growserver/utils";
 
 const PUNCH_ITEMS: Array<{ id: number; punchID: number; slot: keyof PeerData["clothing"] }> = [
 

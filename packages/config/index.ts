@@ -30,6 +30,7 @@ export interface WebFrontendConfig {
 
 export interface ServerConfig {
   bypassVersionCheck: boolean;
+  logLevel: string
 }
 
 export interface Config {

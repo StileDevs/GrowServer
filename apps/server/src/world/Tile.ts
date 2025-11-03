@@ -3,7 +3,7 @@ import { Peer } from "../core/Peer";
 import type { World } from "../core/World";
 import { type TileData } from "../types";
 import type { Base } from "../core/Base";
-import { ExtendBuffer } from "../utils/ExtendBuffer";
+import { ExtendBuffer } from "@growserver/utils";
 import { TileMap } from "./tiles";
 import { ActionTypes, BlockFlags, BlockFlags2, LockPermission, ROLE, TankTypes, TileFlags } from "../Constants";
 import { NormalTile } from "./tiles/NormalTile";

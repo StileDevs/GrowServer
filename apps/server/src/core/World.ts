@@ -7,8 +7,6 @@ import { Peer } from "./Peer";
 import { Default } from "../world/generation/Default";
 import { Tile } from "../world/Tile";
 import { tileFrom } from "../world/tiles";
-import { writeFileSync } from "fs";
-import { permission } from "process";
 import { ItemDefinition, ItemsDatMeta } from "grow-items";
 
 export class World {

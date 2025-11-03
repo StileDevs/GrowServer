@@ -1,7 +1,7 @@
 import { TextPacket, Variant } from "growtopia.js";
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
-import { parseAction, getCurrentTimeInSeconds } from "../utils/Utils";
+import { parseAction, getCurrentTimeInSeconds, RTTEX } from "@growserver/utils";
 import { PacketTypes } from "../Constants";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
@@ -9,7 +9,6 @@ import { type JsonObject } from "type-fest";
 import { customAlphabet } from "nanoid";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { RTTEX } from "../utils/RTTEX";
 import logger from "@growserver/logger";
 
 export class ITextPacket {

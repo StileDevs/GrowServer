@@ -3,7 +3,7 @@ import { LockPermission, TankTypes, TileExtraTypes, TileFlags } from "../../Cons
 import type { Base } from "../../core/Base";
 import type { World } from "../../core/World";
 import type { TileData } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { ExtendBuffer } from "@growserver/utils";
 import { Tile } from "../Tile";
 import { Peer } from "../../core/Peer";
 import { ItemDefinition } from "grow-items";
