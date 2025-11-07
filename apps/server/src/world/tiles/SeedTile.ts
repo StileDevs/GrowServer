@@ -1,8 +1,8 @@
 import { TankPacket, Variant } from "growtopia.js";
-import { LockPermission, TankTypes, TileExtraTypes, TileFlags } from "../../Constants";
+import { LockPermission, TankTypes, TileExtraTypes, TileFlags } from "@growserver/const";
 import type { Base } from "../../core/Base";
 import type { World } from "../../core/World";
-import type { TileData } from "../../types";
+import type { TileData } from "@growserver/types";
 import { ExtendBuffer } from "@growserver/utils";
 import { Tile } from "../Tile";
 import { Peer } from "../../core/Peer";

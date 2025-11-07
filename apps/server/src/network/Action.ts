@@ -1,6 +1,6 @@
 import { Peer } from "../core/Peer";
 import { Base } from "../core/Base";
-import { parseAction } from "../utils/Utils";
+import { parseAction } from "@growserver/utils";
 import { ActionMap } from "./actions/index";
 import logger from "@growserver/logger";
 

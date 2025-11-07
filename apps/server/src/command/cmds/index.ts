@@ -1,7 +1,7 @@
 import { readdirSync } from "fs";
 import { join, relative } from "path";
 import type { Class } from "type-fest";
-import type { CommandOptions } from "../../types/commands";
+import type { CommandOptions } from "@growserver/types";
 import logger from "@growserver/logger";
 
 export const CommandMap: Record<

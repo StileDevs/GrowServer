@@ -1,9 +1,9 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { ActionTypes, LockPermission, LOCKS, ROLE, TileFlags } from "../../Constants";
-import { TileData } from "../../types";
-import { Floodfill } from "@growserver/utils";
+import { ActionTypes, LockPermission, LOCKS, ROLE, TileFlags } from "@growserver/const";
+import { TileData } from "@growserver/types";
+import { Floodfill } from "../../world/FloodFill";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
 import { ItemDefinition } from "grow-items";
@@ -54,6 +54,7 @@ export class AreaLockEdit {
     else this.block.flags &= ~TileFlags.PUBLIC;
 
     this.block.lock.ignoreEmptyAir = ignoreEmpty;
+    // @ts-expect-error TODO: maybe wrong type here?
     this.block.lock.permission = allowBuildOnly ? LockPermission.BUILD : mLock?.defaultPermission;
     this.block.lock.adminLimited = adminLimitedAccess;
 

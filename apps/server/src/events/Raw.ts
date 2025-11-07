@@ -1,4 +1,4 @@
-import { PacketTypes } from "../Constants";
+import { PacketTypes } from "@growserver/const";
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
 import { IActionPacket } from "../network/Action";

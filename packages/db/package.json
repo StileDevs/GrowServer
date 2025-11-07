@@ -14,6 +14,8 @@
   "dependencies": {
     "@antfu/ni": "^25.0.0",
     "@growserver/config": "workspace:*",
+    "@growserver/const": "workspace:*",
+    "@growserver/types": "workspace:*",
     "@libsql/client": "^0.15.14",
     "bcryptjs": "^3.0.2",
     "drizzle-orm": "^0.44.5",

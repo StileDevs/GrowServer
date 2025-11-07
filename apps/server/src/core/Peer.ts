@@ -1,4 +1,4 @@
-import { TileData, PeerData } from "../types";
+import type { TileData, PeerData } from "@growserver/types";
 import {
   Peer as OldPeer,
   TankPacket,
@@ -20,7 +20,7 @@ import {
   PacketTypes,
   ROLE,
   TankTypes
-} from "../Constants";
+} from "@growserver/const";
 import { getCurrentTimeInSeconds, manageArray } from "@growserver/utils";
 
 const PUNCH_ITEMS: Array<{ id: number; punchID: number; slot: keyof PeerData["clothing"] }> = [

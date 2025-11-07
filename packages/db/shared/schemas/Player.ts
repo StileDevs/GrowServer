@@ -1,7 +1,6 @@
 import { InferSelectModel, sql } from "drizzle-orm";
 import { text, integer, sqliteTable, blob } from "drizzle-orm/sqlite-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import { buffer } from "stream/consumers";
 
 export const players = sqliteTable("players", {
   id:                  integer("id").primaryKey({ autoIncrement: true }),

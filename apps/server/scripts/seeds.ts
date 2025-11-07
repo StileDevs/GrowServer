@@ -1,7 +1,7 @@
 "use strict";
 
 
-import { players } from "../src/database/schemas/Player";
+import { players } from "@growserver/db";
 // import { worlds } from "../src/database/schemas/World";
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";

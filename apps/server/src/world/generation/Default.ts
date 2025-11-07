@@ -1,5 +1,5 @@
-import { TileFlags, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../../Constants";
-import { TileData, WorldData } from "../../types";
+import { TileFlags, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "@growserver/const";
+import { TileData, WorldData } from "@growserver/types";
 import { WorldGen } from "../WorldGen";
 
 export class Default extends WorldGen {

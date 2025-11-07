@@ -3,7 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { DialogBuilder, getCurrentTimeInSeconds } from "@growserver/utils";
 import { Variant } from "growtopia.js";
-import { ActionTypes } from "../../Constants";
+import { ActionTypes } from "@growserver/const";
 
 type TabConfig = {
   id: string;

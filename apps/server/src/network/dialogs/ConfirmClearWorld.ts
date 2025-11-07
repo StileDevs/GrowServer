@@ -1,7 +1,7 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { ActionTypes, LOCKS, ROLE } from "../../Constants";
+import { ActionTypes, LOCKS, ROLE } from "@growserver/const";
 import { World } from "../../core/World";
 
 export class ConfirmClearWorld {

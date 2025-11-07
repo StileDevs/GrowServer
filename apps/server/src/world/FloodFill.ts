@@ -1,4 +1,4 @@
-import type { TankPacket, Variant } from "growtopia.js";
+import { TankPacket } from "growtopia.js";
 import { type TileData } from "@growserver/types";
 import { Base } from "../core/Base";
 import { BlockFlags2, LockPermission, LOCKS, TankTypes, TileIgnore } from "@growserver/const";

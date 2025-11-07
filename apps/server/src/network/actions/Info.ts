@@ -3,7 +3,7 @@ import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { DialogBuilder } from "@growserver/utils";
 import { Variant } from "growtopia.js";
-import { ItemsInfo } from "../../types/item-pages";
+import { ItemsInfo } from "@growserver/types";
 
 export class Info {
   private readonly items = new Map<number, ItemsInfo>();

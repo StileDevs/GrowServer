@@ -1,7 +1,7 @@
 import { Peer } from "../core/Peer";
 import { Base } from "../core/Base";
 import { TankPacket } from "growtopia.js";
-import { TankTypes } from "../Constants";
+import { TankTypes } from "@growserver/const";
 import { World } from "../core/World";
 import { TankMap } from "./tanks/index";
 import logger from "@growserver/logger";

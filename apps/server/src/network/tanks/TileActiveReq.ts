@@ -2,8 +2,8 @@ import { TankPacket, TextPacket, Variant } from "growtopia.js";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { World } from "../../core/World";
-import { TileData } from "../../types";
-import { PacketTypes } from "../../Constants";
+import { TileData } from "@growserver/types";
+import { PacketTypes } from "@growserver/const";
 
 export class TileActiveReq {
   private pos: number;

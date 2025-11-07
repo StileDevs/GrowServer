@@ -1,10 +1,11 @@
 import { Variant } from "growtopia.js";
-import { ActionTypes, BlockFlags, LockPermission, LOCKS, ROLE, TileExtraTypes, TileFlags } from "../../Constants";
+import { ActionTypes, BlockFlags, LockPermission, LOCKS, ROLE, TileExtraTypes, TileFlags } from "@growserver/const";
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
-import type { TileData } from "../../types";
-import { ExtendBuffer, Floodfill, DialogBuilder } from "@growserver/utils";
+import type { TileData } from "@growserver/types";
+import { Floodfill } from "../FloodFill";
+import { ExtendBuffer, DialogBuilder } from "@growserver/utils";
 import { Tile } from "../Tile";
 import { ItemDefinition } from "grow-items";
 
@@ -170,7 +171,7 @@ export class LockTile extends Tile {
           .addCheckbox(
             "build_only",
             "Only Allow Building!",
-            (this.data.lock?.permission & LockPermission.BUILD) ? "selected" : "not_selected"
+            (this.data.lock && (this.data.lock.permission & LockPermission.BUILD)) ? "selected" : "not_selected"
           )
           .addSmallText(
             "People with lock access can both build and break unless you check below. The lock owner can always build and break."

@@ -5,7 +5,7 @@ import { DialogBuilder } from "@growserver/utils";
 import { type NonEmptyObject } from "type-fest";
 import { World } from "../../core/World";
 import { tileFrom, tileUpdateMultiple } from "../../world/tiles";
-import { TileFlags } from "../../Constants";
+import { TileFlags } from "@growserver/const";
 import { HeartMonitorTile } from "../../world/tiles/HeartMonitorTile";
 
 export class EnterGame {

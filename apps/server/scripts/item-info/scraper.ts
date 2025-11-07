@@ -1,5 +1,5 @@
 import { ItemDefinition } from "grow-items";
-import type { ItemsPage } from "../../src/types"
+import type { ItemsPage } from "@growserver/types"
 import logger from "@growserver/logger";
 
 

@@ -1,11 +1,11 @@
 import { TankPacket, Variant } from "growtopia.js";
 import { Peer } from "../core/Peer";
 import type { World } from "../core/World";
-import { type TileData } from "../types";
+import { type TileData } from "@growserver/types";
 import type { Base } from "../core/Base";
 import { ExtendBuffer } from "@growserver/utils";
 import { TileMap } from "./tiles";
-import { ActionTypes, BlockFlags, BlockFlags2, LockPermission, ROLE, TankTypes, TileFlags } from "../Constants";
+import { ActionTypes, BlockFlags, BlockFlags2, LockPermission, ROLE, TankTypes, TileFlags } from "@growserver/const";
 import { NormalTile } from "./tiles/NormalTile";
 import { ItemDefinition } from "grow-items";
 

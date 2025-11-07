@@ -1,7 +1,7 @@
 import { PeerData, TankPacket, TextPacket, Variant } from "growtopia.js";
-import { TileData, WorldData } from "../types";
+import { TileData, WorldData } from "@growserver/types";
 import { Base } from "./Base";
-import { ActionTypes, LockPermission, PacketTypes, ROLE, TankTypes, TileCollisionTypes, TileFlags } from "../Constants";
+import { ActionTypes, LockPermission, PacketTypes, ROLE, TankTypes, TileCollisionTypes, TileFlags } from "@growserver/const";
 import { Peer } from "./Peer";
 // import { tileParse } from "../world/tiles";
 import { Default } from "../world/generation/Default";

@@ -1,9 +1,9 @@
 import { type LibSQLDatabase } from "drizzle-orm/libsql";
 import { eq, sql } from "drizzle-orm";
-import { players } from "../schemas/Player";
+import { players } from "../shared/schemas/Player";
 import bcrypt from "bcryptjs";
-import { ROLE } from "../../Constants";
-import { PeerData } from "../../types/peer";
+import { ROLE } from "@growserver/const";
+import { PeerData } from "@growserver/types";
 
 export class PlayerDB {
   constructor(private db: LibSQLDatabase<Record<string, never>>) { }

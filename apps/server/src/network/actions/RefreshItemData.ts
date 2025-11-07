@@ -1,5 +1,5 @@
 import { Variant, TankPacket } from "growtopia.js";
-import { TankTypes } from "../../Constants";
+import { TankTypes } from "@growserver/const";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { NonEmptyObject } from "type-fest";

@@ -1,11 +1,11 @@
 import type { Class } from "type-fest";
-import { ActionTypes, TankTypes } from "../../Constants";
+import { ActionTypes, TankTypes } from "@growserver/const";
 import { DoorTile } from "./DoorTile";
 import { NormalTile } from "./NormalTile";
 import { SignTile } from "./SignTile";
 import { Tile } from "../Tile";
 import type { World } from "../../core/World";
-import type { TileData } from "../../types";
+import type { TileData } from "@growserver/types";
 import { LockTile } from "./LockTile";
 import type { Base } from "../../core/Base";
 import { HeartMonitorTile } from "./HeartMonitorTile";

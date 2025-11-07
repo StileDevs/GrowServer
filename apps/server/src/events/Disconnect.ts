@@ -1,7 +1,7 @@
 import { Base } from "../core/Base";
 import { World } from "../core/World";
 import { tileFrom, tileUpdateMultiple } from "../world/tiles";
-import { TileFlags } from "../Constants";
+import { TileFlags } from "@growserver/const";
 import { HeartMonitorTile } from "../world/tiles/HeartMonitorTile";
 import logger from "@growserver/logger";
 

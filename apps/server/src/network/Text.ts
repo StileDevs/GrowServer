@@ -2,7 +2,7 @@ import { TextPacket, Variant } from "growtopia.js";
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
 import { parseAction, getCurrentTimeInSeconds, RTTEX } from "@growserver/utils";
-import { PacketTypes } from "../Constants";
+import { PacketTypes } from "@growserver/const";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { type JsonObject } from "type-fest";
