@@ -8,6 +8,9 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { type JsonObject } from "type-fest";
 import { customAlphabet } from "nanoid";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { RTTEX } from "../utils/RTTEX";
 
 export class ITextPacket {
   public obj: Record<string, string | number>;
@@ -73,10 +76,24 @@ export class ITextPacket {
   }
 
   private async sendSuperMain() {
+    // Check if platformID is "2" (macOS) and calculate appropriate items.dat hash
+    const isMacOS = this.obj.platformID === "2";
+    let itemsHash: string;
+    
+    if (isMacOS) {
+      // Load and hash macOS items.dat at runtime
+      const datDir = join(process.cwd(), ".cache", "growtopia", "dat");
+      const macosItemsDatName = this.base.cdn.itemsDatName.replace('.dat', '-osx.dat');
+      const macosItemsDat = readFileSync(join(datDir, macosItemsDatName));
+      itemsHash = `${RTTEX.hash(macosItemsDat)}`;
+    } else {
+      itemsHash = this.base.items.hash;
+    }
+    
     return this.peer.send(
       Variant.from(
         "OnSuperMainStartAcceptLogonHrdxs47254722215a",
-        parseInt(this.base.items.hash),
+        parseInt(itemsHash),
         this.base.config.web.cdnUrl, // https://github.com/StileDevs/growserver-cache
         "growtopia/",
         "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
@@ -204,6 +221,7 @@ export class ITextPacket {
       this.peer.data.displayName = player.display_name;
       this.peer.data.rotatedLeft = false;
       this.peer.data.country = this.obj.country as string;
+      this.peer.data.platformID = this.obj.platformID as string;
       this.peer.data.userID = player.id;
       this.peer.data.role = player.role;
       this.peer.data.inventory = player.inventory?.length

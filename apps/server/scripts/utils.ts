@@ -3,6 +3,8 @@ import { join } from "path";
 import ky from "ky";
 import consola from "consola";
 import { execSync } from "child_process";
+import { chmodSync } from "fs";
+
 
 
 __dirname = process.cwd();
@@ -85,6 +87,7 @@ export async function downloadMkcert() {
     mkcertObj[checkPlatform],
     join(__dirname, ".cache", "bin", name)
   );
+  chmodSync(join(__dirname, ".cache", "bin", name), 0o755);
 }
 
 export async function setupMkcert() {
