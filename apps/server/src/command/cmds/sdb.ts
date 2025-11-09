@@ -32,7 +32,7 @@ export default class Sdb extends Command {
       );
 
     const message = this.args.join(" ");
-    const senderName = this.peer.name;
+    const senderName = this.peer.data.displayName;
     const world = this.peer.currentWorld();
     const jammed = world?.data.jammers?.find(
       (v) => v.type === "signal"

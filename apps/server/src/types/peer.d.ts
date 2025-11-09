@@ -5,8 +5,8 @@ export interface PeerData {
   world: string;
   inventory: Inventory;
   rotatedLeft: boolean;
-  requestedName: string;
-  tankIDName: string;
+  name: string;
+  displayName: string;
   netID: number;
   country: string;
   userID: number;

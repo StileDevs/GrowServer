@@ -6,6 +6,7 @@ import { players } from "../src/database/schemas/Player";
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import bcrypt from "bcryptjs";
+import {formatToDisplayName} from "../src/utils/Utils"
 
 /**
  * @param {string} password
@@ -27,7 +28,7 @@ async function hash(password) {
   await db.insert(players).values([
     {
       name: "admin",
-      display_name: "admin",
+      display_name: formatToDisplayName("aDMIn", "1"),
       password: await hash("admin"),
       role: "1",
       gems: 1000,
@@ -38,8 +39,8 @@ async function hash(password) {
       heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
     },
     {
-      name: "reimu",
-      display_name: "Reimu",
+      name: "Reimu",
+      display_name: formatToDisplayName("Reimu", "2"),
       password: await hash("hakurei"),
       role: "2",
       gems: 1000,
@@ -50,8 +51,8 @@ async function hash(password) {
       heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
     },
     {
-      name: "jadlionhd",
-      display_name: "JadlionHD",
+      name: "JadlionHD",
+      display_name: formatToDisplayName("JadlionHD", "1"),
       password: await hash("admin"),
       role: "1",
       gems: 1000,
