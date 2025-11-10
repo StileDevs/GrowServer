@@ -68,12 +68,12 @@ export class World {
             ),
             Variant.from(
               "OnConsoleMessage",
-              `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+              `\`5<${peer.data.displayName}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
             ),
             Variant.from(
               "OnTalkBubble",
               peer.data.netID,
-              `\`5<${peer.name}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
+              `\`5<${peer.data.displayName}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
               0,
               1
             ),
@@ -284,7 +284,7 @@ ${peer.data.lastVisitedWorlds
       Variant.from(
         { delay: -1 },
         "OnSpawn",
-        `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`
+        `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.data.displayName}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`
       ),
 
       Variant.from(
@@ -331,7 +331,7 @@ ${peer.data.lastVisitedWorlds
             Variant.from(
               { delay: -1 },
               "OnSpawn",
-              `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.name}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+              `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.data.displayName}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
             ),
             Variant.from(
               {
@@ -358,12 +358,12 @@ ${peer.data.lastVisitedWorlds
             ),
             Variant.from(
               "OnConsoleMessage",
-              `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+              `\`5<${peer.data.displayName}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
             ),
             Variant.from(
               "OnTalkBubble",
               peer.data.netID,
-              `\`5<${peer.name}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
+              `\`5<${peer.data.displayName}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
               0,
               1
             ),
@@ -379,7 +379,7 @@ ${peer.data.lastVisitedWorlds
             Variant.from(
               { delay: -1 },
               "OnSpawn",
-              `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.userID}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.name}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+              `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.userID}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.data.displayName}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
             ),
             Variant.from(
               {

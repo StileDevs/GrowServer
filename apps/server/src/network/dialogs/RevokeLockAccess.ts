@@ -41,7 +41,7 @@ export class RevokeLockAccess {
 
         this.block.lock.adminIDs.splice(index, 1);
 
-        this.world.every((p) => p.sendConsoleMessage(`${this.peer.name} removed their access from a ${this.itemMeta?.name}`))
+        this.world.every((p) => p.sendConsoleMessage(`${this.peer.data.displayName} removed their access from a ${this.itemMeta?.name}`))
 
         const tile = tileFrom(this.base, this.world, this.block);
         this.world.every((p) => tile.tileUpdate(p));

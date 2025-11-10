@@ -141,7 +141,7 @@ export class ITextPacket {
       const ports = conf.ports as number[];
       const randPort = ports[Math.floor(Math.random() * ports.length)];
       this.peer.send(
-        Variant.from("SetHasGrowID", 1, player.display_name, password),
+        Variant.from("SetHasGrowID", 1, player.name, password),
         Variant.from(
           "OnSendToServer",
           randPort,
@@ -149,7 +149,7 @@ export class ITextPacket {
           player.id,
           `${conf.address}|0|${customAlphabet("0123456789ABCDEF", 32)()}`,
           1,
-          player.display_name
+          player.name
         )
       );
     } catch (e) {
@@ -187,7 +187,7 @@ export class ITextPacket {
 
       this.sendSuperMain();
       this.peer.send(
-        Variant.from("SetHasGrowID", 1, player.display_name, password)
+        Variant.from("SetHasGrowID", 1, player.name, password)
       );
 
       const defaultInventory = {
@@ -217,7 +217,8 @@ export class ITextPacket {
         ances:    0
       };
 
-      this.peer.data.tankIDName = player.display_name;
+      this.peer.data.name = player.name;
+      this.peer.data.displayName = player.display_name;
       this.peer.data.rotatedLeft = false;
       this.peer.data.country = this.obj.country as string;
       this.peer.data.platformID = this.obj.platformID as string;
