@@ -112,8 +112,8 @@ export class ItemActiveReq {
           break;
         }
       }
-      this.peer.saveToCache();
-      this.peer.saveToDatabase();
+      await this.peer.saveToCache();
+      await this.peer.saveToDatabase();
       this.peer.inventory();
       return;
     }
@@ -121,8 +121,8 @@ export class ItemActiveReq {
     this.peer.equipClothes(item?.id as number);
     // this.peer.checkModsEffect(true, this.tank);
 
-    this.peer.saveToCache();
-    this.peer.saveToDatabase();
+    await this.peer.saveToCache();
+    await this.peer.saveToDatabase();
     this.peer.sendClothes();
   }
 }

@@ -28,7 +28,8 @@ export default class ChangeGrowID extends Command {
 
   public async execute(): Promise<void> {
     if (this.args.length) {
-      if (await this.base.database.players.get(this.args[0])) {
+      const isInCache = this.base.cache.peers.find((p) => p.name == this.args[0]);
+      if (isInCache || await this.base.database.players.get(this.args[0])) {
         this.peer.send(Variant.from("OnConsoleMessage", "`oThat GrowID has already been `4TAKEN``. Please try another one."));
         return;
       }

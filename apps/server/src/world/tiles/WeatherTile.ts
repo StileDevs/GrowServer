@@ -44,10 +44,6 @@ export class WeatherTile extends Tile {
       p.send(Variant.from("OnSetCurrentWeather", this.world.data.weather.id));
     });
 
-    // Persist
-    await this.world.saveToCache();
-    await this.world.saveToDatabase();
-
     // Also apply normal damage/break flow so the machine can be broken
     return await super.onPunch(peer);
   }
@@ -66,8 +62,6 @@ export class WeatherTile extends Tile {
       this.world.every((p) => {
         p.send(Variant.from("OnSetCurrentWeather", 41));
       });
-      await this.world.saveToCache();
-      await this.world.saveToDatabase();
     }
   }
 }
