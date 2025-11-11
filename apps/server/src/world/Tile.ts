@@ -68,6 +68,14 @@ export class Tile {
       return false;
     }
 
+    const currTileItemMeta = this.base.items.metadata.items.get(this.data.fg.toString());
+
+    if (currTileItemMeta!.id && currTileItemMeta!.flags! & BlockFlags.MOD && peer.data.role != ROLE.DEVELOPER) {
+      peer.sendTextBubble("Can't put anything behind that!", true, peer.data.netID);
+      peer.sendOnPlayPositioned("audio/cant_place_tile.wav", { netID: peer.data?.netID });
+      return false;
+    }
+
     this.data.bg = itemMeta.id!;
     if (!this.data.fg) this.data.damage = 0;
 
@@ -120,12 +128,13 @@ export class Tile {
         return false;
       }
 
-      if ((itemMeta.flags! & BlockFlags.PERMANENT) && !peer.canAddItemToInv(itemMeta.id!)) {
+      if ((itemMeta.flags! & BlockFlags.AUTO_PICKUP) && !peer.canAddItemToInv(itemMeta.id!)) {
         peer.sendTextBubble("I better not break that, I have no room to pick it up.", true);
         return false;
       }
       else if ((itemMeta.flags! & BlockFlags.MOD)) {
         peer.sendTextBubble("It's too strong to break.", true);
+        peer.sendOnPlayPositioned("audio/cant_place_tile.wav", { netID: peer.data?.netID });
         return false;
       }
     }

@@ -387,7 +387,7 @@ export enum BlockFlags {
   WORLD_LOCKED = 1 << 7, // This item can only be used in World-Locked worlds.
   BETA = 1 << 8, // This item is a beta item.
   AUTO_PICKUP = 1 << 9, // This item can't be destroyed - smashing it will return it to your backpack if you have room!
-  MOD = 1 << 10, // This item is a mod item.
+  MOD = 1 << 10, // This item is a mod item. Apparently, it was only used on unbreakable blocks and any illegal item that cant be obtained by players.
   RANDOM_GROW = 1 << 11, // A tree of this type can bear surprising fruit!
   PUBLIC = 1 << 12, // This item is PUBLIC: Even if it's locked, anyone can smash it.
   FOREGROUND = 1 << 13, // This item is a foreground item.
