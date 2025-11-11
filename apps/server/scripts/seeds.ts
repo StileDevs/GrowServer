@@ -62,5 +62,6 @@ async function hash(password) {
       created_at: dateNow,
       heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
     }
-  ]);
+  ])
+    .onConflictDoNothing(); // dont confuse the normal user with error lol
 })();
