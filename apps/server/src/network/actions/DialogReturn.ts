@@ -2,7 +2,7 @@ import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import { DialogMap } from "../dialogs/index";
-import consola from "consola";
+import logger from "@growserver/logger";
 
 export class DialogReturn {
   constructor(
@@ -24,7 +24,7 @@ export class DialogReturn {
       const dialog = new Class(this.base, this.peer, action);
       await dialog.execute();
     } catch (e) {
-      consola.warn(e);
+      logger.warn(e);
     }
   }
 }

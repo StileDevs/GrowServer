@@ -1,17 +1,17 @@
 "use strict";
 
 
-import { players } from "../src/database/schemas/Player";
+import { players } from "@growserver/db";
 // import { worlds } from "../src/database/schemas/World";
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import bcrypt from "bcryptjs";
-import {formatToDisplayName} from "../src/utils/Utils"
+import { formatToDisplayName } from "@growserver/utils"
 
 /**
  * @param {string} password
  */
-async function hash(password) {
+async function hash(password: string) {
   const salt = await bcrypt.genSalt(10);
 
   return await bcrypt.hash(password, salt);

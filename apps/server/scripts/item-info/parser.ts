@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { TemplateParser } from "./template";
-import type { ItemsInfo, ItemsPage } from "../../src/types"
+import type { ItemsInfo, ItemsPage } from "@growserver/types"
 import { ItemDefinition } from "grow-items";
 import { parse } from "mwparser";
 

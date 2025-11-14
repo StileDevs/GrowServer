@@ -1,9 +1,9 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import consola from "consola";
 import { CommandMap, CommandsAliasMap } from "../../command/cmds/index";
 import { Variant } from "growtopia.js";
+import logger from "@growserver/logger";
 
 export class Input {
   constructor(
@@ -56,7 +56,7 @@ export class Input {
             const aliasLower = alias.toLowerCase();
             if (aliasLower !== originalCmd && !CommandsAliasMap[aliasLower]) {
               CommandsAliasMap[aliasLower] = originalCmd;
-              consola.debug(
+              logger.debug(
                 `Late-registered alias: ${aliasLower} → ${originalCmd}`
               );
             }
@@ -148,7 +148,7 @@ export class Input {
         })
       }
     } catch (e) {
-      consola.warn(e);
+      logger.warn(e);
       this.peer.send(
         Variant.from(
           "OnConsoleMessage",

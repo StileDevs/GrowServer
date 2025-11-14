@@ -1,10 +1,10 @@
-import consola from "consola";
 import { Peer } from "../core/Peer";
 import { Base } from "../core/Base";
 import { TankPacket } from "growtopia.js";
-import { TankTypes } from "../Constants";
+import { TankTypes } from "@growserver/const";
 import { World } from "../core/World";
 import { TankMap } from "./tanks/index";
+import logger from "@growserver/logger";
 
 export class ITankPacket {
   public tank;
@@ -21,10 +21,8 @@ export class ITankPacket {
     const tankType = this.tank.data?.type as number;
     const world = new World(this.base, this.peer.data.world);
 
-    consola.debug(
-      `[DEBUG] Receive tank packet of ${TankTypes[tankType]}:\n`,
-      this.tank
-    );
+    logger.debug(
+      `[DEBUG] Receive tank packet of ${TankTypes[tankType]}: ${this.tank.parse()?.toString("hex")}`);
 
     try {
       const type = this.tank.data?.type as number;
@@ -38,7 +36,7 @@ export class ITankPacket {
       const tnk = new Class(this.base, this.peer, this.tank, world);
       await tnk.execute();
     } catch (e) {
-      consola.warn(e);
+      logger.warn(e);
     }
   }
 }

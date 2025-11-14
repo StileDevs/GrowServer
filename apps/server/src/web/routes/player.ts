@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { readFileSync } from "fs";
 import { join } from "path";
-import consola from "consola";
+import logger from "@growserver/logger";
 
 __dirname = process.cwd();
 export class PlayerRoute {
@@ -84,7 +84,7 @@ export class PlayerRoute {
           })
         );
       } catch (e) {
-        consola.error("Error checking token:", e);
+        logger.error(`Error checking token: ${e}`);
         return ctx.body("Unauthorized", 401);
       }
     });
@@ -130,7 +130,7 @@ export class PlayerRoute {
           })
         );
       } catch (e) {
-        consola.error("Error signing up:", e);
+        logger.error(`Error signing up: ${e}`);
         return ctx.body("Unauthorized", 401);
       }
     });

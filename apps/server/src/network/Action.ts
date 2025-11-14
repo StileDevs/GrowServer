@@ -1,8 +1,8 @@
-import consola from "consola";
 import { Peer } from "../core/Peer";
 import { Base } from "../core/Base";
-import { parseAction } from "../utils/Utils";
+import { parseAction } from "@growserver/utils";
 import { ActionMap } from "./actions/index";
+import logger from "@growserver/logger";
 
 export class IActionPacket {
   public obj: Record<string, string>;
@@ -17,7 +17,7 @@ export class IActionPacket {
 
   public async execute() {
     if (!this.obj.action) return;
-    consola.debug("[DEBUG] Receive action packet:\n", this.obj);
+    logger.debug(`Receive action packet:\n ${this.obj}`);
 
     const actionType = this.obj.action;
 
@@ -30,7 +30,7 @@ export class IActionPacket {
       const action = new Class(this.base, this.peer);
       await action.execute(this.obj);
     } catch (e) {
-      consola.warn(e);
+      logger.warn(e);
     }
   }
 }

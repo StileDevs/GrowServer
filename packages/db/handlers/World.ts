@@ -1,7 +1,7 @@
 import { type LibSQLDatabase } from "drizzle-orm/libsql";
 import { eq, sql } from "drizzle-orm";
-import { worlds } from "../schemas/World";
-import { WorldData } from "../../types/world";
+import { worlds } from "../shared/schemas/World";
+import { WorldData } from "@growserver/types";
 
 export class WorldDB {
   constructor(private db: LibSQLDatabase<Record<string, never>>) { }

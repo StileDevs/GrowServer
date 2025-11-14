@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "outDir": "dist",
+    "lib": ["ES2015", "ES2016", "ES2017", "ES2018", "ES2019", "ES2020", "ES2021", "ES2022"],
+    "module": "CommonJS",
+    "target": "ES2022",
+    "noFallthroughCasesInSwitch": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "checkJs": true,
+    "strictPropertyInitialization": true,
+    "strictBindCallApply": true,
+    "declaration": true,
+    "noEmitOnError": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "types": ["@types/bun"],
+    "rootDir": "."
+  },
+  "exclude": ["node_modules", "./node_modules", "./node_modules/**/*"],
+}

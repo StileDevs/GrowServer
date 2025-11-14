@@ -1,12 +1,11 @@
 import { TankPacket, Variant } from "growtopia.js";
-import { BlockFlags, LockPermission, TankTypes, TileExtraTypes, TileFlags } from "../../Constants";
+import { BlockFlags, LockPermission, TankTypes, TileExtraTypes, TileFlags } from "@growserver/const";
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
-import type { TileData } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import type { TileData } from "@growserver/types";
+import { ExtendBuffer, DialogBuilder } from "@growserver/utils";
 import { Tile } from "../Tile";
-import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 import { ItemDefinition } from "grow-items";
 
 export class DiceTile extends Tile {

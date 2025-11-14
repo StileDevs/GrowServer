@@ -1,9 +1,9 @@
 import { createWriteStream, existsSync, mkdirSync, readdirSync, unlinkSync } from "fs";
 import { join } from "path";
 import ky from "ky";
-import consola from "consola";
 import { execSync } from "child_process";
 import { chmodSync } from "fs";
+import logger from "@growserver/logger";
 
 
 
@@ -46,9 +46,9 @@ async function downloadFile(url: string, filePath: string) {
       fileStream.on("error", reject);
     });
 
-    consola.info(`File downloaded successfully to ${filePath}`);
+    logger.info(`File downloaded successfully to ${filePath}`);
   } catch (error) {
-    consola.error("Error downloading file:", error);
+    logger.error(`Error downloading file: ${error}`);
   }
 }
 
@@ -65,7 +65,7 @@ export async function fetchJSON(url: string) {
     const json = await response.json();
     return json;
   } catch (error) {
-    consola.error("Error fetching JSON:", error);
+    logger.error(`Error fetching JSON: ${error}`);
   }
 }
 
@@ -81,7 +81,7 @@ export async function downloadMkcert() {
     mkdirSync(join(__dirname, ".cache", "bin"), { recursive: true });
   else return;
 
-  consola.info("Downloading mkcert");
+  logger.info("Downloading mkcert");
 
   await downloadFile(
     mkcertObj[checkPlatform],
@@ -101,16 +101,16 @@ export async function setupMkcert() {
 
   if (!existsSync(sslDir))
     mkdirSync(sslDir, { recursive: true });
-  else return consola.ready("certificates already installed");
+  else return logger.info("certificates already installed");
 
-  consola.info("Setup mkcert certificate");
+  logger.info("Setup mkcert certificate");
   try {
     execSync(
       `${mkcertExecuteable} -install && cd ${join(__dirname, ".cache", "ssl")} && ${mkcertExecuteable} *.growserver.app`,
       { stdio: "inherit" }
     );
   } catch (e) {
-    consola.error("Something wrong when setup mkcert", e);
+    logger.error(`Something wrong when setup mkcert: ${e}`);
   }
 }
 
@@ -125,7 +125,7 @@ export async function downloadItemsDat(itemsDatName: string) {
   const currentVersion = itemsDatName.match(/items-v(\d+\.\d+)\.dat/)?.[1];
   
   if (!currentVersion) {
-    consola.error("Invalid items.dat filename format");
+    logger.error("Invalid items.dat filename format");
     return;
   }
 
@@ -139,15 +139,15 @@ export async function downloadItemsDat(itemsDatName: string) {
       
       if (parseFloat(currentVersion) > parseFloat(existingVersion)) {
         unlinkSync(join(datDir, file));
-        consola.info(`Removed older version: ${file}`);
+        logger.info(`Removed older version: ${file}`);
       } else if (currentVersion === existingVersion) {
-        consola.info(`items.dat version ${currentVersion} already exists`);
+        logger.info(`items.dat version ${currentVersion} already exists`);
         return;
       }
     }
   }
 
-  consola.info(`Downloading items.dat version ${currentVersion}`);
+  logger.info(`Downloading items.dat version ${currentVersion}`);
   await downloadFile(`${ITEMS_DAT_URL}/${itemsDatName}`, join(__dirname, ".cache", "growtopia", "dat", itemsDatName));
 }
 
@@ -159,7 +159,7 @@ export  async function getLatestItemsDatName() {
 
     return itemsDat.content
   } catch (e) {
-    consola.error(`Failed to get latest CDN: ${e}`);
+    logger.error(`Failed to get latest CDN: ${e}`);
     return "";
   }
 }

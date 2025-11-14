@@ -1,5 +1,6 @@
-import { StringOptions } from "growtopia.js";
-import { STRING_CIPHER_KEY } from "../Constants";
+
+import { STRING_CIPHER_KEY } from "@growserver/const";
+import { StringOptions } from "@growserver/types";
 
 export class ExtendBuffer {
   public data: Buffer;
@@ -87,11 +88,7 @@ export class ExtendBuffer {
     this.realloc(this.data.byteLength - size);
   }
 
-  public async readString(
-    opts: StringOptions = {
-      encoded: false
-    }
-  ): Promise<string> {
+  public async readString(opts: StringOptions): Promise<string> {
     const len = this.data.readInt16LE(this.mempos);
     this.mempos += 2;
 

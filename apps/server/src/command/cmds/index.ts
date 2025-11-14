@@ -1,8 +1,8 @@
 import { readdirSync } from "fs";
 import { join, relative } from "path";
 import type { Class } from "type-fest";
-import type { CommandOptions } from "../../types/commands";
-import consola from "consola";
+import type { CommandOptions } from "@growserver/types";
+import logger from "@growserver/logger";
 
 export const CommandMap: Record<
   string,
@@ -38,11 +38,11 @@ const loadCommands = async () => {
         filesToProcess.push({ directoryPath: dir, fileName });
       });
     } catch (error) {
-      consola.error(`Error reading directory ${dir}:`, error);
+      logger.error(`Error reading directory ${dir}: ${error}`);
     }
   }
 
-  consola.info(`Found ${filesToProcess.length} command files`);
+  logger.info(`Found ${filesToProcess.length} command files`);
 
   for (const { directoryPath, fileName: file } of filesToProcess) {
     try {
@@ -52,7 +52,7 @@ const loadCommands = async () => {
       const fullPathForImport = join(directoryPath, file);
 
       // Log which command is being loaded
-      consola.debug(`Loading command: ${commandName} from ${fullPathForImport}`);
+      logger.debug(`Loading command: ${commandName} from ${fullPathForImport}`);
 
       // Use dynamic import with proper path construction
       let CommandClass;
@@ -75,19 +75,19 @@ const loadCommands = async () => {
 
         if (CommandClass) {
           CommandMap[commandName] = CommandClass;
-          consola.success(`Loaded command: ${commandName}`);
+          logger.info(`Loaded command: ${commandName}`);
         } else {
-          consola.warn(`Command class not found in ${fullPathForImport}`);
+          logger.warn(`Command class not found in ${fullPathForImport}`);
         }
       } catch (importError) {
-        consola.error(`Failed to import command ${fullPathForImport}:`, importError);
+        logger.error(`Failed to import command ${fullPathForImport}: ${importError}`);
       }
     } catch (error) {
-      consola.error(`Error processing command file:`, error);
+      logger.error(`Error processing command file: ${error}`);
     }
   }
 
-  consola.info(`Loaded ${Object.keys(CommandMap).length} commands`);
+  logger.info(`Loaded ${Object.keys(CommandMap).length} commands`);
 };
 
 // This function registers all command aliases after server is fully initialized
@@ -113,20 +113,20 @@ export const registerAliases = async (): Promise<void> => {
           if (aliasLower !== commandName) {
             CommandsAliasMap[aliasLower] = commandName;
             aliasCount++;
-            consola.debug(`Registered alias: ${aliasLower} → ${commandName}`);
+            logger.debug(`Registered alias: ${aliasLower} → ${commandName}`);
           }
         }
       }
     } catch (error) {
       // If we can't create an instance, log the error but continue with other commands
-      consola.warn(
+      logger.warn(
         `Could not register aliases for ${commandName}: ${error instanceof Error ? error.message : String(error)
         }`
       );
     }
   }
 
-  consola.success(`Command system ready (${aliasCount} aliases registered)`);
+  logger.info(`Command system ready (${aliasCount} aliases registered)`);
 };
 
-loadCommands().catch((err) => consola.error("Failed to load commands:", err));
+loadCommands().catch((err) => logger.error("Failed to load commands:", err));

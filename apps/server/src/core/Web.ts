@@ -1,14 +1,13 @@
 import { Hono } from "hono";
-import { logger as logg } from "hono/logger";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { serve } from "@hono/node-server";
 import { createServer } from "https";
-import consola from "consola";
 import type { Base } from "./Base";
 import { ApiRoute } from "../web/routes/api";
 import { PlayerRoute } from "../web/routes/player";
 import { GrowtopiaRoute } from "../web/routes/growtopia";
 import { readFile } from "fs/promises";
+import logger from "@growserver/logger";
 
 __dirname = process.cwd();
 
@@ -17,7 +16,6 @@ export async function Web(base: Base) {
 
   const buns = process.versions.bun ? await import("hono/bun") : undefined;
 
-  app.use(logg((str, ...rest) => consola.log(str, ...rest)));
 
   app.use(
     "/*",
@@ -55,7 +53,7 @@ export async function Web(base: Base) {
         }
       },
       () => {
-        consola.log(`⛅Running HTTPS server on https://localhost`);
+        logger.info(`Running HTTPS server on https://localhost`);
       }
     );
 
@@ -70,12 +68,12 @@ export async function Web(base: Base) {
         }
       },
       () => {
-        consola.log(`⛅Running Login server on https://${base.config.web.loginUrl}`);
+        logger.info(`Running Login server on https://${base.config.web.loginUrl}`);
       }
     );
   } else if (process.env.RUNTIME_ENV === "bun") {
 
-    consola.log(`⛅Running Bun HTTP server on http://localhost`);
+    logger.info(`Running Bun HTTP server on http://localhost`);
     Bun.serve({
       fetch: app.fetch,
       port:  base.config.web.port,
@@ -84,7 +82,7 @@ export async function Web(base: Base) {
         cert
       }
     });
-    consola.log(`⛅Running Bun HTTPS server on https://localhost`);
+    logger.info(`Running Bun HTTPS server on https://localhost`);
     Bun.serve({
       fetch: app.fetch,
       port:  base.config.webFrontend.port,
@@ -93,7 +91,7 @@ export async function Web(base: Base) {
         cert: certPem
       }
     });
-    consola.log(`⛅Running Bun Login server on https://${base.config.web.loginUrl}`);
+    logger.info(`Running Bun Login server on https://${base.config.web.loginUrl}`);
   }
 }
 
@@ -102,7 +100,7 @@ async function getFile(path: string, encoding?: BufferEncoding) {
     const file = await readFile(path, encoding);
     return file;
   } catch (e) {
-    consola.error(`${path} are not found`, e);
+    logger.error(`${path} are not found: ${e}`);
     return undefined;
   }
 }

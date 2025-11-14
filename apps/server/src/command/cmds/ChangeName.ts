@@ -1,7 +1,7 @@
 import { Command } from "../Command";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { ROLE } from "../../Constants";
+import { ROLE } from "@growserver/const";
 import { Variant } from "growtopia.js";
 import { World } from "../../core/World";
 import { tileFrom, tileUpdateMultiple } from "../../world/tiles";

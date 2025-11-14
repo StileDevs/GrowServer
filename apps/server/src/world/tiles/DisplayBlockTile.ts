@@ -2,11 +2,10 @@ import { ItemDefinition } from "grow-items";
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
-import type { TileData } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import type { TileData } from "@growserver/types";
+import { ExtendBuffer, DialogBuilder } from "@growserver/utils";
 import { Tile } from "../Tile";
-import { ActionTypes, BlockFlags, LockPermission, ROLE, TileExtraTypes } from "../../Constants";
-import { DialogBuilder } from "../../utils/builders/DialogBuilder";
+import { ActionTypes, BlockFlags, LockPermission, ROLE, TileExtraTypes } from "@growserver/const";
 import { Variant } from "growtopia.js";
 
 export class DisplayBlockTile extends Tile {

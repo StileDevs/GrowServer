@@ -13,9 +13,7 @@ async function setup() {
   if (!fs.existsSync("./.env")) {
     fs.copyFileSync("./.env.schema", "./.env")
   }
-
 }
-  
 
 (async() => {
   await setup();

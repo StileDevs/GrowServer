@@ -1,12 +1,12 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { TileData } from "../../types";
+import { TileData } from "@growserver/types";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
 import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
-import { LockPermission, ROLE, TileFlags } from "../../Constants";
+import { LockPermission, ROLE, TileFlags } from "@growserver/const";
 import { DisplayBlockTile } from "../../world/tiles/DisplayBlockTile";
 
 export class DisplayBlockEdit {

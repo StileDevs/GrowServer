@@ -1,4 +1,4 @@
-import { WorldData } from "../types";
+import { WorldData } from "@growserver/types";
 
 export abstract class WorldGen {
   public abstract data: WorldData;
