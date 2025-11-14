@@ -1,5 +1,5 @@
 import { type LibSQLDatabase } from "drizzle-orm/libsql";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, like } from "drizzle-orm";
 import { players } from "../shared/schemas/Player";
 import bcrypt from "bcryptjs";
 import { ROLE } from "@growserver/const";
