@@ -6,7 +6,7 @@ import { players } from "@growserver/db";
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
 import bcrypt from "bcryptjs";
-import {formatToDisplayName} from "../src/utils/Utils"
+import { formatToDisplayName } from "@growserver/utils"
 
 /**
  * @param {string} password
