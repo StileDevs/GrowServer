@@ -95,12 +95,12 @@ export class TileActiveReq {
               ),
               Variant.from(
                 "OnConsoleMessage",
-                `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
+                `\`5<${this.peer.data.displayName}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
               ),
               Variant.from(
                 "OnTalkBubble",
                 this.peer.data.netID,
-                `\`5<${this.peer.name}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
+                `\`5<${this.peer.data.displayName}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
               ),
               TextPacket.from(
                 PacketTypes.ACTION,

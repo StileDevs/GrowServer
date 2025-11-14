@@ -3,9 +3,10 @@ import { join } from "path";
 import { execSync } from "child_process";
 import net from "net";
 import ky from "ky";
-import decompress from "decompress";
-import { ITEMS_DAT_URL } from "@growserver/const";
+import decompress from "decompress"
+import { ITEMS_DAT_URL, ROLE } from "@growserver/const";
 import logger from "@growserver/logger";
+
 
 __dirname = process.cwd();
 
@@ -280,4 +281,19 @@ export function getCurrentTimeInSeconds(): number {
   const ms = now.getTime() - today_begin.getTime();
   const sec = Math.floor(ms / 1000);
   return sec;
+}
+
+
+export function formatToDisplayName(name: string, role: string): string {
+  switch (role) {
+    default: {
+      return `\`w${name}\`\``;
+    }
+    case ROLE.SUPPORTER: {
+      return `\`e${name}\`\``;
+    }
+    case ROLE.DEVELOPER: {
+      return `\`b@${name}\`\``;
+    }
+  }
 }

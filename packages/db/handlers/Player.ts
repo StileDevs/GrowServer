@@ -4,6 +4,9 @@ import { players } from "../shared/schemas/Player";
 import bcrypt from "bcryptjs";
 import { ROLE } from "@growserver/const";
 import { PeerData } from "@growserver/types";
+import { binary } from "drizzle-orm/mysql-core";
+import { formatToDisplayName } from "@growserver/utils";
+
 
 export class PlayerDB {
   constructor(private db: LibSQLDatabase<Record<string, never>>) { }
@@ -12,7 +15,7 @@ export class PlayerDB {
     const res = await this.db
       .select()
       .from(players)
-      .where(eq(players.name, name))
+      .where(like(players.name, name))
       .limit(1)
       .execute();
 
@@ -36,7 +39,7 @@ export class PlayerDB {
     const res = await this.db
       .select({ count: sql`count(*)` })
       .from(players)
-      .where(eq(players.name, name))
+      .where(like(players.name, name))
       .limit(1)
       .execute();
 
@@ -48,8 +51,8 @@ export class PlayerDB {
     const hashPassword = await bcrypt.hash(password, salt);
 
     const res = await this.db.insert(players).values({
-      display_name:   name,
-      name:           name.toLowerCase(),
+      display_name:   formatToDisplayName(name, ROLE.BASIC),
+      name:           name,
       password:       hashPassword,
       role:           ROLE.BASIC,
       heart_monitors: Buffer.from("{}")
@@ -65,6 +68,8 @@ export class PlayerDB {
     const res = await this.db
       .update(players)
       .set({
+        name:                data.name,
+        display_name:        data.displayName,
         role:                data.role,
         inventory:           Buffer.from(JSON.stringify(data.inventory)),
         clothing:            Buffer.from(JSON.stringify(data.clothing)),

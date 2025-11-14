@@ -21,7 +21,8 @@ import {
   ROLE,
   TankTypes
 } from "@growserver/const";
-import { getCurrentTimeInSeconds, manageArray } from "@growserver/utils";
+import { formatToDisplayName, getCurrentTimeInSeconds, manageArray } from "@growserver/utils";
+import { tileFrom, tileUpdateMultiple } from "../world/tiles";
 
 const PUNCH_ITEMS: Array<{ id: number; punchID: number; slot: keyof PeerData["clothing"] }> = [
 
@@ -383,8 +384,8 @@ export class Peer extends OldPeer<PeerData> {
         world:             data.world,
         inventory:         data.inventory,
         rotatedLeft:       data.rotatedLeft,
-        requestedName:     data.requestedName,
-        tankIDName:        data.tankIDName,
+        name:              data.name,
+        displayName:       data.displayName,
         netID,
         country:           data.country,
         userID:            data.userID,
@@ -409,20 +410,6 @@ export class Peer extends OldPeer<PeerData> {
     return await this.base.database.players.save(this.data);
   }
 
-  public get name(): string {
-    switch (this.data.role) {
-      default: {
-        return `\`w${this.data.tankIDName}\`\``;
-      }
-      case ROLE.SUPPORTER: {
-        return `\`e${this.data.tankIDName}\`\``;
-      }
-      case ROLE.DEVELOPER: {
-        return `\`b@${this.data.tankIDName}\`\``;
-      }
-    }
-  }
-
   public get country(): string {
     switch (this.data.role) {
       default: {
@@ -434,6 +421,10 @@ export class Peer extends OldPeer<PeerData> {
     }
   }
 
+  // public updateDisplayName() {
+  //   this.saveToDatabase
+  // }
+  
   public countryState() {
     const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? NameStyles.MAX_LEVEL : ""}`;
 
@@ -457,6 +448,26 @@ export class Peer extends OldPeer<PeerData> {
       const pp = new Peer(this.base, p.netID);
       callbackfn(pp, k);
     });
+  }
+
+  public async updateDisplayName(displayName?: string) {
+    this.data.displayName = displayName ?? formatToDisplayName(this.data.name, this.data.role);
+    await this.saveToCache();
+    await this.saveToDatabase();
+
+    for (const heartMonitor of this.data.heartMonitors) {
+      const worldName = heartMonitor[0];
+      const heartMonitorIndexList = heartMonitor[1];
+      const world = new World(this.base, worldName);
+
+      if (world.data.playerCount) {
+        const tiles = [];
+        for (const heartMonitorIndex of heartMonitorIndexList) {
+          tiles.push(tileFrom(this.base, world, world.data.blocks[heartMonitorIndex]));
+        }
+        await tileUpdateMultiple(world, tiles);
+      }
+    }
   }
 
   public respawn() {
@@ -880,7 +891,7 @@ export class Peer extends OldPeer<PeerData> {
       const world = this.currentWorld();
       if (world) {
         world.every((p) => {
-          p.send(Variant.from("OnTalkBubble", this.data.netID, `${this.name} is now level ${this.data.level}!`), Variant.from("OnConsoleMessage", `${this.name} is now level ${this.data.level}!`));
+          p.send(Variant.from("OnTalkBubble", this.data.netID, `${this.data.displayName} is now level ${this.data.level}!`), Variant.from("OnConsoleMessage", `${this.data.displayName} is now level ${this.data.level}!`));
         })
       }
     }

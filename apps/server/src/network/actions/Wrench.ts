@@ -15,7 +15,7 @@ export class Wrench {
     return new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon(
-        `${this.peer.name}\`w's Information (uid: ${this.peer.data.userID})`,
+        `${this.peer.data.displayName}\`w's Information (uid: ${this.peer.data.userID})`,
         32,
         "big"
       )

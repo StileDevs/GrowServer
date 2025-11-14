@@ -95,13 +95,13 @@ export class AreaLockEdit {
       }
 
       if (this.block.lock.adminIDs?.includes(targetPeer.data.userID)) {
-        this.peer.sendTextBubble(`${targetPeer.name} already has access to the lock.`, false);
+        this.peer.sendTextBubble(`${targetPeer.data.displayName} already has access to the lock.`, false);
         return;
       }
 
       this.block.lock.adminIDs?.push(targetPeer.data.userID);
-      this.peer.sendTextBubble(`Added ${targetPeer.name} access to lock`, false);
-      this.world.every((p) => p.sendConsoleMessage(`${this.peer.name} added ${targetPeer.name} to a ${this.itemMeta.name}.`));
+      this.peer.sendTextBubble(`Added ${targetPeer.data.displayName} access to lock`, false);
+      this.world.every((p) => p.sendConsoleMessage(`${this.peer.data.displayName} added ${targetPeer.data.displayName} to a ${this.itemMeta.name}.`));
       targetPeer.sendSFX("audio/secret.wav", 0);
     }
 

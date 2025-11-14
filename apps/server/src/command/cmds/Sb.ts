@@ -42,7 +42,7 @@ export default class Sb extends Command {
         Variant.from(
           "OnConsoleMessage",
           `CP:0_PL:4_OID:_CT:[SB]_ \`5**\`\` from \`$\`2${
-            this.peer.name
+            this.peer.data.displayName
           } \`\`\`\`(in \`$${
             jammed ? "`4JAMMED``" : this.peer.data.world
           }\`\`) ** :\`\` \`#${msg}`

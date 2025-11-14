@@ -115,7 +115,7 @@ export class Input {
             return this.peer.send(
               Variant.from(
                 "OnConsoleMessage",
-                `\`6${this.peer.data?.tankIDName}\`0 you're being ratelimited, please wait \`9${timeLeftSec}s\`0`
+                `\`6${this.peer.data?.displayName}\`0 you're being ratelimited, please wait \`9${timeLeftSec}s\`0`
               )
             );
           }
@@ -142,7 +142,7 @@ export class Input {
             ),
             Variant.from(
               "OnConsoleMessage",
-              `CP:0_PL:0_OID:_CT:[W]_ <\`w${this.peer.data?.tankIDName}\`\`> ${action.text}`
+              `CP:0_PL:0_OID:_CT:[W]_ <\`w${this.peer.data?.displayName}\`\`> ${action.text}`
             )
           );
         })

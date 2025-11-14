@@ -57,7 +57,7 @@ ${this.peer.data.lastVisitedWorlds
       ),
       Variant.from(
         "OnConsoleMessage",
-        `Welcome ${this.peer.name} There are \`w${this.base.getPlayersOnline()}\`\` players online.`
+        `Welcome ${this.peer.data.displayName}\`\` There are \`w${this.base.getPlayersOnline()}\`\` players online.`
       ),
       Variant.from({ delay: 100 }, "OnDialogRequest", tes)
     );

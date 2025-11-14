@@ -66,6 +66,8 @@ export class TileChangeReq {
         await tileFrom(this.base, this.world, tileData).onItemPlace(this.peer, itemMeta);
       }
     }
+    await this.world.saveToCache();
+    await this.world.saveToDatabase();
   }
 
   // private async onTileWrench() {
