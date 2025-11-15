@@ -507,3 +507,6 @@ export enum StateFlags {
   ON_ACID_DAMAGE = 1 << 26
   // MAX = 31
 }
+
+// Item IDs
+export const ITEM_RAYMANS_FIST = 5480; // Rayman's Fist hand item

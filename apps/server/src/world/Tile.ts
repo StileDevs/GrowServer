@@ -5,7 +5,7 @@ import { type TileData } from "../types";
 import type { Base } from "../core/Base";
 import { ExtendBuffer } from "../utils/ExtendBuffer";
 import { TileMap } from "./tiles";
-import { ActionTypes, BlockFlags, BlockFlags2, LockPermission, ROLE, TankTypes, TileFlags } from "../Constants";
+import { ActionTypes, BlockFlags, BlockFlags2, ITEM_RAYMANS_FIST, LockPermission, ROLE, TankTypes, TileFlags } from "../Constants";
 import { NormalTile } from "./tiles/NormalTile";
 import { ItemDefinition } from "grow-items";
 
@@ -113,7 +113,7 @@ export class Tile {
 
 
   /**
- * Triggered on punch. 
+ * Triggered on punch.
  * @param peer Peer that punches the tile
  * @returns True if the punch is successful. False otherwise.
  */
@@ -139,10 +139,16 @@ export class Tile {
       }
     }
 
-    this.applyDamage(peer, 6);
+    // Check if player has Rayman's Fist equipped
+    const hasRaymansFist = peer.data.clothing.hand === ITEM_RAYMANS_FIST;
 
-    if (this.data.damage && this.data.damage >= itemMeta.breakHits!) {
-      this.onDestroy(peer);
+    if (hasRaymansFist) { await this.handleRaymanPunch(peer); }
+    else {
+      this.applyDamage(peer, 6);
+
+      if (this.data.damage && this.data.damage >= itemMeta.breakHits!) {
+        this.onDestroy(peer);
+      }
     }
 
     return true;
@@ -157,6 +163,71 @@ export class Tile {
       }
     }
     this.sendLockSound(peer);
+  }
+
+  /**
+   * Handle Rayman's Fist 3-tile punch mechanic
+   * @param peer Peer performing the punch
+   */
+  private async handleRaymanPunch(peer: Peer): Promise<void> {
+    const MAX_DIST = 3; // Maximum 3 tiles
+
+    const playerX = Math.floor((peer.data.x ?? 0) / 32);
+    const playerY = Math.floor((peer.data.y ?? 0) / 32);
+
+    let dirX = 0;
+    let dirY = 0;
+
+    // horizontal dir
+    if (this.data.x > playerX) { dirX = 1; /* punching right */}
+    else if (this.data.x < playerX) { dirX = -1; /* punching left */}
+
+    // vertical dir
+    if (this.data.y > playerY) { dirY = 1; /* punching down */}
+    else if (this.data.y < playerY) { dirY = -1; /* Punching up */}
+
+    if (dirX === 0 && dirY === 0) {
+      dirX = peer.data.rotatedLeft ? -1 : 1;
+    }
+
+    for (let i = 0; i < MAX_DIST; i++) {
+      const targetX = this.data.x + (dirX * i);
+      const targetY = this.data.y + (dirY * i);
+
+      // Check bounds
+      if (targetX < 0 || targetX >= this.world.data.width ||
+          targetY < 0 || targetY >= this.world.data.height) {
+        break;
+      }
+
+      const targetPos = targetX + targetY * this.world.data.width;
+      const targetTile = this.world.data.blocks[targetPos];
+
+      if (targetTile.fg === 0 && targetTile.bg === 0) { continue; /* skip */ }
+
+      const tile = new Tile(this.base, this.world, targetTile);
+
+      const itemMeta = this.base.items.metadata.items.get((targetTile.fg ? targetTile.fg : targetTile.bg).toString());
+      if (!itemMeta) continue;
+
+      if (peer.data.role != ROLE.DEVELOPER) {
+        if (!(await this.world.hasTilePermission(peer.data.userID, targetTile, LockPermission.BREAK)) &&
+            !(itemMeta.flags! & BlockFlags.PUBLIC)) {
+          continue; // Skip this tile if no permission
+        }
+
+        if (itemMeta.flags! & BlockFlags.MOD) {
+          continue; // Skip unbreakable blocks
+        }
+      }
+
+      await tile.applyDamage(peer, 6);
+
+      // Check if tile should be destroyed
+      if (targetTile.damage && targetTile.damage >= itemMeta.breakHits!) {
+        await tile.onDestroy(peer);
+      }
+    }
   }
 
   /**
