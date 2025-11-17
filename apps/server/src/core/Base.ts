@@ -111,7 +111,7 @@ export class Base {
         wiki:     [] as ItemsInfo[],
       };
 
-      await Web(this);
+      // await Web(this);
 
       logger.info(`Starting ENet server on port ${port}`);
 

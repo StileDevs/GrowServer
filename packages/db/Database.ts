@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/libsql";
 import { createClient } from "@libsql/client";
+import path from "path";
 
 import { WorldDB } from "./handlers/World";
 import { PlayerDB } from "./handlers/Player";
@@ -10,8 +11,9 @@ export class Database {
   public worlds;
 
   constructor() {
+    const dbPath = path.join(__dirname, "data", "data.db");
     const sqlite = createClient({
-      url: `file:data/data.db`
+      url: `file:${dbPath}`
     });
     this.db = drizzle(sqlite, { logger: false });
 

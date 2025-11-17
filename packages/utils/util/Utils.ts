@@ -192,6 +192,7 @@ export async function setupMkcert() {
 }
 
 export async function downloadWebsite() {
+  console.log(__dirname)
   if (!existsSync(join(__dirname, ".cache", "compressed")))
     mkdirSync(join(__dirname, ".cache", "compressed"), { recursive: true });
   else return;

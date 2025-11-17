@@ -39,6 +39,24 @@ importers:
 
   apps/logon:
     dependencies:
+      '@growserver/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@growserver/const':
+        specifier: workspace:*
+        version: link:../../packages/const
+      '@growserver/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@growserver/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@growserver/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@growserver/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       '@hono/node-server':
         specifier: ^1.19.6
         version: 1.19.6(hono@4.10.4)

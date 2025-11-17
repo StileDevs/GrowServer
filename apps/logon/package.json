@@ -1,12 +1,17 @@
 {
   "name": "logon",
-  "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@growserver/config": "workspace:*",
+    "@growserver/const": "workspace:*",
+    "@growserver/db": "workspace:*",
+    "@growserver/logger": "workspace:*",
+    "@growserver/types": "workspace:*",
+    "@growserver/utils": "workspace:*",
     "@hono/node-server": "^1.19.6",
     "hono": "^4.10.4"
   },
