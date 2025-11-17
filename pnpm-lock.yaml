@@ -20,28 +20,9 @@ importers:
 
   apps/login-page:
     dependencies:
-      '@hono/node-server':
-        specifier: ^1.19.6
-        version: 1.19.6(hono@4.10.4)
-      hono:
-        specifier: ^4.10.4
-        version: 4.10.4
-    devDependencies:
-      '@types/bun':
-        specifier: ^1.3.2
-        version: 1.3.2(@types/react@19.2.2)
-      '@types/node':
-        specifier: ^20.11.17
-        version: 20.19.24
-      tsx:
-        specifier: ^4.7.1
-        version: 4.20.6
-      typescript:
-        specifier: ^5.8.3
-        version: 5.9.3
-
-  apps/logon:
-    dependencies:
+      '@antfu/ni':
+        specifier: ^25.0.0
+        version: 25.0.0
       '@growserver/config':
         specifier: workspace:*
         version: link:../../packages/config
@@ -63,6 +44,55 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.6
         version: 1.19.6(hono@4.10.4)
+      cross-env:
+        specifier: ^10.0.0
+        version: 10.1.0
+      hono:
+        specifier: ^4.10.4
+        version: 4.10.4
+    devDependencies:
+      '@types/bun':
+        specifier: ^1.3.2
+        version: 1.3.2(@types/react@19.2.2)
+      '@types/node':
+        specifier: ^20.11.17
+        version: 20.19.24
+      tsx:
+        specifier: ^4.7.1
+        version: 4.20.6
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
+
+  apps/logon:
+    dependencies:
+      '@antfu/ni':
+        specifier: ^25.0.0
+        version: 25.0.0
+      '@growserver/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@growserver/const':
+        specifier: workspace:*
+        version: link:../../packages/const
+      '@growserver/db':
+        specifier: workspace:*
+        version: link:../../packages/db
+      '@growserver/logger':
+        specifier: workspace:*
+        version: link:../../packages/logger
+      '@growserver/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@growserver/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
+      '@hono/node-server':
+        specifier: ^1.19.6
+        version: 1.19.6(hono@4.10.4)
+      cross-env:
+        specifier: ^10.0.0
+        version: 10.1.0
       hono:
         specifier: ^4.10.4
         version: 4.10.4

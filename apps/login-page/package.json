@@ -7,7 +7,15 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@antfu/ni": "^25.0.0",
+    "@growserver/config": "workspace:*",
+    "@growserver/const": "workspace:*",
+    "@growserver/db": "workspace:*",
+    "@growserver/logger": "workspace:*",
+    "@growserver/types": "workspace:*",
+    "@growserver/utils": "workspace:*",
     "@hono/node-server": "^1.19.6",
+    "cross-env": "^10.0.0",
     "hono": "^4.10.4"
   },
   "devDependencies": {

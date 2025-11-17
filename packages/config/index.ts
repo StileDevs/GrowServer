@@ -51,6 +51,14 @@ const frontend = () => {
     } 
   }
 }
+const logon = () => {
+  return {
+    tls:{
+      key: readFileSync(config.web.tls.key),
+      cert: readFileSync(config.web.tls.cert)
+    } 
+  }
+}
 
 
-export { config, frontend };
+export { config, frontend, logon };

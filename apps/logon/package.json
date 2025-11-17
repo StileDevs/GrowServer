@@ -1,11 +1,15 @@
 {
   "name": "logon",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "bun": "cross-env RUNTIME_ENV=bun bun run --bun",
+    "node": "cross-env RUNTIME_ENV=node node",
+    "tsx": "cross-env RUNTIME_ENV=node tsx",
+    "dev": "nr tsx watch src/index.ts || nr bun src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@antfu/ni": "^25.0.0",
     "@growserver/config": "workspace:*",
     "@growserver/const": "workspace:*",
     "@growserver/db": "workspace:*",
@@ -13,6 +17,7 @@
     "@growserver/types": "workspace:*",
     "@growserver/utils": "workspace:*",
     "@hono/node-server": "^1.19.6",
+    "cross-env": "^10.0.0",
     "hono": "^4.10.4"
   },
   "devDependencies": {
