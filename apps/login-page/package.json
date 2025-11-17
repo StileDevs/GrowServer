@@ -1,8 +1,10 @@
 {
   "name": "login-page",
-  "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "bun": "cross-env RUNTIME_ENV=bun bun run --bun",
+    "node": "cross-env RUNTIME_ENV=node node",
+    "tsx": "cross-env RUNTIME_ENV=node tsx",
+    "dev": "nr tsx watch src/index.ts || nr bun src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js"
   },
@@ -15,11 +17,14 @@
     "@growserver/types": "workspace:*",
     "@growserver/utils": "workspace:*",
     "@hono/node-server": "^1.19.6",
+    "bcryptjs": "^3.0.2",
     "cross-env": "^10.0.0",
-    "hono": "^4.10.4"
+    "hono": "^4.10.4",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@types/bun": "^1.3.2",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.11.17",
     "tsx": "^4.7.1",
     "typescript": "^5.8.3"

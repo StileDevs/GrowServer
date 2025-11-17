@@ -44,16 +44,25 @@ importers:
       '@hono/node-server':
         specifier: ^1.19.6
         version: 1.19.6(hono@4.10.4)
+      bcryptjs:
+        specifier: ^3.0.2
+        version: 3.0.2
       cross-env:
         specifier: ^10.0.0
         version: 10.1.0
       hono:
         specifier: ^4.10.4
         version: 4.10.4
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.2
     devDependencies:
       '@types/bun':
         specifier: ^1.3.2
         version: 1.3.2(@types/react@19.2.2)
+      '@types/jsonwebtoken':
+        specifier: ^9.0.10
+        version: 9.0.10
       '@types/node':
         specifier: ^20.11.17
         version: 20.19.24
@@ -133,15 +142,9 @@ importers:
       '@growserver/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@hono/node-server':
-        specifier: ^1.19.1
-        version: 1.19.6(hono@4.10.4)
       '@libsql/client':
         specifier: ^0.15.14
         version: 0.15.15
-      bcryptjs:
-        specifier: ^3.0.2
-        version: 3.0.2
       chokidar:
         specifier: ^4.0.3
         version: 4.0.3
@@ -151,12 +154,6 @@ importers:
       dotenv:
         specifier: ^17.2.2
         version: 17.2.3
-      drizzle-orm:
-        specifier: ^0.44.5
-        version: 0.44.7(@libsql/client@0.15.15)(bun-types@1.3.2(@types/react@19.2.2))
-      drizzle-zod:
-        specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.7(@libsql/client@0.15.15)(bun-types@1.3.2(@types/react@19.2.2)))(zod@4.1.12)
       fast-xml-parser:
         specifier: ^5.2.5
         version: 5.3.0
@@ -166,12 +163,6 @@ importers:
       growtopia.js:
         specifier: ^2.1.6
         version: 2.1.7
-      hono:
-        specifier: ^4.9.6
-        version: 4.10.4
-      jsonwebtoken:
-        specifier: ^9.0.2
-        version: 9.0.2
       ky:
         specifier: ^1.10.0
         version: 1.13.0
@@ -187,9 +178,6 @@ importers:
       tsx:
         specifier: ^4.20.5
         version: 4.20.6
-      zod:
-        specifier: ^4.1.5
-        version: 4.1.12
     devDependencies:
       '@eslint/js':
         specifier: ^9.35.0
@@ -200,15 +188,9 @@ importers:
       '@types/bun':
         specifier: ^1.2.21
         version: 1.3.1(@types/react@19.2.2)
-      '@types/jsonwebtoken':
-        specifier: ^9.0.10
-        version: 9.0.10
       '@types/node':
         specifier: ^24.3.1
         version: 24.9.2
-      drizzle-kit:
-        specifier: ^0.31.4
-        version: 0.31.6
       eslint:
         specifier: ^9.35.0
         version: 9.39.0(jiti@2.6.1)

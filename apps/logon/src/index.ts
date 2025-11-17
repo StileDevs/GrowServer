@@ -9,8 +9,6 @@ async function init() {
   const app = new Hono()
   const buns = process.versions.bun ? await import("hono/bun") : undefined;
 
-
-
   app.post('/growtopia/server_data.php', (ctx) => {
     let str = "";
 
