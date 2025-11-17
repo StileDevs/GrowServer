@@ -3,9 +3,7 @@ import { Hono } from "hono";
 import { config, frontend } from "@growserver/config";
 import { createServer } from "https";
 import { downloadMkcert, setupMkcert } from "@growserver/utils";
-
-
-
+import logger from "@growserver/logger";
 
 async function init() {
   
@@ -29,31 +27,31 @@ async function init() {
     return ctx.body(str);
   })
 
-
-  // TODO: refactor custom item cdn
-  // const rootPath = "./.cache";
-  // const staticMiddleware =
-  //   process.env.RUNTIME_ENV === "bun" && process.versions.bun
-  //     ? (buns?.serveStatic({ root: rootPath }) as MiddlewareHandler)
-  //     : serveStatic({
-  //       root: rootPath
-  //     });
-  // this.app.use("/cache/*", staticMiddleware);
-
   const fe = frontend();
-  
-  serve({
-    fetch: app.fetch,
-    createServer,
-    serverOptions: {
-      key: fe.tls.key,
-      cert: fe.tls.cert
-    },
-    port: config.web.port
-  }, (info) => {
-    console.log(`Logon Server is running on port ${info.port}`)
-  })
 
+  if (process.env.RUNTIME_ENV === "node") {
+    serve({
+      fetch: app.fetch,
+      createServer,
+      serverOptions: {
+        key: fe.tls.key,
+        cert: fe.tls.cert
+      },
+      port: config.web.port
+    }, (info) => {
+      console.log(`Node Logon Server is running on port ${info.port}`)
+    })
+  } else if (process.env.RUNTIME_ENV === "bun") {
+    logger.info(`Running Bun HTTP server on http://localhost`);
+    Bun.serve({
+      fetch: app.fetch,
+      port:  config.web.port,
+      tls:   {
+        key: fe.tls.key,
+        cert: fe.tls.cert
+      }
+    });
+  }
 }
 
 
