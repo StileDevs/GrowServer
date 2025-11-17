@@ -1,5 +1,4 @@
 import { Client } from "growtopia.js";
-import { Web } from "./Web";
 import {
   downloadMkcert,
   setupMkcert,
@@ -90,11 +89,6 @@ export class Base {
         );
       }
 
-      await downloadMkcert();
-      await setupMkcert();
-
-      await downloadWebsite();
-      await setupWebsite();
       this.cdn = await this.getLatestCdn();
       await downloadItemsDat(this.cdn.itemsDatName);
       await downloadMacOSItemsDat(this.cdn.itemsDatName);
@@ -110,8 +104,6 @@ export class Base {
         metadata: {} as ItemsDatMeta,
         wiki:     [] as ItemsInfo[],
       };
-
-      // await Web(this);
 
       logger.info(`Starting ENet server on port ${port}`);
 
