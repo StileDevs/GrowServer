@@ -4,7 +4,7 @@
   "description": "GrowServer's database management",
   "main": "./index.ts",
   "scripts": {
-    "db:generate": "drizzle-kit push --config=drizzle.config.ts",
+    "generate": "drizzle-kit push --config=drizzle.config.ts",
     "db:seed": "nr tsx scripts/seeds.ts || nr bun scripts/seeds.ts",
     "db:studio": "drizzle-kit studio"
   },

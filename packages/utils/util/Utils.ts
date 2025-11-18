@@ -4,7 +4,7 @@ import { execSync } from "child_process";
 import net from "net";
 import ky from "ky";
 import decompress from "decompress"
-import { ITEMS_DAT_URL, ROLE } from "@growserver/const";
+import { ITEMS_DAT_FETCH_URL, ITEMS_DAT_URL, ROLE } from "@growserver/const";
 import logger from "@growserver/logger";
 
 
@@ -295,5 +295,15 @@ export function formatToDisplayName(name: string, role: string): string {
     case ROLE.DEVELOPER: {
       return `\`b@${name}\`\``;
     }
+  }
+}
+
+export async function getLatestItemsDatName() {
+  try {
+    const itemsDat = await fetchJSON(ITEMS_DAT_FETCH_URL) as { content: string };
+    return itemsDat.content
+  } catch (e) {
+    logger.error(`Failed to get latest CDN: ${e}`);
+    return "";
   }
 }

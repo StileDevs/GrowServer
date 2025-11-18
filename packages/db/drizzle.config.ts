@@ -1,10 +1,9 @@
 import { defineConfig } from "drizzle-kit";
-import { normalizedPath } from "@growserver/db";
-
+import { normalizedPath } from ".";
 
 export default defineConfig({
   dialect:       "sqlite",
-  schema:        ["../../packages/db/shared/schemas/index.ts"],
+  schema:        ["./shared/schemas/index.ts"],
   out:           "./drizzle",
   dbCredentials: {
     url: normalizedPath

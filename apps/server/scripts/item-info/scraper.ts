@@ -33,7 +33,7 @@ export class Scraper {
 
 
   public async postRequest(items: ItemDefinition[], iterateNum: number) {
-    logger.info(`📡ItemsInfo part ${iterateNum}, starting post request`);
+    logger.info(`ItemsInfo part ${iterateNum}, starting post request`);
     
 
     const names = items.map((i) => i.name);

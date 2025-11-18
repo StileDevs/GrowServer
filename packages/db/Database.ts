@@ -4,6 +4,8 @@ import path from "path";
 
 import { WorldDB } from "./handlers/World";
 import { PlayerDB } from "./handlers/Player";
+import { setupSeeds } from "./scripts/seeds";
+import { normalizedPath } from ".";
 
 export class Database {
   public db;
@@ -11,13 +13,18 @@ export class Database {
   public worlds;
 
   constructor() {
-    const dbPath = path.join(__dirname, "data", "data.db");
+    // TODO: i guess we need to move into connection database type instead of local now since it wont read absolute path for some reason.
     const sqlite = createClient({
-      url: `file:${dbPath}`
+      url: `file:${normalizedPath}`,
     });
-    this.db = drizzle(sqlite, { logger: false });
+    this.db = drizzle(sqlite, { logger: true });
 
     this.players = new PlayerDB(this.db);
     this.worlds = new WorldDB(this.db);
+  }
+
+  public async setup() {
+
+    await setupSeeds();
   }
 }
