@@ -18,6 +18,9 @@ export class ItemActiveObjectReq {
   }
 
   public async execute() {
+    // Prevent item pickup in ghost mode
+    if (this.peer.data.state.isGhost) return;
+    
     const dropped = this.world.data.dropped?.items.find(
       (i) => i.uid === this.tank.data?.info
     );
