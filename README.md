@@ -3,13 +3,15 @@
 > A Growtopia private server built with Node.js and Bun.js, powered by [growtopia.js](https://github.com/JadlionHD/growtopia.js)
 
 > [!NOTE]
-> This source is not production ready yet. In the future it will be using a Docker to deploy the server, feel free to join [Discord Server](https://discord.gg/sGrxfKZY5t) to discuss regarding this.
+> This source is not production ready yet. In the future it will be using a [Docker](#docker) to deploy the server, feel free to join [Discord Server](https://discord.gg/sGrxfKZY5t) to discuss regarding this.
 
 ## Requirements
 
 - [Node.js](https://nodejs.org) v20+ or [Bun.js](https://bun.sh) v1.2.9+
 - [pnpm](https://pnpm.io) v10
 - [mkcert](https://github.com/FiloSottile/mkcert)
+- [docker](https://docker.com/)
+- [docker-compose](https://docs.docker.com/compose/) (required)
 
 ## Setup
 
@@ -28,7 +30,7 @@ $ pnpm run dev
 
 ## Database
 
-Database that we currently use is SQLite, since its easier & light instead of using JSON.
+Database that we moved to PostgreSQL from previous database SQLite.
 And for the ORM we are using [Drizzle-ORM](https://orm.drizzle.team/)
 
 To view the database you can run this command below:
@@ -68,6 +70,13 @@ For the hosts file you can see this example below
 127.0.0.1 www.growtopia2.com
 127.0.0.1 login.growserver.app # New login system for development purposes
 ```
+
+## Docker
+To run the dockerized & running it automatically just run
+```sh
+docker compose up
+```
+
 
 ## Contributing
 
