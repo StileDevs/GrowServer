@@ -1,5 +1,6 @@
 FROM alpine AS mkcert-build
 
+
 RUN apk --no-cache add curl
 RUN curl -JLO "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64" && \
   chmod +x mkcert-v1.4.4-linux-amd64
@@ -10,7 +11,7 @@ WORKDIR /app
 COPY . .
 COPY --from=mkcert-build /mkcert-v1.4.4-linux-amd64 /app/.cache/bin/mkcert
 
-VOLUME ["/app/data", "/app/.cache", "/app/assets"]
+VOLUME /app
 
 RUN corepack enable && corepack prepare pnpm@latest
 
