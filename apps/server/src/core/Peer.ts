@@ -471,6 +471,9 @@ export class Peer extends OldPeer<PeerData> {
   }
 
   public respawn() {
+    // Ghost mode immunity: no death from spikes, lava, or any other source
+    if (this.data.state.isGhost) return;
+    
     const world = this.currentWorld();
     if (!world) return;
 
