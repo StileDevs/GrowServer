@@ -194,50 +194,76 @@ ${peer.data.lastVisitedWorlds
     if (typeof x !== "number") x = -1;
     if (typeof y !== "number") y = -1;
 
+    // Validate world data
+    if (!this.data || !this.data.blocks || this.data.blocks.length === 0) {
+      console.error("World data is invalid or empty!");
+      peer.send(Variant.from("OnConsoleMessage", "`4Error: World data is corrupted!"));
+      return;
+    }
+
     const HEADER_LENGTH = this.worldName.length + 20;
     const buffer = Buffer.alloc(HEADER_LENGTH);
     const blockCount = this.data.height * this.data.width;
 
+    // Verify block count matches
+    if (this.data.blocks.length !== blockCount) {
+      console.warn(`Block count mismatch! Expected: ${blockCount}, Got: ${this.data.blocks.length}`);
+    }
+
     // World data
-    buffer.writeUint16LE(0x14);
-    buffer.writeUint32LE(0x40, 2);
+    buffer.writeUint16LE(0x14); // Version/Type byte (20 in decimal)
+    buffer.writeUint32LE(0x40, 2); // Flags or version
     buffer.writeUint16LE(this.worldName.length, 6);
     buffer.write(this.worldName, 8);
     buffer.writeUint32LE(this.data.width, 8 + this.worldName.length);
     buffer.writeUint32LE(this.data.height, 12 + this.worldName.length);
     buffer.writeUint32LE(blockCount, 16 + this.worldName.length);
 
+    console.log("Header bytes:", buffer.slice(0, Math.min(20, buffer.length)).toString('hex'));
+
     // Tambahan 5 bytes, gatau ini apaan
     const unk1 = Buffer.alloc(5);
+    // For 5.34, these bytes might matter - try setting to 0
+    unk1.fill(0);
 
     // Block data
     const blockBytes: number[] = [];
 
-    for (const block of this.data.blocks) {
-      // const item = this.base.items.metadata.items.find(
-      //   (i) => i.id === block.fg
-      // );
+    try {
+      for (const block of this.data.blocks) {
+        // const item = this.base.items.metadata.items.find(
+        //   (i) => i.id === block.fg
+        // );
 
-      // const blockBuf = new Tile(this.base, this, block).serialize(item?.type as number);
-      // const type = item?.type as number;
-      // const blockBuf = await tileParse(type, this.base, this, block);
-      const blockBuf = (await tileFrom(this.base, this, block).parse()).data;
+        // const blockBuf = new Tile(this.base, this, block).serialize(item?.type as number);
+        // const type = item?.type as number;
+        // const blockBuf = await tileParse(type, this.base, this, block);
+        const blockBuf = (await tileFrom(this.base, this, block).parse()).data;
 
-      blockBuf.forEach((b) => blockBytes.push(b));
+        blockBuf.forEach((b) => blockBytes.push(b));
+      }
+      
+      // Log first block for debugging
+      if (blockBytes.length > 0) {
+        console.log("First block data (first 32 bytes):", Buffer.from(blockBytes.slice(0, 32)).toString('hex'));
+      }
+    } catch (error) {
+      console.error("Error serializing blocks:", error);
+      throw error;
     }
 
     // Tambahan 12 bytes, gatau ini apaan
     const unk2 = Buffer.alloc(12);
 
     // Drop data
-    const dropData = Buffer.alloc(
-      8 + (this.data.dropped?.items.length as number) * 16
-    );
-    dropData.writeUInt32LE(this.data.dropped?.items.length as number);
-    dropData.writeUInt32LE(this.data.dropped?.uid as number, 4);
+    const droppedItemsCount = this.data.dropped?.items?.length || 0;
+    const droppedUid = this.data.dropped?.uid || 0;
+    const dropData = Buffer.alloc(8 + droppedItemsCount * 16);
+    dropData.writeUInt32LE(droppedItemsCount);
+    dropData.writeUInt32LE(droppedUid, 4);
 
     let pos = 8;
-    this.data.dropped?.items.forEach((item) => {
+    this.data.dropped?.items?.forEach((item) => {
       dropData.writeUInt16LE(item.id, pos);
       dropData.writeFloatLE(item.x, pos + 2);
       dropData.writeFloatLE(item.y, pos + 6);
