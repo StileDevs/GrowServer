@@ -36,3 +36,8 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Custom ignores
+setup-port-forwarding.ps1
+tools/
+update-hosts.ps1
