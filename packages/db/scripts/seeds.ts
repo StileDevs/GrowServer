@@ -3,10 +3,16 @@
 
 import { players } from "../";
 // import { worlds } from "../src/database/schemas/World";
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import bcrypt from "bcryptjs";
 import { formatToDisplayName } from "@growserver/utils"
+import { config } from "dotenv";
+
+config({
+  path: "../../.env"
+})
+
 
 /**
  * @param {string} password
@@ -19,13 +25,30 @@ async function hash(password: string) {
 
 
 export async function setupSeeds() {
-  const sqlite = createClient({
-    url: `file:data/data.db`
-  });
-  const db = drizzle(sqlite);
+  const connection = postgres(process.env.DATABASE_URL!);
+  const db = drizzle(connection);
   const dateNow = new Date().toISOString().slice(0, 19).replace("T", " ");
 
-  // await db.delete(players);
+  // Drop and recreate table if it exists
+  await connection.unsafe(`DROP TABLE IF EXISTS players CASCADE;`);
+  await connection.unsafe(`
+    CREATE TABLE IF NOT EXISTS players (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      display_name TEXT NOT NULL,
+      password TEXT NOT NULL,
+      role TEXT NOT NULL,
+      gems INTEGER DEFAULT 0,
+      level INTEGER DEFAULT 0,
+      exp INTEGER DEFAULT 0,
+      clothing TEXT,
+      inventory TEXT,
+      last_visited_worlds TEXT,
+      created_at TEXT DEFAULT (current_timestamp),
+      updated_at TEXT DEFAULT (current_timestamp),
+      heart_monitors TEXT NOT NULL
+    );
+  `);
   await db.insert(players).values([
     {
       name: "admin",
@@ -37,7 +60,7 @@ export async function setupSeeds() {
       inventory: null,
       last_visited_worlds: null,
       created_at: dateNow,
-      heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
+      heart_monitors: JSON.stringify({}) // intialize empty object.
     },
     {
       name: "Reimu",
@@ -49,7 +72,7 @@ export async function setupSeeds() {
       inventory: null,
       last_visited_worlds: null,
       created_at: dateNow,
-      heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
+      heart_monitors: JSON.stringify({}) // intialize empty object.
     },
     {
       name: "JadlionHD",
@@ -61,7 +84,7 @@ export async function setupSeeds() {
       inventory: null,
       last_visited_worlds: null,
       created_at: dateNow,
-      heart_monitors: Buffer.from(JSON.stringify(new Map<string, Array<number>>())) // intialize empty array.
+      heart_monitors: JSON.stringify({}) // intialize empty object.
     }
   ])
     .onConflictDoNothing(); // dont confuse the normal user with error lol

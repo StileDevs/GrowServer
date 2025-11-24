@@ -17,11 +17,12 @@
     "@growserver/const": "workspace:*",
     "@growserver/types": "workspace:*",
     "@growserver/utils": "workspace:*",
-    "@libsql/client": "^0.15.14",
     "bcryptjs": "^3.0.2",
+    "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
     "drizzle-zod": "^0.8.3",
     "nanoid": "5.1.5",
+    "postgres": "^3.4.7",
     "rimraf": "^6.0.1",
     "tsx": "^4.20.5",
     "zod": "^4.1.5"

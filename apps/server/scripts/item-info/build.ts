@@ -29,8 +29,7 @@ export async function buildItemsInfo() {
   const items = await parser.pagesToItems();
 
   logger.info("Writing ItemsInfo file into ./assets/items_info_new.json");
-  writeFile("./assets/items_info_new.json", JSON.stringify(items));
-
+  await writeFile("./assets/items_info_new.json", JSON.stringify(items));
 }
 
 

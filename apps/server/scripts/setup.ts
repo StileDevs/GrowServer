@@ -6,11 +6,6 @@ import { buildItemsInfo } from "./item-info/build";
 import { Database, dbDir, dbPath } from "@growserver/db";
 
 async function setup() {
-  const isEnv = existsSync("./.env");
-  if (!isEnv) {
-    await fs.copyFile("./.env.schema", "./.env")
-  }
-
   const isData = existsSync(dbDir);
   if (!isData) {
     await fs.mkdir(dbDir);
@@ -20,6 +15,7 @@ async function setup() {
   const db = new Database();
   await db.setup();
   await buildItemsInfo();
+  process.exit(0);
 }
 
 (async() => {

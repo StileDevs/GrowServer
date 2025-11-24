@@ -1,23 +1,18 @@
-import { drizzle } from "drizzle-orm/libsql";
-import { createClient } from "@libsql/client";
-import path from "path";
+import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 
 import { WorldDB } from "./handlers/World";
 import { PlayerDB } from "./handlers/Player";
 import { setupSeeds } from "./scripts/seeds";
-import { normalizedPath } from ".";
 
 export class Database {
-  public db;
+  public db: PostgresJsDatabase<Record<string, never>>;
   public players;
   public worlds;
 
   constructor() {
-    // TODO: i guess we need to move into connection database type instead of local now since it wont read absolute path for some reason.
-    const sqlite = createClient({
-      url: `file:${normalizedPath}`,
-    });
-    this.db = drizzle(sqlite, { logger: true });
+    const connection = postgres(process.env.DATABASE_URL!);
+    this.db = drizzle(connection, { logger: false });
 
     this.players = new PlayerDB(this.db);
     this.worlds = new WorldDB(this.db);

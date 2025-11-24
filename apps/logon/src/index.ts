@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { config, frontend, logon } from "@growserver/config";
+import { config, logon } from "@growserver/config";
 import { createServer } from "https";
 import logger from "@growserver/logger";
 
@@ -8,6 +8,13 @@ import logger from "@growserver/logger";
 async function init() {
   const app = new Hono()
   const buns = process.versions.bun ? await import("hono/bun") : undefined;
+
+  app.use("*", async (ctx, next) => {
+    const method = ctx.req.method;
+    const path = ctx.req.path;
+    logger.info(`[${method}] ${path}`);
+    await next();
+  });
 
   app.post('/growtopia/server_data.php', (ctx) => {
     let str = "";
@@ -23,7 +30,7 @@ async function init() {
     return ctx.body(str);
   })
 
-  const ssl = frontend();
+  const ssl = logon();
 
   if (process.env.RUNTIME_ENV === "node") {
     serve({

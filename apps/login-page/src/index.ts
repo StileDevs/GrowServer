@@ -22,6 +22,13 @@ async function init() {
   await setupMkcert();
   await setupWebsite();
 
+  app.use("*", async (ctx, next) => {
+    const method = ctx.req.method;
+    const path = ctx.req.path;
+    logger.info(`[${method}] ${path}`);
+    await next();
+  });
+
   app.use(
     "/*",
     process.env.RUNTIME_ENV === "bun" && process.versions.bun
@@ -32,10 +39,8 @@ async function init() {
       })
   );
 
-  const player = new Hono().basePath("/player");
-  app.route("/", player);
 
-  player.get("/growid/login/validate", (ctx) => {
+  app.get("/player/growid/login/validate", (ctx) => {
     try {
       const query = ctx.req.query();
       const token = query.token;
@@ -55,7 +60,7 @@ async function init() {
     }
   });
 
-  player.post("/login/validate", async (ctx) => {
+  app.post("/player/login/validate", async (ctx) => {
     try {
       const body = await ctx.req.json();
       const growId = body.data?.growId;
@@ -88,7 +93,7 @@ async function init() {
     }
   });
 
-  player.post("/growid/checktoken", async (ctx) => {
+  app.post("/player/growid/checktoken", async (ctx) => {
     try {
       const formData = await ctx.req.formData() as FormData;
       const refreshToken = formData.get("refreshToken") as string;
@@ -112,7 +117,7 @@ async function init() {
     }
   });
 
-  player.post("/signup", async (ctx) => {
+  app.post("/player/signup", async (ctx) => {
     try {
       const body = await ctx.req.json();
       const growId = body.data?.growId;
@@ -158,9 +163,9 @@ async function init() {
     }
   });
 
-  player.post("/login/dashboard", (ctx) => {
+  app.post("/player/login/dashboard", (ctx) => {
     const html = readFileSync(
-      join(__dirname, ".cache", "website", "index.html"),
+      join(__dirname, "..", ".cache", "website", "index.html"),
       "utf-8"
     );
     return ctx.html(html);
@@ -184,7 +189,7 @@ async function init() {
     logger.info(`Bun Login Page Server is running on port ${config.web.port}`);
     Bun.serve({
       fetch: app.fetch,
-      port:  config.web.port,
+      port:  config.webFrontend.port,
       tls:   {
         key: fe.tls.key,
         cert: fe.tls.cert

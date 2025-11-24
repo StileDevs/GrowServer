@@ -148,9 +148,6 @@ importers:
       '@growserver/utils':
         specifier: workspace:*
         version: link:../../packages/utils
-      '@libsql/client':
-        specifier: ^0.15.14
-        version: 0.15.15
       bcryptjs:
         specifier: ^3.0.2
         version: 3.0.2
@@ -165,13 +162,13 @@ importers:
         version: 17.2.3
       drizzle-orm:
         specifier: ^0.44.5
-        version: 0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))
+        version: 0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))(postgres@3.4.7)
       fast-xml-parser:
         specifier: ^5.2.5
         version: 5.3.0
       grow-items:
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.3.1
+        version: 1.3.1
       growtopia.js:
         specifier: ^2.1.6
         version: 2.1.7
@@ -273,21 +270,24 @@ importers:
       '@growserver/utils':
         specifier: workspace:*
         version: link:../utils
-      '@libsql/client':
-        specifier: ^0.15.14
-        version: 0.15.15
       bcryptjs:
         specifier: ^3.0.2
         version: 3.0.2
+      dotenv:
+        specifier: ^17.2.2
+        version: 17.2.3
       drizzle-orm:
         specifier: ^0.44.5
-        version: 0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))
+        version: 0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))(postgres@3.4.7)
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2)))(zod@4.1.12)
+        version: 0.8.3(drizzle-orm@0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))(postgres@3.4.7))(zod@4.1.12)
       nanoid:
         specifier: 5.1.5
         version: 5.1.5
+      postgres:
+        specifier: ^3.4.7
+        version: 3.4.7
       rimraf:
         specifier: ^6.0.1
         version: 6.1.0
@@ -1523,6 +1523,10 @@ packages:
     resolution: {integrity: sha512-atdgwAbCz2gHBqDxBoCYFoLqQHHqXArrSglpuKaYSSzl2gRXNVLr0s5WjJv6hl5IeHRT5OqDMhsL/pS3N1/RRQ==}
     engines: {node: '>= 10'}
 
+  grow-items@1.3.1:
+    resolution: {integrity: sha512-ykoSSBmmvJdJo2wValrvNhJlGDHz6yXzhHtKI8wpmdU3nYhOioHhtWkm46PuWxIryfUyMtdfp4vmjghV6uV/og==}
+    engines: {node: '>= 10'}
+
   growtopia.js-android-arm-eabi@2.1.7:
     resolution: {integrity: sha512-L48yUN6wnexPjtYdp5ZthbwbbJgnVZudNh9PhCBsdWd7S1tp0P3jU9sGDbmIoV889DC50MKKux1x2drn18gk6Q==}
     engines: {node: '>= 10'}
@@ -1964,6 +1968,10 @@ packages:
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
     engines: {node: '>= 0.4'}
+
+  postgres@3.4.7:
+    resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
+    engines: {node: '>=12'}
 
   prebuild-install@7.1.3:
     resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
@@ -2569,10 +2577,12 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   '@libsql/core@0.15.15':
     dependencies:
       js-base64: 3.7.8
+    optional: true
 
   '@libsql/darwin-arm64@0.5.22':
     optional: true
@@ -2589,8 +2599,10 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
-  '@libsql/isomorphic-fetch@0.3.1': {}
+  '@libsql/isomorphic-fetch@0.3.1':
+    optional: true
 
   '@libsql/isomorphic-ws@0.1.5':
     dependencies:
@@ -2599,6 +2611,7 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
 
   '@libsql/linux-arm-gnueabihf@0.5.22':
     optional: true
@@ -2621,7 +2634,8 @@ snapshots:
   '@libsql/win32-x64-msvc@0.5.22':
     optional: true
 
-  '@neon-rs/load@0.0.4': {}
+  '@neon-rs/load@0.0.4':
+    optional: true
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
@@ -2694,6 +2708,7 @@ snapshots:
   '@types/ws@8.18.1':
     dependencies:
       '@types/node': 24.9.2
+    optional: true
 
   '@typescript-eslint/eslint-plugin@8.46.2(@typescript-eslint/parser@8.46.2(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.0(jiti@2.6.1))(typescript@5.9.3)':
     dependencies:
@@ -2951,7 +2966,8 @@ snapshots:
 
   csstype@3.1.3: {}
 
-  data-uri-to-buffer@4.0.1: {}
+  data-uri-to-buffer@4.0.1:
+    optional: true
 
   dateformat@4.6.3: {}
 
@@ -3015,7 +3031,8 @@ snapshots:
       es-errors: 1.3.0
       gopd: 1.2.0
 
-  detect-libc@2.0.2: {}
+  detect-libc@2.0.2:
+    optional: true
 
   dotenv@17.2.3: {}
 
@@ -3028,16 +3045,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2)):
+  drizzle-orm@0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))(postgres@3.4.7):
     optionalDependencies:
       '@libsql/client': 0.15.15
       '@types/better-sqlite3': 7.6.13
       better-sqlite3: 12.4.1
       bun-types: 1.3.2(@types/react@19.2.2)
+      postgres: 3.4.7
 
-  drizzle-zod@0.8.3(drizzle-orm@0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2)))(zod@4.1.12):
+  drizzle-zod@0.8.3(drizzle-orm@0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))(postgres@3.4.7))(zod@4.1.12):
     dependencies:
-      drizzle-orm: 0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))
+      drizzle-orm: 0.44.7(@libsql/client@0.15.15)(@types/better-sqlite3@7.6.13)(better-sqlite3@12.4.1)(bun-types@1.3.2(@types/react@19.2.2))(postgres@3.4.7)
       zod: 4.1.12
 
   dunder-proto@1.0.1:
@@ -3236,6 +3254,7 @@ snapshots:
     dependencies:
       node-domexception: 1.0.0
       web-streams-polyfill: 3.3.3
+    optional: true
 
   file-entry-cache@8.0.0:
     dependencies:
@@ -3278,6 +3297,7 @@ snapshots:
   formdata-polyfill@4.0.10:
     dependencies:
       fetch-blob: 3.2.0
+    optional: true
 
   fs-constants@1.0.0: {}
 
@@ -3344,6 +3364,8 @@ snapshots:
   graphemer@1.4.0: {}
 
   grow-items@1.3.0: {}
+
+  grow-items@1.3.1: {}
 
   growtopia.js-android-arm-eabi@2.1.7:
     optional: true
@@ -3486,7 +3508,8 @@ snapshots:
 
   joycon@3.1.1: {}
 
-  js-base64@3.7.8: {}
+  js-base64@3.7.8:
+    optional: true
 
   js-yaml@4.1.0:
     dependencies:
@@ -3547,6 +3570,7 @@ snapshots:
       '@libsql/linux-x64-gnu': 0.5.22
       '@libsql/linux-x64-musl': 0.5.22
       '@libsql/win32-x64-msvc': 0.5.22
+    optional: true
 
   locate-path@6.0.0:
     dependencies:
@@ -3623,13 +3647,15 @@ snapshots:
       semver: 7.7.3
     optional: true
 
-  node-domexception@1.0.0: {}
+  node-domexception@1.0.0:
+    optional: true
 
   node-fetch@3.3.2:
     dependencies:
       data-uri-to-buffer: 4.0.1
       fetch-blob: 3.2.0
       formdata-polyfill: 4.0.10
+    optional: true
 
   object-assign@4.1.1: {}
 
@@ -3727,6 +3753,8 @@ snapshots:
 
   possible-typed-array-names@1.1.0: {}
 
+  postgres@3.4.7: {}
+
   prebuild-install@7.1.3:
     dependencies:
       detect-libc: 2.0.2
@@ -3751,7 +3779,8 @@ snapshots:
 
   process-warning@5.0.0: {}
 
-  promise-limit@2.7.0: {}
+  promise-limit@2.7.0:
+    optional: true
 
   pump@3.0.3:
     dependencies:
@@ -4035,7 +4064,8 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  web-streams-polyfill@3.3.3: {}
+  web-streams-polyfill@3.3.3:
+    optional: true
 
   which-typed-array@1.1.19:
     dependencies:
@@ -4067,7 +4097,8 @@ snapshots:
 
   wrappy@1.0.2: {}
 
-  ws@8.18.3: {}
+  ws@8.18.3:
+    optional: true
 
   xtend@4.0.2: {}
 

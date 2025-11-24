@@ -179,7 +179,7 @@ export class Base {
       )))
     );
     await itemsDat.decode();
-    logger.info("Loading custom items...");
+    // logger.info("Loading custom items...");
 
     // Disable temporarily (TODO: remaking this later)
     // try {
@@ -288,9 +288,9 @@ export class Base {
     this.items.content = bufData;
     this.items.hash = `${hash}`;
     this.items.metadata = itemsDat.meta;
-    this.items.wiki = JSON.parse(
-      await readFile(join(__dirname, "assets", "items_info_new.json"), "utf-8")
-    ) as ItemsInfo[];
+    
+    const wikiFile = await readFile(join(__dirname, "assets", "items_info_new.json"), "utf-8");
+    this.items.wiki = JSON.parse(wikiFile) as ItemsInfo[];
 
     logger.info(`Items data hash: ${hash}`);
     logger.info("Successfully parsing items data");

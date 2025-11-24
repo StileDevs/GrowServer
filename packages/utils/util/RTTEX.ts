@@ -90,12 +90,13 @@ export class RTTEX {
   }
 
   public static async decode(rttexImg: Buffer): Promise<Buffer> {
-    let data = rttexImg;
+    let data = rttexImg;    
 
     if (!Buffer.isBuffer(data)) throw new Error("Please use buffer instead.");
 
     if (data.subarray(0, 6).toString() === "RTPACK")
       data = inflateSync(rttexImg.subarray(32));
+
 
     if (data.subarray(0, 6).toString() === "RTTXTR") {
       return Buffer.from(

@@ -19,6 +19,7 @@ To setup the server, first install necessary packages & settings by
 
 ```
 $ pnpm install
+$ pnpm run setup
 ```
 
 And congrats setup are done, simple as that!
@@ -74,7 +75,12 @@ For the hosts file you can see this example below
 ## Docker
 To run the dockerized & running it automatically just run
 ```sh
-docker compose up
+docker compose up -d
+```
+
+or you want to run the database & redis only (this were for development only) then simply running
+```sh
+docker compose up -d db redis
 ```
 
 

@@ -1,15 +1,13 @@
-import { type LibSQLDatabase } from "drizzle-orm/libsql";
+import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { eq, sql, like } from "drizzle-orm";
 import { players } from "../shared/schemas/Player";
 import bcrypt from "bcryptjs";
 import { ROLE } from "@growserver/const";
 import { PeerData } from "@growserver/types";
-import { binary } from "drizzle-orm/mysql-core";
 import { formatToDisplayName } from "@growserver/utils";
 
-
 export class PlayerDB {
-  constructor(private db: LibSQLDatabase<Record<string, never>>) { }
+  constructor(private db: PostgresJsDatabase<Record<string, never>>) { }
 
   public async get(name: string) {
     const res = await this.db
@@ -55,10 +53,10 @@ export class PlayerDB {
       name:           name,
       password:       hashPassword,
       role:           ROLE.BASIC,
-      heart_monitors: Buffer.from("{}")
-    });
+      heart_monitors: JSON.stringify({})
+    }).returning({ id: players.id });
 
-    if (res && res.lastInsertRowid) return res.lastInsertRowid;
+    if (res.length && res[0].id) return res[0].id;
     return 0;
   }
 
@@ -71,16 +69,14 @@ export class PlayerDB {
         name:                data.name,
         display_name:        data.displayName,
         role:                data.role,
-        inventory:           Buffer.from(JSON.stringify(data.inventory)),
-        clothing:            Buffer.from(JSON.stringify(data.clothing)),
+        inventory:           JSON.stringify(data.inventory),
+        clothing:            JSON.stringify(data.clothing),
         gems:                data.gems,
         level:               data.level,
         exp:                 data.exp,
-        last_visited_worlds: Buffer.from(
-          JSON.stringify(data.lastVisitedWorlds)
-        ),
-        updated_at:     new Date().toISOString().slice(0, 19).replace("T", " "),
-        heart_monitors: Buffer.from(JSON.stringify(Object.fromEntries(data.heartMonitors))),
+        last_visited_worlds: JSON.stringify(data.lastVisitedWorlds),
+        updated_at:          new Date().toISOString().slice(0, 19).replace("T", " "),
+        heart_monitors:      JSON.stringify(Object.fromEntries(data.heartMonitors)),
       })
       .where(eq(players.id, data.userID))
       .returning({ id: players.id });

@@ -1,10 +1,10 @@
-import { type LibSQLDatabase } from "drizzle-orm/libsql";
+import { type PostgresJsDatabase } from "drizzle-orm/postgres-js";
 import { eq, sql } from "drizzle-orm";
 import { worlds } from "../shared/schemas/World";
 import { WorldData } from "@growserver/types";
 
 export class WorldDB {
-  constructor(private db: LibSQLDatabase<Record<string, never>>) { }
+  constructor(private db: PostgresJsDatabase<Record<string, never>>) { }
 
   public async get(name: string) {
     const res = await this.db
@@ -39,16 +39,16 @@ export class WorldDB {
       ownedBy:         worldLockData?.ownerUserID ?? null,
       width:           data.width,
       height:          data.height,
-      blocks:          Buffer.from(JSON.stringify(data.blocks)),
+      blocks:          JSON.stringify(data.blocks),
       // owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
-      dropped:         Buffer.from(JSON.stringify(data.dropped)),
+      dropped:         JSON.stringify(data.dropped),
       updated_at:      new Date().toISOString().slice(0, 19).replace("T", " "),
       weather_id:      data.weather.id,
       worldlock_index: data.worldLockIndex,
       // minimum_level: data.minLevel
-    });
+    }).returning({ id: worlds.id });
 
-    if (res && res.lastInsertRowid) return res.lastInsertRowid;
+    if (res.length && res[0].id) return res[0].id;
     return 0;
   }
 
@@ -63,9 +63,9 @@ export class WorldDB {
         ownedBy:    worldLockData?.ownerUserID ?? null,
         width:      data.width,
         height:     data.height,
-        blocks:     Buffer.from(JSON.stringify(data.blocks)), // only save tile data here.
+        blocks:     JSON.stringify(data.blocks), // only save tile data here.
         // owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
-        dropped:    Buffer.from(JSON.stringify(data.dropped)),
+        dropped:    JSON.stringify(data.dropped),
         updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
         weather_id: data.weather.id,
         // minimum_level: data.minLevel
