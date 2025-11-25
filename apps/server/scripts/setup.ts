@@ -1,21 +1,22 @@
 "use strict";
 
-import fs from "fs";
-import { downloadMkcert, setupMkcert } from "./utils";
-
+import fs from "fs/promises";
+import { existsSync } from "fs";
+import { buildItemsInfo } from "./item-info/build";
+import { Database, dbDir, dbPath } from "@growserver/db";
 
 async function setup() {
-  await downloadMkcert();
-  await setupMkcert();
-  if (!fs.existsSync("./data")) {
-    fs.mkdirSync("./data");
+  const isData = existsSync(dbDir);
+  if (!isData) {
+    await fs.mkdir(dbDir);
+    await fs.writeFile(dbPath, Buffer.alloc(0));
   }
-  if (!fs.existsSync("./.env")) {
-    fs.copyFileSync("./.env.schema", "./.env")
-  }
-
-}
   
+  const db = new Database();
+  await db.setup();
+  await buildItemsInfo();
+  process.exit(0);
+}
 
 (async() => {
   await setup();

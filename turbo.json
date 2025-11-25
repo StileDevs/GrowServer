@@ -15,7 +15,17 @@
     },
     "dev": {
       "cache": false,
-      "persistent": true
+      "persistent": true,
+      "interactive": true
+    },
+    "clean": {
+      "cache": false
+    },
+    "setup": {
+      "dependsOn": ["^setup"],
+      "cache": false,
+      "persistent": true,
+      "interactive": true
     }
   }
 }

@@ -1,6 +1,6 @@
 import { Base } from "../core/Base";
 import { Peer } from "../core/Peer";
-import type { CommandOptions } from "../types/commands";
+import type { CommandOptions } from "@growserver/types";
 
 export class Command {
   public opt: CommandOptions;

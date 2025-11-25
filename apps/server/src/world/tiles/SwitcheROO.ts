@@ -1,12 +1,11 @@
 import { TankPacket, Variant } from "growtopia.js";
-import { ActionTypes, BlockFlags, LockPermission, TileFlags } from "../../Constants";
+import { ActionTypes, BlockFlags, LockPermission, TileFlags } from "@growserver/const";
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
-import type { TileData } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import type { TileData } from "@growserver/types";
+import { ExtendBuffer, DialogBuilder } from "@growserver/utils";
 import { Tile } from "../Tile";
-import { DialogBuilder } from "../../utils/builders/DialogBuilder";
 
 export class SwitcheROO extends Tile {
   constructor(

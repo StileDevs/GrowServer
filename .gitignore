@@ -27,6 +27,9 @@ out/
 build
 dist
 
+# GrowServer ignores
+.cache
+data
 
 # Debug
 npm-debug.log*

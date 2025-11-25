@@ -1,4 +1,4 @@
-import { TileData, PeerData } from "../types";
+import type { TileData, PeerData } from "@growserver/types";
 import {
   Peer as OldPeer,
   TankPacket,
@@ -20,8 +20,8 @@ import {
   PacketTypes,
   ROLE,
   TankTypes
-} from "../Constants";
-import { getCurrentTimeInSeconds, manageArray, formatToDisplayName } from "../utils/Utils";
+} from "@growserver/const";
+import { formatToDisplayName, getCurrentTimeInSeconds, manageArray } from "@growserver/utils";
 import { tileFrom, tileUpdateMultiple } from "../world/tiles";
 
 const PUNCH_ITEMS: Array<{ id: number; punchID: number; slot: keyof PeerData["clothing"] }> = [
@@ -420,10 +420,6 @@ export class Peer extends OldPeer<PeerData> {
       }
     }
   }
-
-  // public updateDisplayName() {
-  //   this.saveToDatabase
-  // }
   
   public countryState() {
     const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? NameStyles.MAX_LEVEL : ""}`;

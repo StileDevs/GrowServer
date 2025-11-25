@@ -1,15 +1,16 @@
-import consola from "consola";
 import { readFile, writeFile } from "fs/promises";
 import { ItemsDat } from "grow-items";
 import { join } from "path";
 import { Scraper } from "./scraper";
 import { Parser } from "./parser";
-import { downloadItemsDat, getLatestItemsDatName } from "../utils";
+import { downloadItemsDat, getLatestItemsDatName } from "@growserver/utils";
+import logger from "@growserver/logger";
 
 
 __dirname = process.cwd();
 
-(async () => {
+
+export async function buildItemsInfo() {
   const itemsDatName = await getLatestItemsDatName();
   await downloadItemsDat(itemsDatName);
 
@@ -27,11 +28,10 @@ __dirname = process.cwd();
   const parser = new Parser(itemPages, allItems);
   const items = await parser.pagesToItems();
 
-  consola.info("Writing ItemsInfo file into ./assets/items_info_new.json");
-  writeFile("./assets/items_info_new.json", JSON.stringify(items));
+  logger.info("Writing ItemsInfo file into ./assets/items_info_new.json");
+  await writeFile("./assets/items_info_new.json", JSON.stringify(items));
+}
 
-
-})();
 
 
 

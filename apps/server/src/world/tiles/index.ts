@@ -1,12 +1,11 @@
 import type { Class } from "type-fest";
-import { ActionTypes, TankTypes } from "../../Constants";
+import { ActionTypes, TankTypes } from "@growserver/const";
 import { DoorTile } from "./DoorTile";
 import { NormalTile } from "./NormalTile";
 import { SignTile } from "./SignTile";
 import { Tile } from "../Tile";
 import type { World } from "../../core/World";
-import type { TileData } from "../../types";
-import consola from "consola";
+import type { TileData } from "@growserver/types";
 import { LockTile } from "./LockTile";
 import type { Base } from "../../core/Base";
 import { HeartMonitorTile } from "./HeartMonitorTile";
@@ -15,8 +14,9 @@ import { SwitcheROO } from "./SwitcheROO";
 import { WeatherTile } from "./WeatherTile";
 import { DiceTile } from "./DiceTile";
 import { SeedTile } from "./SeedTile";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import { ExtendBuffer } from "@growserver/utils";
 import { TankPacket } from "growtopia.js";
+import logger from "@growserver/logger";
 
 const TileMap: Record<number, Class<Tile>> = {
   [ActionTypes.DOOR]:            DoorTile,
@@ -49,7 +49,7 @@ const tileFrom = (
     return tile;
   }
   catch (e) {
-    consola.warn(e);
+    logger.debug(e);
 
     return new NormalTile(base, world, data);
   }

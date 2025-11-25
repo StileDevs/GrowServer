@@ -1,11 +1,11 @@
 import { Command } from "../Command";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { ROLE } from "../../Constants";
+import { ROLE } from "@growserver/const";
 import { Variant } from "growtopia.js";
-import { parseUserTarget } from "../../utils/Utils";
+import { parseUserTarget } from "@growserver/utils";
 import { eq } from "drizzle-orm";
-import { players, Players } from "../../database/schemas/Player";
+import { players, Players } from "@growserver/db";
 
 export default class GiveRole extends Command {
   constructor(

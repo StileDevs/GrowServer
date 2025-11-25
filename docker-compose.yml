@@ -1,0 +1,38 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080"
+      - "443:443"
+      - "17091:17091/udp"
+    depends_on:
+      - db
+      - redis
+    environment:
+      - NODE_ENV=development
+  db:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: growserver
+      POSTGRES_PASSWORD: ilovereimu
+      POSTGRES_DB: growserver
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/var/lib/redis/data
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+  redis_data:

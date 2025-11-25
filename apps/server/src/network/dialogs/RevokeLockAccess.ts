@@ -1,9 +1,9 @@
 import { type NonEmptyObject } from "type-fest";
 import { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
-import { ActionTypes, LockPermission, LOCKS, TileFlags } from "../../Constants";
-import { TileData } from "../../types";
-import { Floodfill } from "../../utils/FloodFill";
+import { ActionTypes, LockPermission, LOCKS, TileFlags } from "@growserver/const";
+import { TileData } from "@growserver/types";
+import { Floodfill } from "../../world/FloodFill";
 import { World } from "../../core/World";
 import { Tile } from "../../world/Tile";
 import { ItemDefinition } from "grow-items";

@@ -1,10 +1,10 @@
 import type { Base } from "../../core/Base";
 import { Peer } from "../../core/Peer";
 import type { World } from "../../core/World";
-import type { TileData } from "../../types";
-import { ExtendBuffer } from "../../utils/ExtendBuffer";
+import type { TileData } from "@growserver/types";
+import { ExtendBuffer } from "@growserver/utils";
 import { Tile } from "../Tile";
-import { ActionTypes, LockPermission, TileExtraTypes } from "../../Constants";
+import { ActionTypes, LockPermission, TileExtraTypes } from "@growserver/const";
 import { ItemDefinition } from "grow-items";
 import { Variant } from "growtopia.js";
 

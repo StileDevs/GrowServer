@@ -1,6 +1,6 @@
 import { ItemDefinition } from "grow-items";
-import consola from "consola";
-import type { ItemsPage } from "../../src/types"
+import type { ItemsPage } from "@growserver/types"
+import logger from "@growserver/logger";
 
 
 export class Scraper {
@@ -25,7 +25,7 @@ export class Scraper {
     const tasks = sublists.map((sublist, i) => this.postRequest(sublist, i + 1))
     const results = await Promise.all(tasks);
     
-    consola.success("fetching items info complete.");
+    logger.info("fetching items info complete.");
 
     return results as ItemsPage[];
   }
@@ -33,7 +33,7 @@ export class Scraper {
 
 
   public async postRequest(items: ItemDefinition[], iterateNum: number) {
-    consola.log(`📡ItemsInfo part ${iterateNum}, starting post request`);
+    logger.info(`ItemsInfo part ${iterateNum}, starting post request`);
     
 
     const names = items.map((i) => i.name);
@@ -46,9 +46,9 @@ export class Scraper {
     const [text, status] = await this.fetchWiki(postData);
 
     if (text !== null) {
-      consola.success(`ItemsInfo part ${iterateNum}, status: ${status}`);
+      logger.info(`ItemsInfo part ${iterateNum}, status: ${status}`);
     } else {
-      consola.error(`ItemsInfo part ${iterateNum}, status: ${status}`);
+      logger.error(`ItemsInfo part ${iterateNum}, status: ${status}`);
     }
 
     const result = {
