@@ -311,3 +311,22 @@ export async function getLatestItemsDatName() {
     return "";
   }
 }
+
+/**
+ * Parse user target from command argument
+ * Supports:
+ * - /username: Find user by exact username in database
+ * - #id: Find user by user ID
+ * @param target The target string (e.g., "/testuser1" or "#172")
+ * @returns Object with type ("name" or "id") and value
+ */
+export function parseUserTarget(target: string): { type: "name" | "id", value: string | number } | null {
+  if (target.startsWith("/")) {
+    return { type: "name", value: target.slice(1) };
+  } else if (target.startsWith("#")) {
+    const id = parseInt(target.slice(1));
+    if (isNaN(id)) return null;
+    return { type: "id", value: id };
+  }
+  return null;
+}

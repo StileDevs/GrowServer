@@ -242,6 +242,7 @@ export class ITextPacket {
         mod:             0,
         canWalkInBlocks: false,
         modsEffect:      0,
+        isGhost:         false,
         lava:            {
           damage:       0,
           resetStateAt: 0
