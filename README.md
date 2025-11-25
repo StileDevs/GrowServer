@@ -24,6 +24,8 @@ $ pnpm run setup
 
 And congrats setup are done, simple as that!
 Now you just need to run the server by
+> [!NOTE]
+> It must be running PostgreSQL & Redis in background by using docker, please navigate to [docker](#docker) guide
 
 ```
 $ pnpm run dev
