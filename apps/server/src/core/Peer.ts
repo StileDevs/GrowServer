@@ -420,10 +420,6 @@ export class Peer extends OldPeer<PeerData> {
       }
     }
   }
-
-  // public updateDisplayName() {
-  //   this.saveToDatabase
-  // }
   
   public countryState() {
     const country = (pe: Peer) => `${pe.country}|${pe.data.level >= 125 ? NameStyles.MAX_LEVEL : ""}`;

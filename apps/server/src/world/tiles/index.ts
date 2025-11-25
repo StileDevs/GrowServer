@@ -49,7 +49,7 @@ const tileFrom = (
     return tile;
   }
   catch (e) {
-    logger.warn(e);
+    logger.debug(e);
 
     return new NormalTile(base, world, data);
   }

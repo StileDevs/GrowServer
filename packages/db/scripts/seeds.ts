@@ -6,7 +6,6 @@ import { players } from "../";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import bcrypt from "bcryptjs";
-import { formatToDisplayName } from "@growserver/utils"
 import { config } from "dotenv";
 
 config({
@@ -52,7 +51,7 @@ export async function setupSeeds() {
   await db.insert(players).values([
     {
       name: "admin",
-      display_name: formatToDisplayName("aDMIn", "1"),
+      display_name: "admin",
       password: await hash("admin"),
       role: "1",
       gems: 1000,
@@ -63,8 +62,8 @@ export async function setupSeeds() {
       heart_monitors: JSON.stringify({}) // intialize empty object.
     },
     {
-      name: "Reimu",
-      display_name: formatToDisplayName("Reimu", "2"),
+      name: "reimu",
+      display_name: "Reimu",
       password: await hash("hakurei"),
       role: "2",
       gems: 1000,
@@ -75,8 +74,8 @@ export async function setupSeeds() {
       heart_monitors: JSON.stringify({}) // intialize empty object.
     },
     {
-      name: "JadlionHD",
-      display_name: formatToDisplayName("JadlionHD", "1"),
+      name: "jadlionhd",
+      display_name: "JadlionHD",
       password: await hash("admin"),
       role: "1",
       gems: 1000,

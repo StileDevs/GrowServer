@@ -139,7 +139,7 @@ ${peer.data.lastVisitedWorlds
           name:        world.name,
           width:       world.width,
           height:      world.height,
-          blocks:      JSON.parse((world.blocks as Buffer).toString()),
+          blocks:      world.blocks ? JSON.parse((world.blocks).toString()) : [],
           // admins: [],
           playerCount: 0,
           jammers:     [],

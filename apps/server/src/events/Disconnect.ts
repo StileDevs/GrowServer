@@ -31,7 +31,7 @@ export class DisconnectListener {
       })
     }
 
-    logger.info(`➖Peer ${netID} disconnected`);
+    logger.info(`Peer ${netID} disconnected`);
     this.base.cache.peers.delete(netID);
   }
 }

@@ -4,7 +4,6 @@ import { players } from "../shared/schemas/Player";
 import bcrypt from "bcryptjs";
 import { ROLE } from "@growserver/const";
 import { PeerData } from "@growserver/types";
-import { formatToDisplayName } from "@growserver/utils";
 
 export class PlayerDB {
   constructor(private db: PostgresJsDatabase<Record<string, never>>) { }
@@ -49,8 +48,8 @@ export class PlayerDB {
     const hashPassword = await bcrypt.hash(password, salt);
 
     const res = await this.db.insert(players).values({
-      display_name:   formatToDisplayName(name, ROLE.BASIC),
-      name:           name,
+      display_name:   name,
+      name:           name.toLowerCase(),
       password:       hashPassword,
       role:           ROLE.BASIC,
       heart_monitors: JSON.stringify({})
