@@ -39,15 +39,15 @@ export class WorldDB {
     const res = await this.db
       .insert(worlds)
       .values({
-        name: data.name,
-        ownedBy: worldLockData?.ownerUserID ?? null,
-        width: data.width,
-        height: data.height,
-        blocks: JSON.stringify(data.blocks),
+        name:            data.name,
+        ownedBy:         worldLockData?.ownerUserID ?? null,
+        width:           data.width,
+        height:          data.height,
+        blocks:          JSON.stringify(data.blocks),
         // owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
-        dropped: JSON.stringify(data.dropped),
-        updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
-        weather_id: data.weather.id,
+        dropped:         JSON.stringify(data.dropped),
+        updated_at:      new Date().toISOString().slice(0, 19).replace("T", " "),
+        weather_id:      data.weather.id,
         worldlock_index: data.worldLockIndex,
         // minimum_level: data.minLevel
       })
@@ -67,12 +67,12 @@ export class WorldDB {
     const res = await this.db
       .update(worlds)
       .set({
-        ownedBy: worldLockData?.ownerUserID ?? null,
-        width: data.width,
-        height: data.height,
-        blocks: JSON.stringify(data.blocks), // only save tile data here.
+        ownedBy:    worldLockData?.ownerUserID ?? null,
+        width:      data.width,
+        height:     data.height,
+        blocks:     JSON.stringify(data.blocks), // only save tile data here.
         // owner: data.owner ? Buffer.from(JSON.stringify(data.owner)) : null,
-        dropped: JSON.stringify(data.dropped),
+        dropped:    JSON.stringify(data.dropped),
         updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
         weather_id: data.weather.id,
         // minimum_level: data.minLevel

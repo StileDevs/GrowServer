@@ -9,3 +9,4 @@ export abstract class WorldGen {
 
   public abstract generate(): Promise<void>;
 }
+

@@ -5,8 +5,8 @@
   "main": "dist/src/app.js",
   "scripts": {
     "test": "nr build && (node dist/src/app.js || bun run dist/src/app.js)",
-    "lint": "eslint ./src",
-    "lint:fix": "eslint ./src --fix",
+    "lint": "eslint ./src --config ./eslint.config.ts",
+    "lint:fix": "eslint ./src --config ./eslint.config.ts --fix",
     "bun": "cross-env RUNTIME_ENV=bun bun run --bun",
     "node": "cross-env RUNTIME_ENV=node node",
     "tsx": "cross-env RUNTIME_ENV=node tsx",
@@ -50,17 +50,13 @@
     "tsx": "^4.20.5"
   },
   "devDependencies": {
-    "@eslint/js": "^9.35.0",
-    "@stylistic/eslint-plugin-ts": "^4.4.1",
     "@types/bun": "^1.2.21",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.3.1",
     "drizzle-kit": "^0.31.4",
-    "eslint": "^9.35.0",
     "jiti": "^2.5.1",
     "type-fest": "^4.41.0",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.42.0"
+    "typescript": "^5.9.2"
   },
   "engines": {
     "node": ">=18.0.0",

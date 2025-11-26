@@ -19,9 +19,9 @@
     "noEmitOnError": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "types": ["@types/bun", "node"],
+    "types": ["@types/bun", "@types/node"],
     "rootDir": "."
   },
   "exclude": ["node_modules", "./node_modules", "./node_modules/**/*"],
-  "include": ["src/**/*", "src/types/**/*", "scripts/**/*", "drizzle.config.ts"]
+  "include": ["src/**/*", "src/types/**/*", "scripts/**/*", "drizzle.config.ts", "eslint.config.ts"]
 }

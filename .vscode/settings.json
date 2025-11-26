@@ -6,8 +6,7 @@
     "source.fixAll.eslint": "always"
   },
   "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ]
+    "./packages/**/*",
+    "./apps/**/*"
+  ],
 }

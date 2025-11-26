@@ -24,5 +24,6 @@
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx"
   },
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+    "include": ["src/**/*", "src/types/**/*", "scripts/**/*", "drizzle.config.ts", "eslint.config.ts"]
 }

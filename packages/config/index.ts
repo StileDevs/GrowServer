@@ -59,4 +59,5 @@ const logon = () => {
   };
 };
 
+export * from "./eslint";
 export { config, frontend, logon };
