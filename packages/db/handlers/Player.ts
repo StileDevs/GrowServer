@@ -6,7 +6,7 @@ import { ROLE } from "@growserver/const";
 import { PeerData } from "@growserver/types";
 
 export class PlayerDB {
-  constructor(private db: PostgresJsDatabase<Record<string, never>>) { }
+  constructor(private db: PostgresJsDatabase<Record<string, never>>) {}
 
   public async get(name: string) {
     const res = await this.db
@@ -28,7 +28,7 @@ export class PlayerDB {
       .limit(1)
       .execute();
 
-    if (res.length) return res[0]
+    if (res.length) return res[0];
     return undefined;
   }
 
@@ -47,13 +47,16 @@ export class PlayerDB {
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
 
-    const res = await this.db.insert(players).values({
-      display_name:   name,
-      name:           name.toLowerCase(),
-      password:       hashPassword,
-      role:           ROLE.BASIC,
-      heart_monitors: JSON.stringify({})
-    }).returning({ id: players.id });
+    const res = await this.db
+      .insert(players)
+      .values({
+        display_name: name,
+        name: name.toLowerCase(),
+        password: hashPassword,
+        role: ROLE.BASIC,
+        heart_monitors: JSON.stringify({}),
+      })
+      .returning({ id: players.id });
 
     if (res.length && res[0].id) return res[0].id;
     return 0;
@@ -65,17 +68,17 @@ export class PlayerDB {
     const res = await this.db
       .update(players)
       .set({
-        name:                data.name,
-        display_name:        data.displayName,
-        role:                data.role,
-        inventory:           JSON.stringify(data.inventory),
-        clothing:            JSON.stringify(data.clothing),
-        gems:                data.gems,
-        level:               data.level,
-        exp:                 data.exp,
+        name: data.name,
+        display_name: data.displayName,
+        role: data.role,
+        inventory: JSON.stringify(data.inventory),
+        clothing: JSON.stringify(data.clothing),
+        gems: data.gems,
+        level: data.level,
+        exp: data.exp,
         last_visited_worlds: JSON.stringify(data.lastVisitedWorlds),
-        updated_at:          new Date().toISOString().slice(0, 19).replace("T", " "),
-        heart_monitors:      JSON.stringify(Object.fromEntries(data.heartMonitors)),
+        updated_at: new Date().toISOString().slice(0, 19).replace("T", " "),
+        heart_monitors: JSON.stringify(Object.fromEntries(data.heartMonitors)),
       })
       .where(eq(players.id, data.userID))
       .returning({ id: players.id });

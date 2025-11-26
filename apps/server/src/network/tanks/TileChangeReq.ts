@@ -8,11 +8,10 @@ import {
   BlockFlags,
   LOCKS,
   ROLE,
-  TankTypes
+  TankTypes,
 } from "@growserver/const";
 import { ItemDefinition } from "grow-items";
 import { tileFrom } from "../../world/tiles";
-
 
 export class TileChangeReq {
   private pos: number;
@@ -24,22 +23,32 @@ export class TileChangeReq {
     public base: Base,
     public peer: Peer,
     public tank: TankPacket,
-    public world: World
+    public world: World,
   ) {
     this.pos =
       (this.tank.data?.xPunch as number) +
       (this.tank.data?.yPunch as number) * this.world.data.width;
     this.block = this.world.data.blocks[this.pos];
-    this.itemMeta =
-      this.base.items.metadata.items.get((this.block.fg || this.block.bg).toString())!;
+    this.itemMeta = this.base.items.metadata.items.get(
+      (this.block.fg || this.block.bg).toString(),
+    )!;
   }
 
   // this verifies the packet and the tile state.
   public async execute() {
-    if (!this.tank.data || this.tank.data.xPunch == undefined || this.tank.data.yPunch == undefined || this.tank.data.info == undefined) return;
+    if (
+      !this.tank.data ||
+      this.tank.data.xPunch == undefined ||
+      this.tank.data.yPunch == undefined ||
+      this.tank.data.info == undefined
+    )
+      return;
     this.tank.data!.netID = this.peer.data?.netID;
 
-    const tileData = this.world.data.blocks[this.tank.data.xPunch + this.tank.data.yPunch * this.world.data.width];
+    const tileData =
+      this.world.data.blocks[
+        this.tank.data.xPunch + this.tank.data.yPunch * this.world.data.width
+      ];
 
     // Fist
     if (this.tank.data?.info === 18) {
@@ -49,21 +58,32 @@ export class TileChangeReq {
     }
     // Others
     else {
-      const itemMeta = this.base.items.metadata.items.get(this.tank.data?.info.toString());
+      const itemMeta = this.base.items.metadata.items.get(
+        this.tank.data?.info.toString(),
+      );
 
       if (!itemMeta) return;
 
       if (itemMeta.type == ActionTypes.BACKGROUND) {
         // we dont want to give the itemType here as to not override current foreground itemType.
-        await tileFrom(this.base, this.world, tileData).onPlaceBackground(this.peer, itemMeta);
-      }
-      else if (tileData.fg == 0) {
-        await tileFrom(this.base, this.world, tileData, itemMeta.type!).onPlaceForeground(this.peer, itemMeta);
-      }
-      else {
+        await tileFrom(this.base, this.world, tileData).onPlaceBackground(
+          this.peer,
+          itemMeta,
+        );
+      } else if (tileData.fg == 0) {
+        await tileFrom(
+          this.base,
+          this.world,
+          tileData,
+          itemMeta.type!,
+        ).onPlaceForeground(this.peer, itemMeta);
+      } else {
         // we also dont want to specify it here as to not override the current foreground block behaviour with
         //  the placed item behaviour
-        await tileFrom(this.base, this.world, tileData).onItemPlace(this.peer, itemMeta);
+        await tileFrom(this.base, this.world, tileData).onItemPlace(
+          this.peer,
+          itemMeta,
+        );
       }
     }
     await this.world.saveToCache();
@@ -258,7 +278,6 @@ export class TileChangeReq {
   //         return;
   //       }
 
-
   //       const searchIds = [placedItem.id - 1, (this.itemMeta?.id ?? 0) - 1];
 
   //       const foundItem = this.base.items.wiki.find(item => {
@@ -346,7 +365,6 @@ export class TileChangeReq {
   //   if (this.tank.data?.info as number !== 32 || this.tank.data?.info as number !== 18 || this.tank.data?.info as number !== 0) {
   //     this.peer.removeItemInven(this.tank.data?.info as number, 1);
   //   }
-
 
   //   const placeBlock = (fruit?: number, dontSendTileChange?: boolean) =>
   //     this.world.place(
@@ -682,7 +700,6 @@ export class TileChangeReq {
   //     }
   //   }
 
-
   //   if (
   //     typeof this.block.damage !== "number" ||
   //     (this.block.resetStateAt as number) <= Date.now()
@@ -777,7 +794,6 @@ export class TileChangeReq {
   //   (this.tank.data as Tank).info = 18;
 
   //   this.block.rotatedLeft = undefined;
-
 
   //   if ((this.itemMeta.rarity || 0) < 999) {
   //     this.peer.addXp(Math.max(1, Math.round((this.itemMeta.rarity ?? 0) / 5)) * 5 / 5, false);
@@ -1017,7 +1033,7 @@ export class TileChangeReq {
   //   switch (this.itemMeta.type) {
   //     case ActionTypes.SEED: {
   //       if (this.block.tree && Date.now() >= this.block.tree.fullyGrownAt) {
-  //         // dont send tile damage 
+  //         // dont send tile damage
   //         this.tank.data = undefined
   //         this.world.harvest(this.peer, this.block);
   //       }
@@ -1164,5 +1180,4 @@ export class TileChangeReq {
   //     )
   //   );
   // }
-
 }

@@ -8,7 +8,7 @@ export class AppCheckResponsePack {
     public base: Base,
     public peer: Peer,
     public tank: TankPacket,
-    public world: World
+    public world: World,
   ) {}
 
   public async execute() {

@@ -1,6 +1,11 @@
 "use strict";
 
-import { downloadMkcert, downloadWebsite, setupMkcert, setupWebsite } from "@growserver/utils";
+import {
+  downloadMkcert,
+  downloadWebsite,
+  setupMkcert,
+  setupWebsite,
+} from "@growserver/utils";
 
 async function setup() {
   await downloadMkcert();
@@ -10,7 +15,7 @@ async function setup() {
   await setupWebsite();
 }
 
-(async() => {
+(async () => {
   await setup();
   process.exit(0);
 })();

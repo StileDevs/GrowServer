@@ -13,7 +13,7 @@ export class State {
     public base: Base,
     public peer: Peer,
     public tank: TankPacket,
-    public world: World
+    public world: World,
   ) {
     this.pos =
       (this.tank.data?.xPunch as number) +
@@ -28,7 +28,7 @@ export class State {
     this.peer.data.x = this.tank.data?.xPos;
     this.peer.data.y = this.tank.data?.yPos;
     this.peer.data.rotatedLeft = Boolean(
-      (this.tank.data?.state as number) & 0x10
+      (this.tank.data?.state as number) & 0x10,
     );
 
     this.peer.saveToCache();
@@ -37,7 +37,7 @@ export class State {
     if (world) {
       world.every((p) => {
         p.send(this.tank);
-      })
+      });
     }
 
     this.onPlayerMove();
@@ -51,8 +51,9 @@ export class State {
       return;
     if (this.block === undefined) return;
 
-    const itemMeta =
-      this.base.items.metadata.items.get((this.block.fg || this.block.bg).toString())!;
+    const itemMeta = this.base.items.metadata.items.get(
+      (this.block.fg || this.block.bg).toString(),
+    )!;
 
     switch (itemMeta.type) {
       case ActionTypes.CHECKPOINT: {
@@ -60,12 +61,12 @@ export class State {
           Variant.from(
             { netID: this.peer.data.netID, delay: 0 },
             "SetRespawnPos",
-            this.pos
-          )
+            this.pos,
+          ),
         );
         this.peer.data.lastCheckpoint = {
           x: Math.round((this.tank.data?.xPos as number) / 32),
-          y: Math.round((this.tank.data?.yPos as number) / 32)
+          y: Math.round((this.tank.data?.yPos as number) / 32),
         };
         break;
       }

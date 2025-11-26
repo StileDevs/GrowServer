@@ -10,32 +10,32 @@ export default class Sdb extends Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["sdb"],
+      command: ["sdb"],
       description: "Send a global message to everyone via a dialog box",
-      cooldown:    5,
-      ratelimit:   1,
-      category:    "`bDev",
-      usage:       "/sdb <message>",
-      example:     ["/sdb Hello everyone!"],
-      permission:  [ROLE.DEVELOPER],
+      cooldown: 5,
+      ratelimit: 1,
+      category: "`bDev",
+      usage: "/sdb <message>",
+      example: ["/sdb Hello everyone!"],
+      permission: [ROLE.DEVELOPER],
     };
   }
 
   public async execute(): Promise<void> {
     if (this.args.length === 0)
       return this.peer.send(
-        Variant.from("OnConsoleMessage", "Message are required.")
+        Variant.from("OnConsoleMessage", "Message are required."),
       );
 
     const message = this.args.join(" ");
     const senderName = this.peer.data.displayName;
     const world = this.peer.currentWorld();
     const jammed = world?.data.jammers?.find(
-      (v) => v.type === "signal"
+      (v) => v.type === "signal",
     )?.enabled;
 
     // Dialog box creation
@@ -66,8 +66,8 @@ export default class Sdb extends Command {
           PacketTypes.ACTION,
           "action|play_sfx",
           `file|audio/beep.wav`,
-          `delayMS|0`
-        )
+          `delayMS|0`,
+        ),
       );
     });
 
@@ -75,8 +75,8 @@ export default class Sdb extends Command {
     this.peer.send(
       Variant.from(
         "OnConsoleMessage",
-        `\`2Super Duper Broadcast sent to all players.`
-      )
+        `\`2Super Duper Broadcast sent to all players.`,
+      ),
     );
   }
 }

@@ -21,7 +21,7 @@ export class DisplayBlockEdit {
       dialog_name: string;
       tilex: string;
       tiley: string;
-    }>
+    }>,
   ) {
     this.world = this.peer.currentWorld()!;
     this.pos =
@@ -31,26 +31,43 @@ export class DisplayBlockEdit {
   }
 
   public async execute(): Promise<void> {
-    if (!this.action.dialog_name || !this.action.tilex || !this.action.tiley) return;
+    if (!this.action.dialog_name || !this.action.tilex || !this.action.tiley)
+      return;
     if (!this.block.displayBlock) return;
     const ownerUID = this.world.getTileOwnerUID(this.block);
-    if (ownerUID && ownerUID != this.peer.data.userID && this.peer.data.role != ROLE.DEVELOPER) {
+    if (
+      ownerUID &&
+      ownerUID != this.peer.data.userID &&
+      this.peer.data.role != ROLE.DEVELOPER
+    ) {
       return;
     }
 
-    const itemMeta = this.base.items.metadata.items.get(this.block.displayBlock!.displayedItem.toString())!;
-    const dBlock = tileFrom(this.base, this.world, this.block) as DisplayBlockTile;
+    const itemMeta = this.base.items.metadata.items.get(
+      this.block.displayBlock!.displayedItem.toString(),
+    )!;
+    const dBlock = tileFrom(
+      this.base,
+      this.world,
+      this.block,
+    ) as DisplayBlockTile;
 
     if (!this.peer.canAddItemToInv(itemMeta.id!)) {
-      this.peer.sendTextBubble("You don't have enough space in your backpack! Free some and try again.", true);
+      this.peer.sendTextBubble(
+        "You don't have enough space in your backpack! Free some and try again.",
+        true,
+      );
       return;
     }
 
-    this.peer.sendTextBubble(`You removed \`5${itemMeta!.name!}\`\` from the Display Block.`, false);
+    this.peer.sendTextBubble(
+      `You removed \`5${itemMeta!.name!}\`\` from the Display Block.`,
+      false,
+    );
     this.peer.addItemInven(itemMeta!.id!);
 
     this.block.displayBlock = {
-      displayedItem: 0
+      displayedItem: 0,
     };
 
     this.world.every((p) => dBlock.tileUpdate(p));

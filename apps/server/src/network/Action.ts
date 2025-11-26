@@ -10,7 +10,7 @@ export class IActionPacket {
   constructor(
     public base: Base,
     public peer: Peer,
-    public chunk: Buffer
+    public chunk: Buffer,
   ) {
     this.obj = parseAction(chunk);
   }

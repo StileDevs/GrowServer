@@ -9,7 +9,7 @@
 // const username = process.argv[2];
 // const roleValue = process.argv[3] || "1"; // Default to DEVELOPER
 
-// if (!username) { 
+// if (!username) {
 //   consola.error("Please provide a username");
 //   consola.info("Usage: pnpm tsx scripts/update-role.ts <username> [role]");
 //   consola.info("Roles: 1=DEVELOPER, 2=BASIC, 3=SUPPORTER");

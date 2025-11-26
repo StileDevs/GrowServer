@@ -13,7 +13,7 @@ export class TileActiveReq {
     public base: Base,
     public peer: Peer,
     public tank: TankPacket,
-    public world: World
+    public world: World,
   ) {
     this.pos =
       (this.tank.data?.xPunch as number) +
@@ -53,24 +53,24 @@ export class TileActiveReq {
             Variant.from(
               { netID: this.peer.data?.netID },
               "OnSetFreezeState",
-              0
+              0,
             ),
             Variant.from(
               {
-                netID: this.peer.data?.netID
+                netID: this.peer.data?.netID,
               },
               "OnSetPos",
-              [doorX, doorY]
+              [doorX, doorY],
             ),
             Variant.from(
               {
-                netID: this.peer.data?.netID
+                netID: this.peer.data?.netID,
               },
               "OnPlayPositioned",
-              "audio/door_open.wav"
-            )
+              "audio/door_open.wav",
+            ),
           );
-        })
+        });
       }
     } else {
       if (worldName === "EXIT") return this.peer.leaveWorld();
@@ -91,26 +91,26 @@ export class TileActiveReq {
               Variant.from(
                 "OnRemove",
                 `netID|${this.peer.data.netID}`,
-                `pId|${this.peer.data.userID}`
+                `pId|${this.peer.data.userID}`,
               ),
               Variant.from(
                 "OnConsoleMessage",
-                `\`5<${this.peer.data.displayName}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
+                `\`5<${this.peer.data.displayName}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``,
               ),
               Variant.from(
                 "OnTalkBubble",
                 this.peer.data.netID,
-                `\`5<${this.peer.data.displayName}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``
+                `\`5<${this.peer.data.displayName}\`\` left, \`w${this.world.data.playerCount}\`\` others here\`5>\`\``,
               ),
               TextPacket.from(
                 PacketTypes.ACTION,
                 "action|play_sfx",
                 "file|audio/door_shut.wav",
-                "delayMS|0"
-              )
+                "delayMS|0",
+              ),
             );
           }
-        })
+        });
       }
       this.peer.enterWorld(worldName, door?.x, door?.y);
     }

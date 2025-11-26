@@ -1,6 +1,5 @@
 "use strict";
 
-
 import { players } from "../";
 // import { worlds } from "../src/database/schemas/World";
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -9,9 +8,8 @@ import bcrypt from "bcryptjs";
 import { config } from "dotenv";
 
 config({
-  path: "../../.env"
-})
-
+  path: "../../.env",
+});
 
 /**
  * @param {string} password
@@ -21,7 +19,6 @@ async function hash(password: string) {
 
   return await bcrypt.hash(password, salt);
 }
-
 
 export async function setupSeeds() {
   const connection = postgres(process.env.DATABASE_URL!);
@@ -48,44 +45,45 @@ export async function setupSeeds() {
       heart_monitors TEXT NOT NULL
     );
   `);
-  await db.insert(players).values([
-    {
-      name: "admin",
-      display_name: "admin",
-      password: await hash("admin"),
-      role: "1",
-      gems: 1000,
-      clothing: null,
-      inventory: null,
-      last_visited_worlds: null,
-      created_at: dateNow,
-      heart_monitors: JSON.stringify({}) // intialize empty object.
-    },
-    {
-      name: "reimu",
-      display_name: "Reimu",
-      password: await hash("hakurei"),
-      role: "2",
-      gems: 1000,
-      clothing: null,
-      inventory: null,
-      last_visited_worlds: null,
-      created_at: dateNow,
-      heart_monitors: JSON.stringify({}) // intialize empty object.
-    },
-    {
-      name: "jadlionhd",
-      display_name: "JadlionHD",
-      password: await hash("admin"),
-      role: "1",
-      gems: 1000,
-      clothing: null,
-      inventory: null,
-      last_visited_worlds: null,
-      created_at: dateNow,
-      heart_monitors: JSON.stringify({}) // intialize empty object.
-    }
-  ])
+  await db
+    .insert(players)
+    .values([
+      {
+        name: "admin",
+        display_name: "admin",
+        password: await hash("admin"),
+        role: "1",
+        gems: 1000,
+        clothing: null,
+        inventory: null,
+        last_visited_worlds: null,
+        created_at: dateNow,
+        heart_monitors: JSON.stringify({}), // intialize empty object.
+      },
+      {
+        name: "reimu",
+        display_name: "Reimu",
+        password: await hash("hakurei"),
+        role: "2",
+        gems: 1000,
+        clothing: null,
+        inventory: null,
+        last_visited_worlds: null,
+        created_at: dateNow,
+        heart_monitors: JSON.stringify({}), // intialize empty object.
+      },
+      {
+        name: "jadlionhd",
+        display_name: "JadlionHD",
+        password: await hash("admin"),
+        role: "1",
+        gems: 1000,
+        clothing: null,
+        inventory: null,
+        last_visited_worlds: null,
+        created_at: dateNow,
+        heart_monitors: JSON.stringify({}), // intialize empty object.
+      },
+    ])
     .onConflictDoNothing(); // dont confuse the normal user with error lol
-
 }

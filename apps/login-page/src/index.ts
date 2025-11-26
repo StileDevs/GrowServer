@@ -2,7 +2,12 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { config, frontend } from "@growserver/config";
 import { createServer } from "https";
-import { downloadMkcert, downloadWebsite, setupMkcert, setupWebsite } from "@growserver/utils";
+import {
+  downloadMkcert,
+  downloadWebsite,
+  setupMkcert,
+  setupWebsite,
+} from "@growserver/utils";
 import logger from "@growserver/logger";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { readFileSync } from "fs";
@@ -12,7 +17,7 @@ import jwt from "jsonwebtoken";
 import { Database } from "@growserver/db";
 
 async function init() {
-  const app = new Hono()
+  const app = new Hono();
   const buns = process.versions.bun ? await import("hono/bun") : undefined;
   const db = new Database();
 
@@ -33,12 +38,11 @@ async function init() {
     "/*",
     process.env.RUNTIME_ENV === "bun" && process.versions.bun
       ? // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
-      buns?.serveStatic({ root: config.webFrontend.root })!
+        buns?.serveStatic({ root: config.webFrontend.root })!
       : serveStatic({
-        root: config.webFrontend.root
-      })
+          root: config.webFrontend.root,
+        }),
   );
-
 
   app.get("/player/growid/login/validate", (ctx) => {
     try {
@@ -48,12 +52,12 @@ async function init() {
 
       return ctx.html(
         JSON.stringify({
-          status:      "success",
-          message:     "Account Validated.",
+          status: "success",
+          message: "Account Validated.",
           token,
-          url:         "",
-          accountType: "growtopia"
-        })
+          url: "",
+          accountType: "growtopia",
+        }),
       );
     } catch (e) {
       return ctx.body(`Unauthorized: ${e}`, 401);
@@ -76,17 +80,17 @@ async function init() {
 
       const token = jwt.sign(
         { growId, password },
-        process.env.JWT_SECRET as string
+        process.env.JWT_SECRET as string,
       );
 
       return ctx.html(
         JSON.stringify({
-          status:      "success",
-          message:     "Account Validated.",
+          status: "success",
+          message: "Account Validated.",
           token,
-          url:         "",
-          accountType: "growtopia"
-        })
+          url: "",
+          accountType: "growtopia",
+        }),
       );
     } catch (e) {
       return ctx.body(`Unauthorized: ${e}`, 401);
@@ -95,7 +99,7 @@ async function init() {
 
   app.post("/player/growid/checktoken", async (ctx) => {
     try {
-      const formData = await ctx.req.formData() as FormData;
+      const formData = (await ctx.req.formData()) as FormData;
       const refreshToken = formData.get("refreshToken") as string;
 
       if (!refreshToken) throw new Error("Unauthorized");
@@ -104,12 +108,12 @@ async function init() {
 
       return ctx.html(
         JSON.stringify({
-          status:      "success",
-          message:     "Account Validated.",
-          token:       refreshToken,
-          url:         "",
-          accountType: "growtopia"
-        })
+          status: "success",
+          message: "Account Validated.",
+          token: refreshToken,
+          url: "",
+          accountType: "growtopia",
+        }),
       );
     } catch (e) {
       logger.error(`Error checking token: ${e}`);
@@ -141,7 +145,7 @@ async function init() {
       // Login user:
       const token = jwt.sign(
         { growId, password },
-        process.env.JWT_SECRET as string
+        process.env.JWT_SECRET as string,
       );
 
       if (!token) throw new Error("Unauthorized");
@@ -150,12 +154,12 @@ async function init() {
 
       return ctx.html(
         JSON.stringify({
-          status:      "success",
-          message:     "Account Validated.",
+          status: "success",
+          message: "Account Validated.",
           token,
-          url:         "",
-          accountType: "growtopia"
-        })
+          url: "",
+          accountType: "growtopia",
+        }),
       );
     } catch (e) {
       logger.error(`Error signing up: ${e}`);
@@ -166,7 +170,7 @@ async function init() {
   app.post("/player/login/dashboard", (ctx) => {
     const html = readFileSync(
       join(__dirname, "..", ".cache", "website", "index.html"),
-      "utf-8"
+      "utf-8",
     );
     return ctx.html(html);
   });
@@ -174,29 +178,31 @@ async function init() {
   const fe = frontend();
 
   if (process.env.RUNTIME_ENV === "node") {
-    serve({
-      fetch: app.fetch,
-      createServer,
-      serverOptions: {
-        key: fe.tls.key,
-        cert: fe.tls.cert
+    serve(
+      {
+        fetch: app.fetch,
+        createServer,
+        serverOptions: {
+          key: fe.tls.key,
+          cert: fe.tls.cert,
+        },
+        port: config.webFrontend.port,
       },
-      port: config.webFrontend.port
-    }, (info) => {
-      logger.info(`Node Login Page Server is running on port ${info.port}`)
-    })
+      (info) => {
+        logger.info(`Node Login Page Server is running on port ${info.port}`);
+      },
+    );
   } else if (process.env.RUNTIME_ENV === "bun") {
     logger.info(`Bun Login Page Server is running on port ${config.web.port}`);
     Bun.serve({
       fetch: app.fetch,
-      port:  config.webFrontend.port,
-      tls:   {
+      port: config.webFrontend.port,
+      tls: {
         key: fe.tls.key,
-        cert: fe.tls.cert
-      }
+        cert: fe.tls.cert,
+      },
     });
   }
 }
-
 
 init();

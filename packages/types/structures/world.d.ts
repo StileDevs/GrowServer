@@ -13,7 +13,7 @@ export interface TileData {
   sign?: Sign;
   heartMonitor?: HeartMonitor;
   // dblockID?: number;
-  damage?: number; // this is a float. 1 damage is equal to 1 fist damage. 
+  damage?: number; // this is a float. 1 damage is equal to 1 fist damage.
   resetStateAt?: number;
   // worldLock?: boolean;
   rotatedLeft?: boolean;
@@ -22,7 +22,7 @@ export interface TileData {
   mannequin?: Mannequin;
   dice?: Dice;
   provider?: Provider;
-  displayBlock?: DisplayBlock
+  displayBlock?: DisplayBlock;
 }
 
 export interface Provider {
@@ -117,9 +117,8 @@ export interface LockParent {
   adminIDs: number[];
   ownedTiles: number[]; // Tile indexes this lock owns
   ignoreEmptyAir: boolean;
-  permission: LockPermission; // this is available exclusively to the actual Lock(small lock, huge lock, etc), not locked tile  
+  permission: LockPermission; // this is available exclusively to the actual Lock(small lock, huge lock, etc), not locked tile
 }
-
 
 export interface Door {
   label?: string;
@@ -165,4 +164,3 @@ export interface Ignore {
   blockIDsToIgnoreByLock: number[];
   blockActionTypesToIgnore: number[];
 }
-

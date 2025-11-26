@@ -11,40 +11,45 @@ export class DropEnd {
       dialog_name: string;
       drop_count: string;
       itemID: string;
-    }>
-  ) { }
+    }>,
+  ) {}
 
   public async execute(): Promise<void> {
-    if (!this.action.dialog_name || !this.action.drop_count || !this.action.itemID) return;
+    if (
+      !this.action.dialog_name ||
+      !this.action.drop_count ||
+      !this.action.itemID
+    )
+      return;
     if (!/\d/.test(this.action.drop_count) || !/\d/.test(this.action.itemID)) {
       this.peer.send(
         Variant.from(
           "OnTalkBubble",
           this.peer.data.netID,
-          "Uh oh, thats not a valid number"
-        )
+          "Uh oh, thats not a valid number",
+        ),
       );
       return;
     }
     const itemID = parseInt(this.action.itemID);
     const count = parseInt(this.action.drop_count);
     const itemExist = this.peer.data?.inventory?.items.find(
-      (i) => i.id === itemID
+      (i) => i.id === itemID,
     );
     if (!itemExist || itemExist.amount <= 0) {
       this.peer.send(
         Variant.from(
           "OnTalkBubble",
           this.peer.data.netID,
-          "That item, does not exist in your inventory"
-        )
+          "That item, does not exist in your inventory",
+        ),
       );
       return;
     }
 
     if (count > itemExist.amount) {
       this.peer.send(
-        Variant.from("OnTalkBubble", this.peer.data.netID, "Really?")
+        Variant.from("OnTalkBubble", this.peer.data.netID, "Really?"),
       );
       return;
     }
@@ -54,8 +59,8 @@ export class DropEnd {
         Variant.from(
           "OnTalkBubble",
           this.peer.data.netID,
-          "Nice try. You remind me of myself at that age."
-        )
+          "Nice try. You remind me of myself at that age.",
+        ),
       );
       return;
     }

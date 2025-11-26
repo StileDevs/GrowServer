@@ -22,28 +22,40 @@ export class SignEdit {
       tilex: string;
       tiley: string;
       label: string;
-    }>
+    }>,
   ) {
     this.world = this.peer.currentWorld()!;
     this.pos =
       parseInt(this.action.tilex) +
       parseInt(this.action.tiley) * (this.world?.data.width as number);
     this.block = this.world?.data.blocks[this.pos] as TileData;
-    this.itemMeta = this.base.items.metadata.items.get(this.block.fg.toString())!;
+    this.itemMeta = this.base.items.metadata.items.get(
+      this.block.fg.toString(),
+    )!;
   }
 
   public async execute(): Promise<void> {
-    if (!this.action.dialog_name || !this.action.tilex || !this.action.tiley || !this.action.label) return;
+    if (
+      !this.action.dialog_name ||
+      !this.action.tilex ||
+      !this.action.tiley ||
+      !this.action.label
+    )
+      return;
     const ownerUID = this.world.getOwnerUID();
 
     if (ownerUID) {
-      if (ownerUID !== this.peer.data?.userID && this.peer.data.role == ROLE.DEVELOPER) return;
+      if (
+        ownerUID !== this.peer.data?.userID &&
+        this.peer.data.role == ROLE.DEVELOPER
+      )
+        return;
     }
 
     if (!this.block.sign) return;
 
     this.block.sign = {
-      label: this.action.label || ""
+      label: this.action.label || "",
     };
 
     const signTile = tileFrom(this.base, this.world, this.block);

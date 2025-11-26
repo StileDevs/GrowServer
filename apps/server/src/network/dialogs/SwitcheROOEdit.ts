@@ -20,7 +20,7 @@ export class SwitcheROOEdit {
       tilex: string;
       tiley: string;
       checkbox_public?: string;
-    }>
+    }>,
   ) {
     this.world = this.peer.currentWorld()!;
     this.pos =
@@ -30,15 +30,26 @@ export class SwitcheROOEdit {
   }
 
   public async execute(): Promise<void> {
-    if (!this.action.dialog_name || !this.action.tilex || !this.action.tiley || !this.action.checkbox_public) return;
-    if (!await this.world.hasTilePermission(this.peer.data.userID, this.block, LockPermission.BUILD)) {
+    if (
+      !this.action.dialog_name ||
+      !this.action.tilex ||
+      !this.action.tiley ||
+      !this.action.checkbox_public
+    )
+      return;
+    if (
+      !(await this.world.hasTilePermission(
+        this.peer.data.userID,
+        this.block,
+        LockPermission.BUILD,
+      ))
+    ) {
       return;
     }
 
     if (this.action.checkbox_public == "1") {
       this.block.flags |= TileFlags.PUBLIC;
-    }
-    else {
+    } else {
       this.block.flags &= ~TileFlags.PUBLIC; // unset PUBLIC flag
     }
 

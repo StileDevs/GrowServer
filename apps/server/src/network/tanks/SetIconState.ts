@@ -12,7 +12,7 @@ export class SetIconState {
     public base: Base,
     public peer: Peer,
     public tank: TankPacket,
-    public world: World
+    public world: World,
   ) {
     this.pos =
       (this.tank.data?.xPunch as number) +
@@ -27,7 +27,7 @@ export class SetIconState {
     if (world) {
       world.every((p) => {
         p.send(this.tank);
-      })
+      });
     }
   }
 }

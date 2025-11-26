@@ -19,19 +19,19 @@ import { TankPacket } from "growtopia.js";
 import logger from "@growserver/logger";
 
 const TileMap: Record<number, Class<Tile>> = {
-  [ActionTypes.DOOR]:            DoorTile,
-  [ActionTypes.MAIN_DOOR]:       DoorTile,
-  [ActionTypes.PORTAL]:          DoorTile,
-  [ActionTypes.SIGN]:            SignTile,
-  [ActionTypes.LOCK]:            LockTile,
-  [ActionTypes.HEART_MONITOR]:   HeartMonitorTile,
-  [ActionTypes.DISPLAY_BLOCK]:   DisplayBlockTile,
-  [ActionTypes.SWITCHEROO]:      SwitcheROO,
+  [ActionTypes.DOOR]: DoorTile,
+  [ActionTypes.MAIN_DOOR]: DoorTile,
+  [ActionTypes.PORTAL]: DoorTile,
+  [ActionTypes.SIGN]: SignTile,
+  [ActionTypes.LOCK]: LockTile,
+  [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
+  [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
+  [ActionTypes.SWITCHEROO]: SwitcheROO,
   [ActionTypes.WEATHER_MACHINE]: WeatherTile,
-  [ActionTypes.DICE]:            DiceTile,
-  [ActionTypes.BACKGROUND]:      NormalTile,
-  [ActionTypes.FOREGROUND]:      NormalTile,
-  [ActionTypes.SEED]:            SeedTile
+  [ActionTypes.DICE]: DiceTile,
+  [ActionTypes.BACKGROUND]: NormalTile,
+  [ActionTypes.FOREGROUND]: NormalTile,
+  [ActionTypes.SEED]: SeedTile,
 };
 
 // constructs a new Tile subclass based on the ActionType.
@@ -41,19 +41,19 @@ const tileFrom = (
   base: Base,
   world: World,
   data: TileData,
-  itemType?: ActionTypes
+  itemType?: ActionTypes,
 ) => {
-  const type = itemType ?? base.items.metadata.items.get(data.fg.toString())!.type!;
+  const type =
+    itemType ?? base.items.metadata.items.get(data.fg.toString())!.type!;
   try {
     const tile = new TileMap[type](base, world, data);
     return tile;
-  }
-  catch (e) {
+  } catch (e) {
     logger.debug(e);
 
     return new NormalTile(base, world, data);
   }
-}
+};
 
 //TOOD: Move this to appropriate place.
 async function tileUpdateMultiple(world: World, tiles: Tile[]): Promise<void> {
@@ -72,15 +72,16 @@ async function tileUpdateMultiple(world: World, tiles: Tile[]): Promise<void> {
   }
 
   finalBuffer.grow(4);
-  finalBuffer.writeU32(0xFFFFFFFF);
+  finalBuffer.writeU32(0xffffffff);
 
   world.every((p) =>
-    p.send(new TankPacket({
-      type: TankTypes.SEND_TILE_UPDATE_DATA_MULTIPLE,
-      data: () => finalBuffer.data
-    }))
+    p.send(
+      new TankPacket({
+        type: TankTypes.SEND_TILE_UPDATE_DATA_MULTIPLE,
+        data: () => finalBuffer.data,
+      }),
+    ),
   );
-
 }
 
 // const tileParse = async (
@@ -110,4 +111,4 @@ async function tileUpdateMultiple(world: World, tiles: Tile[]): Promise<void> {
 //   }
 // };
 
-export { TileMap, tileFrom, tileUpdateMultiple/*, tileParse*/ };
+export { TileMap, tileFrom, tileUpdateMultiple /*, tileParse*/ };

@@ -1,16 +1,19 @@
-import { createWriteStream, existsSync, mkdirSync, readdirSync, unlinkSync } from "fs";
+import {
+  createWriteStream,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  unlinkSync,
+} from "fs";
 import { join } from "path";
 import { execSync } from "child_process";
 import net from "net";
 import ky from "ky";
-import decompress from "decompress"
+import decompress from "decompress";
 import { ITEMS_DAT_FETCH_URL, ITEMS_DAT_URL, ROLE } from "@growserver/const";
 import logger from "@growserver/logger";
 
-
 __dirname = process.cwd();
-
-
 
 const MKCERT_URL =
   "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4";
@@ -18,19 +21,19 @@ const WEBSITE_BUILD_URL =
   "https://github.com/StileDevs/growserver-frontend/releases/latest/download/build.zip";
 
 const mkcertObj: Record<string, string> = {
-  "win32-x64":    `${MKCERT_URL}/mkcert-v1.4.4-windows-amd64.exe`,
-  "win32-arm64":  `${MKCERT_URL}/mkcert-v1.4.4-windows-arm64.exe`,
-  "linux-x64":    `${MKCERT_URL}/mkcert-v1.4.4-linux-amd64`,
-  "linux-arm":    `${MKCERT_URL}/mkcert-v1.4.4-linux-arm`,
-  "linux-arm64":  `${MKCERT_URL}/mkcert-v1.4.4-linux-arm64`,
-  "darwin-x64":   `${MKCERT_URL}/mkcert-v1.4.4-darwin-amd64`,
-  "darwin-arm64": `${MKCERT_URL}/mkcert-v1.4.4-darwin-arm64`
+  "win32-x64": `${MKCERT_URL}/mkcert-v1.4.4-windows-amd64.exe`,
+  "win32-arm64": `${MKCERT_URL}/mkcert-v1.4.4-windows-arm64.exe`,
+  "linux-x64": `${MKCERT_URL}/mkcert-v1.4.4-linux-amd64`,
+  "linux-arm": `${MKCERT_URL}/mkcert-v1.4.4-linux-arm`,
+  "linux-arm64": `${MKCERT_URL}/mkcert-v1.4.4-linux-arm64`,
+  "darwin-x64": `${MKCERT_URL}/mkcert-v1.4.4-darwin-amd64`,
+  "darwin-arm64": `${MKCERT_URL}/mkcert-v1.4.4-darwin-arm64`,
 };
 
 async function downloadFile(url: string, filePath: string) {
   try {
     const response = await ky.get(url, {
-      redirect: "follow"
+      redirect: "follow",
     });
 
     if (!response.ok) {
@@ -58,7 +61,7 @@ async function downloadFile(url: string, filePath: string) {
 export async function fetchJSON(url: string) {
   try {
     const response = await ky.get(url, {
-      redirect: "follow"
+      redirect: "follow",
     });
 
     if (!response.ok) {
@@ -74,7 +77,6 @@ export async function fetchJSON(url: string) {
 
 export async function downloadItemsDat(itemsDatName: string) {
   const datDir = join(__dirname, ".cache", "growtopia", "dat");
-
 
   if (!existsSync(datDir)) {
     mkdirSync(datDir, { recursive: true });
@@ -106,7 +108,10 @@ export async function downloadItemsDat(itemsDatName: string) {
   }
 
   logger.info(`Downloading items.dat version ${currentVersion}`);
-  await downloadFile(`${ITEMS_DAT_URL}/${itemsDatName}`, join(__dirname, ".cache", "growtopia", "dat", itemsDatName));
+  await downloadFile(
+    `${ITEMS_DAT_URL}/${itemsDatName}`,
+    join(__dirname, ".cache", "growtopia", "dat", itemsDatName),
+  );
 }
 
 export async function downloadMacOSItemsDat(itemsDatName: string) {
@@ -117,7 +122,7 @@ export async function downloadMacOSItemsDat(itemsDatName: string) {
   }
 
   // Convert items-v{version}.dat to items-v{version}-osx.dat
-  const macosItemsDatName = itemsDatName.replace('.dat', '-osx.dat');
+  const macosItemsDatName = itemsDatName.replace(".dat", "-osx.dat");
   const macosItemsDatPath = join(datDir, macosItemsDatName);
 
   const currentVersion = itemsDatName.match(/items-v(\d+\.\d+)\.dat/)?.[1];
@@ -146,7 +151,10 @@ export async function downloadMacOSItemsDat(itemsDatName: string) {
   }
 
   logger.info(`Downloading macOS items.dat version ${currentVersion}`);
-  await downloadFile(`${ITEMS_DAT_URL}/${macosItemsDatName}`, macosItemsDatPath);
+  await downloadFile(
+    `${ITEMS_DAT_URL}/${macosItemsDatName}`,
+    macosItemsDatPath,
+  );
 }
 
 export async function downloadMkcert() {
@@ -163,7 +171,7 @@ export async function downloadMkcert() {
   logger.info("Downloading mkcert");
   await downloadFile(
     mkcertObj[checkPlatform],
-    join(__dirname, ".cache", "bin", name)
+    join(__dirname, ".cache", "bin", name),
   );
 }
 
@@ -175,16 +183,14 @@ export async function setupMkcert() {
   const mkcertExecuteable = join(__dirname, ".cache", "bin", name);
   const sslDir = join(__dirname, ".cache", "ssl");
 
-
-  if (!existsSync(sslDir))
-    mkdirSync(sslDir, { recursive: true });
+  if (!existsSync(sslDir)) mkdirSync(sslDir, { recursive: true });
   else return;
 
   logger.info("Setup mkcert certificate");
   try {
     execSync(
       `cd ${join(__dirname, ".cache", "ssl")} && ${mkcertExecuteable} -install && ${mkcertExecuteable} *.growserver.app`,
-      { stdio: "inherit" }
+      { stdio: "inherit" },
     );
   } catch (e) {
     logger.error(`Something wrong when setup mkcert: ${e}`);
@@ -199,7 +205,7 @@ export async function downloadWebsite() {
   logger.info("Downloading compiled website assets");
   await downloadFile(
     WEBSITE_BUILD_URL,
-    join(__dirname, ".cache", "compressed", "build.zip")
+    join(__dirname, ".cache", "compressed", "build.zip"),
   );
 }
 
@@ -212,11 +218,11 @@ export async function setupWebsite() {
   try {
     console.log(
       join(__dirname, ".cache", "compressed", "build.zip"),
-      "awdjawidjwad"
-    )
+      "awdjawidjwad",
+    );
     await decompress(
       join(__dirname, ".cache", "compressed", "build.zip"),
-      join(__dirname, ".cache")
+      join(__dirname, ".cache"),
     );
   } catch (e) {
     logger.error(`Something wrong when setup website: ${e}`);
@@ -249,7 +255,7 @@ export function parseAction(chunk: Buffer): Record<string, string> {
 export function manageArray(
   arr: string[],
   length: number,
-  newItem: string
+  newItem: string,
 ): string[] {
   if (arr.length > length) {
     arr.shift();
@@ -281,12 +287,18 @@ export const checkPortInUse = (port: number): Promise<boolean> => {
 // Return the current time in seconds (today)
 export function getCurrentTimeInSeconds(): number {
   const now = new Date();
-  const today_begin = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const today_begin = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    0,
+    0,
+    0,
+  );
   const ms = now.getTime() - today_begin.getTime();
   const sec = Math.floor(ms / 1000);
   return sec;
 }
-
 
 export function formatToDisplayName(name: string, role: string): string {
   switch (role) {
@@ -304,8 +316,10 @@ export function formatToDisplayName(name: string, role: string): string {
 
 export async function getLatestItemsDatName() {
   try {
-    const itemsDat = await fetchJSON(ITEMS_DAT_FETCH_URL) as { content: string };
-    return itemsDat.content
+    const itemsDat = (await fetchJSON(ITEMS_DAT_FETCH_URL)) as {
+      content: string;
+    };
+    return itemsDat.content;
   } catch (e) {
     logger.error(`Failed to get latest CDN: ${e}`);
     return "";
@@ -320,7 +334,9 @@ export async function getLatestItemsDatName() {
  * @param target The target string (e.g., "/testuser1" or "#172")
  * @returns Object with type ("name" or "id") and value
  */
-export function parseUserTarget(target: string): { type: "name" | "id", value: string | number } | null {
+export function parseUserTarget(
+  target: string,
+): { type: "name" | "id"; value: string | number } | null {
   if (target.startsWith("/")) {
     return { type: "name", value: target.slice(1) };
   } else if (target.startsWith("#")) {

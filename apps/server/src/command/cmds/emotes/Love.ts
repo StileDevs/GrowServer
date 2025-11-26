@@ -8,18 +8,18 @@ export default class Love extends Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["love", "kiss"],
+      command: ["love", "kiss"],
       description: "Love",
-      cooldown:    0,
-      ratelimit:   1,
-      category:    "Emote",
-      usage:       "/love",
-      example:     ["/love"],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
+      cooldown: 0,
+      ratelimit: 1,
+      category: "Emote",
+      usage: "/love",
+      example: ["/love"],
+      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {
@@ -27,13 +27,13 @@ export default class Love extends Command {
     const varlist = Variant.from(
       { netID: this.peer.data.netID },
       "OnAction",
-      this.opt.usage
+      this.opt.usage,
     );
 
     if (world) {
       world.every((p) => {
         p.send(varlist);
       });
-    };
+    }
   }
 }

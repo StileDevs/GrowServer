@@ -23,7 +23,6 @@ export class DialogBuilder {
     return this;
   }
 
-
   /**
    * Adds a spacer for the dialog
    * @param {string} type Spacer type, 'big' or 'small'
@@ -67,7 +66,7 @@ export class DialogBuilder {
   public addLabelWithIcon(
     text: string,
     titleid: string | number,
-    type: string
+    type: string,
   ): DialogBuilder {
     switch (type.toUpperCase()) {
       case "BIG":
@@ -116,7 +115,7 @@ export class DialogBuilder {
     description: string,
     image: string = "",
     imagepos: { x: number; y: number } = { x: 0, y: 0 },
-    cost: string | number = ""
+    cost: string | number = "",
   ): DialogBuilder {
     this.#str += `add_button|${name}|${title}|${image}|${description}|${imagepos.x}|${imagepos.y}|${cost}|\n`;
 
@@ -136,7 +135,7 @@ export class DialogBuilder {
     itemID: string | number,
     text: string,
     frame = "left",
-    count = 0
+    count = 0,
   ): DialogBuilder {
     this.#str += `add_button_with_icon|${name}|${text}|${frame}|${itemID}|${count ? count : ""}\n`;
     return this;
@@ -155,7 +154,7 @@ export class DialogBuilder {
     name: string | number,
     imageLocation: string,
     image_size = { width: 400, height: 260 },
-    btnWidth = 0.24
+    btnWidth = 0.24,
   ): DialogBuilder {
     this.#str += `add_custom_button|${name}|image:${imageLocation};image_size:${image_size.width},${image_size.height};width:${btnWidth};|\n`;
     return this;
@@ -181,7 +180,7 @@ export class DialogBuilder {
   public addCheckbox(
     name: string,
     string: string,
-    type: string
+    type: string,
   ): DialogBuilder {
     switch (type.toUpperCase()) {
       case "SELECTED":
@@ -231,7 +230,7 @@ export class DialogBuilder {
     name = "",
     text = "",
     cont: string | number = "",
-    size: string | number = 0
+    size: string | number = 0,
   ): DialogBuilder {
     this.#str += `add_text_input|${name}|${text}|${cont}|${size}|\n`;
     return this;
@@ -267,7 +266,11 @@ export class DialogBuilder {
    * @param {string | number} itemID The item ID to use as an achievement icon.
    * @returns {DialogBuilder}
    */
-  public addAchieve(title: string, description: string, itemID: string | number): DialogBuilder {
+  public addAchieve(
+    title: string,
+    description: string,
+    itemID: string | number,
+  ): DialogBuilder {
     this.#str += `add_achieve|${title}|${description}|${itemID}|\n`;
     return this;
   }
@@ -289,7 +292,11 @@ export class DialogBuilder {
    * @param {string} pickerText Item Picker text.
    * @returns {DialogBuilder}
    */
-  public addItemPicker(message: string, title: string, pickerText: string): DialogBuilder {
+  public addItemPicker(
+    message: string,
+    title: string,
+    pickerText: string,
+  ): DialogBuilder {
     this.#str += `add_item_picker|${message}|${title}|${pickerText}|\n`;
     return this;
   }
@@ -312,7 +319,11 @@ export class DialogBuilder {
    * @param {string} tooltipText Text that appears on hover or as a subtitle.
    * @returns {DialogBuilder}
    */
-  public addURLButton(buttonText: string, url: string, tooltipText: string): DialogBuilder {
+  public addURLButton(
+    buttonText: string,
+    url: string,
+    tooltipText: string,
+  ): DialogBuilder {
     this.#str += `add_url_button|${buttonText}|${url}|${tooltipText}|\n`;
     return this;
   }
@@ -346,12 +357,11 @@ export class DialogBuilder {
     playerName: string,
     level: string | number,
     currentExp: string | number,
-    requiredExp: string | number
+    requiredExp: string | number,
   ): DialogBuilder {
     this.#str += `add_player_info|${playerName}|${level}|${currentExp}|${requiredExp}|\n`;
     return this;
   }
-
 
   /**
    * Adds a raw dialog, useful if the function for that specific dialog would not be here

@@ -22,13 +22,17 @@ export class DisconnectListener {
         const world = new World(this.base, worldName);
 
         for (const index of indexes) {
-          const heartMonitorTile = tileFrom(this.base, world, worldData.blocks[index]);
+          const heartMonitorTile = tileFrom(
+            this.base,
+            world,
+            worldData.blocks[index],
+          );
 
           tiles.push(heartMonitorTile as HeartMonitorTile);
         }
 
         tileUpdateMultiple(world, tiles);
-      })
+      });
     }
 
     logger.info(`Peer ${netID} disconnected`);

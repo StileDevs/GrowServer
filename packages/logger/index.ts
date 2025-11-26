@@ -1,16 +1,16 @@
-import pino from 'pino';
-import { config } from '@growserver/config';
-const isDevelopment = process.env.NODE_ENV !== 'production';
+import pino from "pino";
+import { config } from "@growserver/config";
+const isDevelopment = process.env.NODE_ENV !== "production";
 
 export const logger = pino({
   level: config.server.logLevel,
   transport: isDevelopment
     ? {
-        target: 'pino-pretty',
+        target: "pino-pretty",
         options: {
           colorize: true,
-          translateTime: 'SYS:standard',
-          ignore: 'pid,hostname',
+          translateTime: "SYS:standard",
+          ignore: "pid,hostname",
         },
       }
     : undefined,

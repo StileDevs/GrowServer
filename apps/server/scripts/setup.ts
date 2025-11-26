@@ -11,13 +11,13 @@ async function setup() {
     await fs.mkdir(dbDir);
     await fs.writeFile(dbPath, Buffer.alloc(0));
   }
-  
+
   const db = new Database();
   await db.setup();
   await buildItemsInfo();
   process.exit(0);
 }
 
-(async() => {
+(async () => {
   await setup();
 })();

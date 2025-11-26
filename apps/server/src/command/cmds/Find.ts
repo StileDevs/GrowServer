@@ -10,18 +10,18 @@ export default class Find extends Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["find"],
+      command: ["find"],
       description: "Find some items",
-      cooldown:    5,
-      ratelimit:   5,
-      category:    "`oBasic",
-      usage:       "/find <item_name?>",
-      example:     ["/find", "/find dirt"],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown: 5,
+      ratelimit: 5,
+      category: "`oBasic",
+      usage: "/find <item_name?>",
+      example: ["/find", "/find dirt"],
+      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 
@@ -45,7 +45,7 @@ export default class Find extends Command {
         .addSpacer("small");
 
       const items = this.base.items.metadata.items.filter((v) =>
-        v.name?.toLowerCase().includes(findItemName.toLowerCase())
+        v.name?.toLowerCase().includes(findItemName.toLowerCase()),
       );
       items.forEach((item) => {
         const itemID = item.id || 0;
@@ -57,7 +57,7 @@ export default class Find extends Command {
               itemID,
               itemName,
               "staticBlueFrame",
-              item.id
+              item.id,
             );
         } else {
           if (itemID % 2 === 0)
@@ -66,7 +66,7 @@ export default class Find extends Command {
               itemID,
               itemName,
               "staticBlueFrame",
-              item.id
+              item.id,
             );
         }
       });

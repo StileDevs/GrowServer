@@ -13,7 +13,7 @@ export class Color {
       a > 255
     ) {
       throw new Error(
-        "Invalid color values. Each value must be between 0 and 255."
+        "Invalid color values. Each value must be between 0 and 255.",
       );
     }
 
@@ -81,7 +81,7 @@ export class Color {
   public static fromDecimal(decimal: number): Color {
     if (decimal < 0 || decimal > 0xffffffff) {
       throw new Error(
-        "Invalid decimal color value. It must be between 0 and 4294967295."
+        "Invalid decimal color value. It must be between 0 and 4294967295.",
       );
     }
 

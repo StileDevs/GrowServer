@@ -8,11 +8,11 @@ export interface Collection<K, V> extends Map<K, V> {
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/every | Array#every } */
   every<T extends V, ThisArg = Collection<K, V>>(
     predicate: (value: V, index: number, array: Array<V>) => value is T,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): this is Array<T>;
   every<ThisArg = Collection<K, V>>(
     predicate: (value: V, index: number, array: Array<V>) => unknown,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): boolean;
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter | Array#filter } */
@@ -21,18 +21,18 @@ export interface Collection<K, V> extends Map<K, V> {
       this: ThisArg,
       value: V,
       index: number,
-      array: Array<V>
+      array: Array<V>,
     ) => value is S,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): Array<S>;
   filter<ThisArg = Collection<K, V>>(
     predicate: (
       this: ThisArg,
       value: V,
       index: number,
-      array: Array<V>
+      array: Array<V>,
     ) => unknown,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): Array<V>;
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find | Array#find } */
@@ -41,24 +41,24 @@ export interface Collection<K, V> extends Map<K, V> {
       this: ThisArg,
       value: V,
       index: number,
-      obj: Array<V>
+      obj: Array<V>,
     ) => value is S,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): S | undefined;
   find<ThisArg = Collection<K, V>>(
     predicate: (
       this: ThisArg,
       value: V,
       index: number,
-      obj: Array<V>
+      obj: Array<V>,
     ) => unknown,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): V | undefined;
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex | Array#findIndex } */
   findIndex(
     predicate: (value: V, index: number, obj: Array<V>) => unknown,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): number;
 
   /**
@@ -78,7 +78,7 @@ export interface Collection<K, V> extends Map<K, V> {
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map | Array#map } */
   map<T>(
     predicate: (value: V, index: number, obj: Array<V>) => T,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): Array<T>;
 
   /**
@@ -92,26 +92,26 @@ export interface Collection<K, V> extends Map<K, V> {
       previousValue: V,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
-    ) => V
+      array: Array<V>,
+    ) => V,
   ): V;
   reduce(
     predicate: (
       previousValue: V,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => V,
-    initialValue: V
+    initialValue: V,
   ): V;
   reduce<T>(
     predicate: (
       previousValue: T,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => T,
-    initialValue: T
+    initialValue: T,
   ): T;
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduceRight | Array#reduceRight } */
@@ -120,32 +120,32 @@ export interface Collection<K, V> extends Map<K, V> {
       previousValue: V,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
-    ) => V
+      array: Array<V>,
+    ) => V,
   ): V;
   reduceRight(
     predicate: (
       previousValue: V,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => V,
-    initialValue: V
+    initialValue: V,
   ): V;
   reduceRight<T>(
     predicate: (
       previousValue: T,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => T,
-    initialValue: T
+    initialValue: T,
   ): T;
 
   /** See: {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some | Array#some } */
   some<ThisArg = Collection<K, V>>(
     predicate: (value: V, index: number, array: Array<V>) => unknown,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): boolean;
 
   /** Get the values of this collection as an array. */

@@ -10,8 +10,8 @@ export class SearchItem {
     public action: NonEmptyObject<{
       dialog_name: string;
       buttonClicked: string;
-    }>
-  ) { }
+    }>,
+  ) {}
 
   public async execute(): Promise<void> {
     if (!this.action.dialog_name || !this.action.buttonClicked) return;
@@ -35,10 +35,7 @@ export class SearchItem {
     const item = this.base.items.metadata.items.get(itemID.toString());
     if (!item) {
       this.peer.send(
-        Variant.from(
-          "OnConsoleMessage",
-          "`4Error: Invalid item ID.``"
-        )
+        Variant.from("OnConsoleMessage", "`4Error: Invalid item ID.``"),
       );
       return;
     }
@@ -48,8 +45,8 @@ export class SearchItem {
     this.peer.send(
       Variant.from(
         "OnConsoleMessage",
-        `Added \`6${item.name}\`\` (200) to your inventory.`
-      )
+        `Added \`6${item.name}\`\` (200) to your inventory.`,
+      ),
     );
     this.peer.saveToCache();
   }

@@ -6,15 +6,19 @@ import { Parser } from "./parser";
 import { downloadItemsDat, getLatestItemsDatName } from "@growserver/utils";
 import logger from "@growserver/logger";
 
-
 __dirname = process.cwd();
-
 
 export async function buildItemsInfo() {
   const itemsDatName = await getLatestItemsDatName();
   await downloadItemsDat(itemsDatName);
 
-  const ITEMS_DAT_PATH = join(__dirname, ".cache", "growtopia", "dat", itemsDatName);
+  const ITEMS_DAT_PATH = join(
+    __dirname,
+    ".cache",
+    "growtopia",
+    "dat",
+    itemsDatName,
+  );
 
   const file = await readFile(ITEMS_DAT_PATH);
   const itemsdat = new ItemsDat(Array.from(file));
@@ -31,8 +35,3 @@ export async function buildItemsInfo() {
   logger.info("Writing ItemsInfo file into ./assets/items_info_new.json");
   await writeFile("./assets/items_info_new.json", JSON.stringify(items));
 }
-
-
-
-
-

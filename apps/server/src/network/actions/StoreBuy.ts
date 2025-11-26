@@ -28,92 +28,91 @@ export class StoreBuy {
     { id: "token_menu", label: "growtoken", position: 2 },
     { id: "locks_menu", label: "packs", position: 3 },
     { id: "itempacks_menu", label: "bigitems", position: 4 },
-    { id: "creativity_menu", label: "weather", position: 5 }
+    { id: "creativity_menu", label: "weather", position: 5 },
   ];
 
   private readonly storeItems: Record<string, StoreItem[]> = {
     main: [
       {
-
-        name:        "test_store1",
-        title:       "After swtich tab",
+        name: "test_store1",
+        title: "After swtich tab",
         description: "Hello",
-        image:       "interface/large/store_buttons/store_buttons.rttex",
-        imagePos:    { x: 1, y: 1 },
-        cost:        2,
-        itemId:      4272
+        image: "interface/large/store_buttons/store_buttons.rttex",
+        imagePos: { x: 1, y: 1 },
+        cost: 2,
+        itemId: 4272,
       },
       {
-        name:        "wooden_background",
-        title:       "Wooden Background",
+        name: "wooden_background",
+        title: "Wooden Background",
         description: "Hello",
-        image:       "interface/large/store_buttons/store_buttons.rttex",
-        imagePos:    { x: 1, y: 0 },
-        cost:        20,
-        itemId:      52
-      }
+        image: "interface/large/store_buttons/store_buttons.rttex",
+        imagePos: { x: 1, y: 0 },
+        cost: 20,
+        itemId: 52,
+      },
     ],
     player: [
       {
-        name:        "test_store3",
-        title:       "Test",
+        name: "test_store3",
+        title: "Test",
         description: "Hello",
-        image:       "interface/large/store_buttons/store_buttons.rttex",
-        imagePos:    { x: 2, y: 0 },
-        cost:        50,
-        itemId:      4272
-      }
+        image: "interface/large/store_buttons/store_buttons.rttex",
+        imagePos: { x: 2, y: 0 },
+        cost: 50,
+        itemId: 4272,
+      },
     ],
     locks: [
       {
-        name:        "test_store4",
-        title:       "Test",
+        name: "test_store4",
+        title: "Test",
         description: "Hello",
-        image:       "interface/large/store_buttons/store_buttons.rttex",
-        imagePos:    { x: 3, y: 0 },
-        cost:        5,
-        itemId:      4272
-      }
+        image: "interface/large/store_buttons/store_buttons.rttex",
+        imagePos: { x: 3, y: 0 },
+        cost: 5,
+        itemId: 4272,
+      },
     ],
     itempacks: [
       {
-        name:        "test_store5",
-        title:       "Test",
+        name: "test_store5",
+        title: "Test",
         description: "Hello",
-        image:       "interface/large/store_buttons/store_buttons.rttex",
-        imagePos:    { x: 4, y: 0 },
-        cost:        1,
-        itemId:      4272
-      }
+        image: "interface/large/store_buttons/store_buttons.rttex",
+        imagePos: { x: 4, y: 0 },
+        cost: 1,
+        itemId: 4272,
+      },
     ],
     creativity: [
       {
-        name:        "test_store6",
-        title:       "Test",
+        name: "test_store6",
+        title: "Test",
         description: "Hello",
-        image:       "interface/large/store_buttons/store_buttons.rttex",
-        imagePos:    { x: 5, y: 0 },
-        cost:        15,
-        itemId:      4272
-      }
+        image: "interface/large/store_buttons/store_buttons.rttex",
+        imagePos: { x: 5, y: 0 },
+        cost: 15,
+        itemId: 4272,
+      },
     ],
     token: [
       {
-        name:        "test_store7",
-        title:       "Test",
+        name: "test_store7",
+        title: "Test",
         description: "Hello",
-        image:       "interface/large/store_buttons/store_buttons.rttex",
-        imagePos:    { x: 6, y: 0 },
-        cost:        10,
-        itemId:      4272
-      }
-    ]
+        image: "interface/large/store_buttons/store_buttons.rttex",
+        imagePos: { x: 6, y: 0 },
+        cost: 10,
+        itemId: 4272,
+      },
+    ],
   };
 
   constructor(
     public base: Base,
-    public peer: Peer
-  ) { }
+    public peer: Peer,
+  ) {}
 
   private createTabButtons(activeTab: string): string {
     const buttons = this.tabs.map((tab) => {
@@ -128,7 +127,7 @@ export class StoreBuy {
 
   findStoreItemByName(name: string): StoreItem | undefined {
     for (const category in this.storeItems) {
-      const item = this.storeItems[category].find(item => item.name === name);
+      const item = this.storeItems[category].find((item) => item.name === name);
       if (item) {
         return item;
       }
@@ -138,7 +137,7 @@ export class StoreBuy {
 
   private addStoreItems(
     dialog: DialogBuilder,
-    category: string
+    category: string,
   ): DialogBuilder {
     const items = this.storeItems[category] || [];
     items.forEach((item) => {
@@ -148,7 +147,7 @@ export class StoreBuy {
         item.description,
         item.image || "",
         item.imagePos || { x: 0, y: 0 },
-        item.cost || ""
+        item.cost || "",
       );
     });
     return dialog;
@@ -169,7 +168,7 @@ export class StoreBuy {
   }
 
   public async execute(
-    action: NonEmptyObject<Record<string, string>>
+    action: NonEmptyObject<Record<string, string>>,
   ): Promise<void> {
     const validTabs = [
       "main",
@@ -177,7 +176,7 @@ export class StoreBuy {
       "locks",
       "itempacks",
       "creativity",
-      "token"
+      "token",
     ];
 
     const dialog = this.createStoreDialog(action.item);
@@ -185,9 +184,12 @@ export class StoreBuy {
     this.peer.send(Variant.from("OnStoreRequest", dialog));
     this.peer.send(Variant.from("OnStorePurchaseResult"));
     const actionItem = this.findStoreItemByName(action.item);
-    if ((!validTabs.includes(action.item) && this.findStoreItemByName(action.item))) {
+    if (
+      !validTabs.includes(action.item) &&
+      this.findStoreItemByName(action.item)
+    ) {
       this.peer.addItemInven(actionItem?.itemId as number, 1);
-      this.peer.data.gems -= (actionItem?.cost as number) ?? 0
+      this.peer.data.gems -= (actionItem?.cost as number) ?? 0;
       this.peer.setGems(this.peer.data.gems);
     }
 

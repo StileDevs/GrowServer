@@ -12,11 +12,16 @@ export class FindItem {
       dialog_name: string;
       find_item_name: string;
       seed_only: string;
-    }>
-  ) { }
+    }>,
+  ) {}
 
   public async execute(): Promise<void> {
-    if (!this.action.dialog_name || !this.action.find_item_name || !this.action.seed_only) return;
+    if (
+      !this.action.dialog_name ||
+      !this.action.find_item_name ||
+      !this.action.seed_only
+    )
+      return;
     const isSeed = parseInt(this.action.seed_only) ? true : false;
     const dialog = new DialogBuilder()
       .defaultColor()
@@ -25,7 +30,7 @@ export class FindItem {
       .addSpacer("small");
 
     const items = this.base.items.metadata.items.filter((v) =>
-      v.name?.toLowerCase().includes(this.action.find_item_name.toLowerCase())
+      v.name?.toLowerCase().includes(this.action.find_item_name.toLowerCase()),
     );
     items.forEach((item) => {
       const itemID = item.id || 0;
@@ -37,7 +42,7 @@ export class FindItem {
             itemID,
             itemName,
             "staticBlueFrame",
-            item.id
+            item.id,
           );
       } else {
         if (itemID % 2 === 0)
@@ -46,7 +51,7 @@ export class FindItem {
             itemID,
             itemName,
             "staticBlueFrame",
-            item.id
+            item.id,
           );
       }
     });

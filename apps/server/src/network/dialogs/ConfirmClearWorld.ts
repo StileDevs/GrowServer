@@ -12,7 +12,7 @@ export class ConfirmClearWorld {
     public peer: Peer,
     public action: NonEmptyObject<{
       dialog_name: string;
-    }>
+    }>,
   ) {
     this.world = this.peer.currentWorld()!;
   }
@@ -21,10 +21,16 @@ export class ConfirmClearWorld {
     if (!this.action.dialog_name) return;
     const ownerUID = this.world.getOwnerUID();
     if (ownerUID) {
-      if (ownerUID !== this.peer.data.userID && this.peer.data.role != ROLE.DEVELOPER) return;
+      if (
+        ownerUID !== this.peer.data.userID &&
+        this.peer.data.role != ROLE.DEVELOPER
+      )
+        return;
       for (let i = 0; i < this.world.data.blocks.length; i++) {
         const b = this.world.data.blocks[i];
-        const itemMeta = this.base.items.metadata.items.get((b.fg || b.bg).toString())!;
+        const itemMeta = this.base.items.metadata.items.get(
+          (b.fg || b.bg).toString(),
+        )!;
         const mLock = LOCKS.find((l) => l.id === itemMeta.id);
 
         if (

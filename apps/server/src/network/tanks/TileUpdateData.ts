@@ -12,7 +12,7 @@ export class TileUpdateData {
     public base: Base,
     public peer: Peer,
     public tank: TankPacket,
-    public world: World
+    public world: World,
   ) {
     this.pos =
       (this.tank.data?.xPunch as number) +

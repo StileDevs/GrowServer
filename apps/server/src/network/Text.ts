@@ -17,7 +17,7 @@ export class ITextPacket {
   constructor(
     public base: Base,
     public peer: Peer,
-    public chunk: Buffer
+    public chunk: Buffer,
   ) {
     this.obj = parseAction(chunk);
   }
@@ -45,14 +45,14 @@ export class ITextPacket {
         TextPacket.from(
           PacketTypes.ACTION,
           "action|log",
-          `msg|\`4UPDATE REQUIRED!\`\` : The \`$V${this.base.cdn.version}\`\` update is now available for your device.  Go get it!  You'll need to install it before you can play online.`
+          `msg|\`4UPDATE REQUIRED!\`\` : The \`$V${this.base.cdn.version}\`\` update is now available for your device.  Go get it!  You'll need to install it before you can play online.`,
         ),
         TextPacket.from(
           PacketTypes.ACTION,
           "action|set_url",
           `url|https://ubistatic-a.akamaihd.net/${this.base.cdn.uri}/GrowtopiaInstaller.exe`,
-          "label|Download Latest Version"
-        )
+          "label|Download Latest Version",
+        ),
       );
   }
 
@@ -60,16 +60,16 @@ export class ITextPacket {
     this.peer.send(
       Variant.from(
         "OnConsoleMessage",
-        "`4Failed`` logging in to that account. Please make sure you've provided the correct info."
-      )
+        "`4Failed`` logging in to that account. Please make sure you've provided the correct info.",
+      ),
     );
     this.peer.send(
       TextPacket.from(
         PacketTypes.ACTION,
         "action|set_url",
         "url||http://127.0.0.1/recover",
-        "label|`$Recover your Password``"
-      )
+        "label|`$Recover your Password``",
+      ),
     );
     this.peer.disconnect();
   }
@@ -78,17 +78,20 @@ export class ITextPacket {
     // Check if platformID is "2" (macOS) and calculate appropriate items.dat hash
     const isMacOS = this.obj.platformID === "2";
     let itemsHash: string;
-    
+
     if (isMacOS) {
       // Load and hash macOS items.dat at runtime
       const datDir = join(process.cwd(), ".cache", "growtopia", "dat");
-      const macosItemsDatName = this.base.cdn.itemsDatName.replace('.dat', '-osx.dat');
+      const macosItemsDatName = this.base.cdn.itemsDatName.replace(
+        ".dat",
+        "-osx.dat",
+      );
       const macosItemsDat = readFileSync(join(datDir, macosItemsDatName));
       itemsHash = `${RTTEX.hash(macosItemsDat)}`;
     } else {
       itemsHash = this.base.items.hash;
     }
-    
+
     return this.peer.send(
       Variant.from(
         "OnSuperMainStartAcceptLogonHrdxs47254722215a",
@@ -97,8 +100,8 @@ export class ITextPacket {
         "growtopia/",
         "cc.cz.madkite.freedom org.aqua.gg idv.aqua.bulldog com.cih.gamecih2 com.cih.gamecih com.cih.game_cih cn.maocai.gamekiller com.gmd.speedtime org.dax.attack com.x0.strai.frep com.x0.strai.free org.cheatengine.cegui org.sbtools.gamehack com.skgames.traffikrider org.sbtoods.gamehaca com.skype.ralder org.cheatengine.cegui.xx.multi1458919170111 com.prohiro.macro me.autotouch.autotouch com.cygery.repetitouch.free com.cygery.repetitouch.pro com.proziro.zacro com.slash.gamebuster",
         "proto=216|choosemusic=audio/mp3/about_theme.mp3|active_holiday=6|wing_week_day=0|ubi_week_day=0|server_tick=638729041|clash_active=0|drop_lavacheck_faster=1|isPayingUser=0|usingStoreNavigation=1|enableInventoryTab=1|bigBackpack=1|",
-        0 // player_tribute.dat hash,
-      )
+        0, // player_tribute.dat hash,
+      ),
     );
   }
 
@@ -108,7 +111,7 @@ export class ITextPacket {
     try {
       const data = jwt.verify(
         ltoken,
-        process.env.JWT_SECRET as string
+        process.env.JWT_SECRET as string,
       ) as JsonObject;
 
       const growId = data.growId as string;
@@ -121,15 +124,15 @@ export class ITextPacket {
       if (!isValid) throw new Error("Password are invalid");
 
       const targetPeerId = this.base.cache.peers.find(
-        (v) => v.userID === player.id
+        (v) => v.userID === player.id,
       );
       if (targetPeerId) {
         const targetPeer = new Peer(this.base, targetPeerId.netID);
         this.peer.send(
           Variant.from(
             "OnConsoleMessage",
-            "`4Already Logged In?`` It seems that this account already logged in by somebody else."
-          )
+            "`4Already Logged In?`` It seems that this account already logged in by somebody else.",
+          ),
         );
 
         targetPeer.leaveWorld();
@@ -148,8 +151,8 @@ export class ITextPacket {
           player.id,
           `${conf.address}|0|${customAlphabet("0123456789ABCDEF", 32)()}`,
           1,
-          player.name
-        )
+          player.name,
+        ),
       );
     } catch (e) {
       logger.error(e);
@@ -169,15 +172,15 @@ export class ITextPacket {
       if (!isValid) throw new Error("Password are invalid");
 
       const targetPeerId = this.base.cache.peers.find(
-        (v) => v.userID === player.id
+        (v) => v.userID === player.id,
       );
       if (targetPeerId) {
         const targetPeer = new Peer(this.base, targetPeerId.netID);
         this.peer.send(
           Variant.from(
             "OnConsoleMessage",
-            "`4Already Logged In?`` It seems that this account already logged in by somebody else."
-          )
+            "`4Already Logged In?`` It seems that this account already logged in by somebody else.",
+          ),
         );
 
         targetPeer.leaveWorld();
@@ -185,35 +188,33 @@ export class ITextPacket {
       }
 
       this.sendSuperMain();
-      this.peer.send(
-        Variant.from("SetHasGrowID", 1, player.name, password)
-      );
+      this.peer.send(Variant.from("SetHasGrowID", 1, player.name, password));
 
       const defaultInventory = {
-        max:   32,
+        max: 32,
         items: [
           {
-            id:     18, // Fist
-            amount: 1
+            id: 18, // Fist
+            amount: 1,
           },
           {
-            id:     32, // Wrench
-            amount: 1
-          }
-        ]
+            id: 32, // Wrench
+            amount: 1,
+          },
+        ],
       };
 
       const defaultClothing = {
-        hair:     0,
-        shirt:    0,
-        pants:    0,
-        feet:     0,
-        face:     0,
-        hand:     0,
-        back:     0,
-        mask:     0,
+        hair: 0,
+        shirt: 0,
+        pants: 0,
+        feet: 0,
+        face: 0,
+        hand: 0,
+        back: 0,
+        mask: 0,
         necklace: 0,
-        ances:    0
+        ances: 0,
       };
 
       this.peer.data.name = player.name;
@@ -236,17 +237,19 @@ export class ITextPacket {
       this.peer.data.lastVisitedWorlds = player.last_visited_worlds
         ? JSON.parse(player.last_visited_worlds.toString())
         : [];
-      this.peer.data.heartMonitors = new Map<string, Array<number>>(Object.entries(JSON.parse(player.heart_monitors.toString())));
+      this.peer.data.heartMonitors = new Map<string, Array<number>>(
+        Object.entries(JSON.parse(player.heart_monitors.toString())),
+      );
 
       this.peer.data.state = {
-        mod:             0,
+        mod: 0,
         canWalkInBlocks: false,
-        modsEffect:      0,
-        isGhost:         false,
-        lava:            {
-          damage:       0,
-          resetStateAt: 0
-        }
+        modsEffect: 0,
+        isGhost: false,
+        lava: {
+          damage: 0,
+          resetStateAt: 0,
+        },
       };
 
       // Load Gems

@@ -1,4 +1,3 @@
-
 import { STRING_CIPHER_KEY } from "@growserver/const";
 import { StringOptions } from "@growserver/types";
 
@@ -100,10 +99,10 @@ export class ExtendBuffer {
         chars.push(
           String.fromCharCode(
             this.data[this.mempos] ^
-            STRING_CIPHER_KEY.charCodeAt(
-              (opts.id! + i) % STRING_CIPHER_KEY.length
-            )
-          )
+              STRING_CIPHER_KEY.charCodeAt(
+                (opts.id! + i) % STRING_CIPHER_KEY.length,
+              ),
+          ),
         );
         this.mempos++;
       }
@@ -116,7 +115,7 @@ export class ExtendBuffer {
   public writeString(
     str: string,
     id?: number,
-    encoded: boolean = false
+    encoded: boolean = false,
   ): Promise<undefined> {
     return new Promise((resolve) => {
       // write the str length first
@@ -135,7 +134,7 @@ export class ExtendBuffer {
         for (let i = 0; i < str.length; i++)
           chars.push(
             str.charCodeAt(i) ^
-            STRING_CIPHER_KEY.charCodeAt((i + id) % STRING_CIPHER_KEY.length)
+              STRING_CIPHER_KEY.charCodeAt((i + id) % STRING_CIPHER_KEY.length),
           );
 
         for (const char of chars) this.data[this.mempos++] = char;

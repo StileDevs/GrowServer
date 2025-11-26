@@ -1,7 +1,13 @@
 import { TankPacket } from "growtopia.js";
 import { type TileData } from "@growserver/types";
 import { Base } from "../core/Base";
-import { BlockFlags2, LockPermission, LOCKS, TankTypes, TileIgnore } from "@growserver/const";
+import {
+  BlockFlags2,
+  LockPermission,
+  LOCKS,
+  TankTypes,
+  TileIgnore,
+} from "@growserver/const";
 import { World } from "../core/World";
 import { Peer } from "../core/Peer";
 
@@ -14,7 +20,7 @@ const directions = [
   { x: -1, y: -1 }, //NW
   { x: -1, y: 1 }, //SW
   { x: 1, y: -1 }, // NE
-  { x: 1, y: 1 } // SE
+  { x: 1, y: 1 }, // SE
 ];
 
 interface Node {
@@ -37,7 +43,7 @@ export class Floodfill {
   public totalNodes: Node[] = [];
   public count = 0;
 
-  constructor(public data: FloodFillData) { }
+  constructor(public data: FloodFillData) {}
 
   async exec() {
     const toBeExplored: Node[] = [];
@@ -64,11 +70,12 @@ export class Floodfill {
         const block =
           this.data.blocks[neighbour.x + neighbour.y * this.data.width];
 
-        const meta =
-          this.data.base.items.metadata.items.get((block.fg || block.bg).toString())!;
+        const meta = this.data.base.items.metadata.items.get(
+          (block.fg || block.bg).toString(),
+        )!;
         if (
           this.totalNodes.find(
-            (n) => n.x === neighbour.x && n.y === neighbour.y
+            (n) => n.x === neighbour.x && n.y === neighbour.y,
           ) ||
           block.lockedBy ||
           TileIgnore.blockIDsToIgnoreByLock.includes(meta.id || 0) ||
@@ -78,7 +85,7 @@ export class Floodfill {
           continue;
 
         // if adding one more nodes means going over the max, we break;
-        // +1 on the this.data.max because we need 1 extra space to account for the extra node 
+        // +1 on the this.data.max because we need 1 extra space to account for the extra node
         //  (will be deleted at the end of the function)
         // (i prefer clarity over performance in this case) - badewen
         if (this.totalNodes.length + 1 > this.data.max + 1) break;
@@ -164,18 +171,22 @@ export class Floodfill {
     for (let i = 0; i < 4; i++) {
       const x = node.x + directions[i].x;
       const y = node.y + directions[i].y;
-      const block = this.data.blocks[(y * this.data.width) + x];
+      const block = this.data.blocks[y * this.data.width + x];
 
       if (x < 0 || x >= this.data.width || y < 0 || y >= this.data.height)
         continue;
 
       // check if the neighbouring block has the same parent
-      if (block.lockedBy && block.lockedBy.parentX == node.x && block.lockedBy.parentY == node.y) {
+      if (
+        block.lockedBy &&
+        block.lockedBy.parentX == node.x &&
+        block.lockedBy.parentY == node.y
+      ) {
         return true;
       }
 
-      res = !!this.totalNodes.find((i) =>
-        (i.x === x && i.y === y)
+      res = !!this.totalNodes.find(
+        (i) => i.x === x && i.y === y,
         // (i.x == this.data.s_block.x && i.y == this.data.s_block.y)
       );
       if (res) break;
@@ -192,16 +203,16 @@ export class Floodfill {
     if (!this.data.s_block.lock) {
       this.data.s_block.lock = {
         // ownerFg: this.data.s_block.fg,
-        ownerUserID:    owner.data?.userID,
+        ownerUserID: owner.data?.userID,
         // ownerName: owner.name,
         // ownerX: this.data.s_block.x,
         // ownerY: this.data.s_block.y,
         // isOwner: true,
-        adminLimited:   false,
+        adminLimited: false,
         ignoreEmptyAir: this.data.noEmptyAir,
-        adminIDs:       [],
-        permission:     lockData?.defaultPermission ?? LockPermission.NONE, // the lock itself can only be destroyed by the owner
-        ownedTiles:     []
+        adminIDs: [],
+        permission: lockData?.defaultPermission ?? LockPermission.NONE, // the lock itself can only be destroyed by the owner
+        ownedTiles: [],
       };
     }
 
@@ -234,13 +245,13 @@ export class Floodfill {
     world.saveToCache();
 
     const tank = TankPacket.from({
-      type:        TankTypes.SEND_LOCK,
-      netID:       owner.data?.userID as number,
+      type: TankTypes.SEND_LOCK,
+      netID: owner.data?.userID as number,
       targetNetID: this.data.max,
-      info:        this.data.s_block.fg,
-      xPunch:      this.data.s_block.x,
-      yPunch:      this.data.s_block.y,
-      data:        () => buffer
+      info: this.data.s_block.fg,
+      xPunch: this.data.s_block.x,
+      yPunch: this.data.s_block.y,
+      data: () => buffer,
     });
 
     world.every((p) => {

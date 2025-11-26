@@ -10,22 +10,22 @@ export default class Help extends Command {
   constructor(base: Base, peer: Peer, text: string, args: string[]) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["help", "?"],
+      command: ["help", "?"],
       description: "Shows available commands",
-      cooldown:    5,
-      ratelimit:   1,
-      category:    "`oBasic",
-      usage:       "/help",
-      example:     ["/help"],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
+      cooldown: 5,
+      ratelimit: 1,
+      category: "`oBasic",
+      usage: "/help",
+      example: ["/help"],
+      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 
   private getRoleLevel(role: string): number {
     const roleLevels = {
-      [ROLE.BASIC]:     1,
+      [ROLE.BASIC]: 1,
       [ROLE.SUPPORTER]: 2,
-      [ROLE.DEVELOPER]: 3
+      [ROLE.DEVELOPER]: 3,
     };
     return roleLevels[role] || 0;
   }
@@ -38,8 +38,8 @@ export default class Help extends Command {
         return this.peer.send(
           Variant.from(
             "OnConsoleMessage",
-            "It seems that commands doesn't exist."
-          )
+            "It seems that commands doesn't exist.",
+          ),
         );
       const cmd = new Class(this.base, this.peer, this.text, this.args);
 
@@ -51,7 +51,7 @@ export default class Help extends Command {
         .addSmallText(`Cooldown: ${cmd?.opt.cooldown}`)
         .addSmallText(`Ratelimit: ${cmd?.opt.ratelimit}`)
         .addSmallText(
-          `Permissions: ${cmd?.opt.permission.length ? cmd.opt.permission : "None"}`
+          `Permissions: ${cmd?.opt.permission.length ? cmd.opt.permission : "None"}`,
         )
         .addSmallText(`Usage: ${cmd?.opt.usage}`)
         .addSmallText(`Example: ${cmd?.opt.example.join(", ")}`)
@@ -69,7 +69,7 @@ export default class Help extends Command {
 
       // Check if user has permission based on role hierarchy
       const hasPermission = cmd.opt.permission.some(
-        (role) => this.getRoleLevel(role) <= userRoleLevel
+        (role) => this.getRoleLevel(role) <= userRoleLevel,
       );
 
       if (hasPermission) {

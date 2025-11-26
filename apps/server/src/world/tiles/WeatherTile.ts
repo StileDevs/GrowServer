@@ -19,24 +19,36 @@ export class WeatherTile extends Tile {
 
   public async onPunch(peer: Peer): Promise<boolean> {
     // Check if player has break permission
-    if (!(await this.world.hasTilePermission(peer.data.userID, this.data, LockPermission.BREAK))) {
+    if (
+      !(await this.world.hasTilePermission(
+        peer.data.userID,
+        this.data,
+        LockPermission.BREAK,
+      ))
+    ) {
       return super.onPunch(peer);
     }
 
-    const itemMeta = this.base.items.metadata.items.get(this.data.fg.toString());
+    const itemMeta = this.base.items.metadata.items.get(
+      this.data.fg.toString(),
+    );
 
     // if the block still has any damage, do not toggle.
-    if (this.data.resetStateAt && this.data.resetStateAt > Date.now()) return super.onPunch(peer);
+    if (this.data.resetStateAt && this.data.resetStateAt > Date.now())
+      return super.onPunch(peer);
 
     // they used this as the weather id. Lol
     const targetWeatherId = itemMeta?.audioVolume;
     if (!targetWeatherId) {
-      peer.sendConsoleMessage(`[Weather] Unknown mapping for item ${this.data.fg}. Keeping weather: ${this.world.data.weather.id}`);
+      peer.sendConsoleMessage(
+        `[Weather] Unknown mapping for item ${this.data.fg}. Keeping weather: ${this.world.data.weather.id}`,
+      );
       return await super.onPunch(peer);
     }
 
     // Toggle: if already active, set to default 41 (clear); else set to mapped id
-    const newWeatherId = this.world.data.weather.id === targetWeatherId ? 41 : targetWeatherId;
+    const newWeatherId =
+      this.world.data.weather.id === targetWeatherId ? 41 : targetWeatherId;
     this.world.data.weather.id = newWeatherId;
 
     // Broadcast change to all peers in the world

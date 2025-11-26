@@ -11,7 +11,7 @@ export class ItemActiveReq {
     public base: Base,
     public peer: Peer,
     public tank: TankPacket,
-    public world: World
+    public world: World,
   ) {
     this.pos =
       (this.tank.data?.xPunch as number) +
@@ -22,7 +22,9 @@ export class ItemActiveReq {
     this.tank.data!.state = this.peer.data.rotatedLeft ? 16 : 0;
     const isItemExist = (id: number) =>
       this.peer.data.inventory.items.find((i) => i.id === id);
-    const item = this.base.items.metadata.items.get(this.tank.data!.info!.toString())
+    const item = this.base.items.metadata.items.get(
+      this.tank.data!.info!.toString(),
+    );
 
     if (!item) return;
 
@@ -40,8 +42,8 @@ export class ItemActiveReq {
                 this.peer.data.netID,
                 "Whoops, you're holding too many Diamond Locks!",
                 0,
-                1
-              )
+                1,
+              ),
             );
           } else {
             this.peer.addItemInven(1796, 100);
@@ -52,8 +54,8 @@ export class ItemActiveReq {
                 this.peer.data.netID,
                 "You shattered a Blue Gem Lock into 100 Diamond Locks!",
                 0,
-                1
-              )
+                1,
+              ),
             );
           }
           break;
@@ -66,8 +68,8 @@ export class ItemActiveReq {
                 this.peer.data.netID,
                 "Whoops, you're holding too many World Locks!",
                 0,
-                1
-              )
+                1,
+              ),
             );
           } else {
             this.peer.addItemInven(242, 100);
@@ -78,8 +80,8 @@ export class ItemActiveReq {
                 this.peer.data.netID,
                 "You shattered a Diamond Lock into 100 World Locks!",
                 0,
-                1
-              )
+                1,
+              ),
             );
           }
           break;
@@ -93,8 +95,8 @@ export class ItemActiveReq {
                 this.peer.data.netID,
                 "Whoops, you're holding too many Diamond Locks!",
                 0,
-                1
-              )
+                1,
+              ),
             );
           } else {
             this.peer.addItemInven(1796, 1);
@@ -105,8 +107,8 @@ export class ItemActiveReq {
                 this.peer.data.netID,
                 "You compressed 100 World Locks into a Diamond Lock!",
                 0,
-                1
-              )
+                1,
+              ),
             );
           }
           break;

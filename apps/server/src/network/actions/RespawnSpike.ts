@@ -5,11 +5,11 @@ import { Peer } from "../../core/Peer";
 export class RespawnSpike {
   constructor(
     public base: Base,
-    public peer: Peer
+    public peer: Peer,
   ) {}
 
   public async execute(
-    _action: NonEmptyObject<Record<string, string>>
+    _action: NonEmptyObject<Record<string, string>>,
   ): Promise<void> {
     this.peer.respawn();
   }

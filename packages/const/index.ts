@@ -1,16 +1,18 @@
-export const ITEMS_DAT_URL = "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main";
-export const ITEMS_DAT_FETCH_URL = "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main/latest.json";
+export const ITEMS_DAT_URL =
+  "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main";
+export const ITEMS_DAT_FETCH_URL =
+  "https://raw.githubusercontent.com/StileDevs/itemsdat-archive/refs/heads/main/latest.json";
 
 export enum PacketTypes {
   HELLO = 1,
   STR = 2,
   ACTION = 3,
-  TANK = 4
+  TANK = 4,
 }
 
 export const WORLD_SIZE = {
-  WIDTH:  100,
-  HEIGHT: 60
+  WIDTH: 100,
+  HEIGHT: 60,
 };
 
 export const STRING_CIPHER_KEY = "PBG892FXX982ABC*";
@@ -20,8 +22,8 @@ export const Y_END_DIRT = 55;
 
 export const ROLE = {
   DEVELOPER: "1",
-  BASIC:     "2",
-  SUPPORTER: "3"
+  BASIC: "2",
+  SUPPORTER: "3",
 };
 
 export enum ClothTypes {
@@ -34,20 +36,20 @@ export enum ClothTypes {
   BACK = 6,
   MASK = 7,
   NECKLACE = 8,
-  ANCES = 9
+  ANCES = 9,
 }
 
 export const CLOTH_MAP: { [key in ClothTypes]: string } = {
-  [ClothTypes.ANCES]:    "ances",
-  [ClothTypes.BACK]:     "back",
-  [ClothTypes.FACE]:     "face",
-  [ClothTypes.FEET]:     "feet",
-  [ClothTypes.HAIR]:     "hair",
-  [ClothTypes.HAND]:     "hand",
-  [ClothTypes.MASK]:     "mask",
+  [ClothTypes.ANCES]: "ances",
+  [ClothTypes.BACK]: "back",
+  [ClothTypes.FACE]: "face",
+  [ClothTypes.FEET]: "feet",
+  [ClothTypes.HAIR]: "hair",
+  [ClothTypes.HAND]: "hand",
+  [ClothTypes.MASK]: "mask",
   [ClothTypes.NECKLACE]: "necklace",
-  [ClothTypes.PANTS]:    "pants",
-  [ClothTypes.SHIRT]:    "shirt"
+  [ClothTypes.PANTS]: "pants",
+  [ClothTypes.SHIRT]: "shirt",
 };
 
 export enum TankTypes {
@@ -90,12 +92,12 @@ export enum TankTypes {
   SEND_PARTICLE_EFFECT_V2 = 36,
   ACTIVE_ARROW_TO_ITEM = 37,
   SELECT_TILE_INDEX = 38,
-  SEND_PLAYER_TRIBUTE_DATA = 39
+  SEND_PLAYER_TRIBUTE_DATA = 39,
 }
 
 export enum TileFlags {
   TILEEXTRA = 0x0001,
-  LOCKED = 0x0002,    
+  LOCKED = 0x0002,
   WAS_SPLICED = 0x0004,
   WILL_SPAWN_SEEDS_TOO = 0x0008,
   SEED = 0x0010,
@@ -111,7 +113,7 @@ export enum TileFlags {
   BLUE = 0x8000,
   GREEN = 0x4000,
   YELLOW = 0x6000,
-  PURPLE = 0xa000
+  PURPLE = 0xa000,
 }
 
 export enum TileExtraTypes {
@@ -175,7 +177,7 @@ export enum TileExtraTypes {
   GAIA_HEART = 0x46,
   TECHNO_ORGANIC_ENGINE = 0x47,
   KRANKEN_GALACTIC = 0x50,
-  WEATHER_INFINITY = 0x4d
+  WEATHER_INFINITY = 0x4d,
 }
 
 export enum TileCollisionTypes {
@@ -192,7 +194,7 @@ export enum TileCollisionTypes {
   TEAM_ENTRANCE = 10,
   GUILD = 11,
   CLOUD = 12,
-  FRIEND_ENTRANCE = 13
+  FRIEND_ENTRANCE = 13,
 }
 
 export enum ActionTypes {
@@ -334,46 +336,50 @@ export enum ActionTypes {
   UNK3 = 138,
   FEEDING_BLOCK = 140,
   KRANKENS_BLOCK = 141,
-  FRIENDS_ENTRANCE = 142
+  FRIENDS_ENTRANCE = 142,
 }
 // allowed actions from the lock
 export enum LockPermission {
   NONE = 0, // those who dont have any access, will not be allowed to do anything
-  BUILD = (1 << 0), // BUILD, means they can place item AND configure them with wrench
-  BREAK = (1 << 1),
+  BUILD = 1 << 0, // BUILD, means they can place item AND configure them with wrench
+  BREAK = 1 << 1,
   FULL = BUILD | BREAK,
 }
 
 // NOTE: defaultPermission here means what action is allowed for those who has access.
-// For example, Small lock allows the ones with access to do anything (Break & Build), 
-//  and by default, doesnt allow the ones without access to do anything to it, unless 
+// For example, Small lock allows the ones with access to do anything (Break & Build),
+//  and by default, doesnt allow the ones without access to do anything to it, unless
 //  if the TileFlags.PUBLIC is set.
 export const LOCKS = [
   {
-    id:                202, // Small Lock
-    maxTiles:          10,
+    id: 202, // Small Lock
+    maxTiles: 10,
     defaultPermission: LockPermission.FULL,
   },
   {
-    id:                204, // Big Lock
-    maxTiles:          48,
+    id: 204, // Big Lock
+    maxTiles: 48,
     defaultPermission: LockPermission.FULL,
   },
   {
-    id:                206, // Huge Lock
-    maxTiles:          200,
+    id: 206, // Huge Lock
+    maxTiles: 200,
     defaultPermission: LockPermission.FULL,
   },
   {
-    id:                4994, // Builder's Lock
-    maxTiles:          200,
+    id: 4994, // Builder's Lock
+    maxTiles: 200,
     defaultPermission: LockPermission.BREAK,
-  }
+  },
 ];
 
 export const TileIgnore = {
-  blockIDsToIgnoreByLock:   [6, 8],
-  blockActionTypesToIgnore: [ActionTypes.LOCK, ActionTypes.MAIN_DOOR, ActionTypes.BEDROCK]
+  blockIDsToIgnoreByLock: [6, 8],
+  blockActionTypesToIgnore: [
+    ActionTypes.LOCK,
+    ActionTypes.MAIN_DOOR,
+    ActionTypes.BEDROCK,
+  ],
 };
 
 export enum BlockFlags {
@@ -450,7 +456,7 @@ export enum NameStyles {
   MOD = "`5",
   OWNER = "`2",
   ACCESS = "`^",
-  GAME = "`a"
+  GAME = "`a",
 }
 
 export enum CharacterState {
@@ -476,12 +482,12 @@ export enum CharacterState {
   HAVE_PINEAPPLE_FLOAT = 1 << 22,
   HAVE_FLYING_PINEAPPLE = 1 << 23,
   HAVE_SUPER_SUPPORTER_NAME = 1 << 24,
-  HAVE_SUPER_PINEAPPLE = 1 << 25
+  HAVE_SUPER_PINEAPPLE = 1 << 25,
 }
 
 export enum ModsEffects {
   HARVESTER = 1 << 0,
-  PUNCH_DAMAGE = 1 << 1
+  PUNCH_DAMAGE = 1 << 1,
 }
 
 export enum StateFlags {
@@ -504,7 +510,7 @@ export enum StateFlags {
   ON_DAMAGE = 1 << 16,
   ON_SLIDE = 1 << 17,
   ON_WALL_HANG = 1 << 21,
-  ON_ACID_DAMAGE = 1 << 26
+  ON_ACID_DAMAGE = 1 << 26,
   // MAX = 31
 }
 

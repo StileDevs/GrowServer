@@ -27,7 +27,7 @@ export class RawListener {
       case PacketTypes.TANK: {
         if (chunk.length < 60) {
           peer.send(
-            Variant.from("OnConsoleMessage", "Received invalid tank packet.")
+            Variant.from("OnConsoleMessage", "Received invalid tank packet."),
           );
           return peer.disconnect();
         }

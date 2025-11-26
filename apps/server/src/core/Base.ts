@@ -9,7 +9,7 @@ import {
   downloadMacOSItemsDat,
   fetchJSON,
   Collection,
-  RTTEX
+  RTTEX,
 } from "@growserver/utils";
 import { join } from "path";
 import { ConnectListener } from "../events/Connect";
@@ -49,24 +49,24 @@ export class Base {
   constructor() {
     this.server = new Client({
       enet: {
-        ip:                 "0.0.0.0",
-        useNewServerPacket: true
+        ip: "0.0.0.0",
+        useNewServerPacket: true,
       },
     });
     this.package = JSON.parse(
-      readFileSync(join(__dirname, "package.json"), "utf-8")
+      readFileSync(join(__dirname, "package.json"), "utf-8"),
     );
     this.config = configServer;
     this.cdn = { version: "", uri: "0000/0000", itemsDatName: "" };
     this.items = {
-      content:  Buffer.alloc(0),
-      hash:     "",
+      content: Buffer.alloc(0),
+      hash: "",
       metadata: {} as ItemsDatMeta,
-      wiki:     [],
+      wiki: [],
     };
     this.cache = {
-      peers:    new Collection(),
-      worlds:   new Collection(),
+      peers: new Collection(),
+      worlds: new Collection(),
       cooldown: new Collection(),
     };
 
@@ -76,7 +76,7 @@ export class Base {
   public async start() {
     try {
       logger.info(
-        `GrowServer | Version: ${this.package.version} | Copyright JadlionHD 2022-${new Date().getFullYear()}`
+        `GrowServer | Version: ${this.package.version} | Copyright JadlionHD 2022-${new Date().getFullYear()}`,
       );
 
       // Check if port is available
@@ -85,24 +85,24 @@ export class Base {
 
       if (portInUse) {
         throw new Error(
-          `Port ${port} is already in use. Please choose a different port.`
+          `Port ${port} is already in use. Please choose a different port.`,
         );
       }
 
       this.cdn = await this.getLatestCdn();
       await downloadItemsDat(this.cdn.itemsDatName);
       await downloadMacOSItemsDat(this.cdn.itemsDatName);
-      
+
       logger.info(`Parsing ${this.cdn.itemsDatName}`);
       const datDir = join(__dirname, ".cache", "growtopia", "dat");
       const datName = join(datDir, this.cdn.itemsDatName);
       const itemsDat = readFileSync(datName);
 
       this.items = {
-        hash:     `${RTTEX.hash(itemsDat)}`,
-        content:  itemsDat,
+        hash: `${RTTEX.hash(itemsDat)}`,
+        content: itemsDat,
         metadata: {} as ItemsDatMeta,
-        wiki:     [] as ItemsInfo[],
+        wiki: [] as ItemsInfo[],
       };
 
       logger.info(`Starting ENet server on port ${port}`);
@@ -133,7 +133,7 @@ export class Base {
     this.server.on("connect", (netID) => connect.run(netID));
     this.server.on("disconnect", (netID) => disconnect.run(netID));
     this.server.on("raw", (netID, channelID, data) =>
-      raw.run(netID, channelID, data)
+      raw.run(netID, channelID, data),
     );
 
     // Register command aliases after server has started
@@ -146,12 +146,16 @@ export class Base {
         const pathArr = path.split("\\");
         const fileName = pathArr[pathArr.length - 1];
         chokidar
-          .watch(join(__dirname, "assets", "custom-items"), { persistent: true })
+          .watch(join(__dirname, "assets", "custom-items"), {
+            persistent: true,
+          })
           .on("change", async (path) => {
             const pathArr = path.split("\\");
             const fileName = pathArr[pathArr.length - 1];
 
-            logger.info(`Detected custom-items directory changes | ${fileName}`);
+            logger.info(
+              `Detected custom-items directory changes | ${fileName}`,
+            );
             logger.info(`Refreshing items data`);
             await this.loadItems();
           });
@@ -174,9 +178,11 @@ export class Base {
 
   private async loadItems() {
     const itemsDat = new ItemsDat(
-      Array.from((await readFile(
-        join(__dirname, ".cache", "growtopia", "dat", this.cdn.itemsDatName)
-      )))
+      Array.from(
+        await readFile(
+          join(__dirname, ".cache", "growtopia", "dat", this.cdn.itemsDatName),
+        ),
+      ),
     );
     await itemsDat.decode();
     // logger.info("Loading custom items...");
@@ -288,8 +294,11 @@ export class Base {
     this.items.content = bufData;
     this.items.hash = `${hash}`;
     this.items.metadata = itemsDat.meta;
-    
-    const wikiFile = await readFile(join(__dirname, "assets", "items_info_new.json"), "utf-8");
+
+    const wikiFile = await readFile(
+      join(__dirname, "assets", "items_info_new.json"),
+      "utf-8",
+    );
     this.items.wiki = JSON.parse(wikiFile) as ItemsInfo[];
 
     logger.info(`Items data hash: ${hash}`);
@@ -299,15 +308,15 @@ export class Base {
   public async getLatestCdn() {
     try {
       const cdnData = (await fetchJSON(
-        "https://mari-project.jad.li/api/v1/growtopia/cache/latest"
+        "https://mari-project.jad.li/api/v1/growtopia/cache/latest",
       )) as CDNContent;
       const itemsDat = (await fetchJSON(ITEMS_DAT_FETCH_URL)) as {
         content: string;
       };
 
       const data: CDNContent = {
-        version:      cdnData.version,
-        uri:          cdnData.uri,
+        version: cdnData.version,
+        uri: cdnData.uri,
         itemsDatName: itemsDat.content,
       };
 
@@ -320,7 +329,7 @@ export class Base {
 
   public async saveAll(disconnectAll = false): Promise<boolean> {
     logger.info(
-      `Saving ${this.cache.peers.size} peers & ${this.cache.worlds.size} worlds`
+      `Saving ${this.cache.peers.size} peers & ${this.cache.worlds.size} worlds`,
     );
 
     const worldsSaved = await this.saveWorlds();
@@ -338,7 +347,7 @@ export class Base {
           await wrld.saveToDatabase().catch((e) => logger.error(e));
         else
           logger.warn(
-            `Oh no there's undefined (${savedCount}) world, skipping..`
+            `Oh no there's undefined (${savedCount}) world, skipping..`,
           );
         savedCount++;
       }
@@ -383,7 +392,6 @@ export class Base {
     });
     return playerCount;
   }
-
 
   public async shutdown() {
     logger.info("Shutting down server...");

@@ -6,7 +6,7 @@ export class GazzetteEnd {
   constructor(
     public base: Base,
     public peer: Peer,
-    public action: NonEmptyObject<Record<string, string>>
+    public action: NonEmptyObject<Record<string, string>>,
   ) {}
 
   public async execute(): Promise<void> {

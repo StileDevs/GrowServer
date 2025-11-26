@@ -1,6 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { TemplateParser } from "./template";
-import type { ItemsInfo, ItemsPage } from "@growserver/types"
+import type { ItemsInfo, ItemsPage } from "@growserver/types";
 import { ItemDefinition } from "grow-items";
 import { parse } from "mwparser";
 
@@ -8,7 +8,10 @@ export class Parser {
   public XParser: XMLParser;
   public TParser: TemplateParser;
 
-  constructor(public itemPages: ItemsPage[], private readonly items: ItemDefinition[]) {
+  constructor(
+    public itemPages: ItemsPage[],
+    private readonly items: ItemDefinition[],
+  ) {
     this.XParser = new XMLParser();
     this.TParser = new TemplateParser(this.items);
   }
@@ -34,7 +37,9 @@ export class Parser {
     }
 
     for (const item of page.items) {
-      const paged = (doc?.mediawiki?.page as { title: string; revision: { text:string } }[])?.find(i => i.title === item.name);
+      const paged = (
+        doc?.mediawiki?.page as { title: string; revision: { text: string } }[]
+      )?.find((i) => i.title === item.name);
       const pageText = paged?.revision?.text;
 
       parsedItems.push(await this.parseItemData(item, pageText));
@@ -42,38 +47,38 @@ export class Parser {
     return parsedItems;
   }
 
-
   public async parseItemData(item: ItemDefinition, pageText?: string) {
-    const itemData: ItemsInfo = { 
-      id:     item.id!,
-      name:   item.name!,
+    const itemData: ItemsInfo = {
+      id: item.id!,
+      name: item.name!,
       recipe: {
-        splice: []
+        splice: [],
       },
       func: {
         add: "",
-        rem: ""
+        rem: "",
       },
-      chi:  "",
+      chi: "",
       desc: "",
     };
 
     if (!pageText) return itemData;
     else {
       const parsed_wiki = parse(pageText); // parses wikitext to a nodelist where you can easily filter templates
-      
+
       for (const template of parsed_wiki.templates) {
         const name = template.name.toLowerCase();
 
         switch (name) {
-          case "item/mod": 
+          case "item/mod":
             itemData.playMods = this.TParser.playMods(template);
             break;
           case "recipesplice":
             itemData.recipe!.splice = this.TParser.splice(template);
             break;
           case "item":
-            [itemData.desc, itemData.chi as string] = this.TParser.item(template);
+            [itemData.desc, itemData.chi as string] =
+              this.TParser.item(template);
             break;
           case "added":
             itemData.func!.add = this.TParser.func(template);
@@ -82,7 +87,7 @@ export class Parser {
             itemData.func!.rem = this.TParser.func(template);
             break;
           default:
-            // console.log(template.name);
+          // console.log(template.name);
         }
       }
       return itemData;

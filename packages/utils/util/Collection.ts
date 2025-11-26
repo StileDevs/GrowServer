@@ -1,7 +1,10 @@
 import { Collection as BaseCollection } from "@growserver/types";
 
 /** A {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Map | Map} with some Array-like additions. */
-export class Collection<K, V> extends Map<K, V> implements BaseCollection<K, V> {
+export class Collection<K, V>
+  extends Map<K, V>
+  implements BaseCollection<K, V>
+{
   constructor(entries?: readonly (readonly [K, V])[] | null) {
     super(entries);
   }
@@ -12,15 +15,15 @@ export class Collection<K, V> extends Map<K, V> implements BaseCollection<K, V> 
 
   every<T extends V, ThisArg = Collection<K, V>>(
     predicate: (value: V, index: number, array: Array<V>) => value is T,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): this is Array<T>;
   every<ThisArg = Collection<K, V>>(
     predicate: (value: V, index: number, array: Array<V>) => unknown,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): boolean;
   every(
     predicate: (value: V, index: number, array: Array<V>) => unknown,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): boolean {
     return this.toArray().every(predicate, thisArg);
   }
@@ -30,22 +33,22 @@ export class Collection<K, V> extends Map<K, V> implements BaseCollection<K, V> 
       this: ThisArg,
       value: V,
       index: number,
-      array: Array<V>
+      array: Array<V>,
     ) => value is S,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): Array<S>;
   filter<ThisArg = Collection<K, V>>(
     predicate: (
       this: ThisArg,
       value: V,
       index: number,
-      array: Array<V>
+      array: Array<V>,
     ) => unknown,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): Array<V>;
   filter(
     predicate: (value: V, index: number, array: Array<V>) => unknown,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): Array<V> {
     return this.toArray().filter(predicate, thisArg);
   }
@@ -55,29 +58,29 @@ export class Collection<K, V> extends Map<K, V> implements BaseCollection<K, V> 
       this: ThisArg,
       value: V,
       index: number,
-      obj: Array<V>
+      obj: Array<V>,
     ) => value is S,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): S | undefined;
   find<ThisArg = Collection<K, V>>(
     predicate: (
       this: ThisArg,
       value: V,
       index: number,
-      obj: Array<V>
+      obj: Array<V>,
     ) => unknown,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): V | undefined;
   find(
     predicate: (value: V, index: number, obj: Array<V>) => unknown,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): V | undefined {
     return this.toArray().find(predicate, thisArg);
   }
 
   findIndex(
     predicate: (value: V, index: number, obj: Array<V>) => unknown,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): number {
     return this.toArray().findIndex(predicate, thisArg);
   }
@@ -118,7 +121,7 @@ export class Collection<K, V> extends Map<K, V> implements BaseCollection<K, V> 
 
   map<T>(
     predicate: (value: V, index: number, obj: Array<V>) => T,
-    thisArg?: unknown
+    thisArg?: unknown,
   ): Array<T> {
     return this.toArray().map(predicate, thisArg);
   }
@@ -137,35 +140,35 @@ export class Collection<K, V> extends Map<K, V> implements BaseCollection<K, V> 
       previousValue: V,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
-    ) => V
+      array: Array<V>,
+    ) => V,
   ): V;
   reduce(
     predicate: (
       previousValue: V,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => V,
-    initialValue: V
+    initialValue: V,
   ): V;
   reduce<T>(
     predicate: (
       previousValue: T,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => T,
-    initialValue: T
+    initialValue: T,
   ): T;
   reduce<T>(
     predicate: (
       previousValue: T,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => T,
-    initialValue?: T
+    initialValue?: T,
   ): T {
     return this.toArray().reduce(predicate, initialValue!);
   }
@@ -175,42 +178,42 @@ export class Collection<K, V> extends Map<K, V> implements BaseCollection<K, V> 
       previousValue: V,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
-    ) => V
+      array: Array<V>,
+    ) => V,
   ): V;
   reduceRight(
     predicate: (
       previousValue: V,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => V,
-    initialValue: V
+    initialValue: V,
   ): V;
   reduceRight<T>(
     predicate: (
       previousValue: T,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => T,
-    initialValue: T
+    initialValue: T,
   ): T;
   reduceRight<T>(
     predicate: (
       previousValue: T,
       currentValue: V,
       currentIndex: number,
-      array: Array<V>
+      array: Array<V>,
     ) => T,
-    initialValue?: T
+    initialValue?: T,
   ): T {
     return this.toArray().reduceRight(predicate, initialValue!);
   }
 
   some<ThisArg = Collection<K, V>>(
     predicate: (value: V, index: number, array: Array<V>) => unknown,
-    thisArg?: ThisArg
+    thisArg?: ThisArg,
   ): boolean {
     return this.toArray().some(predicate, thisArg);
   }

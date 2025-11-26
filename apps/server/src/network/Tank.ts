@@ -12,7 +12,7 @@ export class ITankPacket {
   constructor(
     public base: Base,
     public peer: Peer,
-    public chunk: Buffer
+    public chunk: Buffer,
   ) {
     this.tank = TankPacket.fromBuffer(chunk);
   }
@@ -22,7 +22,8 @@ export class ITankPacket {
     const world = new World(this.base, this.peer.data.world);
 
     logger.debug(
-      `[DEBUG] Receive tank packet of ${TankTypes[tankType]}: ${this.tank.parse()?.toString("hex")}`);
+      `[DEBUG] Receive tank packet of ${TankTypes[tankType]}: ${this.tank.parse()?.toString("hex")}`,
+    );
 
     try {
       const type = this.tank.data?.type as number;
@@ -30,7 +31,7 @@ export class ITankPacket {
 
       if (!Class)
         throw new Error(
-          `No TankPacket class found with type ${TankTypes[type]} (${type})`
+          `No TankPacket class found with type ${TankTypes[type]} (${type})`,
         );
 
       const tnk = new Class(this.base, this.peer, this.tank, world);

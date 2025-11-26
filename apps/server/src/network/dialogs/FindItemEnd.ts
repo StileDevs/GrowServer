@@ -10,8 +10,8 @@ export class FindItemEnd {
     public action: NonEmptyObject<{
       dialog_name: string;
       buttonClicked: string;
-    }>
-  ) { }
+    }>,
+  ) {}
 
   public async execute(): Promise<void> {
     if (!this.action.dialog_name || !this.action.buttonClicked) return;
@@ -21,8 +21,8 @@ export class FindItemEnd {
     this.peer.send(
       Variant.from(
         "OnConsoleMessage",
-        `Added \`6${this.base.items.metadata.items.get(itemID.toString())?.name}\`\` to your inventory.`
-      )
+        `Added \`6${this.base.items.metadata.items.get(itemID.toString())?.name}\`\` to your inventory.`,
+      ),
     );
     this.peer.inventory();
     this.peer.saveToCache();

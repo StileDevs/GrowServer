@@ -8,7 +8,7 @@ export class NormalTile extends Tile {
   constructor(
     public base: Base,
     public world: World,
-    public block: TileData
+    public block: TileData,
   ) {
     super(base, world, block);
   }

@@ -10,11 +10,11 @@ export class Info {
 
   constructor(
     public base: Base,
-    public peer: Peer
+    public peer: Peer,
   ) {
     // Use the already loaded items from Base
     if (base.items.wiki && Array.isArray(base.items.wiki)) {
-      base.items.wiki.forEach(it => {
+      base.items.wiki.forEach((it) => {
         this.items.set(it.id, it);
       });
     } else {
@@ -23,7 +23,7 @@ export class Info {
   }
 
   public async execute(
-    action: NonEmptyObject<Record<string, string>>
+    action: NonEmptyObject<Record<string, string>>,
   ): Promise<void> {
     const id = parseInt(action.itemID, 10);
     if (isNaN(id)) return this.sendMessage("Invalid item ID.");
@@ -40,10 +40,9 @@ export class Info {
 
     if (item.recipe?.splice?.length) {
       const seeds = item.recipe.splice
-        .map(sid => this.items.get(sid)?.name || sid)
+        .map((sid) => this.items.get(sid)?.name || sid)
         .join(" + ");
-      dlg.addSmallText(`Recipe: ${seeds} = ${item.name}`)
-        .addSpacer("small");
+      dlg.addSmallText(`Recipe: ${seeds} = ${item.name}`).addSpacer("small");
     }
 
     // Check if item has combine property via metadata instead
@@ -57,11 +56,17 @@ export class Info {
     }
 
     // Check if item is permanent via metadata instead
-    const isPermaItem = itemMeta && itemMeta.flags !== undefined && (itemMeta.flags & 0x100) === 0x100; // Check for ITEM_UNTRADEABLE flag which often indicates perma items
+    const isPermaItem =
+      itemMeta &&
+      itemMeta.flags !== undefined &&
+      (itemMeta.flags & 0x100) === 0x100; // Check for ITEM_UNTRADEABLE flag which often indicates perma items
 
     if (isPermaItem) {
-      dlg.addSpacer("small")
-        .addSmallText("`3This item can't be destroyed - smashing it will return it to your backpack if you have room!");
+      dlg
+        .addSpacer("small")
+        .addSmallText(
+          "`3This item can't be destroyed - smashing it will return it to your backpack if you have room!",
+        );
     }
 
     const out = dlg.addButton("info_end", "OK").str();

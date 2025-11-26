@@ -1,7 +1,15 @@
 import { PeerData, TankPacket, TextPacket, Variant } from "growtopia.js";
 import { TileData, WorldData } from "@growserver/types";
 import { Base } from "./Base";
-import { ActionTypes, LockPermission, PacketTypes, ROLE, TankTypes, TileCollisionTypes, TileFlags } from "@growserver/const";
+import {
+  ActionTypes,
+  LockPermission,
+  PacketTypes,
+  ROLE,
+  TankTypes,
+  TileCollisionTypes,
+  TileFlags,
+} from "@growserver/const";
 import { Peer } from "./Peer";
 // import { tileParse } from "../world/tiles";
 import { Default } from "../world/generation/Default";
@@ -15,7 +23,7 @@ export class World {
 
   constructor(
     private base: Base,
-    worldName: string
+    worldName: string,
   ) {
     this.base = base;
     this.worldName = worldName;
@@ -23,9 +31,15 @@ export class World {
     const data = this.base.cache.worlds.get(worldName);
     if (data) {
       this.data = data;
-    }
-    else
-      this.data = { name: "", width: 0, height: 0, blocks: [], weather: { id: 41 }, dropped: { items: [], uid: 0 } };
+    } else
+      this.data = {
+        name: "",
+        width: 0,
+        height: 0,
+        blocks: [],
+        weather: { id: 41 },
+        dropped: { items: [], uid: 0 },
+      };
   }
 
   public async saveToCache() {
@@ -51,8 +65,8 @@ export class World {
         PacketTypes.ACTION,
         "action|play_sfx",
         "file|audio/door_shut.wav",
-        "delayMS|0"
-      )
+        "delayMS|0",
+      ),
     );
     const world = peer.currentWorld();
     if (world) {
@@ -62,28 +76,28 @@ export class World {
             Variant.from(
               "OnRemove",
               `netID|${peer.data?.netID}`,
-              `pId|${peer.data?.userID}`
+              `pId|${peer.data?.userID}`,
             ),
             Variant.from(
               "OnConsoleMessage",
-              `\`5<${peer.data.displayName}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+              `\`5<${peer.data.displayName}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
             ),
             Variant.from(
               "OnTalkBubble",
               peer.data.netID,
               `\`5<${peer.data.displayName}\`\` left, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
               0,
-              1
+              1,
             ),
             TextPacket.from(
               PacketTypes.ACTION,
               "action|play_sfx",
               "file|audio/door_shut.wav",
-              "delayMS|0"
-            )
+              "delayMS|0",
+            ),
           );
         }
-      })
+      });
     }
 
     if (sendMenu)
@@ -113,13 +127,13 @@ ${peer.data.lastVisitedWorlds
     return `add_floater|${v}|${count ?? 0}|0.5|3417414143\n`;
   })
   .join("\n")}
-`
+`,
         ),
         Variant.from(
           { delay: 500 },
           "OnConsoleMessage",
-          `Where would you like to go? (\`w${this.base.getPlayersOnline()}\`\` online)`
-        )
+          `Where would you like to go? (\`w${this.base.getPlayersOnline()}\`\` online)`,
+        ),
       );
 
     peer.data.world = "EXIT";
@@ -136,19 +150,21 @@ ${peer.data.lastVisitedWorlds
       const world = await this.base.database.worlds.get(this.worldName);
       if (world) {
         this.data = {
-          name:        world.name,
-          width:       world.width,
-          height:      world.height,
-          blocks:      world.blocks ? JSON.parse((world.blocks).toString()) : [],
+          name: world.name,
+          width: world.width,
+          height: world.height,
+          blocks: world.blocks ? JSON.parse(world.blocks.toString()) : [],
           // admins: [],
           playerCount: 0,
-          jammers:     [],
-          dropped:     world.dropped
+          jammers: [],
+          dropped: world.dropped
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
           // owner: world.owner ? JSON.parse(world.owner.toString()) : null,
-          weather:        { id: world.weather_id || 41 },
-          worldLockIndex: world.worldlock_index ? world.worldlock_index : undefined
+          weather: { id: world.weather_id || 41 },
+          worldLockIndex: world.worldlock_index
+            ? world.worldlock_index
+            : undefined,
           // minLevel: world.minimum_level || 1,
         };
       } else {
@@ -157,10 +173,9 @@ ${peer.data.lastVisitedWorlds
     } else this.data = this.base.cache.worlds.get(this.worldName) as WorldData;
   }
 
-
   /**
-   * Emulate TileChangeReq 
-   * 
+   * Emulate TileChangeReq
+   *
    * if `overrideTile` is true, the target tile will be replaced.
    * else it will simulate TileChangeReq behaviour.
    * @param peer peer that initiate the place.
@@ -171,17 +186,19 @@ ${peer.data.lastVisitedWorlds
     x: number,
     y: number,
     itemID: ItemDefinition,
-    { overrideTile }: { overrideTile: boolean } = { overrideTile: false }
+    { overrideTile }: { overrideTile: boolean } = { overrideTile: false },
   ): Promise<boolean> {
-    const targetTile = tileFrom(this.base, this, this.data.blocks[y * this.data.width + x]);
+    const targetTile = tileFrom(
+      this.base,
+      this,
+      this.data.blocks[y * this.data.width + x],
+    );
 
     if (itemID.type == ActionTypes.BACKGROUND) {
       return targetTile.onPlaceBackground(peer, itemID);
-    }
-    else if (targetTile.data.fg == 0) {
+    } else if (targetTile.data.fg == 0) {
       return targetTile.onPlaceForeground(peer, itemID);
-    }
-    else {
+    } else {
       return targetTile.onItemPlace(peer, itemID);
     }
   }
@@ -195,7 +212,9 @@ ${peer.data.lastVisitedWorlds
     // Validate world data
     if (!this.data || !this.data.blocks || this.data.blocks.length === 0) {
       console.error("World data is invalid or empty!");
-      peer.send(Variant.from("OnConsoleMessage", "`4Error: World data is corrupted!"));
+      peer.send(
+        Variant.from("OnConsoleMessage", "`4Error: World data is corrupted!"),
+      );
       return;
     }
 
@@ -205,7 +224,9 @@ ${peer.data.lastVisitedWorlds
 
     // Verify block count matches
     if (this.data.blocks.length !== blockCount) {
-      console.warn(`Block count mismatch! Expected: ${blockCount}, Got: ${this.data.blocks.length}`);
+      console.warn(
+        `Block count mismatch! Expected: ${blockCount}, Got: ${this.data.blocks.length}`,
+      );
     }
 
     // World data
@@ -217,7 +238,10 @@ ${peer.data.lastVisitedWorlds
     buffer.writeUint32LE(this.data.height, 12 + this.worldName.length);
     buffer.writeUint32LE(blockCount, 16 + this.worldName.length);
 
-    console.log("Header bytes:", buffer.slice(0, Math.min(20, buffer.length)).toString('hex'));
+    console.log(
+      "Header bytes:",
+      buffer.slice(0, Math.min(20, buffer.length)).toString("hex"),
+    );
 
     // Tambahan 5 bytes, gatau ini apaan
     const unk1 = Buffer.alloc(5);
@@ -240,10 +264,13 @@ ${peer.data.lastVisitedWorlds
 
         blockBuf.forEach((b) => blockBytes.push(b));
       }
-      
+
       // Log first block for debugging
       if (blockBytes.length > 0) {
-        console.log("First block data (first 32 bytes):", Buffer.from(blockBytes.slice(0, 32)).toString('hex'));
+        console.log(
+          "First block data (first 32 bytes):",
+          Buffer.from(blockBytes.slice(0, 32)).toString("hex"),
+        );
       }
     } catch (error) {
       console.error("Error serializing blocks:", error);
@@ -283,13 +310,13 @@ ${peer.data.lastVisitedWorlds
     const worldMap = Buffer.concat([
       buffer,
       Buffer.concat([unk1, Buffer.from(blockBytes)]),
-      Buffer.concat([unk2, dropData, weatherData])
+      Buffer.concat([unk2, dropData, weatherData]),
     ]);
 
     const tank = TankPacket.from({
-      type:  TankTypes.SEND_MAP_DATA,
+      type: TankTypes.SEND_MAP_DATA,
       state: 8,
-      data:  () => worldMap
+      data: () => worldMap,
     });
 
     const mainDoor = this.data.blocks.find((block) => block.fg === 6);
@@ -308,32 +335,32 @@ ${peer.data.lastVisitedWorlds
       Variant.from(
         { delay: -1 },
         "OnSpawn",
-        `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.data.displayName}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`
+        `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.data.displayName}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\ntype|local`,
       ),
 
       Variant.from(
         {
-          netID: peer.data?.netID
+          netID: peer.data?.netID,
         },
         "OnSetClothing",
         [
           peer.data.clothing.hair,
           peer.data.clothing.shirt,
-          peer.data.clothing.pants
+          peer.data.clothing.pants,
         ],
         [
           peer.data.clothing.feet,
           peer.data.clothing.face,
-          peer.data.clothing.hand
+          peer.data.clothing.hand,
         ],
         [
           peer.data.clothing.back,
           peer.data.clothing.mask,
-          peer.data.clothing.necklace
+          peer.data.clothing.necklace,
         ],
         0x8295c3ff,
-        [peer.data.clothing.ances, 0.0, 0.0]
-      )
+        [peer.data.clothing.ances, 0.0, 0.0],
+      ),
     );
 
     const ownerUserID = this.getOwnerUID();
@@ -342,8 +369,8 @@ ${peer.data.lastVisitedWorlds
       peer.send(
         Variant.from(
           "OnConsoleMessage",
-          `\`p[\`0${this.data.name} \`oWorld Locked by ${ownerData?.display_name}\`#]`
-        )
+          `\`p[\`0${this.data.name} \`oWorld Locked by ${ownerData?.display_name}\`#]`,
+        ),
       );
     }
 
@@ -355,78 +382,82 @@ ${peer.data.lastVisitedWorlds
             Variant.from(
               { delay: -1 },
               "OnSpawn",
-              `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.data.displayName}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+              `spawn|avatar\nnetID|${peer.data?.netID}\nuserID|${peer.data?.userID}\ncolrect|0|0|20|30\nposXY|${peer.data?.x}|${peer.data?.y}\nname|\`w${peer.data.displayName}\`\`\ncountry|${peer.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`,
             ),
             Variant.from(
               {
-                netID: peer.data?.netID
+                netID: peer.data?.netID,
               },
               "OnSetClothing",
               [
                 peer.data.clothing.hair,
                 peer.data.clothing.shirt,
-                peer.data.clothing.pants
+                peer.data.clothing.pants,
               ],
               [
                 peer.data.clothing.feet,
                 peer.data.clothing.face,
-                peer.data.clothing.hand
+                peer.data.clothing.hand,
               ],
               [
                 peer.data.clothing.back,
                 peer.data.clothing.mask,
-                peer.data.clothing.necklace
+                peer.data.clothing.necklace,
               ],
               0x8295c3ff,
-              [peer.data.clothing.ances, 0.0, 0.0]
+              [peer.data.clothing.ances, 0.0, 0.0],
             ),
             Variant.from(
               "OnConsoleMessage",
-              `\`5<${peer.data.displayName}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``
+              `\`5<${peer.data.displayName}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
             ),
             Variant.from(
               "OnTalkBubble",
               peer.data.netID,
               `\`5<${peer.data.displayName}\`\` joined, \`w${this.data.playerCount}\`\` others here\`5>\`\``,
               0,
-              1
+              1,
             ),
             TextPacket.from(
               PacketTypes.ACTION,
               "action|play_sfx",
               "file|audio/door_open.wav",
-              "delayMS|0"
-            )
+              "delayMS|0",
+            ),
           );
 
           peer.send(
             Variant.from(
               { delay: -1 },
               "OnSpawn",
-              `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.userID}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.data.displayName}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`
+              `spawn|avatar\nnetID|${p.data?.netID}\nuserID|${p.data?.userID}\ncolrect|0|0|20|30\nposXY|${p.data?.x}|${p.data?.y}\nname|\`w${p.data.displayName}\`\`\ncountry|${p.country}\ninvis|0\nmstate|0\nsmstate|0\nonlineID|\n`,
             ),
             Variant.from(
               {
-                netID: p.data?.netID
+                netID: p.data?.netID,
               },
               "OnSetClothing",
               [
                 p.data.clothing.hair,
                 p.data.clothing.shirt,
-                p.data.clothing.pants
+                p.data.clothing.pants,
               ],
-              [p.data.clothing.feet, p.data.clothing.face, p.data.clothing.hand],
+              [
+                p.data.clothing.feet,
+                p.data.clothing.face,
+                p.data.clothing.hand,
+              ],
               [
                 p.data.clothing.back,
                 p.data.clothing.mask,
-                p.data.clothing.necklace
+                p.data.clothing.necklace,
               ],
               0x8295c3ff,
-              [p.data.clothing.ances, 0.0, 0.0]
-            )
+              [p.data.clothing.ances, 0.0, 0.0],
+            ),
           );
         }
-      })
+      });
     }
 
     this.data.playerCount = this.data.playerCount
@@ -452,16 +483,16 @@ ${peer.data.lastVisitedWorlds
     y: number,
     id: number,
     amount: number,
-    { tree, noSimilar }: { tree?: boolean; noSimilar?: boolean } = {}
+    { tree, noSimilar }: { tree?: boolean; noSimilar?: boolean } = {},
   ) {
     const tank = TankPacket.from({
-      type:        TankTypes.ITEM_CHANGE_OBJECT,
-      netID:       -1,
+      type: TankTypes.ITEM_CHANGE_OBJECT,
+      netID: -1,
       targetNetID: tree ? -1 : peer.data?.netID,
-      state:       0,
-      info:        id,
-      xPos:        x,
-      yPos:        y
+      state: 0,
+      info: id,
+      xPos: x,
+      yPos: y,
     });
 
     const position = Math.trunc(x / 32) + Math.trunc(y / 32) * this.data.width;
@@ -470,10 +501,11 @@ ${peer.data.lastVisitedWorlds
     const similarDrops = noSimilar
       ? null
       : this.data.dropped?.items
-        .filter(
-          (i) => i.id === id && block.x === i.block.x && block.y === i.block.y
-        )
-        .sort((a, b) => a.amount - b.amount);
+          .filter(
+            (i) =>
+              i.id === id && block.x === i.block.x && block.y === i.block.y,
+          )
+          .sort((a, b) => a.amount - b.amount);
 
     const similarDrop = Array.isArray(similarDrops) ? similarDrops[0] : null;
 
@@ -502,8 +534,8 @@ ${peer.data.lastVisitedWorlds
         amount,
         x,
         y,
-        uid:   ++this.data.dropped.uid,
-        block: { x: block.x, y: block.y }
+        uid: ++this.data.dropped.uid,
+        block: { x: block.x, y: block.y },
       });
 
     const buffer = tank.parse() as Buffer;
@@ -511,7 +543,7 @@ ${peer.data.lastVisitedWorlds
 
     this.every((p) => {
       p.send(buffer);
-    })
+    });
 
     this.saveToCache();
   }
@@ -523,7 +555,7 @@ ${peer.data.lastVisitedWorlds
     if ((item?.id ?? 0) <= 1) return;
 
     const itemInInv = peer.data.inventory.items.find(
-      (i) => i.id === droppedItem.id
+      (i) => i.id === droppedItem.id,
     );
 
     if (
@@ -538,13 +570,13 @@ ${peer.data.lastVisitedWorlds
       world.every((p) => {
         p.send(
           TankPacket.from({
-            type:        TankTypes.ITEM_CHANGE_OBJECT,
-            netID:       peer.data?.netID,
+            type: TankTypes.ITEM_CHANGE_OBJECT,
+            netID: peer.data?.netID,
             targetNetID: -1,
-            info:        uid
-          })
-        )
-      })
+            info: uid,
+          }),
+        );
+      });
     }
 
     if (itemInInv) {
@@ -553,14 +585,14 @@ ${peer.data.lastVisitedWorlds
         peer.send(
           Variant.from(
             "OnConsoleMessage",
-            `Collected \`w${200 - itemInInv.amount} ${item?.name}`
-          )
+            `Collected \`w${200 - itemInInv.amount} ${item?.name}`,
+          ),
         );
         itemInInv.amount = 200;
 
         this.drop(peer, droppedItem.x, droppedItem.y, droppedItem.id, extra, {
           noSimilar: true,
-          tree:      true
+          tree: true,
         });
       } else {
         if (droppedItem.id !== 112) {
@@ -568,8 +600,8 @@ ${peer.data.lastVisitedWorlds
           peer.send(
             Variant.from(
               "OnConsoleMessage",
-              `Collected \`w${droppedItem.amount} ${item?.name}`
-            )
+              `Collected \`w${droppedItem.amount} ${item?.name}`,
+            ),
           );
         } else {
           peer.data.gems += droppedItem.amount;
@@ -581,8 +613,8 @@ ${peer.data.lastVisitedWorlds
         peer.send(
           Variant.from(
             "OnConsoleMessage",
-            `Collected \`w${droppedItem.amount} ${item?.name}`
-          )
+            `Collected \`w${droppedItem.amount} ${item?.name}`,
+          ),
         );
       } else {
         peer.data.gems += droppedItem.amount;
@@ -590,14 +622,18 @@ ${peer.data.lastVisitedWorlds
     }
 
     this.data.dropped!.items = this.data.dropped!.items.filter(
-      (i) => i.uid !== droppedItem.uid
+      (i) => i.uid !== droppedItem.uid,
     );
 
     peer.saveToCache();
     this.saveToCache();
   }
 
-  public async hasTilePermission(userID: number, tile: TileData, permissionType: LockPermission): Promise<boolean> {
+  public async hasTilePermission(
+    userID: number,
+    tile: TileData,
+    permissionType: LockPermission,
+  ): Promise<boolean> {
     // a lock owns this tile
     const userData = await this.base.database.players.getByUID(userID);
     if (userData && userData.role == ROLE.DEVELOPER) return true;
@@ -605,38 +641,49 @@ ${peer.data.lastVisitedWorlds
     // the tile being asked is the lock itself. No one have permission except the owner
     if (tile.lock) {
       return userID == tile.lock.ownerUserID;
-    }
-    else if (tile.lockedBy) {
-      const owningLock = this.data.blocks[tile.lockedBy.parentY! * this.data.width + tile.lockedBy.parentX!];
+    } else if (tile.lockedBy) {
+      const owningLock =
+        this.data.blocks[
+          tile.lockedBy.parentY! * this.data.width + tile.lockedBy.parentX!
+        ];
       if (owningLock.lock) {
         if (owningLock.lock.ownerUserID == userID) {
           return true;
         }
 
-        if (owningLock.lock.adminIDs && owningLock.lock.adminIDs.includes(userID)) {
+        if (
+          owningLock.lock.adminIDs &&
+          owningLock.lock.adminIDs.includes(userID)
+        ) {
           if (owningLock.lock.adminLimited) {
-            return !!(owningLock.lock.permission & permissionType) || owningLock.lock.permission == permissionType;
+            return (
+              !!(owningLock.lock.permission & permissionType) ||
+              owningLock.lock.permission == permissionType
+            );
           }
           return true;
         }
         // not admin?
         if (owningLock.flags & TileFlags.PUBLIC) {
-          return !!(owningLock.lock.permission & permissionType) || owningLock.lock.permission == permissionType;
+          return (
+            !!(owningLock.lock.permission & permissionType) ||
+            owningLock.lock.permission == permissionType
+          );
         }
       }
-    }
-    else if (this.data.worldLockIndex) {
+    } else if (this.data.worldLockIndex) {
       const worldLock = this.data.blocks[this.data.worldLockIndex];
 
       if (worldLock.flags & TileFlags.PUBLIC) return true;
-      else if (worldLock.lock!.adminIDs && worldLock.lock!.adminIDs.includes(userID)) {
+      else if (
+        worldLock.lock!.adminIDs &&
+        worldLock.lock!.adminIDs.includes(userID)
+      ) {
+        return true;
+      } else if (worldLock.lock!.ownerUserID == userID) {
         return true;
       }
-      else if (worldLock.lock!.ownerUserID == userID) {
-        return true;
-      }
-    }
-    else {
+    } else {
       // no locks and no owner
       return true;
     }
@@ -644,8 +691,12 @@ ${peer.data.lastVisitedWorlds
     return permissionType == LockPermission.NONE || false;
   }
 
-  public async every(callbackfn: (peer: Peer, netID: number) => void): Promise<void> {
-    if (this.data.playerCount == 0) { return; }
+  public async every(
+    callbackfn: (peer: Peer, netID: number) => void,
+  ): Promise<void> {
+    if (this.data.playerCount == 0) {
+      return;
+    }
     this.base.cache.peers.forEach((p, k) => {
       const pp = new Peer(this.base, p.netID);
       if (pp.data.world == this.data.name) {
@@ -660,7 +711,7 @@ ${peer.data.lastVisitedWorlds
       if (p.data.netID == netID) {
         peer = p;
       }
-    })
+    });
 
     return peer;
   }
@@ -678,7 +729,10 @@ ${peer.data.lastVisitedWorlds
   // Helper functino to get lock owner user ID on a specific tile.
   public getTileOwnerUID(tile: TileData): number | undefined {
     if (tile.lockedBy) {
-      const owningLock = this.data.blocks[tile.lockedBy.parentY! * this.data.width + tile.lockedBy.parentX!];
+      const owningLock =
+        this.data.blocks[
+          tile.lockedBy.parentY! * this.data.width + tile.lockedBy.parentX!
+        ];
       if (owningLock.lock) {
         return owningLock.lock.ownerUserID;
       }
@@ -686,12 +740,10 @@ ${peer.data.lastVisitedWorlds
     // the tile being asked is the lock itself. No one have permission except the owner
     else if (tile.lock) {
       return tile.lock.ownerUserID;
-    }
-    else if (this.data.worldLockIndex) {
+    } else if (this.data.worldLockIndex) {
       const worldLock = this.data.blocks[this.data.worldLockIndex];
       return worldLock.lock?.ownerUserID;
-    }
-    else {
+    } else {
       // no locks and no owner
       return undefined;
     }

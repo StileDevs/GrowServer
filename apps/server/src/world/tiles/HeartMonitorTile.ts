@@ -18,10 +18,15 @@ export class HeartMonitorTile extends Tile {
     super(base, world, data);
   }
 
-  public async onPlaceForeground(peer: Peer, itemMeta: ItemDefinition): Promise<boolean> {
-    if (!await super.onPlaceForeground(peer, itemMeta)) { return false; }
+  public async onPlaceForeground(
+    peer: Peer,
+    itemMeta: ItemDefinition,
+  ): Promise<boolean> {
+    if (!(await super.onPlaceForeground(peer, itemMeta))) {
+      return false;
+    }
 
-    this.data.heartMonitor = { userID: peer.data.userID }
+    this.data.heartMonitor = { userID: peer.data.userID };
     this.data.flags |= TileFlags.TILEEXTRA;
 
     let heartMonitorArray = peer.data.heartMonitors.get(this.world.worldName);
@@ -41,9 +46,9 @@ export class HeartMonitorTile extends Tile {
   public async onDestroy(peer: Peer): Promise<void> {
     await super.onDestroy(peer);
 
-    const idx = peer.data.heartMonitors.get(this.world.worldName)!.findIndex((v) =>
-      v == this.data.y * this.world.data.width + this.data.x
-    );
+    const idx = peer.data.heartMonitors
+      .get(this.world.worldName)!
+      .findIndex((v) => v == this.data.y * this.world.data.width + this.data.x);
 
     if (idx) peer.data.heartMonitors.get(this.world.worldName)!.splice(idx, 1);
 
@@ -52,11 +57,12 @@ export class HeartMonitorTile extends Tile {
     this.data.heartMonitor = undefined;
   }
 
-
   public async serialize(dataBuffer: ExtendBuffer): Promise<void> {
     await super.serialize(dataBuffer);
 
-    const user = await this.base.database.players.getByUID(this.data.heartMonitor!.userID);
+    const user = await this.base.database.players.getByUID(
+      this.data.heartMonitor!.userID,
+    );
     dataBuffer.grow(7 + (user?.display_name.length ?? 0));
     dataBuffer.writeU8(this.extraType);
     dataBuffer.writeU32(this.data.heartMonitor!.userID);
@@ -67,8 +73,8 @@ export class HeartMonitorTile extends Tile {
     flags = await super.setFlags(flags);
 
     const targetPeer = this.base.cache.peers.find(
-      (p) => p.userID == this.data.heartMonitor!.userID
-    )
+      (p) => p.userID == this.data.heartMonitor!.userID,
+    );
 
     if (targetPeer) {
       flags |= TileFlags.OPEN;

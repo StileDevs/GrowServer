@@ -12,18 +12,19 @@ export default class AddGems extends Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["addgems"],
-      description: "Add gems to a user. Use /username for exact name or #id for user ID.",
-      cooldown:    5,
-      ratelimit:   1,
-      category:    "`oBasic",
-      usage:       "/addgems <target> <amount>",
-      example:     ["/addgems /testuser1 10000", "/addgems #172 10000"],
-      permission:  [ROLE.DEVELOPER]
+      command: ["addgems"],
+      description:
+        "Add gems to a user. Use /username for exact name or #id for user ID.",
+      cooldown: 5,
+      ratelimit: 1,
+      category: "`oBasic",
+      usage: "/addgems <target> <amount>",
+      example: ["/addgems /testuser1 10000", "/addgems #172 10000"],
+      permission: [ROLE.DEVELOPER],
     };
   }
 
@@ -33,11 +34,11 @@ export default class AddGems extends Command {
         Variant.from(
           "OnConsoleMessage",
           "`4Usage: /addgems <target> <amount>`o\n" +
-          "Target can be:\n" +
-          "  `/username` - Find user by exact username\n" +
-          "  `#id` - Find user by user ID\n" +
-          "Example: `/addgems /testuser1 10000` or `/addgems #172 10000`"
-        )
+            "Target can be:\n" +
+            "  `/username` - Find user by exact username\n" +
+            "  `#id` - Find user by user ID\n" +
+            "Example: `/addgems /testuser1 10000` or `/addgems #172 10000`",
+        ),
       );
       return;
     }
@@ -50,8 +51,8 @@ export default class AddGems extends Command {
       this.peer.send(
         Variant.from(
           "OnConsoleMessage",
-          "`4Invalid amount. Please provide a positive number.``"
-        )
+          "`4Invalid amount. Please provide a positive number.``",
+        ),
       );
       return;
     }
@@ -62,8 +63,8 @@ export default class AddGems extends Command {
       this.peer.send(
         Variant.from(
           "OnConsoleMessage",
-          "`4Invalid target format. Use `/username` or `#id`.``"
-        )
+          "`4Invalid target format. Use `/username` or `#id`.``",
+        ),
       );
       return;
     }
@@ -75,39 +76,46 @@ export default class AddGems extends Command {
     if (parsedTarget.type === "name") {
       // Check if user is online in cache
       const targetPeerData = this.base.cache.peers.find(
-        (p) => p.name.toLowerCase() === (parsedTarget.value as string).toLowerCase()
+        (p) =>
+          p.name.toLowerCase() === (parsedTarget.value as string).toLowerCase(),
       );
 
       if (targetPeerData) {
         targetPeer = new Peer(this.base, targetPeerData.netID);
       } else {
         // If not online, check database
-        targetData = await this.base.database.players.get(parsedTarget.value as string);
+        targetData = await this.base.database.players.get(
+          parsedTarget.value as string,
+        );
         if (!targetData) {
           this.peer.send(
             Variant.from(
               "OnConsoleMessage",
-              "`4User with name `o" + parsedTarget.value + "`4 not found.``"
-            )
+              "`4User with name `o" + parsedTarget.value + "`4 not found.``",
+            ),
           );
           return;
         }
       }
     } else if (parsedTarget.type === "id") {
       // Check if user is online in cache by ID
-      const targetPeerData = this.base.cache.peers.find((p) => p.userID === parsedTarget.value);
+      const targetPeerData = this.base.cache.peers.find(
+        (p) => p.userID === parsedTarget.value,
+      );
 
       if (targetPeerData) {
         targetPeer = new Peer(this.base, targetPeerData.netID);
       } else {
         // If not online, check database by ID
-        targetData = await this.base.database.players.getByUID(parsedTarget.value as number);
+        targetData = await this.base.database.players.getByUID(
+          parsedTarget.value as number,
+        );
         if (!targetData) {
           this.peer.send(
             Variant.from(
               "OnConsoleMessage",
-              "`4User with ID `o" + parsedTarget.value + "`4 not found.``"
-            )
+              "`4User with ID `o" + parsedTarget.value + "`4 not found.``",
+            ),
           );
           return;
         }
@@ -125,16 +133,26 @@ export default class AddGems extends Command {
       this.peer.send(
         Variant.from(
           "OnConsoleMessage",
-          "`2Successfully added `o" + amount + "`2 gems to `o" + targetPeer.data.name + "`2.``\n" +
-          "`oOld: " + oldGems + " | New: " + targetPeer.data.gems + "``"
-        )
+          "`2Successfully added `o" +
+            amount +
+            "`2 gems to `o" +
+            targetPeer.data.name +
+            "`2.``\n" +
+            "`oOld: " +
+            oldGems +
+            " | New: " +
+            targetPeer.data.gems +
+            "``",
+        ),
       );
 
       targetPeer.send(
         Variant.from(
           "OnConsoleMessage",
-          "`2You have received `o" + amount + "`2 gems from an administrator!``"
-        )
+          "`2You have received `o" +
+            amount +
+            "`2 gems from an administrator!``",
+        ),
       );
     } else if (targetData) {
       // User is offline - update database directly
@@ -150,9 +168,17 @@ export default class AddGems extends Command {
       this.peer.send(
         Variant.from(
           "OnConsoleMessage",
-          "`2Successfully added `o" + amount + "`2 gems to `o" + targetData.name + "`2 (offline).``\n" +
-          "`oOld: " + oldGems + " | New: " + newGems + "``"
-        )
+          "`2Successfully added `o" +
+            amount +
+            "`2 gems to `o" +
+            targetData.name +
+            "`2 (offline).``\n" +
+            "`oOld: " +
+            oldGems +
+            " | New: " +
+            newGems +
+            "``",
+        ),
       );
     }
   }

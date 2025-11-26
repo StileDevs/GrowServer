@@ -9,17 +9,17 @@ export class Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     this.opt = {
-      command:     [],
+      command: [],
       description: "",
-      cooldown:    1,
-      ratelimit:   1,
-      category:    "",
-      usage:       "",
-      example:     [],
-      permission:  []
+      cooldown: 1,
+      ratelimit: 1,
+      category: "",
+      usage: "",
+      example: [],
+      permission: [],
     };
   }
 

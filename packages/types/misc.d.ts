@@ -16,12 +16,11 @@ export interface StringOptions {
 }
 
 export interface ItemsData {
-  hash:     string,
-  content:  Buffer,
-  metadata:  ItemsDatMeta,
-  wiki:     ItemsInfo[]
+  hash: string;
+  content: Buffer;
+  metadata: ItemsDatMeta;
+  wiki: ItemsInfo[];
 }
-
 
 export interface Cache {
   peers: Collection<number, PeerData>;

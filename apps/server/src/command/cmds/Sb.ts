@@ -9,31 +9,31 @@ export default class Sb extends Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["sb"],
+      command: ["sb"],
       description: "Broadcast a message to everyone",
-      cooldown:    5,
-      ratelimit:   1,
-      category:    "`oBasic",
-      usage:       "/sb <message>",
-      example:     ["/sb hello"],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown: 5,
+      ratelimit: 1,
+      category: "`oBasic",
+      usage: "/sb <message>",
+      example: ["/sb hello"],
+      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 
   public async execute(): Promise<void> {
     if (this.args.length === 0)
       return this.peer.send(
-        Variant.from("OnConsoleMessage", "Message are required.")
+        Variant.from("OnConsoleMessage", "Message are required."),
       );
 
     const world = this.peer.currentWorld();
     const msg = this.args.join(" ");
     const jammed = world?.data.jammers?.find(
-      (v) => v.type === "signal"
+      (v) => v.type === "signal",
     )?.enabled;
 
     this.peer.every((p) => {
@@ -45,14 +45,14 @@ export default class Sb extends Command {
             this.peer.data.displayName
           } \`\`\`\`(in \`$${
             jammed ? "`4JAMMED``" : this.peer.data.world
-          }\`\`) ** :\`\` \`#${msg}`
+          }\`\`) ** :\`\` \`#${msg}`,
         ),
         TextPacket.from(
           PacketTypes.ACTION,
           "action|play_sfx",
           `file|audio/beep.wav`,
-          `delayMS|0`
-        )
+          `delayMS|0`,
+        ),
       );
     });
   }

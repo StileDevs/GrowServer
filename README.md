@@ -24,6 +24,7 @@ $ pnpm run setup
 
 And congrats setup are done, simple as that!
 Now you just need to run the server by
+
 > [!NOTE]
 > It must be running PostgreSQL & Redis in background by using docker, please navigate to [docker](#docker) guide
 
@@ -75,16 +76,18 @@ For the hosts file you can see this example below
 ```
 
 ## Docker
+
 To run the dockerized & running it automatically just run
+
 ```sh
 docker compose up -d
 ```
 
 or you want to run the database & redis only (this were for development only) then simply running
+
 ```sh
 docker compose up -d db redis
 ```
-
 
 ## Contributing
 

@@ -8,26 +8,26 @@ export default tseslint.config(
   {
     ignores: ["node_modules/*", "dist/*", "build/*", "data/*", "scripts/*"],
     plugins: {
-      "@stylistic/ts": stylisticTs
+      "@stylistic/ts": stylisticTs,
     },
     rules: {
-      indent:            "off",
-      "no-unused-vars":  "off",
+      indent: "off",
+      "no-unused-vars": "off",
       "keyword-spacing": "error",
-      "key-spacing":     [
+      "key-spacing": [
         "error",
         {
           align: "value",
-        }
+        },
       ],
       "@typescript-eslint/no-unused-vars": "off",
-      "@stylistic/ts/indent":              [
+      "@stylistic/ts/indent": [
         "error",
         2,
         {
-          SwitchCase: 1
-        }
-      ]
-    }
-  }
+          SwitchCase: 1,
+        },
+      ],
+    },
+  },
 );

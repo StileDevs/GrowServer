@@ -22,7 +22,7 @@ export class DiceEdit {
       tiley: string;
       checkbox_public?: string;
       checkbox_silence?: string;
-    }>
+    }>,
   ) {
     this.world = this.peer.currentWorld()!;
     this.pos =
@@ -32,19 +32,36 @@ export class DiceEdit {
   }
 
   public async execute(): Promise<void> {
-    if (!this.action.checkbox_public || !this.action.checkbox_silence || !this.action.dialog_name || !this.action.tilex || !this.action.tiley) return;
-    if (!await this.world.hasTilePermission(this.peer.data.userID, this.block, LockPermission.BUILD) || !this.block.dice) {
+    if (
+      !this.action.checkbox_public ||
+      !this.action.checkbox_silence ||
+      !this.action.dialog_name ||
+      !this.action.tilex ||
+      !this.action.tiley
+    )
+      return;
+    if (
+      !(await this.world.hasTilePermission(
+        this.peer.data.userID,
+        this.block,
+        LockPermission.BUILD,
+      )) ||
+      !this.block.dice
+    ) {
       return;
     }
 
-
     if (this.action.checkbox_public == "1") {
       this.block.flags |= TileFlags.PUBLIC;
-    } else { this.block.flags &= ~(TileFlags.PUBLIC); }
+    } else {
+      this.block.flags &= ~TileFlags.PUBLIC;
+    }
 
     if (this.action.checkbox_silence == "1") {
-      this.block.flags |= TileFlags.SILENCED
-    } else { this.block.flags &= ~(TileFlags.SILENCED); }
+      this.block.flags |= TileFlags.SILENCED;
+    } else {
+      this.block.flags &= ~TileFlags.SILENCED;
+    }
 
     const diceTile = tileFrom(this.base, this.world, this.block);
     this.world.every((p) => diceTile.tileUpdate(p));

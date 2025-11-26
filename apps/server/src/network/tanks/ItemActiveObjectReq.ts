@@ -10,7 +10,7 @@ export class ItemActiveObjectReq {
     public base: Base,
     public peer: Peer,
     public tank: TankPacket,
-    public world: World
+    public world: World,
   ) {
     this.pos =
       (this.tank.data?.xPunch as number) +
@@ -20,9 +20,9 @@ export class ItemActiveObjectReq {
   public async execute() {
     // Prevent item pickup in ghost mode
     if (this.peer.data.state.isGhost) return;
-    
+
     const dropped = this.world.data.dropped?.items.find(
-      (i) => i.uid === this.tank.data?.info
+      (i) => i.uid === this.tank.data?.info,
     );
     if (dropped) this.world.collect(this.peer, dropped.uid);
   }

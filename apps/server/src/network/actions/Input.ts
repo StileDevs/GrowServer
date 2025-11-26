@@ -8,11 +8,11 @@ import logger from "@growserver/logger";
 export class Input {
   constructor(
     public base: Base,
-    public peer: Peer
-  ) { }
+    public peer: Peer,
+  ) {}
 
   public async execute(
-    action: NonEmptyObject<Record<string, string>>
+    action: NonEmptyObject<Record<string, string>>,
   ): Promise<void> {
     try {
       const text = action.text.trim();
@@ -40,8 +40,8 @@ export class Input {
           this.peer.send(
             Variant.from(
               "OnConsoleMessage",
-              "`4Unknown command. `oEnter /? for a list of valid commands."
-            )
+              "`4Unknown command. `oEnter /? for a list of valid commands.",
+            ),
           );
           return;
         }
@@ -57,7 +57,7 @@ export class Input {
             if (aliasLower !== originalCmd && !CommandsAliasMap[aliasLower]) {
               CommandsAliasMap[aliasLower] = originalCmd;
               logger.debug(
-                `Late-registered alias: ${aliasLower} → ${originalCmd}`
+                `Late-registered alias: ${aliasLower} → ${originalCmd}`,
               );
             }
           }
@@ -68,8 +68,8 @@ export class Input {
           this.peer.send(
             Variant.from(
               "OnConsoleMessage",
-              "You dont have permission to use this command."
-            )
+              "You dont have permission to use this command.",
+            ),
           );
           return;
         }
@@ -96,7 +96,7 @@ export class Input {
           // First use of the command - set initial usage data
           this.base.cache.cooldown.set(cooldownKey, {
             limit: 1, // Starting with 1 because this is the first use
-            time:  now,
+            time: now,
           });
 
           // Set up the cooldown timer
@@ -115,8 +115,8 @@ export class Input {
             return this.peer.send(
               Variant.from(
                 "OnConsoleMessage",
-                `\`6${this.peer.data?.displayName}\`0 you're being ratelimited, please wait \`9${timeLeftSec}s\`0`
-              )
+                `\`6${this.peer.data?.displayName}\`0 you're being ratelimited, please wait \`9${timeLeftSec}s\`0`,
+              ),
             );
           }
 
@@ -138,22 +138,22 @@ export class Input {
               "OnTalkBubble",
               this.peer.data?.netID || 0,
               action.text,
-              0
+              0,
             ),
             Variant.from(
               "OnConsoleMessage",
-              `CP:0_PL:0_OID:_CT:[W]_ <\`w${this.peer.data?.displayName}\`\`> ${action.text}`
-            )
+              `CP:0_PL:0_OID:_CT:[W]_ <\`w${this.peer.data?.displayName}\`\`> ${action.text}`,
+            ),
           );
-        })
+        });
       }
     } catch (e) {
       logger.warn(e);
       this.peer.send(
         Variant.from(
           "OnConsoleMessage",
-          "`4Unknown command.`` Enter `$/help`` for a list of valid commands"
-        )
+          "`4Unknown command.`` Enter `$/help`` for a list of valid commands",
+        ),
       );
     }
   }

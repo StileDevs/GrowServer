@@ -7,18 +7,18 @@ import { Variant } from "growtopia.js";
 export class Trash {
   constructor(
     public base: Base,
-    public peer: Peer
-  ) { }
+    public peer: Peer,
+  ) {}
 
   public async execute(
-    action: NonEmptyObject<Record<string, string>>
+    action: NonEmptyObject<Record<string, string>>,
   ): Promise<void> {
     const itemID = parseInt(action.itemID);
 
     // Prevent Trashing of Certain Items
     if (itemID === 18 || itemID === 32) {
       this.peer.send(
-        Variant.from("OnTextOverlay", "You'd be sorry if you lost that.")
+        Variant.from("OnTextOverlay", "You'd be sorry if you lost that."),
       );
       return;
     }
@@ -26,7 +26,7 @@ export class Trash {
     const item = this.base.items.metadata.items.find((v) => v.id === itemID);
 
     const peerItem = this.peer.data.inventory.items.find(
-      (v) => v.id === itemID
+      (v) => v.id === itemID,
     );
 
     if (!peerItem || peerItem.amount <= 0) {
@@ -34,8 +34,8 @@ export class Trash {
         Variant.from(
           "OnTalkBubble",
           this.peer.data.netID,
-          "That item doesn't exist in your inventory"
-        )
+          "That item doesn't exist in your inventory",
+        ),
       );
       return;
     }

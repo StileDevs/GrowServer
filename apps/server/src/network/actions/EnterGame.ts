@@ -11,18 +11,18 @@ import { HeartMonitorTile } from "../../world/tiles/HeartMonitorTile";
 export class EnterGame {
   constructor(
     public base: Base,
-    public peer: Peer
-  ) { }
+    public peer: Peer,
+  ) {}
 
   public async execute(
-    _action: NonEmptyObject<Record<string, string>>
+    _action: NonEmptyObject<Record<string, string>>,
   ): Promise<void> {
     const tes = new DialogBuilder()
       .defaultColor()
       .addLabelWithIcon("`wThe GrowServer Gazette``", "5016", "big")
       .addSpacer("small")
       .raw(
-        "add_image_button||interface/banner-transparent.rttex|bannerlayout|||\n"
+        "add_image_button||interface/banner-transparent.rttex|bannerlayout|||\n",
       )
       .addTextBox("Welcome to GrowServer")
       .addQuickExit()
@@ -53,13 +53,13 @@ ${this.peer.data.lastVisitedWorlds
     return `add_floater|${v}|${count ?? 0}|0.5|3417414143\n`;
   })
   .join("\n")}
-`
+`,
       ),
       Variant.from(
         "OnConsoleMessage",
-        `Welcome ${this.peer.data.displayName}\`\` There are \`w${this.base.getPlayersOnline()}\`\` players online.`
+        `Welcome ${this.peer.data.displayName}\`\` There are \`w${this.base.getPlayersOnline()}\`\` players online.`,
       ),
-      Variant.from({ delay: 100 }, "OnDialogRequest", tes)
+      Variant.from({ delay: 100 }, "OnDialogRequest", tes),
     );
 
     this.peer.data.heartMonitors.forEach((indexes, worldName) => {
@@ -71,12 +71,16 @@ ${this.peer.data.lastVisitedWorlds
       const world = new World(this.base, worldName);
 
       for (const index of indexes) {
-        const heartMonitorTile = tileFrom(this.base, world, worldData.blocks[index]);
+        const heartMonitorTile = tileFrom(
+          this.base,
+          world,
+          worldData.blocks[index],
+        );
 
         tiles.push(heartMonitorTile as HeartMonitorTile);
       }
 
       tileUpdateMultiple(world, tiles);
-    })
+    });
   }
 }

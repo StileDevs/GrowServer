@@ -4,6 +4,6 @@ async function setup() {
   // nothing todo here for now
 }
 
-(async() => {
+(async () => {
   await setup();
 })();

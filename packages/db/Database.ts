@@ -1,5 +1,5 @@
-import { drizzle, type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
+import { drizzle, type PostgresJsDatabase } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 
 import { WorldDB } from "./handlers/World";
 import { PlayerDB } from "./handlers/Player";
@@ -19,7 +19,6 @@ export class Database {
   }
 
   public async setup() {
-
     await setupSeeds();
   }
 }

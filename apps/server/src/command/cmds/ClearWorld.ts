@@ -10,18 +10,18 @@ export default class ClearWorld extends Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["clearworld"],
+      command: ["clearworld"],
       description: "Clear a world",
-      cooldown:    60 * 10,
-      ratelimit:   1,
-      category:    "`oBasic",
-      usage:       "/clearworld",
-      example:     [],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
+      cooldown: 60 * 10,
+      ratelimit: 1,
+      category: "`oBasic",
+      usage: "/clearworld",
+      example: [],
+      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 
@@ -34,7 +34,7 @@ export default class ClearWorld extends Command {
       const dialog = new DialogBuilder()
         .addLabelWithIcon("Warning", "1432", "big")
         .addTextBox(
-          "This will clear everything on your world, including your building. Are you sure?"
+          "This will clear everything on your world, including your building. Are you sure?",
         )
         .endDialog("confirm_clearworld", "Nevermind", "Yes");
 

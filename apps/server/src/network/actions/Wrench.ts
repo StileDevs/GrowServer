@@ -7,8 +7,8 @@ import { Variant } from "growtopia.js";
 export class Wrench {
   constructor(
     public base: Base,
-    public peer: Peer
-  ) { }
+    public peer: Peer,
+  ) {}
 
   private InfoDialog(): DialogBuilder {
     // for now will put basic info
@@ -17,16 +17,18 @@ export class Wrench {
       .addLabelWithIcon(
         `${this.peer.data.displayName}\`w's Information (uid: ${this.peer.data.userID})`,
         32,
-        "big"
+        "big",
       )
       .addTextBox(`Player Infomation`)
-      .addSmallText(`Level: ${this.peer.data.level || 1} (${this.peer.data.exp}/${this.peer.calculateRequiredLevelXp(this.peer.data.level)})`)
+      .addSmallText(
+        `Level: ${this.peer.data.level || 1} (${this.peer.data.exp}/${this.peer.calculateRequiredLevelXp(this.peer.data.level)})`,
+      )
       .addSmallText(`Gems: ${this.peer.data.gems || 0}`)
       .addSmallText(`NetID: ${this.peer.data.netID}`);
   }
 
   public async execute(
-    _action: NonEmptyObject<Record<string, string>>
+    _action: NonEmptyObject<Record<string, string>>,
   ): Promise<void> {
     const dialog = this.InfoDialog()
       .endDialog("wrench_end", "Cancel", "OK")

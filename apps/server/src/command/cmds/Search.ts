@@ -10,18 +10,18 @@ export default class Search extends Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["search"],
+      command: ["search"],
       description: "Search items with searchable item list",
-      cooldown:    5,
-      ratelimit:   5,
-      category:    "`oBasic",
-      usage:       "/search",
-      example:     ["/search"],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown: 5,
+      ratelimit: 5,
+      category: "`oBasic",
+      usage: "/search",
+      example: ["/search"],
+      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 
@@ -29,7 +29,9 @@ export default class Search extends Command {
     const dialog = new DialogBuilder()
       .defaultColor()
       .addInputBox("n", "Search: ", "", 26)
-      .raw("add_searchable_item_list||sourceType:allItems;listType:iconWithCustomLabel;resultLimit:50|n|\n")
+      .raw(
+        "add_searchable_item_list||sourceType:allItems;listType:iconWithCustomLabel;resultLimit:50|n|\n",
+      )
       .addQuickExit()
       .endDialog("search_item", "", "")
       .str();

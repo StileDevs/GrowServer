@@ -8,18 +8,18 @@ export default class Wave extends Command {
     public base: Base,
     public peer: Peer,
     public text: string,
-    public args: string[]
+    public args: string[],
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command:     ["wave"],
+      command: ["wave"],
       description: "Wave",
-      cooldown:    0,
-      ratelimit:   1,
-      category:    "Emote",
-      usage:       "/wave",
-      example:     ["/wave"],
-      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER]
+      cooldown: 0,
+      ratelimit: 1,
+      category: "Emote",
+      usage: "/wave",
+      example: ["/wave"],
+      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {
@@ -27,13 +27,13 @@ export default class Wave extends Command {
     const varlist = Variant.from(
       { netID: this.peer.data.netID },
       "OnAction",
-      this.opt.usage
+      this.opt.usage,
     );
 
     if (world) {
       world.every((p) => {
         p.send(varlist);
       });
-    };
+    }
   }
 }

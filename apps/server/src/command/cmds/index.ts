@@ -32,7 +32,7 @@ const loadCommands = async () => {
           (file.endsWith(".ts") || file.endsWith(".js")) &&
           !file.endsWith(".d.ts") &&
           file !== "index.ts" &&
-          file !== "index.js"
+          file !== "index.js",
       );
       filesInDir.forEach((fileName) => {
         filesToProcess.push({ directoryPath: dir, fileName });
@@ -65,7 +65,9 @@ const loadCommands = async () => {
           //* In development, handle TS files*
           if (process.platform === "win32") {
             const relativePath = relative(__dirname, fullPathForImport);
-            const module = await import(`./${relativePath.replace(/\\/g, '/')}`);
+            const module = await import(
+              `./${relativePath.replace(/\\/g, "/")}`
+            );
             CommandClass = module.default;
           } else {
             const module = await import(fullPathForImport);
@@ -80,7 +82,9 @@ const loadCommands = async () => {
           logger.warn(`Command class not found in ${fullPathForImport}`);
         }
       } catch (importError) {
-        logger.error(`Failed to import command ${fullPathForImport}: ${importError}`);
+        logger.error(
+          `Failed to import command ${fullPathForImport}: ${importError}`,
+        );
       }
     } catch (error) {
       logger.error(`Error processing command file: ${error}`);
@@ -120,8 +124,9 @@ export const registerAliases = async (): Promise<void> => {
     } catch (error) {
       // If we can't create an instance, log the error but continue with other commands
       logger.warn(
-        `Could not register aliases for ${commandName}: ${error instanceof Error ? error.message : String(error)
-        }`
+        `Could not register aliases for ${commandName}: ${
+          error instanceof Error ? error.message : String(error)
+        }`,
       );
     }
   }

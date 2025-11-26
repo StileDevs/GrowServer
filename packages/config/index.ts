@@ -2,7 +2,6 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { parse } from "smol-toml";
 
-
 export interface WebConfig {
   development: boolean;
   address: string;
@@ -31,7 +30,7 @@ export interface WebFrontendConfig {
 
 export interface ServerConfig {
   bypassVersionCheck: boolean;
-  logLevel: string
+  logLevel: string;
 }
 
 export interface Config {
@@ -45,20 +44,19 @@ const configContent = readFileSync(configPath, "utf-8");
 const config = parse(configContent) as unknown as Config;
 const frontend = () => {
   return {
-    tls:{
+    tls: {
       key: readFileSync(config.webFrontend.tls.key),
-      cert: readFileSync(config.webFrontend.tls.cert)
-    } 
-  }
-}
+      cert: readFileSync(config.webFrontend.tls.cert),
+    },
+  };
+};
 const logon = () => {
   return {
-    tls:{
+    tls: {
       key: readFileSync(config.web.tls.key),
-      cert: readFileSync(config.web.tls.cert)
-    } 
-  }
-}
-
+      cert: readFileSync(config.web.tls.cert),
+    },
+  };
+};
 
 export { config, frontend, logon };
