@@ -17,20 +17,20 @@ type StoreItem = {
 export class StoreHandler {
   private readonly mainItems: StoreItem[] = [
     {
-      name: "test",
-      title: "Handler Test",
+      name:        "test",
+      title:       "Handler Test",
       description: "hmmmmmm",
-      image: "interface/large/store_buttons/store_buttons.rttex",
-      imagePos: { x: 0, y: 0 },
-      cost: 20000,
+      image:       "interface/large/store_buttons/store_buttons.rttex",
+      imagePos:    { x: 0, y: 0 },
+      cost:        20000,
     },
     {
-      name: "test",
-      title: "Handler Test",
+      name:        "test",
+      title:       "Handler Test",
       description: "hmmmmmmmmmmmm",
-      image: "interface/large/store_buttons/store_buttons.rttex",
-      imagePos: { x: 1, y: 0 },
-      cost: 15000,
+      image:       "interface/large/store_buttons/store_buttons.rttex",
+      imagePos:    { x: 1, y: 0 },
+      cost:        15000,
     },
   ];
 

@@ -322,13 +322,13 @@ export class LockTile extends Tile {
     },
   ) {
     const algo = new Floodfill({
-      s_node: { x: this.data.x, y: this.data.y },
-      max: lockData.maxTiles,
-      width: this.world.data.width,
-      height: this.world.data.height,
-      blocks: this.world.data.blocks,
-      s_block: this.data,
-      base: this.base,
+      s_node:     { x: this.data.x, y: this.data.y },
+      max:        lockData.maxTiles,
+      width:      this.world.data.width,
+      height:     this.world.data.height,
+      blocks:     this.world.data.blocks,
+      s_block:    this.data,
+      base:       this.base,
       noEmptyAir: false,
     });
 
@@ -344,19 +344,19 @@ export class LockTile extends Tile {
     );
 
     this.data.lock = {
-      ownerUserID: peer.data.userID,
-      permission: LockPermission.NONE,
-      adminIDs: [],
-      adminLimited: false,
+      ownerUserID:    peer.data.userID,
+      permission:     LockPermission.NONE,
+      adminIDs:       [],
+      adminLimited:   false,
       ignoreEmptyAir: false,
-      ownedTiles: [],
+      ownedTiles:     [],
     };
 
     this.data.worldLockData = {
-      bpm: 100,
+      bpm:                       100,
       customMusicBlocksDisabled: false,
-      invisMusicBlocks: false,
-      minLevel: 1,
+      invisMusicBlocks:          false,
+      minLevel:                  1,
     };
 
     this.world.data.worldLockIndex =

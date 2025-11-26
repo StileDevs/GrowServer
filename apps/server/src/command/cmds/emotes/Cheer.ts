@@ -12,14 +12,14 @@ export default class Cheer extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["cheer"],
+      command:     ["cheer"],
       description: "cheer",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/cheer",
-      example: ["/cheer"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/cheer",
+      example:     ["/cheer"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

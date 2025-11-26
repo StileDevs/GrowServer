@@ -12,14 +12,14 @@ export default class Sad extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["sad"],
+      command:     ["sad"],
       description: "sad",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/sad",
-      example: ["/sad"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/sad",
+      example:     ["/sad"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

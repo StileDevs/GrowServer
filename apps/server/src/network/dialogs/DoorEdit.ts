@@ -62,9 +62,9 @@ export class DoorEdit {
     }
 
     this.block.door = {
-      label: this.action.label || "",
+      label:       this.action.label || "",
       destination: this.action.target?.toUpperCase() || "",
-      id: this.action.id?.toUpperCase() || "",
+      id:          this.action.id?.toUpperCase() || "",
     };
 
     if (this.action.checkbox_public == "1") {

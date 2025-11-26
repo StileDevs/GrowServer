@@ -14,14 +14,14 @@ export default class Search extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["search"],
+      command:     ["search"],
       description: "Search items with searchable item list",
-      cooldown: 5,
-      ratelimit: 5,
-      category: "`oBasic",
-      usage: "/search",
-      example: ["/search"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    5,
+      ratelimit:   5,
+      category:    "`oBasic",
+      usage:       "/search",
+      example:     ["/search"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 

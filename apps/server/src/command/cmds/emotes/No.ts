@@ -12,14 +12,14 @@ export default class No extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["no"],
+      command:     ["no"],
       description: "no",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/no",
-      example: ["/no"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/no",
+      example:     ["/no"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

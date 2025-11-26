@@ -19,11 +19,11 @@ export default class GiveRole extends Command {
       command: ["giverole"],
       description:
         "Change a user's role. Use /username for exact name or #id for user ID.",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/giverole <target> <flag>",
-      example: ["/giverole /testuser1 0", "/giverole #172 2"],
+      cooldown:   5,
+      ratelimit:  1,
+      category:   "`oBasic",
+      usage:      "/giverole <target> <flag>",
+      example:    ["/giverole /testuser1 0", "/giverole #172 2"],
       permission: [ROLE.DEVELOPER],
     };
   }
@@ -189,7 +189,7 @@ export default class GiveRole extends Command {
       await this.base.database.db
         .update(players)
         .set({
-          role: newRole,
+          role:         newRole,
           display_name: this.getDisplayNameForRole(targetData.name, newRole),
         })
         .where(eq(players.id, targetData.id));

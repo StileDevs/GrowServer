@@ -14,14 +14,14 @@ export default class Sdb extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["sdb"],
+      command:     ["sdb"],
       description: "Send a global message to everyone via a dialog box",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`bDev",
-      usage: "/sdb <message>",
-      example: ["/sdb Hello everyone!"],
-      permission: [ROLE.DEVELOPER],
+      cooldown:    5,
+      ratelimit:   1,
+      category:    "`bDev",
+      usage:       "/sdb <message>",
+      example:     ["/sdb Hello everyone!"],
+      permission:  [ROLE.DEVELOPER],
     };
   }
 

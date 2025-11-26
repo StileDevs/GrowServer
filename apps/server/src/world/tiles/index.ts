@@ -19,19 +19,19 @@ import { TankPacket } from "growtopia.js";
 import logger from "@growserver/logger";
 
 const TileMap: Record<number, Class<Tile>> = {
-  [ActionTypes.DOOR]: DoorTile,
-  [ActionTypes.MAIN_DOOR]: DoorTile,
-  [ActionTypes.PORTAL]: DoorTile,
-  [ActionTypes.SIGN]: SignTile,
-  [ActionTypes.LOCK]: LockTile,
-  [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
-  [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
-  [ActionTypes.SWITCHEROO]: SwitcheROO,
+  [ActionTypes.DOOR]:            DoorTile,
+  [ActionTypes.MAIN_DOOR]:       DoorTile,
+  [ActionTypes.PORTAL]:          DoorTile,
+  [ActionTypes.SIGN]:            SignTile,
+  [ActionTypes.LOCK]:            LockTile,
+  [ActionTypes.HEART_MONITOR]:   HeartMonitorTile,
+  [ActionTypes.DISPLAY_BLOCK]:   DisplayBlockTile,
+  [ActionTypes.SWITCHEROO]:      SwitcheROO,
   [ActionTypes.WEATHER_MACHINE]: WeatherTile,
-  [ActionTypes.DICE]: DiceTile,
-  [ActionTypes.BACKGROUND]: NormalTile,
-  [ActionTypes.FOREGROUND]: NormalTile,
-  [ActionTypes.SEED]: SeedTile,
+  [ActionTypes.DICE]:            DiceTile,
+  [ActionTypes.BACKGROUND]:      NormalTile,
+  [ActionTypes.FOREGROUND]:      NormalTile,
+  [ActionTypes.SEED]:            SeedTile,
 };
 
 // constructs a new Tile subclass based on the ActionType.

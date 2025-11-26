@@ -12,14 +12,14 @@ export default class Love extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["love", "kiss"],
+      command:     ["love", "kiss"],
       description: "Love",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/love",
-      example: ["/love"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/love",
+      example:     ["/love"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

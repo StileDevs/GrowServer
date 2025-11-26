@@ -13,14 +13,14 @@ export default class Warp extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["warp"],
+      command:     ["warp"],
       description: "Warp to another world or door.",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/warp <world name:door id>",
-      example: ["/warp START", "/warp MYWORLD:SPAWN", "/warp :MAINDOOR"],
-      permission: [ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    5,
+      ratelimit:   1,
+      category:    "`oBasic",
+      usage:       "/warp <world name:door id>",
+      example:     ["/warp START", "/warp MYWORLD:SPAWN", "/warp :MAINDOOR"],
+      permission:  [ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 

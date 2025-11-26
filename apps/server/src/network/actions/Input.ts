@@ -96,7 +96,7 @@ export class Input {
           // First use of the command - set initial usage data
           this.base.cache.cooldown.set(cooldownKey, {
             limit: 1, // Starting with 1 because this is the first use
-            time: now,
+            time:  now,
           });
 
           // Set up the cooldown timer

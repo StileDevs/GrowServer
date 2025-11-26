@@ -12,14 +12,14 @@ export default class March extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["march"],
+      command:     ["march"],
       description: "march",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/march",
-      example: ["/march"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/march",
+      example:     ["/march"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

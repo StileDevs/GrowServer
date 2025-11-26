@@ -18,11 +18,11 @@ export default class ChangeGrowID extends Command {
       command: ["changegrowid", "changeid"],
       description:
         "Change your growid. Please remember your new GrowID before doing so, because you are going to have to use the new one to login.",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/changegrowid <new growid>",
-      example: ["/changegrowid MyNewGrowID"],
+      cooldown:   5,
+      ratelimit:  1,
+      category:   "`oBasic",
+      usage:      "/changegrowid <new growid>",
+      example:    ["/changegrowid MyNewGrowID"],
       permission: [ROLE.DEVELOPER],
     };
   }

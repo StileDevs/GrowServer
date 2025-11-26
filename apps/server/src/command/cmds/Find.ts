@@ -14,14 +14,14 @@ export default class Find extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["find"],
+      command:     ["find"],
       description: "Find some items",
-      cooldown: 5,
-      ratelimit: 5,
-      category: "`oBasic",
-      usage: "/find <item_name?>",
-      example: ["/find", "/find dirt"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    5,
+      ratelimit:   5,
+      category:    "`oBasic",
+      usage:       "/find <item_name?>",
+      example:     ["/find", "/find dirt"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 

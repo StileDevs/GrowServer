@@ -12,14 +12,14 @@ export default class Sleep extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["sleep"],
+      command:     ["sleep"],
       description: "Sleep",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/sleep",
-      example: ["/sleep"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/sleep",
+      example:     ["/sleep"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

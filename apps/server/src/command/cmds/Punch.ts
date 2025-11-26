@@ -13,14 +13,14 @@ export default class PunchID extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["pid", "punchid"],
+      command:     ["pid", "punchid"],
       description: "Change your Punch ID",
-      cooldown: 1,
-      ratelimit: 1,
-      category: "`bDev",
-      usage: "/pid <new_id>",
-      example: ["/pid 1234"],
-      permission: [ROLE.DEVELOPER],
+      cooldown:    1,
+      ratelimit:   1,
+      category:    "`bDev",
+      usage:       "/pid <new_id>",
+      example:     ["/pid 1234"],
+      permission:  [ROLE.DEVELOPER],
     };
   }
 

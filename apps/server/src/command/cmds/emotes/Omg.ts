@@ -12,14 +12,14 @@ export default class Omg extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["omg"],
+      command:     ["omg"],
       description: "omg",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/omg",
-      example: ["/omg"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/omg",
+      example:     ["/omg"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

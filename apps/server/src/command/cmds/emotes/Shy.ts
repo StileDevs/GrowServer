@@ -12,14 +12,14 @@ export default class Shy extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["shy"],
+      command:     ["shy"],
       description: "shy",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/shy",
-      example: ["/shy"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/shy",
+      example:     ["/shy"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

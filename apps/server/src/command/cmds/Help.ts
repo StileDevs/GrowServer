@@ -10,20 +10,20 @@ export default class Help extends Command {
   constructor(base: Base, peer: Peer, text: string, args: string[]) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["help", "?"],
+      command:     ["help", "?"],
       description: "Shows available commands",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/help",
-      example: ["/help"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    5,
+      ratelimit:   1,
+      category:    "`oBasic",
+      usage:       "/help",
+      example:     ["/help"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 
   private getRoleLevel(role: string): number {
     const roleLevels = {
-      [ROLE.BASIC]: 1,
+      [ROLE.BASIC]:     1,
       [ROLE.SUPPORTER]: 2,
       [ROLE.DEVELOPER]: 3,
     };

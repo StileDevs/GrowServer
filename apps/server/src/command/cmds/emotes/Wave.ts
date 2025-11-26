@@ -12,14 +12,14 @@ export default class Wave extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["wave"],
+      command:     ["wave"],
       description: "Wave",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/wave",
-      example: ["/wave"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/wave",
+      example:     ["/wave"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

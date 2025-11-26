@@ -12,14 +12,14 @@ export default class foldarms extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["foldarms", "fa", "stubborn", "fold"],
+      command:     ["foldarms", "fa", "stubborn", "fold"],
       description: "foldarms",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/fold",
-      example: ["/fold"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/fold",
+      example:     ["/fold"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

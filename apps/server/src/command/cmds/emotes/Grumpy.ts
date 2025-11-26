@@ -12,14 +12,14 @@ export default class Grumpy extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["grumpy"],
+      command:     ["grumpy"],
       description: "grumpy",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/grumpy",
-      example: ["/grumpy"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/grumpy",
+      example:     ["/grumpy"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

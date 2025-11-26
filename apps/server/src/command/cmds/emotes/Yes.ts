@@ -12,14 +12,14 @@ export default class Yes extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["yes"],
+      command:     ["yes"],
       description: "yes",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/yes",
-      example: ["/yes"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/yes",
+      example:     ["/yes"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

@@ -13,14 +13,14 @@ export default class Ghost extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["ghost"],
+      command:     ["ghost"],
       description: "Toggle ghost mode to to walk through blocks.",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/ghost",
-      example: ["/ghost"],
-      permission: [ROLE.DEVELOPER],
+      cooldown:    5,
+      ratelimit:   1,
+      category:    "`oBasic",
+      usage:       "/ghost",
+      example:     ["/ghost"],
+      permission:  [ROLE.DEVELOPER],
     };
   }
 

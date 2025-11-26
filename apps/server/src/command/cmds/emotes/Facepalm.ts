@@ -12,14 +12,14 @@ export default class Facepalm extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["facepalm", "fp"],
+      command:     ["facepalm", "fp"],
       description: "Facepalm",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/fp",
-      example: ["/fp"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/fp",
+      example:     ["/fp"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

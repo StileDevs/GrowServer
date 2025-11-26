@@ -32,7 +32,7 @@ export class DiceTile extends Tile {
     if (!(await super.onPlaceForeground(peer, itemMeta))) return false;
 
     this.data.dice = {
-      symbol: 0,
+      symbol:       0,
       lastRollTime: 0,
     };
     return true;
@@ -65,11 +65,11 @@ export class DiceTile extends Tile {
       this.data.dice!.lastRollTime = Date.now();
 
       const tankPkt = new TankPacket({
-        type: TankTypes.TILE_APPLY_DAMAGE,
+        type:       TankTypes.TILE_APPLY_DAMAGE,
         punchRange: this.data.dice!.symbol,
-        netID: peer.data.netID,
-        xPunch: this.data.x,
-        yPunch: this.data.y,
+        netID:      peer.data.netID,
+        xPunch:     this.data.x,
+        yPunch:     this.data.y,
       });
 
       this.world.every((p) => {

@@ -12,14 +12,14 @@ export class Command {
     public args: string[],
   ) {
     this.opt = {
-      command: [],
+      command:     [],
       description: "",
-      cooldown: 1,
-      ratelimit: 1,
-      category: "",
-      usage: "",
-      example: [],
-      permission: [],
+      cooldown:    1,
+      ratelimit:   1,
+      category:    "",
+      usage:       "",
+      example:     [],
+      permission:  [],
     };
   }
 

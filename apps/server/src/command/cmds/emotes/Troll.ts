@@ -13,14 +13,14 @@ export default class Troll extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["troll"],
+      command:     ["troll"],
       description: "troll",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/troll",
-      example: ["/troll"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/troll",
+      example:     ["/troll"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

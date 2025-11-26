@@ -13,14 +13,14 @@ export default class Sb extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["sb"],
+      command:     ["sb"],
       description: "Broadcast a message to everyone",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/sb <message>",
-      example: ["/sb hello"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    5,
+      ratelimit:   1,
+      category:    "`oBasic",
+      usage:       "/sb <message>",
+      example:     ["/sb hello"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 

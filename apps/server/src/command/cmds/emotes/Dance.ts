@@ -12,14 +12,14 @@ export default class Dance extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["dance"],
+      command:     ["dance"],
       description: "Just Dance",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/dance",
-      example: ["/dance"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/dance",
+      example:     ["/dance"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

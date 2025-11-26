@@ -12,14 +12,14 @@ export default class Furious extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["furious"],
+      command:     ["furious"],
       description: "furious",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/furious",
-      example: ["/furious"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/furious",
+      example:     ["/furious"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

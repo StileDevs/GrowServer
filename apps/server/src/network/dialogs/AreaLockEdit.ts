@@ -82,12 +82,12 @@ export class AreaLockEdit {
           x: parseInt(this.action.tilex),
           y: parseInt(this.action.tiley),
         },
-        max: mLock.maxTiles,
-        width: this.world.data.width,
-        height: this.world.data.height,
-        blocks: this.world.data.blocks,
-        s_block: this.block,
-        base: this.base,
+        max:        mLock.maxTiles,
+        width:      this.world.data.width,
+        height:     this.world.data.height,
+        blocks:     this.world.data.blocks,
+        s_block:    this.block,
+        base:       this.base,
         noEmptyAir: ignoreEmpty,
       });
       algo.exec();

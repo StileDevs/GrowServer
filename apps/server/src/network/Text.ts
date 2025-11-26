@@ -191,30 +191,30 @@ export class ITextPacket {
       this.peer.send(Variant.from("SetHasGrowID", 1, player.name, password));
 
       const defaultInventory = {
-        max: 32,
+        max:   32,
         items: [
           {
-            id: 18, // Fist
+            id:     18, // Fist
             amount: 1,
           },
           {
-            id: 32, // Wrench
+            id:     32, // Wrench
             amount: 1,
           },
         ],
       };
 
       const defaultClothing = {
-        hair: 0,
-        shirt: 0,
-        pants: 0,
-        feet: 0,
-        face: 0,
-        hand: 0,
-        back: 0,
-        mask: 0,
+        hair:     0,
+        shirt:    0,
+        pants:    0,
+        feet:     0,
+        face:     0,
+        hand:     0,
+        back:     0,
+        mask:     0,
         necklace: 0,
-        ances: 0,
+        ances:    0,
       };
 
       this.peer.data.name = player.name;
@@ -242,12 +242,12 @@ export class ITextPacket {
       );
 
       this.peer.data.state = {
-        mod: 0,
+        mod:             0,
         canWalkInBlocks: false,
-        modsEffect: 0,
-        isGhost: false,
-        lava: {
-          damage: 0,
+        modsEffect:      0,
+        isGhost:         false,
+        lava:            {
+          damage:       0,
           resetStateAt: 0,
         },
       };

@@ -49,7 +49,7 @@ export class Base {
   constructor() {
     this.server = new Client({
       enet: {
-        ip: "0.0.0.0",
+        ip:                 "0.0.0.0",
         useNewServerPacket: true,
       },
     });
@@ -59,14 +59,14 @@ export class Base {
     this.config = configServer;
     this.cdn = { version: "", uri: "0000/0000", itemsDatName: "" };
     this.items = {
-      content: Buffer.alloc(0),
-      hash: "",
+      content:  Buffer.alloc(0),
+      hash:     "",
       metadata: {} as ItemsDatMeta,
-      wiki: [],
+      wiki:     [],
     };
     this.cache = {
-      peers: new Collection(),
-      worlds: new Collection(),
+      peers:    new Collection(),
+      worlds:   new Collection(),
       cooldown: new Collection(),
     };
 
@@ -99,10 +99,10 @@ export class Base {
       const itemsDat = readFileSync(datName);
 
       this.items = {
-        hash: `${RTTEX.hash(itemsDat)}`,
-        content: itemsDat,
+        hash:     `${RTTEX.hash(itemsDat)}`,
+        content:  itemsDat,
         metadata: {} as ItemsDatMeta,
-        wiki: [] as ItemsInfo[],
+        wiki:     [] as ItemsInfo[],
       };
 
       logger.info(`Starting ENet server on port ${port}`);
@@ -315,8 +315,8 @@ export class Base {
       };
 
       const data: CDNContent = {
-        version: cdnData.version,
-        uri: cdnData.uri,
+        version:      cdnData.version,
+        uri:          cdnData.uri,
         itemsDatName: itemsDat.content,
       };
 

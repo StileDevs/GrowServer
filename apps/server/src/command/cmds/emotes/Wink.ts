@@ -12,14 +12,14 @@ export default class Wink extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["wink"],
+      command:     ["wink"],
       description: "wink",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/wink",
-      example: ["/wink"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/wink",
+      example:     ["/wink"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

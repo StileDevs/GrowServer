@@ -12,14 +12,14 @@ export default class Shrug extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["shrug", "idk"],
+      command:     ["shrug", "idk"],
       description: "shrug",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/idk",
-      example: ["/shrug"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/idk",
+      example:     ["/shrug"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

@@ -12,14 +12,14 @@ export default class Smh extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["smh"],
+      command:     ["smh"],
       description: "smh",
-      cooldown: 0,
-      ratelimit: 1,
-      category: "Emote",
-      usage: "/smh",
-      example: ["/smh"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    0,
+      ratelimit:   1,
+      category:    "Emote",
+      usage:       "/smh",
+      example:     ["/smh"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
   public async execute(): Promise<void> {

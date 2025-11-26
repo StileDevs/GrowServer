@@ -125,11 +125,11 @@ export class SeedTile extends Tile {
       this.world.every((p) => {
         p.send(
           TankPacket.from({
-            type: TankTypes.SEND_TILE_TREE_STATE,
-            netID: peer.data?.netID,
+            type:        TankTypes.SEND_TILE_TREE_STATE,
+            netID:       peer.data?.netID,
             targetNetID: -1,
-            xPunch: this.data.x,
-            yPunch: this.data.y,
+            xPunch:      this.data.x,
+            yPunch:      this.data.y,
           }),
         );
       });

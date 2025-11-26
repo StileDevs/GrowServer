@@ -13,14 +13,14 @@ export default class Ping extends Command {
   ) {
     super(base, peer, text, args);
     this.opt = {
-      command: ["ping", "pong"],
+      command:     ["ping", "pong"],
       description: "Ping pong",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/ping",
-      example: ["/ping"],
-      permission: [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
+      cooldown:    5,
+      ratelimit:   1,
+      category:    "`oBasic",
+      usage:       "/ping",
+      example:     ["/ping"],
+      permission:  [ROLE.BASIC, ROLE.SUPPORTER, ROLE.DEVELOPER],
     };
   }
 

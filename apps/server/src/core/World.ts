@@ -33,10 +33,10 @@ export class World {
       this.data = data;
     } else
       this.data = {
-        name: "",
-        width: 0,
-        height: 0,
-        blocks: [],
+        name:    "",
+        width:   0,
+        height:  0,
+        blocks:  [],
         weather: { id: 41 },
         dropped: { items: [], uid: 0 },
       };
@@ -150,18 +150,18 @@ ${peer.data.lastVisitedWorlds
       const world = await this.base.database.worlds.get(this.worldName);
       if (world) {
         this.data = {
-          name: world.name,
-          width: world.width,
-          height: world.height,
-          blocks: world.blocks ? JSON.parse(world.blocks.toString()) : [],
+          name:        world.name,
+          width:       world.width,
+          height:      world.height,
+          blocks:      world.blocks ? JSON.parse(world.blocks.toString()) : [],
           // admins: [],
           playerCount: 0,
-          jammers: [],
-          dropped: world.dropped
+          jammers:     [],
+          dropped:     world.dropped
             ? JSON.parse(world.dropped.toString())
             : { uid: 0, items: [] },
           // owner: world.owner ? JSON.parse(world.owner.toString()) : null,
-          weather: { id: world.weather_id || 41 },
+          weather:        { id: world.weather_id || 41 },
           worldLockIndex: world.worldlock_index
             ? world.worldlock_index
             : undefined,
@@ -314,9 +314,9 @@ ${peer.data.lastVisitedWorlds
     ]);
 
     const tank = TankPacket.from({
-      type: TankTypes.SEND_MAP_DATA,
+      type:  TankTypes.SEND_MAP_DATA,
       state: 8,
-      data: () => worldMap,
+      data:  () => worldMap,
     });
 
     const mainDoor = this.data.blocks.find((block) => block.fg === 6);
@@ -486,13 +486,13 @@ ${peer.data.lastVisitedWorlds
     { tree, noSimilar }: { tree?: boolean; noSimilar?: boolean } = {},
   ) {
     const tank = TankPacket.from({
-      type: TankTypes.ITEM_CHANGE_OBJECT,
-      netID: -1,
+      type:        TankTypes.ITEM_CHANGE_OBJECT,
+      netID:       -1,
       targetNetID: tree ? -1 : peer.data?.netID,
-      state: 0,
-      info: id,
-      xPos: x,
-      yPos: y,
+      state:       0,
+      info:        id,
+      xPos:        x,
+      yPos:        y,
     });
 
     const position = Math.trunc(x / 32) + Math.trunc(y / 32) * this.data.width;
@@ -501,11 +501,11 @@ ${peer.data.lastVisitedWorlds
     const similarDrops = noSimilar
       ? null
       : this.data.dropped?.items
-          .filter(
-            (i) =>
-              i.id === id && block.x === i.block.x && block.y === i.block.y,
-          )
-          .sort((a, b) => a.amount - b.amount);
+        .filter(
+          (i) =>
+            i.id === id && block.x === i.block.x && block.y === i.block.y,
+        )
+        .sort((a, b) => a.amount - b.amount);
 
     const similarDrop = Array.isArray(similarDrops) ? similarDrops[0] : null;
 
@@ -534,7 +534,7 @@ ${peer.data.lastVisitedWorlds
         amount,
         x,
         y,
-        uid: ++this.data.dropped.uid,
+        uid:   ++this.data.dropped.uid,
         block: { x: block.x, y: block.y },
       });
 
@@ -570,10 +570,10 @@ ${peer.data.lastVisitedWorlds
       world.every((p) => {
         p.send(
           TankPacket.from({
-            type: TankTypes.ITEM_CHANGE_OBJECT,
-            netID: peer.data?.netID,
+            type:        TankTypes.ITEM_CHANGE_OBJECT,
+            netID:       peer.data?.netID,
             targetNetID: -1,
-            info: uid,
+            info:        uid,
           }),
         );
       });
@@ -592,7 +592,7 @@ ${peer.data.lastVisitedWorlds
 
         this.drop(peer, droppedItem.x, droppedItem.y, droppedItem.id, extra, {
           noSimilar: true,
-          tree: true,
+          tree:      true,
         });
       } else {
         if (droppedItem.id !== 112) {

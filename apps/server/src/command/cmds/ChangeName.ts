@@ -18,11 +18,11 @@ export default class ChangeName extends Command {
       command: ["changename"],
       description:
         "Change your Display Name. You still can login with your current GrowID. NOTE: When using color, please terminate the color with 2 backticks ` ` ",
-      cooldown: 5,
-      ratelimit: 1,
-      category: "`oBasic",
-      usage: "/changename <new name>",
-      example: ["/changename MyNewName", "/changename `bC[@]nBeCoLored@Too``"],
+      cooldown:   5,
+      ratelimit:  1,
+      category:   "`oBasic",
+      usage:      "/changename <new name>",
+      example:    ["/changename MyNewName", "/changename `bC[@]nBeCoLored@Too``"],
       permission: [ROLE.DEVELOPER],
     };
   }

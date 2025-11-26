@@ -15,12 +15,12 @@ export const TankMap: Record<
     execute: () => Promise<void>;
   }>
 > = {
-  [TankTypes.TILE_CHANGE_REQUEST]: TileChangeReq,
-  [TankTypes.DISCONNECT]: Disconnect,
-  [TankTypes.SET_ICON_STATE]: SetIconState,
-  [TankTypes.STATE]: State,
+  [TankTypes.TILE_CHANGE_REQUEST]:          TileChangeReq,
+  [TankTypes.DISCONNECT]:                   Disconnect,
+  [TankTypes.SET_ICON_STATE]:               SetIconState,
+  [TankTypes.STATE]:                        State,
   [TankTypes.ITEM_ACTIVATE_OBJECT_REQUEST]: ItemActiveObjectReq,
-  [TankTypes.ITEM_ACTIVATE_REQUEST]: ItemActiveReq,
-  [TankTypes.TILE_ACTIVATE_REQUEST]: TileActiveReq,
-  [TankTypes.APP_CHECK_RESPONSE]: AppCheckResponsePack,
+  [TankTypes.ITEM_ACTIVATE_REQUEST]:        ItemActiveReq,
+  [TankTypes.TILE_ACTIVATE_REQUEST]:        TileActiveReq,
+  [TankTypes.APP_CHECK_RESPONSE]:           AppCheckResponsePack,
 };
