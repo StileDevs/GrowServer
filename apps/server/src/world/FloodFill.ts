@@ -242,7 +242,7 @@ export class Floodfill {
       i++;
     }
 
-    world.saveToCache();
+    world.base.state.setWorld(world.worldName, world.data);
 
     const tank = TankPacket.from({
       type:        TankTypes.SEND_LOCK,

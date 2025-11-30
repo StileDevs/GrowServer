@@ -114,8 +114,8 @@ export class ItemActiveReq {
           break;
         }
       }
-      await this.peer.saveToCache();
-      await this.peer.saveToDatabase();
+      this.base.state.setPlayer(this.peer.data.netID, this.peer.data);
+      await this.base.state.savePlayer(this.peer.data.netID);
       this.peer.inventory();
       return;
     }
@@ -123,8 +123,8 @@ export class ItemActiveReq {
     this.peer.equipClothes(item?.id as number);
     // this.peer.checkModsEffect(true, this.tank);
 
-    await this.peer.saveToCache();
-    await this.peer.saveToDatabase();
+    this.base.state.setPlayer(this.peer.data.netID, this.peer.data);
+    await this.base.state.savePlayer(this.peer.data.netID);
     this.peer.sendClothes();
   }
 }

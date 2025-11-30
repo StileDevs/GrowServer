@@ -27,6 +27,7 @@ import {
 import { Database } from "@growserver/db";
 import { Peer } from "./Peer";
 import { World } from "./World";
+import { StateManager } from "./StateManager";
 import { mkdir, writeFile, readFile } from "fs/promises";
 import chokidar from "chokidar";
 import ky from "ky";
@@ -45,6 +46,7 @@ export class Base {
   public cdn: CDNContent;
   public cache: Cache;
   public database: Database;
+  public state: StateManager;
 
   constructor() {
     this.server = new Client({
@@ -71,6 +73,11 @@ export class Base {
     };
 
     this.database = new Database();
+    this.state = new StateManager(
+      { maxSize: 1000, ttl: 3600000, idleTime: 60000, autoSave: true },
+      { maxSize: 500, ttl: 1800000, idleTime: 60000, autoSave: true },
+      this.database,
+    );
   }
 
   public async start() {

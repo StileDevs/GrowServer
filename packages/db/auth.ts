@@ -1,11 +1,5 @@
-import { betterAuth, type BetterAuthOptions } from "better-auth";
-import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { drizzle } from "drizzle-orm/postgres-js";
+import { type BetterAuthOptions } from "better-auth";
 import { username, admin as adminPlugin, captcha, emailOTP } from "better-auth/plugins";
-import postgres from "postgres";
-import * as schema from "./shared/schemas"
-
-const tables = schema;
 
 export const authConfig: BetterAuthOptions = {
   emailAndPassword: { 
@@ -19,6 +13,7 @@ export const authConfig: BetterAuthOptions = {
     emailOTP({
       async sendVerificationOTP({ email, otp, type }) {
         // Implement the sendVerificationOTP method to send the OTP to the user's email address
+        console.log(`Sending OTP to ${email}: ${otp} (type: ${type})`);
       }
     }),
     captcha({
@@ -27,12 +22,12 @@ export const authConfig: BetterAuthOptions = {
     })
   ],
 
-  // socialProviders: { 
-  //   github: { 
-  //     clientId:     process.env.GITHUB_CLIENT_ID as string, 
-  //     clientSecret: process.env.GITHUB_CLIENT_SECRET as string, 
-  //   }, 
-  // }, 
+  socialProviders: { 
+    discord: { 
+      clientId:     process.env.DISCORD_CLIENT_ID as string, 
+      clientSecret: process.env.DISCORD_CLIENT_SECRET  as string, 
+    }, 
+  }, 
 
   session: {
     expiresIn: 60 * 60 * 24 * 7, // Expires in 7 days
@@ -42,6 +37,11 @@ export const authConfig: BetterAuthOptions = {
     //   maxAge: 5 * 60, // cache duration in seconds
     // },
   },
+
+  experimental: {
+    joins: true
+  }
+
   // trustedOrigins: ["http://localhost:3000"]
   // user: {
   //   additionalFields: {
@@ -58,17 +58,4 @@ export const authConfig: BetterAuthOptions = {
   //     }
   //   }
   // }
-}
-
-
-// NOTE: this is used for generating schema, only used once just ignore it :D
-export const auth = betterAuth(Object.assign({
-  database: drizzleAdapter(drizzle({ client: postgres(process.env.DATABASE_URL!) }), {
-    provider: "pg",
-    schema:   {
-      ...tables
-    }
-  }),
-}, authConfig));
-
-
+};

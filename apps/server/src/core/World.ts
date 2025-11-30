@@ -11,11 +11,11 @@ import {
   TileFlags,
 } from "@growserver/const";
 import { Peer } from "./Peer";
-// import { tileParse } from "../world/tiles";
 import { Default } from "../world/generation/Default";
 import { Tile } from "../world/Tile";
 import { tileFrom } from "../world/tiles";
 import { ItemDefinition, ItemsDatMeta } from "grow-items";
+import logger from "@growserver/logger";
 
 export class World {
   public data: WorldData;
@@ -28,7 +28,7 @@ export class World {
     this.base = base;
     this.worldName = worldName;
 
-    const data = this.base.cache.worlds.get(worldName);
+    const data = this.base.state.getWorld(worldName);
     if (data) {
       this.data = data;
     } else
@@ -40,17 +40,6 @@ export class World {
         weather: { id: 41 },
         dropped: { items: [], uid: 0 },
       };
-  }
-
-  public async saveToCache() {
-    this.base.cache.worlds.set(this.worldName, this.data);
-    return true;
-  }
-
-  public async saveToDatabase() {
-    if (await this.base.database.worlds.has(this.worldName))
-      return await this.base.database.worlds.save(this.data);
-    else return await this.base.database.worlds.set(this.data);
   }
 
   public leave(peer: Peer, sendMenu = true) {
@@ -110,7 +99,7 @@ add_heading|Top Worlds|
 add_floater|START|0|0.5|3529161471
 add_floater|START1|0|0.5|3529161471
 add_floater|START2|0|0.5|3529161471
-${Array.from(this.base.cache.worlds.values())
+${this.base.state.getAllWorldsValues()
   .sort((a, b) => (b.playerCount || 0) - (a.playerCount || 0))
   .slice(0, 6)
   .map((v) => {
@@ -123,7 +112,7 @@ add_heading|Recently Visited Worlds<CR>|
 ${peer.data.lastVisitedWorlds
   ?.reverse()
   .map((v) => {
-    const count = this.base.cache.worlds.get(v)?.playerCount || 0;
+    const count = this.base.state.getWorld(v)?.playerCount || 0;
     return `add_floater|${v}|${count ?? 0}|0.5|3417414143\n`;
   })
   .join("\n")}
@@ -137,8 +126,8 @@ ${peer.data.lastVisitedWorlds
       );
 
     peer.data.world = "EXIT";
-    this.saveToCache();
-    peer.saveToCache();
+    this.base.state.setWorld(this.worldName, this.data);
+    this.base.state.setPlayer(peer.data.netID, peer.data);
 
     if ((this.data.playerCount as number) < 1) {
       // TODO: delete the cache (if needed) & save it to db
@@ -146,31 +135,26 @@ ${peer.data.lastVisitedWorlds
   }
 
   public async getData() {
-    if (!this.base.cache.worlds.has(this.worldName)) {
-      const world = await this.base.database.worlds.get(this.worldName);
+    if (!this.base.state.hasWorld(this.worldName)) {
+      const world = await this.base.database.world.get(this.worldName);
       if (world) {
         this.data = {
-          name:        world.name,
-          width:       world.width,
-          height:      world.height,
-          blocks:      world.blocks ? JSON.parse(world.blocks.toString()) : [],
-          // admins: [],
-          playerCount: 0,
-          jammers:     [],
-          dropped:     world.dropped
-            ? JSON.parse(world.dropped.toString())
-            : { uid: 0, items: [] },
-          // owner: world.owner ? JSON.parse(world.owner.toString()) : null,
-          weather:        { id: world.weather_id || 41 },
-          worldLockIndex: world.worldlock_index
-            ? world.worldlock_index
+          name:           world.name,
+          width:          world.width,
+          height:         world.height,
+          blocks:         [], // TODO: parse tilesData to blocks
+          playerCount:    0,
+          jammers:        [],
+          dropped:        { uid: 0, items: [] }, // TODO: store dropped items separately
+          weather:        { id: world.weather?.id || 41 },
+          worldLockIndex: world.owner?.worldLock
+            ? world.owner.worldLock.y! * world.width + world.owner.worldLock.x!
             : undefined,
-          // minLevel: world.minimum_level || 1,
         };
       } else {
         await this.generate(true);
       }
-    } else this.data = this.base.cache.worlds.get(this.worldName) as WorldData;
+    } else this.data = this.base.state.getWorld(this.worldName) as WorldData;
   }
 
   /**
@@ -365,11 +349,11 @@ ${peer.data.lastVisitedWorlds
 
     const ownerUserID = this.getOwnerUID();
     if (ownerUserID) {
-      const ownerData = await this.base.database.players.getByUID(ownerUserID);
+      const ownerData = await this.base.database.player.getById(ownerUserID.toString());
       peer.send(
         Variant.from(
           "OnConsoleMessage",
-          `\`p[\`0${this.data.name} \`oWorld Locked by ${ownerData?.display_name}\`#]`,
+          `\`p[\`0${this.data.name} \`oWorld Locked by ${ownerData?.displayName}\`#]`,
         ),
       );
     }
@@ -464,8 +448,8 @@ ${peer.data.lastVisitedWorlds
       ? this.data.playerCount + 1
       : 1;
 
-    this.saveToCache();
-    peer.saveToCache();
+    this.base.state.setWorld(this.worldName, this.data);
+    this.base.state.setPlayer(peer.data.netID, peer.data);
   }
 
   public async generate(cache?: boolean) {
@@ -474,7 +458,7 @@ ${peer.data.lastVisitedWorlds
 
     await worldGen.generate();
     this.data = worldGen.data;
-    if (cache) this.saveToCache();
+    if (cache) this.base.state.setWorld(this.worldName, this.data);
   }
 
   public drop(
@@ -545,7 +529,7 @@ ${peer.data.lastVisitedWorlds
       p.send(buffer);
     });
 
-    this.saveToCache();
+    this.base.state.setWorld(this.worldName, this.data);
   }
 
   public collect(peer: Peer, uid: number) {
@@ -625,8 +609,8 @@ ${peer.data.lastVisitedWorlds
       (i) => i.uid !== droppedItem.uid,
     );
 
-    peer.saveToCache();
-    this.saveToCache();
+    this.base.state.setPlayer(peer.data.netID, peer.data);
+    this.base.state.setWorld(this.worldName, this.data);
   }
 
   public async hasTilePermission(
@@ -635,7 +619,7 @@ ${peer.data.lastVisitedWorlds
     permissionType: LockPermission,
   ): Promise<boolean> {
     // a lock owns this tile
-    const userData = await this.base.database.players.getByUID(userID);
+    const userData = await this.base.database.player.getById(userID.toString());
     if (userData && userData.role == ROLE.DEVELOPER) return true;
 
     // the tile being asked is the lock itself. No one have permission except the owner
@@ -697,7 +681,7 @@ ${peer.data.lastVisitedWorlds
     if (this.data.playerCount == 0) {
       return;
     }
-    this.base.cache.peers.forEach((p, k) => {
+    this.base.state.getAllPlayers().forEach((p, k) => {
       const pp = new Peer(this.base, p.netID);
       if (pp.data.world == this.data.name) {
         callbackfn(pp, p.netID);

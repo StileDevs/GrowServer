@@ -25,6 +25,6 @@ export class FindItemEnd {
       ),
     );
     this.peer.inventory();
-    this.peer.saveToCache();
+    this.base.state.setPlayer(this.peer.data.netID, this.peer.data);
   }
 }

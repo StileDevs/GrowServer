@@ -48,6 +48,6 @@ export class SearchItem {
         `Added \`6${item.name}\`\` (200) to your inventory.`,
       ),
     );
-    this.peer.saveToCache();
+    this.base.state.setPlayer(this.peer.data.netID, this.peer.data);
   }
 }

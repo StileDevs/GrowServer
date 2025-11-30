@@ -31,7 +31,7 @@ export class State {
       (this.tank.data?.state as number) & 0x10,
     );
 
-    this.peer.saveToCache();
+    this.base.state.setPlayer(this.peer.data.netID, this.peer.data);
 
     const world = this.peer.currentWorld();
     if (world) {

@@ -384,7 +384,7 @@ export class Peer extends OldPeer<PeerData> {
     super(base.server, netID, channelID);
     this.base = base;
 
-    const data = this.base.cache.peers.get(netID);
+    const data = this.base.state.getPlayer(netID);
     if (data)
       this.data = {
         channelID,
@@ -410,14 +410,7 @@ export class Peer extends OldPeer<PeerData> {
       };
   }
 
-  public async saveToCache() {
-    this.base.cache.peers.set(this.data.netID, this.data);
-    return true;
-  }
 
-  public async saveToDatabase() {
-    return await this.base.database.players.save(this.data);
-  }
 
   public get country(): string {
     switch (this.data.role) {
@@ -460,7 +453,7 @@ export class Peer extends OldPeer<PeerData> {
   // Perhaps, having each world storing peers would be more logical IMO.
   // - Badewen
   public every(callbackfn: (peer: Peer, netID: number) => void): void {
-    this.base.cache.peers.forEach((p, k) => {
+    this.base.state.getAllPlayers().forEach((p, k) => {
       const pp = new Peer(this.base, p.netID);
       callbackfn(pp, k);
     });
@@ -469,8 +462,8 @@ export class Peer extends OldPeer<PeerData> {
   public async updateDisplayName(displayName?: string) {
     this.data.displayName =
       displayName ?? formatToDisplayName(this.data.name, this.data.role);
-    await this.saveToCache();
-    await this.saveToDatabase();
+    this.base.state.setPlayer(this.data.netID, this.data);
+    await this.base.state.savePlayer(this.data.netID);
 
     for (const heartMonitor of this.data.heartMonitors) {
       const worldName = heartMonitor[0];
@@ -606,7 +599,7 @@ export class Peer extends OldPeer<PeerData> {
 
   public currentWorld() {
     if (!this.data.world || this.data.world === "EXIT") return undefined;
-    const world = this.base.cache.worlds.get(this.data.world);
+    const world = this.base.state.getWorld(this.data.world);
 
     if (world) return new World(this.base, world.name);
     else return new World(this.base, this.data.world);
@@ -659,7 +652,7 @@ export class Peer extends OldPeer<PeerData> {
       this.send(tank);
     }
 
-    this.saveToCache();
+    this.base.state.setPlayer(this.data.netID, this.data);
     return 0;
   }
 
@@ -676,7 +669,7 @@ export class Peer extends OldPeer<PeerData> {
     }
 
     // this.inventory();
-    this.saveToCache();
+    this.base.state.setPlayer(this.data.netID, this.data);
   }
 
   public removeItemInven(id: number, amount = 1) {
@@ -703,7 +696,7 @@ export class Peer extends OldPeer<PeerData> {
     this.modifyInventory(id, -amount);
 
     // this.inventory();
-    this.saveToCache();
+    this.base.state.setPlayer(this.data.netID, this.data);
   }
 
   public searchItem(id: number) {
@@ -943,7 +936,7 @@ export class Peer extends OldPeer<PeerData> {
       }
     }
     this.countryState();
-    this.saveToCache();
+    this.base.state.setPlayer(this.data.netID, this.data);
   }
 
   public calculateRequiredLevelXp(lvl: number): number {

@@ -86,8 +86,8 @@ export class TileChangeReq {
         );
       }
     }
-    await this.world.saveToCache();
-    await this.world.saveToDatabase();
+    this.base.state.setWorld(this.world.worldName, this.world.data);
+    await this.base.state.saveWorld(this.world.worldName);
   }
 
   // private async onTileWrench() {

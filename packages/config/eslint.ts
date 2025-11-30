@@ -12,6 +12,7 @@ export const eslintConfig = defineConfig(
       "@stylistic/ts": stylisticTs,
     },
     rules: {
+      semi: "error",
       indent: "off",
       "no-unused-vars": "off",
       "keyword-spacing": "error",

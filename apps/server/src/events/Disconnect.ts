@@ -11,11 +11,11 @@ export class DisconnectListener {
   }
 
   public run(netID: number): void {
-    const peer = this.base.cache.peers.find((id) => id.netID == netID);
+    const peer = this.base.state.getAllPlayers().find((id) => id.netID == netID);
     if (peer && peer.heartMonitors) {
       peer.heartMonitors.forEach((indexes, worldName) => {
         const tiles = new Array<HeartMonitorTile>();
-        const worldData = this.base.cache.worlds.get(worldName);
+        const worldData = this.base.state.getWorld(worldName);
 
         if (!worldData || worldData.playerCount == 0) return;
 
@@ -36,6 +36,6 @@ export class DisconnectListener {
     }
 
     logger.info(`Peer ${netID} disconnected`);
-    this.base.cache.peers.delete(netID);
+    this.base.state.deletePlayer(netID);
   }
 }

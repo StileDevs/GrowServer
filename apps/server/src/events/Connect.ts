@@ -13,7 +13,7 @@ export class ConnectListener {
     const peerAddr = peer.enet;
 
     logger.info(`Peer ${netID} [/${peerAddr.ip}:${peerAddr.port}] connected`);
-    this.base.cache.peers.set(netID, peer.data);
+    this.base.state.setPlayer(netID, peer.data);
 
     peer.send(TextPacket.from(0x1));
   }

@@ -193,7 +193,7 @@ export class StoreBuy {
       this.peer.setGems(this.peer.data.gems);
     }
 
-    this.peer.saveToCache();
-    this.peer.saveToDatabase();
+    this.base.state.setPlayer(this.peer.data.netID, this.peer.data);
+    await this.base.state.savePlayer(this.peer.data.netID);
   }
 }
