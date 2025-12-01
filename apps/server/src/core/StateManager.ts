@@ -26,13 +26,14 @@ interface CacheStats {
   evictions: number;
 }
 
+interface CacheManager<K, T> {
+  cache: Collection<K, CacheEntry<T>>;
+  stats: CacheStats;
+}
 
-// TODO: create new world caching structure & implement tileMap to gain O(1) (and also maybe server pool?)
 export class StateManager {
-  private playerCache: Collection<number, CacheEntry<PeerData>>;
-  private worldCache: Collection<string, CacheEntry<WorldData>>;
-  private playerStats: CacheStats;
-  private worldStats: CacheStats;
+  private players: CacheManager<number, PeerData>;
+  private worlds: CacheManager<string, WorldData>;
   private cleanupTimer?: NodeJS.Timeout;
   private saveTimer?: NodeJS.Timeout;
   private database: Database;
@@ -45,8 +46,14 @@ export class StateManager {
     worldOptions: CacheOptions = {},
     database: Database,
   ) {
-    this.playerCache = new Collection();
-    this.worldCache = new Collection();
+    this.players = {
+      cache: new Collection(),
+      stats: { hits: 0, misses: 0, size: 0, evictions: 0 },
+    };
+    this.worlds = {
+      cache: new Collection(),
+      stats: { hits: 0, misses: 0, size: 0, evictions: 0 },
+    };
     this.database = database;
 
     this.playerOptions = {
@@ -65,9 +72,6 @@ export class StateManager {
       autoSave:        worldOptions.autoSave ?? true,
     };
 
-    this.playerStats = { hits: 0, misses: 0, size: 0, evictions: 0 };
-    this.worldStats = { hits: 0, misses: 0, size: 0, evictions: 0 };
-
     this.startCleanup();
     if (this.database && (this.playerOptions.autoSave || this.worldOptions.autoSave)) {
       this.startAutoSave();
@@ -78,24 +82,24 @@ export class StateManager {
    * Get a player from cache
    */
   public getPlayer(netID: number): PeerData | undefined {
-    const entry = this.playerCache.get(netID);
+    const entry = this.players.cache.get(netID);
 
     if (!entry) {
-      this.playerStats.misses++;
+      this.players.stats.misses++;
       return undefined;
     }
 
     // Check if entry has expired
     if (this.isExpired(entry, this.playerOptions.ttl)) {
-      this.playerCache.delete(netID);
-      this.playerStats.misses++;
-      this.playerStats.evictions++;
+      this.players.cache.delete(netID);
+      this.players.stats.misses++;
+      this.players.stats.evictions++;
       return undefined;
     }
 
     // Update last accessed time
     entry.lastAccessed = Date.now();
-    this.playerStats.hits++;
+    this.players.stats.hits++;
     return entry.data;
   }
 
@@ -105,10 +109,10 @@ export class StateManager {
   public setPlayer(netID: number, data: PeerData): void {
     // Enforce max size by evicting least recently used
     if (
-      this.playerCache.size >= this.playerOptions.maxSize &&
-      !this.playerCache.has(netID)
+      this.players.cache.size >= this.playerOptions.maxSize &&
+      !this.players.cache.has(netID)
     ) {
-      this.evictLRU(this.playerCache, this.playerStats);
+      this.evictLRU(this.players.cache, this.players.stats);
     }
 
     const entry: CacheEntry<PeerData> = {
@@ -119,16 +123,16 @@ export class StateManager {
       lastSaved:    Date.now(),
     };
 
-    this.playerCache.set(netID, entry);
-    this.playerStats.size = this.playerCache.size;
+    this.players.cache.set(netID, entry);
+    this.players.stats.size = this.players.cache.size;
   }
 
   /**
    * Delete a player from cache
    */
   public deletePlayer(netID: number): boolean {
-    const result = this.playerCache.delete(netID);
-    this.playerStats.size = this.playerCache.size;
+    const result = this.players.cache.delete(netID);
+    this.players.stats.size = this.players.cache.size;
     return result;
   }
 
@@ -136,7 +140,7 @@ export class StateManager {
    * Check if player exists in cache
    */
   public hasPlayer(netID: number): boolean {
-    const entry = this.playerCache.get(netID);
+    const entry = this.players.cache.get(netID);
     if (!entry) return false;
     return !this.isExpired(entry, this.playerOptions.ttl);
   }
@@ -146,7 +150,7 @@ export class StateManager {
    */
   public getAllPlayers(): Collection<number, PeerData> {
     const players = new Collection<number, PeerData>();
-    this.playerCache.forEach((entry, netID) => {
+    this.players.cache.forEach((entry, netID) => {
       if (!this.isExpired(entry, this.playerOptions.ttl)) {
         players.set(netID, entry.data);
       }
@@ -158,32 +162,34 @@ export class StateManager {
    * Clear all players from cache
    */
   public clearPlayers(): void {
-    this.playerCache.clear();
-    this.playerStats.size = 0;
+    this.players.cache.clear();
+    this.players.stats.size = 0;
   }
 
   /**
    * Get a world from cache
    */
   public getWorld(worldName: string): WorldData | undefined {
-    const entry = this.worldCache.get(worldName);
+    const entry = this.worlds.cache.get(worldName);
 
     if (!entry) {
-      this.worldStats.misses++;
+      const data = new this.database.models.World();
+
+      this.worlds.stats.misses++;
       return undefined;
     }
 
     // Check if entry has expired
     if (this.isExpired(entry, this.worldOptions.ttl)) {
-      this.worldCache.delete(worldName);
-      this.worldStats.misses++;
-      this.worldStats.evictions++;
+      this.worlds.cache.delete(worldName);
+      this.worlds.stats.misses++;
+      this.worlds.stats.evictions++;
       return undefined;
     }
 
     // Update last accessed time
     entry.lastAccessed = Date.now();
-    this.worldStats.hits++;
+    this.worlds.stats.hits++;
     return entry.data;
   }
 
@@ -193,10 +199,10 @@ export class StateManager {
   public setWorld(worldName: string, data: WorldData): void {
     // Enforce max size by evicting least recently used
     if (
-      this.worldCache.size >= this.worldOptions.maxSize &&
-      !this.worldCache.has(worldName)
+      this.worlds.cache.size >= this.worldOptions.maxSize &&
+      !this.worlds.cache.has(worldName)
     ) {
-      this.evictLRU(this.worldCache, this.worldStats);
+      this.evictLRU(this.worlds.cache, this.worlds.stats);
     }
 
     const entry: CacheEntry<WorldData> = {
@@ -207,16 +213,16 @@ export class StateManager {
       lastSaved:    Date.now(),
     };
 
-    this.worldCache.set(worldName, entry);
-    this.worldStats.size = this.worldCache.size;
+    this.worlds.cache.set(worldName, entry);
+    this.worlds.stats.size = this.worlds.cache.size;
   }
 
   /**
    * Delete a world from cache
    */
   public deleteWorld(worldName: string): boolean {
-    const result = this.worldCache.delete(worldName);
-    this.worldStats.size = this.worldCache.size;
+    const result = this.worlds.cache.delete(worldName);
+    this.worlds.stats.size = this.worlds.cache.size;
     return result;
   }
 
@@ -224,7 +230,7 @@ export class StateManager {
    * Check if world exists in cache
    */
   public hasWorld(worldName: string): boolean {
-    const entry = this.worldCache.get(worldName);
+    const entry = this.worlds.cache.get(worldName);
     if (!entry) return false;
     return !this.isExpired(entry, this.worldOptions.ttl);
   }
@@ -234,7 +240,7 @@ export class StateManager {
    */
   public getAllWorlds(): Collection<string, WorldData> {
     const worlds = new Collection<string, WorldData>();
-    this.worldCache.forEach((entry, worldName) => {
+    this.worlds.cache.forEach((entry, worldName) => {
       if (!this.isExpired(entry, this.worldOptions.ttl)) {
         worlds.set(worldName, entry.data);
       }
@@ -247,7 +253,7 @@ export class StateManager {
    */
   public getAllWorldsValues(): WorldData[] {
     const worlds: WorldData[] = [];
-    this.worldCache.forEach((entry) => {
+    this.worlds.cache.forEach((entry) => {
       if (!this.isExpired(entry, this.worldOptions.ttl)) {
         worlds.push(entry.data);
       }
@@ -260,7 +266,7 @@ export class StateManager {
    */
   public getAllPlayersValues(): PeerData[] {
     const players: PeerData[] = [];
-    this.playerCache.forEach((entry) => {
+    this.players.cache.forEach((entry) => {
       if (!this.isExpired(entry, this.playerOptions.ttl)) {
         players.push(entry.data);
       }
@@ -272,8 +278,8 @@ export class StateManager {
    * Clear all worlds from cache
    */
   public clearWorlds(): void {
-    this.worldCache.clear();
-    this.worldStats.size = 0;
+    this.worlds.cache.clear();
+    this.worlds.stats.size = 0;
   }
 
   /**
@@ -315,17 +321,17 @@ export class StateManager {
     let worldExpired = 0;
 
     // Cleanup players
-    this.playerCache.forEach((entry, netID) => {
+    this.players.cache.forEach((entry, netID) => {
       if (this.isExpired(entry, this.playerOptions.ttl)) {
-        this.playerCache.delete(netID);
+        this.players.cache.delete(netID);
         playerExpired++;
       }
     });
 
     // Cleanup worlds
-    this.worldCache.forEach((entry, worldName) => {
+    this.worlds.cache.forEach((entry, worldName) => {
       if (this.isExpired(entry, this.worldOptions.ttl)) {
-        this.worldCache.delete(worldName);
+        this.worlds.cache.delete(worldName);
         worldExpired++;
       }
     });
@@ -336,10 +342,10 @@ export class StateManager {
       );
     }
 
-    this.playerStats.size = this.playerCache.size;
-    this.worldStats.size = this.worldCache.size;
-    this.playerStats.evictions += playerExpired;
-    this.worldStats.evictions += worldExpired;
+    this.players.stats.size = this.players.cache.size;
+    this.worlds.stats.size = this.worlds.cache.size;
+    this.players.stats.evictions += playerExpired;
+    this.worlds.stats.evictions += worldExpired;
   }
 
   /**
@@ -402,7 +408,7 @@ export class StateManager {
 
     // Save idle players
     if (this.playerOptions.autoSave) {
-      for (const [netID, entry] of this.playerCache) {
+      for (const [netID, entry] of this.players.cache) {
         const isIdle = now - entry.lastAccessed >= this.playerOptions.idleTime;
         if (isIdle && entry.dirty) {
           try {
@@ -419,7 +425,7 @@ export class StateManager {
 
     // Save idle worlds
     if (this.worldOptions.autoSave) {
-      for (const [worldName, entry] of this.worldCache) {
+      for (const [worldName, entry] of this.worlds.cache) {
         const isIdle = now - entry.lastAccessed >= this.worldOptions.idleTime;
         if (isIdle && entry.dirty) {
           try {
@@ -499,7 +505,7 @@ export class StateManager {
     let worldsSaved = 0;
 
     // Save all dirty players
-    for (const [netID, entry] of this.playerCache) {
+    for (const [netID, entry] of this.players.cache) {
       if (entry.dirty) {
         try {
           await this.savePlayerToDatabase(netID, entry);
@@ -513,7 +519,7 @@ export class StateManager {
     }
 
     // Save all dirty worlds
-    for (const [worldName, entry] of this.worldCache) {
+    for (const [worldName, entry] of this.worlds.cache) {
       if (entry.dirty) {
         try {
           await this.saveWorldToDatabase(worldName, entry);
@@ -535,7 +541,7 @@ export class StateManager {
   public async savePlayer(netID: number): Promise<boolean> {
     if (!this.database) return false;
 
-    const entry = this.playerCache.get(netID);
+    const entry = this.players.cache.get(netID);
     if (!entry) return false;
 
     try {
@@ -555,7 +561,7 @@ export class StateManager {
   public async saveWorld(worldName: string): Promise<boolean> {
     if (!this.database) return false;
 
-    const entry = this.worldCache.get(worldName);
+    const entry = this.worlds.cache.get(worldName);
     if (!entry) return false;
 
     try {
@@ -575,23 +581,23 @@ export class StateManager {
   public getStats() {
     return {
       players: {
-        ...this.playerStats,
+        ...this.players.stats,
         hitRate:
-          this.playerStats.hits + this.playerStats.misses > 0
+          this.players.stats.hits + this.players.stats.misses > 0
             ? (
-              (this.playerStats.hits /
-                (this.playerStats.hits + this.playerStats.misses)) *
+              (this.players.stats.hits /
+                (this.players.stats.hits + this.players.stats.misses)) *
               100
             ).toFixed(2) + "%"
             : "0%",
       },
       worlds: {
-        ...this.worldStats,
+        ...this.worlds.stats,
         hitRate:
-          this.worldStats.hits + this.worldStats.misses > 0
+          this.worlds.stats.hits + this.worlds.stats.misses > 0
             ? (
-              (this.worldStats.hits /
-                (this.worldStats.hits + this.worldStats.misses)) *
+              (this.worlds.stats.hits /
+                (this.worlds.stats.hits + this.worlds.stats.misses)) *
               100
             ).toFixed(2) + "%"
             : "0%",
@@ -603,8 +609,8 @@ export class StateManager {
    * Reset cache statistics
    */
   public resetStats(): void {
-    this.playerStats = { hits: 0, misses: 0, size: this.playerCache.size, evictions: 0 };
-    this.worldStats = { hits: 0, misses: 0, size: this.worldCache.size, evictions: 0 };
+    this.players.stats = { hits: 0, misses: 0, size: this.players.cache.size, evictions: 0 };
+    this.worlds.stats = { hits: 0, misses: 0, size: this.worlds.cache.size, evictions: 0 };
   }
 
   /**
@@ -621,8 +627,8 @@ export class StateManager {
    */
   public getSizes() {
     return {
-      players: this.playerCache.size,
-      worlds:  this.worldCache.size,
+      players: this.players.cache.size,
+      worlds:  this.worlds.cache.size,
     };
   }
 

@@ -18,6 +18,7 @@
     "npm": ">=7.0.0"
   },
   "dependencies": {
-    "@growserver/const": "workspace:*"
+    "@growserver/const": "workspace:*",
+    "@growserver/utils": "workspace:*"
   }
 }

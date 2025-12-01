@@ -18,6 +18,7 @@ import {
 import { NormalTile } from "./tiles/NormalTile";
 import { ItemDefinition } from "grow-items";
 
+// TODO: would reworking on this -jad
 export class Tile {
   constructor(
     public base: Base,

@@ -39,6 +39,12 @@ export enum ClothTypes {
   ANCES = 9,
 }
 
+export enum JammerEffect {
+  ZOMBIE,
+  PUNCH,
+  SIGNAL
+}
+
 export const CLOTH_MAP: { [key in ClothTypes]: string } = {
   [ClothTypes.ANCES]: "ances",
   [ClothTypes.BACK]: "back",

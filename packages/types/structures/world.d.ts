@@ -1,4 +1,16 @@
-import type { LockPermission } from "@growserver/const";
+import type { JammerEffect, LockPermission } from "@growserver/const";
+import type { ExtendBuffer } from "@growserver/utils";
+
+
+export interface RGB {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export interface RGBA extends RGB {
+  a: number;
+}
 
 export interface TileData {
   fg: number;
@@ -45,7 +57,7 @@ export interface Mannequin {
 }
 
 export interface Jammer {
-  type: "zombie" | "punch" | "signal";
+  type: JammerEffect;
   enabled: boolean;
 }
 
@@ -57,19 +69,20 @@ export interface BlockPosition {
 export interface DroppedItem {
   id: number;
   amount: number;
-  block: BlockPosition;
   x: number;
   y: number;
   uid: number;
+  createdAt: Date;
 }
 
 export interface Dropped {
-  uid: number;
+  uidCount: number;
   items: DroppedItem[];
 }
 
 export interface WeatherData {
   id: number;
+  heatWave: RGB;
 }
 
 export interface WorldData {
@@ -77,6 +90,7 @@ export interface WorldData {
   width: number;
   height: number;
   blocks: TileData[];
+  tileMap: ExtendBuffer;
   // owner?: number; // owner userID
   // admins?: number[];
   playerCount?: number;
