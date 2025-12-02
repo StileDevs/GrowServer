@@ -12,29 +12,19 @@ export interface RGBA extends RGB {
   a: number;
 }
 
+export interface Coordinate {
+  x: number;
+  y: number;
+}
+
+export type TileExtra = LockParent | LockChild | WorldLockData | Door | Sign | HeartMonitor | Entrace | Tree | Mannequin | Dice | Provider | DisplayBlock | Jammer;
+
 export interface TileData {
   fg: number;
   bg: number;
-  x: number;
-  y: number;
+  parent: Coordinate;
+  parentLock?: Coordinate;
   flags: number;
-  lock?: LockParent;
-  lockedBy?: LockChild;
-  worldLockData?: WorldLockData; // this stores bpm, hide music notes, etc
-  door?: Door;
-  sign?: Sign;
-  heartMonitor?: HeartMonitor;
-  // dblockID?: number;
-  damage?: number; // this is a float. 1 damage is equal to 1 fist damage.
-  resetStateAt?: number;
-  // worldLock?: boolean;
-  rotatedLeft?: boolean;
-  entrace?: Entrance;
-  tree?: Tree;
-  mannequin?: Mannequin;
-  dice?: Dice;
-  provider?: Provider;
-  displayBlock?: DisplayBlock;
 }
 
 export interface Provider {
@@ -85,30 +75,29 @@ export interface WeatherData {
   heatWave: RGB;
 }
 
+
+export interface WorldDataTileExtra  extends Coordinate {
+  id: number;
+  data: TileExtra;
+}
+
+export interface WorldOwnerData {
+  userId: string;
+  worldLock: Coordinate
+}
+
+
 export interface WorldData {
   name: string;
   width: number;
   height: number;
-  blocks: TileData[];
   tileMap: ExtendBuffer;
-  // owner?: number; // owner userID
-  // admins?: number[];
+  tileExtras: WorldDataTileExtra[];
   playerCount?: number;
-  // bpm?: number;
-  // customMusicBlocksDisabled?: boolean;
-  // invisMusicBlocks?: boolean;
-  jammers?: Jammer[];
   dropped: Dropped;
   weather: WeatherData;
-  worldLockIndex?: number;
-  // minLevel: number;
-  // openToPublic?: boolean;
 }
-// export interface WorldOwnerData {
-//   name: string;
-//   displayName: string;
-//   id: number;
-// }
+
 
 // the tile that LockParent owns
 export interface LockChild {
