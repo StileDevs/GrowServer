@@ -109,7 +109,9 @@ const worldSchema = new Schema({
   },
   extras: [{
     _id:  false,
-    type: { type: Number },
+    id:   { type: Number, required: true },
+    x:    { type: Number, required: true },
+    y:    { type: Number, required: true },
     data: { type: Schema.Types.Mixed }
   }],
   droppedItems: [{

@@ -1,6 +1,6 @@
 import type { PeerData, WorldData } from "@growserver/types";
 import type { Database } from "@growserver/db";
-import { Collection } from "@growserver/utils";
+import { Collection, ExtendBuffer } from "@growserver/utils";
 import logger from "@growserver/logger";
 
 interface CacheEntry<T> {
@@ -104,6 +104,64 @@ export class StateManager {
   }
 
   /**
+   * Get a player from cache, or load from database if not in cache
+   */
+  public async getPlayerFromDatabase(name: string): Promise<PeerData | undefined> {
+    if (!this.database) {
+      logger.warn("Cannot load player from database: database not configured");
+      return undefined;
+    }
+
+    try {
+      const playerData = await this.database.player.get(name);
+      
+      if (!playerData) {
+        return undefined;
+      }
+
+      return playerData;
+    } catch (error) {
+      logger.error(`Failed to load player ${name} from database: ${error}`);
+      return undefined;
+    }
+  }
+
+  /**
+   * Get a player from cache, or load from database and cache it if not found
+   */
+  public async getOrLoadPlayer(name: string): Promise<PeerData | undefined> {
+    // First, try to find in cache by iterating through cached players
+    let cachedPlayer: PeerData | undefined;
+    for (const [, entry] of this.players.cache) {
+      if (entry.data.name === name && !this.isExpired(entry, this.playerOptions.ttl)) {
+        entry.lastAccessed = Date.now();
+        this.players.stats.hits++;
+        cachedPlayer = entry.data;
+        break;
+      }
+    }
+
+    if (cachedPlayer) {
+      return cachedPlayer;
+    }
+
+    // Not in cache, load from database
+    this.players.stats.misses++;
+    const playerData = await this.getPlayerFromDatabase(name);
+
+    if (playerData) {
+      // Cache the loaded player data
+      // Note: We need a netID to cache it. This assumes the playerData has a netID field
+      // If not, you may need to adjust this logic based on your PeerData structure
+      if (playerData.netID !== undefined) {
+        this.setPlayer(playerData.netID, playerData);
+      }
+    }
+
+    return playerData;
+  }
+
+  /**
    * Set a player in cache
    */
   public setPlayer(netID: number, data: PeerData): void {
@@ -173,8 +231,6 @@ export class StateManager {
     const entry = this.worlds.cache.get(worldName);
 
     if (!entry) {
-      const data = new this.database.models.World();
-
       this.worlds.stats.misses++;
       return undefined;
     }
@@ -191,6 +247,85 @@ export class StateManager {
     entry.lastAccessed = Date.now();
     this.worlds.stats.hits++;
     return entry.data;
+  }
+
+  /**
+   * Get a world from database
+   * TODO: do this with player aswell -jad
+   */
+  public async getWorldFromDatabase(worldName: string): Promise<WorldData | undefined> {
+    if (!this.database) {
+      logger.warn("Cannot load world from database: database not configured");
+      return undefined;
+    }
+
+    try {
+      const worldDoc = await this.database.world.get(worldName);
+      
+      if (!worldDoc) {
+        return undefined;
+      }
+
+      const tileMap = new ExtendBuffer(0);
+      tileMap.data = worldDoc.tilesData;
+      const worldData: WorldData = {
+        name:       worldDoc.name,
+        width:      worldDoc.width,
+        height:     worldDoc.height,
+        tileMap,
+        tileExtras: worldDoc.extras.map(extra => ({
+          id:   extra.id,
+          x:    extra.x,
+          y:    extra.y,
+          data: extra.data ?? undefined
+        })),
+        dropped: {
+          uidCount: worldDoc.droppedUidCounter,
+          items:    worldDoc.droppedItems
+        },
+        weather: {
+          id:       worldDoc.weather?.id ?? 0,
+          heatWave: worldDoc.weather?.heatWave ?? { r: 0, g: 0, b: 0}
+        },
+        owner: {
+          userId:    worldDoc.owner?.userId?.toString() ?? "",
+          worldLock: { 
+            x: worldDoc.owner?.worldLock?.x ?? 0, 
+            y: worldDoc.owner?.worldLock?.y ?? 0 
+          }
+        }
+      };
+
+      return worldData;
+    } catch (error) {
+      logger.error(`Failed to load world ${worldName} from database: ${error}`);
+      return undefined;
+    }
+  }
+
+  /**
+   * Get a world from cache, or load from database and cache it if not found
+   */
+  public async getOrLoadWorld(worldName: string): Promise<WorldData | undefined> {
+    // First, try to get from cache
+    const entry = this.worlds.cache.get(worldName);
+
+    if (entry && !this.isExpired(entry, this.worldOptions.ttl)) {
+      entry.lastAccessed = Date.now();
+      this.worlds.stats.hits++;
+      return entry.data;
+    }
+
+    // Not in cache or expired, load from database
+    this.worlds.stats.misses++;
+    const worldData = await this.getWorldFromDatabase(worldName);
+
+    if (worldData) {
+      // Cache the loaded world data
+      this.setWorld(worldName, worldData);
+    }
+
+    return worldData;
   }
 
   /**
