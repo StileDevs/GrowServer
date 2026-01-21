@@ -42,6 +42,7 @@ async function init() {
           cert: ssl.tls.cert,
         },
         port: config.web.port,
+        hostname: config.web.address,
       },
       (info) => {
         logger.info(`Node Logon Server is running on port ${info.port}`);
