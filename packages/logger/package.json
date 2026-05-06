@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@growserver/config": "workspace:*",
-    "pino": "^10.1.0",
+    "pino": "^10.3.1",
     "pino-pretty": "^13.1.2"
   }
 }
