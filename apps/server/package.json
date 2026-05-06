@@ -39,7 +39,7 @@
     "cross-env": "^10.0.0",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
-    "fast-xml-parser": "^5.2.5",
+    "fast-xml-parser": "^5.7.3",
     "grow-items": "^1.3.1",
     "growtopia.js": "^2.1.6",
     "jsonwebtoken": "^9.0.2",
