@@ -54,7 +54,7 @@
     "@stylistic/eslint-plugin-ts": "^4.4.1",
     "@types/bun": "^1.2.21",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.3.1",
+    "@types/node": "^25.6.0",
     "drizzle-kit": "^0.31.4",
     "eslint": "^9.35.0",
     "jiti": "^2.5.1",
