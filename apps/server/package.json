@@ -60,7 +60,7 @@
     "jiti": "^2.5.1",
     "type-fest": "^4.41.0",
     "typescript": "^5.9.2",
-    "typescript-eslint": "^8.42.0"
+    "typescript-eslint": "^8.59.2"
   },
   "engines": {
     "node": ">=18.0.0",
