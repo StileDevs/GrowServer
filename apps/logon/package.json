@@ -18,7 +18,7 @@
     "@growserver/logger": "workspace:*",
     "@growserver/types": "workspace:*",
     "@growserver/utils": "workspace:*",
-    "@hono/node-server": "^1.19.6",
+    "@hono/node-server": "^2.0.1",
     "cross-env": "^10.0.0",
     "hono": "^4.10.4",
     "rimraf": "^6.1.0"
