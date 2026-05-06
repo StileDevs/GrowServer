@@ -40,7 +40,7 @@
   "license": "MIT",
   "devDependencies": {
     "prettier": "^3.6.2",
-    "turbo": "^2.5.6",
+    "turbo": "^2.9.9",
     "typescript": "5.9.2"
   },
   "packageManager": "pnpm@9.0.0",
