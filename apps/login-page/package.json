@@ -22,7 +22,7 @@
     "bcryptjs": "^3.0.2",
     "cross-env": "^10.0.0",
     "hono": "^4.10.4",
-    "jsonwebtoken": "^9.0.2",
+    "jsonwebtoken": "^9.0.3",
     "rimraf": "^6.1.0"
   },
   "devDependencies": {
