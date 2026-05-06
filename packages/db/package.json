@@ -19,7 +19,7 @@
     "@growserver/utils": "workspace:*",
     "bcryptjs": "^3.0.2",
     "dotenv": "^17.2.2",
-    "drizzle-orm": "^0.44.5",
+    "drizzle-orm": "^0.45.2",
     "drizzle-zod": "^0.8.3",
     "nanoid": "5.1.5",
     "postgres": "^3.4.7",
