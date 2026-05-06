@@ -22,7 +22,7 @@
     "@growserver/const": "workspace:*",
     "@growserver/logger": "workspace:*",
     "@growserver/types": "workspace:*",
-    "dayjs": "^1.11.19",
+    "dayjs": "^1.11.20",
     "decompress": "^4.2.1",
     "imagescript": "^1.3.1",
     "ky": "^1.10.0"
