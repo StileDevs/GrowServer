@@ -311,13 +311,17 @@ export class Base {
         "https://mari-project.jad.li/api/v1/growtopia/cache/latest",
       )) as CDNContent;
       const itemsDat = (await fetchJSON(ITEMS_DAT_FETCH_URL)) as {
-        content: string;
+        latest: { content: string };
       };
+
+      if (!itemsDat?.latest?.content) {
+        throw new Error("Unexpected response shape from ITEMS_DAT_FETCH_URL");
+      }
 
       const data: CDNContent = {
         version:      cdnData.version,
         uri:          cdnData.uri,
-        itemsDatName: itemsDat.content,
+        itemsDatName: itemsDat.latest.content,
       };
 
       return data;

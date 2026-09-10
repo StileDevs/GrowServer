@@ -317,9 +317,12 @@ export function formatToDisplayName(name: string, role: string): string {
 export async function getLatestItemsDatName() {
   try {
     const itemsDat = (await fetchJSON(ITEMS_DAT_FETCH_URL)) as {
-      content: string;
+      latest: { content: string };
     };
-    return itemsDat.content;
+    if (!itemsDat?.latest?.content) {
+      throw new Error("Unexpected response shape from ITEMS_DAT_FETCH_URL");
+    }
+    return itemsDat.latest.content;
   } catch (e) {
     logger.error(`Failed to get latest CDN: ${e}`);
     return "";
