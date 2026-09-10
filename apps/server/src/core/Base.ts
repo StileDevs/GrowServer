@@ -306,30 +306,30 @@ export class Base {
   }
 
   public async getLatestCdn() {
-  try {
-    const cdnData = (await fetchJSON(
-      "https://mari-project.jad.li/api/v1/growtopia/cache/latest",
-    )) as CDNContent;
-    const itemsDat = (await fetchJSON(ITEMS_DAT_FETCH_URL)) as {
-      latest: { content: string };
-    };
+    try {
+      const cdnData = (await fetchJSON(
+        "https://mari-project.jad.li/api/v1/growtopia/cache/latest",
+      )) as CDNContent;
+      const itemsDat = (await fetchJSON(ITEMS_DAT_FETCH_URL)) as {
+        latest: { content: string };
+      };
 
-    if (!itemsDat?.latest?.content) {
-      throw new Error("Unexpected response shape from ITEMS_DAT_FETCH_URL");
+      if (!itemsDat?.latest?.content) {
+        throw new Error("Unexpected response shape from ITEMS_DAT_FETCH_URL");
+      }
+
+      const data: CDNContent = {
+        version:      cdnData.version,
+        uri:          cdnData.uri,
+        itemsDatName: itemsDat.latest.content,
+      };
+
+      return data;
+    } catch (e) {
+      logger.error(`Failed to get latest CDN: ${e}`);
+      return { version: "", uri: "", itemsDatName: "" };
     }
-
-    const data: CDNContent = {
-      version:      cdnData.version,
-      uri:          cdnData.uri,
-      itemsDatName: itemsDat.latest.content,
-    };
-
-    return data;
-  } catch (e) {
-    logger.error(`Failed to get latest CDN: ${e}`);
-    return { version: "", uri: "", itemsDatName: "" };
   }
-}
 
   public async saveAll(disconnectAll = false): Promise<boolean> {
     logger.info(
