@@ -20,18 +20,19 @@ export class RefreshItemData {
     const isMacOS = this.peer.data.platformID === "2";
 
     let itemsContent: Buffer;
+    const datDir = join(process.cwd(), ".cache", "growtopia", "dat");
 
     if (isMacOS) {
-      // Load macOS items.dat at runtime
-      const datDir = join(process.cwd(), ".cache", "growtopia", "dat");
+      // macOS read raw file
       const macosItemsDatName = this.base.cdn.itemsDatName.replace(
         ".dat",
         "-osx.dat",
       );
       itemsContent = readFileSync(join(datDir, macosItemsDatName));
     } else {
-      // Use regular items.dat already loaded in memory
-      itemsContent = this.base.items.content;
+      // WINDOWS/ANDROID RAW FILE READ
+      // Parse won't fuck file (1 byte)
+      itemsContent = readFileSync(join(datDir, this.base.cdn.itemsDatName));
     }
 
     this.peer.send(
