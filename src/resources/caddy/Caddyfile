@@ -1,0 +1,73 @@
+# HTTP configuration - proxies to the main app
+# http://:80 {
+#     reverse_proxy localhost:3000 {
+#         header_up Upgrade {http.request.header.Upgrade}
+#         header_up Connection {http.request.header.Connection}
+#         header_up Host {http.request.host}
+#     }
+# }
+
+# HTTPS for localhost and www.growtopia1.com (uses custom certificate for Growtopia login)
+https://localhost:443, https://www.growtopia1.com:443 {
+    log {
+        output stdout
+        format console
+    }
+
+    tls .cache/tls/cert.pem .cache/tls/key.pem
+    handle /growtopia/server_data.php {
+        reverse_proxy localhost:17900 {
+            header_up Upgrade {http.request.header.Upgrade}
+            header_up Connection {http.request.header.Connection}
+            header_up Host {http.request.host}
+        }
+    }
+
+    handle {
+        respond 404
+    }
+}
+
+# Domain-specific configuration for login.growserver.test using automatic local HTTPS
+# Change this if you own a specific domain
+login.growserver.test {
+    log {
+        output stdout
+        format console
+    }
+
+    # Please comment this if you using actual domain
+    #tls internal
+
+    reverse_proxy localhost:17901 {
+        header_up Upgrade {http.request.header.Upgrade}
+        header_up Connection {http.request.header.Connection}
+        header_up Host {http.request.host}
+    }
+}
+
+# HTTP to HTTPS redirect for login.growserver.test
+http://login.growserver.test {
+    redir https://login.growserver.test{uri} permanent
+}
+
+cdn.growserver.test {
+  log {
+      output stdout
+      format console
+  }
+
+  # Please comment this if you using actual domain
+  #tls internal
+
+    reverse_proxy localhost:17902 {
+        header_up Upgrade {http.request.header.Upgrade}
+        header_up Connection {http.request.header.Connection}
+        header_up Host {http.request.host}
+    }
+}
+
+# HTTP to HTTPS redirect for cdn.growserver.test
+http://cdn.growserver.test {
+	redir https://cdn.growserver.test{uri} permanent
+}

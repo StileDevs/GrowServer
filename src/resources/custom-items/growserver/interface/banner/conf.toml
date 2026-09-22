@@ -1,0 +1,13 @@
+id = 8900
+
+target = "extra_file"
+
+# [item]
+# name = "GrowServer Banner"
+
+# [wiki]
+# desc = "An exclusive custom banner designed for the GrowServer community."
+# chi = "water"
+
+# [wiki.func]
+# add = "Show off your server pride with this banner."
