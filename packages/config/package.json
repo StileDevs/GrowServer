@@ -18,6 +18,6 @@
     "node": ">=18"
   },
   "dependencies": {
-    "smol-toml": "^1.4.2"
+    "smol-toml": "^1.8.0"
   }
 }
