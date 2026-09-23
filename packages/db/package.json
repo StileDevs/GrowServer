@@ -12,7 +12,7 @@
   "author": "JadlionHD <jadlion.dev@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "@antfu/ni": "^25.0.0",
+    "@antfu/ni": "^30.6.0",
     "@growserver/config": "workspace:*",
     "@growserver/const": "workspace:*",
     "@growserver/types": "workspace:*",
