@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/bun": "^1.2.21",
     "@types/node": "^24.3.1",
-    "drizzle-kit": "^0.31.4",
+    "drizzle-kit": "^0.31.10",
     "typescript": "^5.9.2"
   },
   "engines": {
