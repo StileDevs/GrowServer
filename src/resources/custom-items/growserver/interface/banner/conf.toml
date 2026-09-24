@@ -11,3 +11,22 @@ target = "extra_file"
 
 # [wiki.func]
 # add = "Show off your server pride with this banner."
+
+[utils.func.image]
+# resize = "1024x256"
+# fit = "inside" # "fill" (default) | "inside"
+# filter = "lanczos3" # "lanczos3" | "lanczos2" | "mitchell" | "cubic" | "nearest"
+# without_enlargement = false
+# rotate = 90
+# flip = false
+# flop = false
+
+# [utils.func.image.modulate]
+# brightness = 1.0
+# saturation = 1.0
+
+# [utils.func.image.png]
+# compression_level = 6
+# palette = true
+# colors = 64
+# dither = true

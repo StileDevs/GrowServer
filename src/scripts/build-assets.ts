@@ -4,6 +4,7 @@ import { join, relative, dirname, basename } from "path";
 import { TOML } from "bun";
 import { RTTEX } from "../utils/proton";
 import { logger } from "../utils/logger";
+import { transformImage, resolveImageTransformConf, type ImageTransformConf } from "../utils/image";
 import type { ItemsInfo, CombineRecipe } from "./generate-wiki";
 
 export interface CustomItemWikiConf {
@@ -27,6 +28,7 @@ export interface CustomItemConf {
   target?: "extra_file" | "texture" | "extraFile";
   item?: Record<string, any>;
   wiki?: CustomItemWikiConf;
+  utils?: Record<string, any>;
 }
 
 export interface CompiledCustomItem {
@@ -222,8 +224,16 @@ export async function buildAssets(): Promise<void> {
     const pngPath = join(itemDir, primaryPng);
     const pngBuffer = await readFile(pngPath);
 
+    // Apply image transformations if defined in conf.toml (e.g. resize, rotate, modulate, png)
+    const imageTransformConf = resolveImageTransformConf(conf.utils);
+    let processedPngBuffer: Buffer = pngBuffer;
+    if (imageTransformConf) {
+      processedPngBuffer = await transformImage(pngBuffer, imageTransformConf);
+      logger.info({ id: conf.id, path: relativeItemDir }, "applied image transformations");
+    }
+
     // Compile PNG to RTTEX
-    const rttexBuffer = await RTTEX.encode(pngBuffer);
+    const rttexBuffer = await RTTEX.encode(processedPngBuffer);
     const rttexHash = RTTEX.hash(rttexBuffer);
 
     // Target relative path: e.g. "growserver/interface/banner.rttex"

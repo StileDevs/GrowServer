@@ -224,8 +224,10 @@ public players: Collection<string, Player> = new Collection();
   - `target`: Target item field to override (`"extra_file"` or `"texture"`). If omitted, automatically determined: paths containing `/interface/` default to `"extra_file"`, while others default to `"texture"`.
   - `[item]`: Overrides for `ItemDefinition` properties (`name`, `texture_x`, `texture_y`, `type`, `body_part_type`, `visual_effect_type`).
   - `[wiki]`: Metadata merged into `.cache/wiki.json` (`name`, `desc`, `chi`, `play_mods`, `[wiki.recipe]`, `[wiki.func]`).
+  - `[utils.func.image]`: Image transformations before RTTEX encoding (`resize = "1024x256"`, `fit = "fill" | "inside"`, `filter`, `rotate`, `flip`, `flop`, `modulate`, `png`).
 - **Asset Compilation Pipeline (`bun run build:assets`):**
   - Built by `src/scripts/build-assets.ts`.
+  - Applies native image transformations via `Bun.Image` according to `[utils.func.image]`.
   - Encodes `.png` files into `.rttex` via `RTTEX.encode()` and calculates hash via `RTTEX.hash()`.
   - Generates `.cache/custom-items.json` manifest.
   - Automatically merges item wiki metadata into `.cache/wiki.json`.
