@@ -141,7 +141,7 @@ export class PlayerAuth {
 
   /** Quick accessor to determine if this is a sub-server transfer packet */
   public get isTransfer(): boolean {
-    return this.metadata.lmode === LOGON_MODE.TRANFER || this.isSubServerTransfer;
+    return this.metadata.lmode === LOGON_MODE.TRANSFER || this.isSubServerTransfer;
   }
 
   /**
@@ -201,7 +201,7 @@ export class PlayerAuth {
       uuid: parser.get("UUID"),
     };
 
-    if (lmode === LOGON_MODE.TRANFER || (this.metadata.user.length > 0 && this.metadata.token.length > 0)) {
+    if (lmode === LOGON_MODE.TRANSFER || (this.metadata.user.length > 0 && this.metadata.token.length > 0)) {
       this.isSubServerTransfer = true;
     }
 
@@ -240,6 +240,7 @@ export class PlayerAuth {
       const tokenParam = params.get("_token") || params.get("token") || "";
       const loginDataParam = params.get("loginData") || "";
       const typeParam = params.get("type");
+      const usernameParam = params.get("username") || "";
 
       if (loginDataParam) {
         const metadataParser = new TextParser(loginDataParam);
@@ -247,6 +248,9 @@ export class PlayerAuth {
       }
 
       this.metadata.token = tokenParam;
+      if (usernameParam && !this.metadata.tankIDName) {
+        this.metadata.tankIDName = usernameParam;
+      }
       if (typeParam !== null) {
         this.metadata.loginType = typeParam as LOGIN_TYPE;
       }

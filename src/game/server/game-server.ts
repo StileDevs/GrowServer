@@ -10,7 +10,8 @@ import { TextParser } from "../../utils/text-parser";
 import { TextColor } from "../../utils/text-color";
 import { LOGON_MODE, PACKET_TYPE, TANK_PACKET_TYPE } from "../../constants";
 import { GameUpdatePacket } from "../packets/game-packet";
-import { PlayerDB } from "../../database/services";
+import { PlayerDB, SessionDB } from "../../database/services";
+import { GameMessageMap } from "../network/game-message-handler";
 
 export interface GameServerEvents {
   "server:started": (data: { port: number; serverLabel: string }) => void;
@@ -122,20 +123,24 @@ export class GameServer extends EventEmitter {
       switch (type) {
         case PACKET_TYPE.GENERIC_TEXT:
         case PACKET_TYPE.GAME_MESSAGE:
-          const payload = Buffer.from(data.slice(4)).toString("utf-8");
+          // payload and also cleanup null terminators
+          const payload = Buffer.from(data.slice(4)).toString("utf-8").replace(/\0+$/g, "");
           const text = new TextParser(payload);
-          console.log({ text: text.getEntries() });
+          console.log({ text: text.getEntries(), netID: player.netID });
 
           if (text.contains("action")) {
             const action = text.get("action");
 
-            if (action === "refresh_item_data") {
-              player.variants.sendOnConsoleMessage("One moment updating item data...");
-              player.variants.sendItemData();
-            }
+            try {
+              const actionFunc = GameMessageMap[action];
 
-            if (action === "refresh_player_tribute_data") {
-              player.variants.sendOnRefreshPlayerTributeData();
+              if (actionFunc) {
+                actionFunc(player, text);
+              } else {
+                throw new Error(`unknown action: ${action}`);
+              }
+            } catch (e) {
+              logger.error(e, "failed to handle action");
             }
           }
 
@@ -152,8 +157,18 @@ export class GameServer extends EventEmitter {
               return player.variants.sendOnConsoleMessage(new TextColor().crazyRed("Invalid login metadata, try again?").str());
             }
 
+            const sessionToken = player.auth.token;
+            const session = sessionToken ? await SessionDB.getByToken(sessionToken) : undefined;
+            if (!session) {
+              return player.variants.sendOnConsoleMessage(new TextColor().crazyRed("Invalid or expired session token, please login again.").str());
+            }
+
             player.tankIDName = player.auth.tankIDName;
             player.displayName = player.auth.tankIDName;
+            player.playerId = session.player_id;
+
+            player.removeStateStatus(PlayerStateFlags.LOGIN_REQUEST);
+            player.addStateStatus(PlayerStateFlags.ENTERING_GAME);
 
             // Fetch database player record to get unique database playerId
             const dbPlayer = await PlayerDB.getByName(player.tankIDName);
@@ -173,15 +188,19 @@ export class GameServer extends EventEmitter {
               targetServer: targetServerLabel,
             });
 
+            player.variants.sendSetHasGrowID(true, player.tankIDName, sessionToken);
             // Send OnSendToServer packet (server address defaults to 127.0.0.1 in dev or configured host)
             player.sendOnSendToServer(undefined, targetPort, "", LOGON_MODE.WELCOME, transferSession.token);
+            player.disconnectLater();
           }
 
-          // Handle incoming sub-server transfer validation
+          // Handle incoming sub-server transfer validation (after sended OnSendToServer with WELCOME)
           if (text.contains("token") && text.contains("user")) {
             player.auth.parseRaw(payload);
             const token = text.get("token");
             const user = text.get("user");
+
+            player.addStateStatus(PlayerStateFlags.LOGIN_REQUEST);
 
             const isValidTransfer = player.auth.validateSubServerTransfer(token, user);
             if (!isValidTransfer) {
@@ -189,6 +208,11 @@ export class GameServer extends EventEmitter {
               player.disconnectLater();
               return;
             }
+
+            player.removeStateStatus(PlayerStateFlags.LOGIN_REQUEST);
+
+            // @TODO I'll better check this later
+            player.addStateStatus(PlayerStateFlags.IN_GAME);
 
             const parsedPlayerId = Number(user);
             if (!Number.isNaN(parsedPlayerId) && parsedPlayerId > 0) {
@@ -205,10 +229,10 @@ export class GameServer extends EventEmitter {
         case PACKET_TYPE.GAME_PACKET:
           const gamePacket = GameUpdatePacket.fromExtendBuffer(buf);
           if (gamePacket.data.type === TANK_PACKET_TYPE.DISCONNECT) {
-            player.disconnect();
+            player.disconnectNow();
           }
 
-          console.log({ gamePacket });
+          // console.log({ gamePacket });
           break;
       }
 

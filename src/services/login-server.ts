@@ -153,14 +153,18 @@ function getClientIp(c: Context): string {
 }
 
 /**
- * Encodes authenticated token and metadata into standard base64 Growtopia login token.
+ * Encodes authenticated session token, metadata, and username into standard base64 Growtopia login token.
  */
-export function generateLoginToken(username: string, loginData: string, type: LOGIN_TYPE): string {
+export function generateLoginToken(sessionToken: string, loginData: string, type: LOGIN_TYPE, username?: string): string {
   const params = new URLSearchParams({
-    _token: username,
+    _token: sessionToken,
     loginData,
     type,
   });
+
+  if (username) {
+    params.set("username", username);
+  }
 
   return Buffer.from(params.toString()).toString("base64");
 }
@@ -168,8 +172,8 @@ export function generateLoginToken(username: string, loginData: string, type: LO
 /**
  * Encodes authenticated token and metadata into standard Growtopia login payload format.
  */
-export function createLoginData(_token: string, loginData: string, type: LOGIN_TYPE): string {
-  const token = generateLoginToken(_token, loginData, type);
+export function createLoginData(_token: string, loginData: string, type: LOGIN_TYPE, username?: string): string {
+  const token = generateLoginToken(_token, loginData, type, username);
 
   return JSON.stringify({
     status: "success",
@@ -244,11 +248,14 @@ export async function createLoginServer(): Promise<void> {
     let username = typeof rawBody["growId"] === "string" ? rawBody["growId"] : "";
     let password = typeof rawBody["password"] === "string" ? rawBody["password"] : "";
 
-    // If token exists, try to extract credentials from encoded loginData
+    let sessionToken = "";
+
+    // If token exists, try to extract credentials from encoded loginData or validate session directly
     if (rawToken) {
       try {
         const decoded = Buffer.from(rawToken, "base64").toString("utf-8");
         const params = new URLSearchParams(decoded);
+        sessionToken = params.get("_token") || params.get("token") || "";
         const loginData = params.get("loginData");
         if (loginData) {
           const parser = new TextParser(loginData);
@@ -257,8 +264,37 @@ export async function createLoginServer(): Promise<void> {
           if (parsedUser) username = parsedUser;
           if (parsedPass) password = parsedPass;
         }
+        if (params.get("username") && !username) {
+          username = params.get("username") || "";
+        }
       } catch {
-        // Token decode failed
+        sessionToken = rawToken;
+      }
+      if (!sessionToken) {
+        sessionToken = rawToken;
+      }
+    }
+
+    // If an active session token is present, validate directly against database
+    if (sessionToken) {
+      const activeSession = await SessionDB.getWithPlayer(sessionToken);
+      if (activeSession) {
+        const player = activeSession.player;
+        const clientIp = getClientIp(c);
+        const userAgent = c.req.header("user-agent") || null;
+
+        const session = await SessionDB.create(player.id, { ipAddress: clientIp, userAgent, ttlDays: 30 });
+        await PlayerDB.updateLastSeen(player.id, clientIp);
+
+        const textParser = new TextParser(data || "");
+        textParser.set("tankIDName", player.name);
+        const updatedLoginData = textParser.toString();
+
+        const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name);
+
+        logger.info({ playerId: player.id, name: player.name }, "player session token verified automatically");
+
+        return c.redirect(`/player/growid/validate/checktoken/${encodeURIComponent(token)}`, 302);
       }
     }
 
@@ -289,7 +325,7 @@ export async function createLoginServer(): Promise<void> {
           const clientIp = getClientIp(c);
           const userAgent = c.req.header("user-agent") || null;
 
-          await SessionDB.create(player.id, { ipAddress: clientIp, userAgent, ttlDays: 30 });
+          const session = await SessionDB.create(player.id, { ipAddress: clientIp, userAgent, ttlDays: 30 });
           await PlayerDB.updateLastSeen(player.id, clientIp);
 
           const textParser = new TextParser(data || "");
@@ -297,7 +333,7 @@ export async function createLoginServer(): Promise<void> {
           textParser.set("tankIDPass", password);
           const updatedLoginData = textParser.toString();
 
-          const token = generateLoginToken(player.name, updatedLoginData, LOGIN_TYPE.LOGIN);
+          const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name);
 
           logger.info({ playerId: player.id, name: player.name }, "player token verified automatically");
 
@@ -452,7 +488,7 @@ export async function createLoginServer(): Promise<void> {
     const userAgent = c.req.header("user-agent") || null;
 
     // Create / refresh session
-    await SessionDB.create(player.id, { ipAddress: clientIp, userAgent, ttlDays: 30 });
+    const session = await SessionDB.create(player.id, { ipAddress: clientIp, userAgent, ttlDays: 30 });
     await PlayerDB.updateLastSeen(player.id, clientIp);
 
     // Update metadata with authenticated player credentials
@@ -461,7 +497,7 @@ export async function createLoginServer(): Promise<void> {
     textParser.set("tankIDPass", password);
     const updatedLoginData = textParser.toString();
 
-    const token = generateLoginToken(player.name, updatedLoginData, LOGIN_TYPE.LOGIN);
+    const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name);
 
     logger.info({ playerId: player.id, name: player.name }, "player authenticated successfully");
 
@@ -564,13 +600,13 @@ export async function createLoginServer(): Promise<void> {
     });
 
     // 3. Create active session in sessions table (Better-Auth pattern)
-    await SessionDB.create(newPlayer.id, { ipAddress: clientIp, userAgent, ttlDays: 30 });
+    const session = await SessionDB.create(newPlayer.id, { ipAddress: clientIp, userAgent, ttlDays: 30 });
 
     textParser.set("tankIDName", newPlayer.name);
     textParser.set("tankIDPass", password);
     const updatedLoginData = textParser.toString();
 
-    const token = generateLoginToken(newPlayer.name, updatedLoginData, LOGIN_TYPE.REGISTER);
+    const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.REGISTER, newPlayer.name);
 
     logger.info({ playerId: newPlayer.id, name: newPlayer.name }, "new player registered successfully");
 

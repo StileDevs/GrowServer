@@ -85,22 +85,8 @@ export class Player {
    * Sends OnSendToServer variant packet to redirect player to another server or world.
    * Uses unique database playerId instead of transient peer netID.
    */
-  public sendOnSendToServer(
-    address?: string,
-    port?: number,
-    doorID: string = "",
-    logonMode: LOGON_MODE = LOGON_MODE.WELCOME,
-    token?: number,
-  ): void {
-    this.variants.sendOnSendToServer(
-      address,
-      port,
-      this.playerId,
-      doorID,
-      logonMode,
-      this.tankIDName || this.displayName,
-      token,
-    );
+  public sendOnSendToServer(address?: string, port?: number, doorID: string = "", logonMode: LOGON_MODE = LOGON_MODE.WELCOME, token?: number): void {
+    this.variants.sendOnSendToServer(address, port, this.playerId, doorID, logonMode, this.tankIDName || this.displayName, token);
   }
 
   /** Send a packet to this player */
@@ -108,9 +94,14 @@ export class Player {
     this.peer.send(packet);
   }
 
-  /** Disconnect this player immediately */
+  /** Disconnect this player */
   public disconnect(data?: number): void {
     this.peer.disconnect(data);
+  }
+
+  /** Disconnect this player immediately */
+  public disconnectNow(data?: number): void {
+    this.peer.disconnectNow(data);
   }
 
   /** Disconnect this player after queued packets are sent */

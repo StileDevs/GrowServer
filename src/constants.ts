@@ -26,7 +26,6 @@ export const CDN = {
   HOST: "0.0.0.0",
 };
 
-
 export enum LOGIN_TYPE {
   /** Registered nor logged in, they are just showed up in login/register dialog*/
   NONE = "0",
@@ -67,7 +66,7 @@ export enum PACKET_TYPE {
 
 export enum LOGON_MODE {
   WELCOME = 1,
-  TRANFER = 2,
+  TRANSFER = 2,
 }
 
 export const TANK_HEADER_SIZE = 56;
