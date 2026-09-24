@@ -49,10 +49,7 @@ async function startDev(): Promise<void> {
       caddyProc.on("error", () => resolve());
     });
   } else {
-    logger.warn(
-      { hint: "run with --with-caddy or install globally via winget install CaddyServer.Caddy" },
-      "caddy web server is not installed",
-    );
+    logger.warn({ hint: "run with --with-caddy or install globally via winget install CaddyServer.Caddy" }, "caddy web server is not installed");
   }
 
   // 3. Register graceful shutdown hooks

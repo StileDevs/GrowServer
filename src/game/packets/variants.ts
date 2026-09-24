@@ -17,6 +17,7 @@ import {
 } from "../item/item-info";
 import { serverManager } from "../server/server-manager";
 import { getServerAddress, serverConfig } from "../../configs/server-config";
+import { DialogBuilder } from "../../utils/dialog-builder";
 
 /**
  * Types for each Argument.
@@ -303,8 +304,6 @@ export class VariantHandler {
     const variant = Variant.from({ netID: -1, delay }, "OnDialogRequest", dialogData);
     const data = variant.parse();
 
-    console.log({ variant });
-
     this.send(data);
   }
 
@@ -427,6 +426,12 @@ export class VariantHandler {
     this.send(data);
   }
 
+  public sendSetHasGrowID(isSet: boolean, playerName: string, sessionToken: string): void {
+    const variant = this.createVariantNoNetID("SetHasGrowID", isSet ? 1 : 0, playerName, sessionToken);
+    const data = variant.parse();
+    this.send(data);
+  }
+
   public sendItemData(): void {
     const tank = GameUpdatePacket.from({
       type: TANK_PACKET_TYPE.SEND_ITEM_DATABASE_DATA,
@@ -450,5 +455,37 @@ export class VariantHandler {
     }).parse()!;
 
     this.send(tank);
+  }
+
+  public sendOnRequestWorldSelectMenu(): void {
+    // @TODO hardcoded for now
+    const worldMenuColor = 3529161471;
+    const topWorlds = ["START", "START1", "START2"];
+
+    const worldSelectMenu = `add_heading|Top Worlds|
+${topWorlds.map((world) => `add_floater|${world}|0|0.5|${worldMenuColor}`).join("\n")}`;
+
+    const variant = Variant.from({ netID: -1, delay: 0 }, "OnRequestWorldSelectMenu", worldSelectMenu);
+
+    const data = variant.parse();
+    this.send(data);
+  }
+
+  public sendGazette(): void {
+    this.sendOnRequestWorldSelectMenu();
+
+    const gazette = new DialogBuilder()
+      .defaultColor()
+      .addLabelWithIcon("`wThe GrowServer Gazette``", "5016", "big")
+      .addSpacer("small")
+      .raw("add_image_button||growserver/interface/banner.rttex|bannerlayout|||\n")
+      .addTextBox("Welcome to GrowServer")
+      .addQuickExit()
+      .endDialog("gazzette_end", "Cancel", "Ok")
+      .str();
+
+    const variant = Variant.from({ netID: -1, delay: 100 }, "OnDialogRequest", gazette);
+    const data = variant.parse();
+    this.send(data);
   }
 }

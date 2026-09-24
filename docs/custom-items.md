@@ -81,6 +81,26 @@ splice = [2, 3] # Item IDs required to splice this item
 [wiki.func]
 add = "Show off your server pride with this banner."
 rem = "Banner removed."
+
+# Image transformation pipeline powered by native Bun.Image (Optional)
+[utils.func.image]
+resize = "1024x256"
+# fit = "fill" # "fill" (default) | "inside"
+# filter = "lanczos3" # "lanczos3" | "lanczos2" | "mitchell" | "cubic" | "nearest"
+# without_enlargement = false
+# rotate = 90
+# flip = false
+# flop = false
+
+# [utils.func.image.modulate]
+# brightness = 1.0
+# saturation = 1.0
+
+# [utils.func.image.png]
+# compression_level = 6
+# palette = true
+# colors = 64
+# dither = true
 ```
 
 ### Table Breakdown
@@ -112,6 +132,46 @@ Allows defining or enriching documentation entries in `.cache/wiki.json`:
   - `add`: Text displayed when item effect or mod is applied.
   - `rem`: Text displayed when item effect is removed.
 
+#### `[utils.func.image]` Table (Image Processing Pipeline)
+Allows pre-processing or transforming source image files via the native, high-performance `Bun.Image` pipeline before encoding into `.rttex` binary. All image processing options are configured exclusively under `[utils.func.image]`.
+
+- **`resize`**: Resizes the image to fit desired dimensions (especially critical for interface banners which require `1024x256` or sprites that need standard bounding boxes).
+  - String format: `"WIDTHxHEIGHT"` (e.g., `"1024x256"`) stretches/scales to given dimensions.
+  - Single dimension: `"800"` or integer `800` scales width while preserving aspect ratio.
+  - Sub-table configuration:
+    ```toml
+    [utils.func.image.resize]
+    width = 1024
+    height = 256
+    fit = "fill" # "fill" | "inside"
+    filter = "lanczos3"
+    without_enlargement = false
+    ```
+- **`fit`**: Resize behavior mode:
+  - `"fill"` *(default)*: Stretches exactly to `width × height`.
+  - `"inside"`: Preserves aspect ratio so the image fits *within* the bounding box.
+- **`filter`**: Resampling kernel used during scaling:
+  - `"lanczos3"` *(default)*: Sharpest for high-detail photos and complex textures.
+  - `"lanczos2"`: Slightly softer, minimizes ringing artifacts.
+  - `"mitchell"`: Classic bicubic compromise with smooth gradients.
+  - `"cubic"`: Catmull-Rom resampling.
+  - `"mks2013"` / `"mks2021"`: Magic Kernel Sharp.
+  - `"bilinear"` / `"linear"`: Fast, soft interpolation.
+  - `"box"`: Area-average, ideal for large integer downscales.
+  - `"nearest"`: Pixel art and hard edges.
+- **`without_enlargement`** (or `withoutEnlargement`): Boolean (`true` / `false`). If `true`, avoids upscaling images smaller than target box.
+- **`rotate`**: Integer angle in multiples of 90 degrees (`90`, `180`, `270`).
+- **`flip`**: Boolean (`true` / `false`). Mirrors the image vertically (across the x-axis).
+- **`flop`**: Boolean (`true` / `false`). Mirrors the image horizontally (across the y-axis).
+- **`[utils.func.image.modulate]`** (or `[utils.func.modulate]`): Adjusts lighting and colors:
+  - `brightness`: Float multiplier (`1.0` = unchanged).
+  - `saturation`: Float multiplier (`0.0` = greyscale, `1.0` = unchanged, `>1.0` = boost).
+- **`[utils.func.image.png]`** (or `[utils.func.png]`): Configures PNG encoding options:
+  - `compression_level` (or `compressionLevel`): Integer `0`–`9` (zlib compression level).
+  - `palette`: Boolean (`true` = quantize to indexed PNG ≤256 colors).
+  - `colors`: Integer (up to 256 colors for palette quantization).
+  - `dither`: Boolean (applies Floyd–Steinberg dithering for indexed PNG).
+
 ---
 
 ## 4. Build & Compilation Workflow
@@ -124,11 +184,12 @@ bun run build:assets
 
 The build process:
 1. Discovers all `conf.toml` files in `resources/custom-items/`.
-2. Encodes each primary `.png` into Proton `.rttex` via `RTTEX.encode()`.
-3. Computes the Proton hash via `RTTEX.hash()`.
-4. Saves compiled binary files to `resources/cdn-static/<path>.rttex`.
-5. Writes `.cache/custom-items.json` manifest.
-6. Merges custom item wiki information into `.cache/wiki.json`.
+2. Applies any configured image transformations via `Bun.Image` (`[utils.func.image]`).
+3. Encodes each processed `.png` into Proton `.rttex` via `RTTEX.encode()`.
+4. Computes the Proton hash via `RTTEX.hash()`.
+5. Saves compiled binary files to `resources/cdn-static/<path>.rttex`.
+6. Writes `.cache/custom-items.json` manifest.
+7. Merges custom item wiki information into `.cache/wiki.json`.
 
 ### 2. Automatic Server Startup Integration
 During server boot in [`initItems()`](file:///D:/Projects/NodeJS_Projects/StileDevs/GrowServ/src/game/item/item-info.ts#L145):
