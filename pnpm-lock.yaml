@@ -61,8 +61,8 @@ importers:
         version: 6.1.2
     devDependencies:
       '@types/bun':
-        specifier: ^1.3.2
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
@@ -113,8 +113,8 @@ importers:
         version: 6.1.2
     devDependencies:
       '@types/bun':
-        specifier: ^1.3.2
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/node':
         specifier: ^20.11.17
         version: 20.19.25
@@ -162,7 +162,7 @@ importers:
         version: 17.2.3
       drizzle-orm:
         specifier: ^0.44.5
-        version: 0.44.7(bun-types@1.3.3)(postgres@3.4.7)
+        version: 0.44.7(bun-types@1.4.3)(postgres@3.4.7)
       fast-xml-parser:
         specifier: ^5.2.5
         version: 5.3.2
@@ -198,8 +198,8 @@ importers:
         specifier: ^4.4.1
         version: 4.4.1(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
       '@types/bun':
-        specifier: ^1.2.21
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/jsonwebtoken':
         specifier: ^9.0.10
         version: 9.0.10
@@ -232,8 +232,8 @@ importers:
         version: 1.5.2
     devDependencies:
       '@types/bun':
-        specifier: ^1.2.21
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/node':
         specifier: ^24.9.2
         version: 24.10.1
@@ -244,8 +244,8 @@ importers:
   packages/const:
     devDependencies:
       '@types/bun':
-        specifier: ^1.3.1
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/node':
         specifier: ^24.3.1
         version: 24.10.1
@@ -278,10 +278,10 @@ importers:
         version: 17.2.3
       drizzle-orm:
         specifier: ^0.44.5
-        version: 0.44.7(bun-types@1.3.3)(postgres@3.4.7)
+        version: 0.44.7(bun-types@1.4.3)(postgres@3.4.7)
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.44.7(bun-types@1.3.3)(postgres@3.4.7))(zod@4.1.13)
+        version: 0.8.3(drizzle-orm@0.44.7(bun-types@1.4.3)(postgres@3.4.7))(zod@4.1.13)
       nanoid:
         specifier: 5.1.5
         version: 5.1.5
@@ -299,8 +299,8 @@ importers:
         version: 4.1.13
     devDependencies:
       '@types/bun':
-        specifier: ^1.2.21
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/node':
         specifier: ^24.3.1
         version: 24.10.1
@@ -324,8 +324,8 @@ importers:
         version: 13.1.2
     devDependencies:
       '@types/bun':
-        specifier: ^1.3.1
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/node':
         specifier: ^24.3.1
         version: 24.10.1
@@ -340,8 +340,8 @@ importers:
         version: link:../const
     devDependencies:
       '@types/bun':
-        specifier: ^1.3.1
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/node':
         specifier: ^24.3.1
         version: 24.10.1
@@ -380,8 +380,8 @@ importers:
         version: 1.14.0
     devDependencies:
       '@types/bun':
-        specifier: ^1.3.1
-        version: 1.3.3
+        specifier: ^1.4.3
+        version: 1.4.3
       '@types/decompress':
         specifier: ^4.2.7
         version: 4.2.7
@@ -409,11 +409,11 @@ packages:
 
   '@esbuild-kit/core-utils@3.3.2':
     resolution: {integrity: sha512-sPRAnw9CdSsRmEtnsl2WXWdyquogVpB3yZ3dgwJfe8zrOzTsV7cJvmwrKVa+0ma5BoiGJ+BoqkMvawbayKUsqQ==}
-    deprecated: 'Merged into tsx: https://tsx.is'
+    deprecated: 'Merged into tsx: https://tsx.hirok.io'
 
   '@esbuild-kit/esm-loader@2.6.5':
     resolution: {integrity: sha512-FxEMIkJKnodyA1OaCUoEvbYRkoZlLZ4d/eXFu9Fh8CbBBgP5EmZxrfTRyN0qpXZ4vOvqnE5YdRdcrmUUXuU+dA==}
-    deprecated: 'Merged into tsx: https://tsx.is'
+    deprecated: 'Merged into tsx: https://tsx.hirok.io'
 
   '@esbuild/aix-ppc64@0.25.12':
     resolution: {integrity: sha512-Hhmwd6CInZ3dwpuGTF8fJG6yoWmsToE+vYgD4nytZVxcu1ulHpUQRAB1UJ8+N1Am3Mz4+xOByoQoSZf4D+CpkA==}
@@ -780,8 +780,8 @@ packages:
     peerDependencies:
       eslint: '>=9.0.0'
 
-  '@types/bun@1.3.3':
-    resolution: {integrity: sha512-ogrKbJ2X5N0kWLLFKeytG0eHDleBYtngtlbu9cyBKFtNL3cnpDZkNdQj8flVf6WTZUX5ulI9AY1oa7ljhSrp+g==}
+  '@types/bun@1.4.3':
+    resolution: {integrity: sha512-N67Pqy8JXbAY/j0tNraS3V5mubGvc6rrrNDmDCtZLlFzccbUJPDb0tvgUBC5q4m8ybkP93Jcn1QB+RYQ6PvBhw==}
 
   '@types/decompress@4.2.7':
     resolution: {integrity: sha512-9z+8yjKr5Wn73Pt17/ldnmQToaFHZxK0N1GHysuk/JIPT8RIdQeoInM01wWPgypRcvb6VH1drjuFpQ4zmY437g==}
@@ -935,8 +935,8 @@ packages:
   buffer@5.7.1:
     resolution: {integrity: sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ==}
 
-  bun-types@1.3.3:
-    resolution: {integrity: sha512-z3Xwlg7j2l9JY27x5Qn3Wlyos8YAp0kKRlrePAOjgjMGS5IG6E7Jnlx736vH9UVI4wUICwwhC9anYL++XeOgTQ==}
+  bun-types@1.4.3:
+    resolution: {integrity: sha512-tinRJNGOmUN+tEAsn2y2e942n9JHRHR42iUYzDH75NmhJqVBokGSQkkfSFdNWwsANIdrK6ACH9t01M452YyTwg==}
 
   call-bind-apply-helpers@1.0.2:
     resolution: {integrity: sha512-Sp1ablJ0ivDkSzjcaJdxEunN5/XvksFJ2sMBFfq6x0ryhQV/2b/KwFe21cMpmHtPOSij8K99/wSfoEuTObmuMQ==}
@@ -1194,6 +1194,7 @@ packages:
   eslint@9.39.1:
     resolution: {integrity: sha512-BhHmn2yNOFA9H9JmmIVKJmd288g9hrVRDkdoIgRCRuSySRUHH7r/DI6aAXW9T1WwUuY3DFgrcaqB+deURBLR5g==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -1956,6 +1957,9 @@ packages:
   undici-types@7.16.0:
     resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
+  undici-types@8.12.2:
+    resolution: {integrity: sha512-VoMeD2O0KdHhcn+oPqOrpivN+7aDOklVSwOLD7JNjbzV1CboAFek9IFOXnreoufTUtAsCsOK0iETiERPNR/fDA==}
+
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
 
@@ -2238,9 +2242,9 @@ snapshots:
       - supports-color
       - typescript
 
-  '@types/bun@1.3.3':
+  '@types/bun@1.4.3':
     dependencies:
-      bun-types: 1.3.3
+      bun-types: 1.4.3
 
   '@types/decompress@4.2.7':
     dependencies:
@@ -2424,9 +2428,10 @@ snapshots:
       base64-js: 1.5.1
       ieee754: 1.2.1
 
-  bun-types@1.3.3:
+  bun-types@1.4.3:
     dependencies:
       '@types/node': 24.10.1
+      undici-types: 8.12.2
 
   call-bind-apply-helpers@1.0.2:
     dependencies:
@@ -2546,14 +2551,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.7(bun-types@1.3.3)(postgres@3.4.7):
+  drizzle-orm@0.44.7(bun-types@1.4.3)(postgres@3.4.7):
     optionalDependencies:
-      bun-types: 1.3.3
+      bun-types: 1.4.3
       postgres: 3.4.7
 
-  drizzle-zod@0.8.3(drizzle-orm@0.44.7(bun-types@1.3.3)(postgres@3.4.7))(zod@4.1.13):
+  drizzle-zod@0.8.3(drizzle-orm@0.44.7(bun-types@1.4.3)(postgres@3.4.7))(zod@4.1.13):
     dependencies:
-      drizzle-orm: 0.44.7(bun-types@1.3.3)(postgres@3.4.7)
+      drizzle-orm: 0.44.7(bun-types@1.4.3)(postgres@3.4.7)
       zod: 4.1.13
 
   dunder-proto@1.0.1:
@@ -3344,6 +3349,8 @@ snapshots:
   undici-types@6.21.0: {}
 
   undici-types@7.16.0: {}
+
+  undici-types@8.12.2: {}
 
   uri-js@4.4.1:
     dependencies:
