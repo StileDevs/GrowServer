@@ -94,6 +94,28 @@ export const MUSIC_BLOCKS: ReadonlySet<number> = new Set([
  */
 export const CLIENT_UNAMPLIFIED_MUSIC_TYPE = 122;
 
+/**
+ * Xenonite Crystal extra data (tile extra type 18): a u8 `flags` word and a
+ * u32 `flags2` word of force/block bits, in the order the client reads them.
+ * A set force bit grants the power to everyone; a set block bit takes it away.
+ */
+export const XENO_F_DOUBLE_JUMP = 1 << 0;
+export const XENO_B_DOUBLE_JUMP = 1 << 1;
+export const XENO_F_HIGH_JUMP = 1 << 2;
+export const XENO_B_HIGH_JUMP = 1 << 3;
+export const XENO_F_STRONG_PUNCH = 1 << 4;
+export const XENO_B_STRONG_PUNCH = 1 << 5;
+export const XENO_F_SPEED = 1 << 6;
+export const XENO_B_SPEED = 1 << 7;
+
+export const XENO_F_HEAT_RESIST = 1 << 0;
+export const XENO_B_HEAT_RESIST = 1 << 1;
+export const XENO_F_LONG_PUNCH = 1 << 2;
+export const XENO_B_LONG_PUNCH = 1 << 3;
+export const XENO_B_POWERUPS = 1 << 4;
+export const XENO_F_LONG_BUILD = 1 << 5;
+export const XENO_B_LONG_BUILD = 1 << 6;
+
 /** Toggleable jammer blocks: item id -> the world modifier shown while on. */
 export const JAMMERS: ReadonlyMap<number, string> = new Map([
   [226, "JAMMED"],

@@ -215,7 +215,7 @@ export class Player {
   public get characterStats(): CharacterStats {
     const stats = this.playMods.stats;
     const xenonite = this.world?.xenoniteSettings();
-    return xenonite ? applyXenonite(stats, xenonite.mods) : stats;
+    return xenonite ? applyXenonite(stats, xenonite) : stats;
   }
 
   /** Skin color as drawn, with the active mods' tint. */

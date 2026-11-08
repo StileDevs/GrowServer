@@ -10,6 +10,7 @@ import { getItem } from "../item/item-utils";
 import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
 import { tileFrom } from "./tiles";
+import { upgradeXenonite } from "./tiles/xenonite-tile";
 import { isAntigravityActive } from "./tiles/antigravity-tile";
 import { DEFAULT_MUSIC_BPM, ActionTypes, CLIENT_UNAMPLIFIED_MUSIC_TYPE, ITEM_ID, JAMMERS, MUSIC_BLOCKS, LockPermission, SIGNAL_JAMMER, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
 import type { DroppedItem, TileData, WorldData, XenoniteSettings } from "./types";
@@ -66,6 +67,10 @@ export class World {
   public xenoniteSettings(): XenoniteSettings | undefined {
     if (this.xenoniteCache === undefined) {
       const crystal = this.data.blocks.find((block) => getItem(block.fg)?.type === ActionTypes.XENONITE);
+      if (crystal?.xenonite) {
+        // world files saved before the official force/block layout
+        crystal.xenonite = upgradeXenonite(crystal.xenonite as XenoniteSettings & { mods?: number; powerups?: number });
+      }
       this.xenoniteCache = crystal?.xenonite ?? null;
     }
     return this.xenoniteCache ?? undefined;
@@ -443,6 +448,9 @@ export class World {
       ),
     );
 
+    // a placed crystal takes powers away from everyone, like the official server
+    if (this.xenoniteSettings()) player.playMods.add("xenonite");
+
     player.variants.sendOnSetCurrentWeather(this.data.weather.id);
     player.variants.sendOnEmoticonDataChanged();
     player.variants.sendOnSpawn(player.spawnOptions(true));
@@ -500,6 +508,8 @@ export class World {
     this.stopMusicFor(player);
     player.world = null;
     player.netID = 0;
+    // the crystal's powers only apply inside the world
+    player.playMods.remove("xenonite");
     player.state.world.name = "";
     player.lastCheckpoint = null;
     player.actions.sendPlaySfx("audio/door_shut.wav");

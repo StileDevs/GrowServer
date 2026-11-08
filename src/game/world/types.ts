@@ -26,12 +26,17 @@ export interface TileData {
   xenonite?: XenoniteSettings;
 }
 
-/** Settings of a Xenonite Crystal: bit masks of the powers it alters. */
+/**
+ * Settings of a Xenonite Crystal: the official force/block flag words of its
+ * tile extra data. `flags` (u8) covers Double Jump, High Jump, Strong Punch and
+ * Speedy; `flags2` (u32) covers Heat Resist, Long Punch, Long Build and the
+ * powerup block.
+ */
 export interface XenoniteSettings {
-  /** One bit per power in `XENONITE_POWERS`; set = that power is removed. */
-  mods: number;
-  /** One bit per powerup in `XENONITE_POWERUPS`; set = that powerup is blocked. */
-  powerups: number;
+  /** Force/block bits for Double Jump, High Jump, Strong Punch and Speedy. */
+  flags: number;
+  /** Force/block bits for Heat Resist, Long Punch, Long Build, powerups. */
+  flags2: number;
 }
 
 /** Players allowed through a VIP Entrance besides the lock's owner and admins. */

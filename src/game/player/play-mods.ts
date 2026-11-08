@@ -1,5 +1,20 @@
 import { CHARACTER_STATE } from "../../constants";
 import { Collection } from "../../utils/collection";
+import {
+  XENO_B_DOUBLE_JUMP,
+  XENO_B_HIGH_JUMP,
+  XENO_B_LONG_BUILD,
+  XENO_B_LONG_PUNCH,
+  XENO_B_SPEED,
+  XENO_B_STRONG_PUNCH,
+  XENO_F_DOUBLE_JUMP,
+  XENO_F_HIGH_JUMP,
+  XENO_F_LONG_BUILD,
+  XENO_F_LONG_PUNCH,
+  XENO_F_SPEED,
+  XENO_F_STRONG_PUNCH,
+} from "../world/constants";
+import type { XenoniteSettings } from "../world/types";
 
 /**
  * A play mod: a temporary or wearable modifier of the avatar. Wearable mods
@@ -70,6 +85,11 @@ for (const def of [
   mod({ id: "hunting_ghosts", name: "Hunting Ghosts", displayItem: 3716, addMessage: "You fire Neutron Beams (requires Neutron Pack to work).", removeMessage: "You're afraid of a ghost.", punchType: 69, punchRange: 2, items: [3716] }),
   mod({ id: "geiger_counter", name: "Geiger Counter", displayItem: 2204, addMessage: "You are detecting radiation...", removeMessage: "Geiger Counter removed.", items: [2204] }),
 
+  // --- world-driven ------------------------------------------------------------
+  // granted while a Xenonite Crystal is placed in the world; its masks, not the
+  // mod itself, carry the force/block state (see applyXenonite)
+  mod({ id: "xenonite", name: "Xenonite", displayItem: 2072, addMessage: "", removeMessage: "" }),
+
   // --- timed (consumables) -------------------------------------------------
   mod({ id: "feelin_blue", name: "Feelin' Blue", displayItem: 196, addMessage: "A `!blueberry`` slides down your throat!", removeMessage: "The effects of the `!blueberry`` have worn off.", skinColor: [0, 0, 255, 255], duration: 3600, sound: "audio/spray.wav" }),
   mod({ id: "stinky", name: "Stinky", displayItem: 372, addMessage: "You really really smell.", removeMessage: "The air clears.", charState: CHARACTER_STATE.HAVE_CIGAR, duration: 300, sound: "audio/spray.wav" }),
@@ -134,8 +154,8 @@ export const BASE_STATS: Readonly<CharacterStats> = {
   buildRange: 128,
   punchRange: 128,
   speed: 1200,
-  accel: 300,
-  gravity: 600,
+  accel: 250,
+  gravity: 1000,
   punchPower: 200,
   punchDamage: 6,
   waterSpeed: 125,
@@ -209,33 +229,52 @@ export function mixTints(tints: readonly (readonly [number, number, number, numb
 
 /** Composites the tint over a packed `0xRRGGBBAA` skin color. */
 /**
- * Bits of the Xenonite power list (see `XENONITE_POWERS`) that map to server
- * stats; the others are applied by the client itself.
+ * Applies a Xenonite Crystal's force/block masks to the stats, with the same
+ * clamp values as the official server. Heat resist (fire damage) and the
+ * powerup block are enforced by the client from the crystal's extra data.
  */
-const XENONITE_DOUBLE_JUMP = 0;
-const XENONITE_HIGH_JUMP = 1;
-const XENONITE_STRONG_PUNCH = 3;
-const XENONITE_LONG_PUNCH = 4;
-const XENONITE_SPEEDY = 5;
-const XENONITE_LONG_BUILD = 6;
-const XENONITE_WATER_SPEED = 7;
-const XENONITE_PUNCH_DAMAGE = 8;
+export function applyXenonite(stats: CharacterStats, settings: XenoniteSettings): CharacterStats {
+  const { flags, flags2 } = settings;
+  if (!flags && !flags2) return stats;
 
-/** Takes the powers a Xenonite Crystal masks away from the stats. */
-export function applyXenonite(stats: CharacterStats, mask: number): CharacterStats {
-  if (!mask) return stats;
-
-  const blocked = (bit: number) => (mask & (1 << bit)) !== 0;
   const restricted: CharacterStats = { ...stats };
+  const force = (bit: number) => (flags & bit) !== 0;
+  const block = (bit: number) => (flags & bit) !== 0;
+  const force2 = (bit: number) => (flags2 & bit) !== 0;
+  const block2 = (bit: number) => (flags2 & bit) !== 0;
 
-  if (blocked(XENONITE_DOUBLE_JUMP)) restricted.charState &= ~CHARACTER_STATE.DOUBLE_JUMP;
-  if (blocked(XENONITE_HIGH_JUMP)) restricted.gravity = Math.max(restricted.gravity, BASE_STATS.gravity);
-  if (blocked(XENONITE_STRONG_PUNCH)) restricted.punchPower = Math.min(restricted.punchPower, BASE_STATS.punchPower);
-  if (blocked(XENONITE_LONG_PUNCH)) restricted.punchRange = Math.min(restricted.punchRange, BASE_STATS.punchRange);
-  if (blocked(XENONITE_SPEEDY)) restricted.speed = Math.min(restricted.speed, BASE_STATS.speed);
-  if (blocked(XENONITE_LONG_BUILD)) restricted.buildRange = Math.min(restricted.buildRange, BASE_STATS.buildRange);
-  if (blocked(XENONITE_WATER_SPEED)) restricted.waterSpeed = Math.min(restricted.waterSpeed, BASE_STATS.waterSpeed);
-  if (blocked(XENONITE_PUNCH_DAMAGE)) restricted.punchDamage = Math.min(restricted.punchDamage, BASE_STATS.punchDamage);
+  if (force(XENO_F_DOUBLE_JUMP)) restricted.charState |= CHARACTER_STATE.DOUBLE_JUMP;
+  else if (block(XENO_B_DOUBLE_JUMP)) restricted.charState &= ~CHARACTER_STATE.DOUBLE_JUMP;
+
+  if (force(XENO_F_HIGH_JUMP)) {
+    if (700 < restricted.gravity) restricted.gravity = 700;
+  } else if (block(XENO_B_HIGH_JUMP)) {
+    if (restricted.gravity < BASE_STATS.gravity) restricted.gravity = BASE_STATS.gravity;
+  }
+
+  if (force(XENO_F_STRONG_PUNCH)) {
+    if (restricted.punchPower < 500) restricted.punchPower = 500;
+  } else if (block(XENO_B_STRONG_PUNCH)) {
+    if (BASE_STATS.punchPower < restricted.punchPower) restricted.punchPower = BASE_STATS.punchPower;
+  }
+
+  if (force(XENO_F_SPEED)) {
+    if (restricted.accel < 310) restricted.accel = 310;
+  } else if (block(XENO_B_SPEED)) {
+    if (BASE_STATS.accel < restricted.accel) restricted.accel = BASE_STATS.accel;
+  }
+
+  if (force2(XENO_F_LONG_PUNCH)) {
+    if (restricted.punchRange < 128) restricted.punchRange = 130;
+  } else if (block2(XENO_B_LONG_PUNCH)) {
+    if (128 < restricted.punchRange) restricted.punchRange = 128;
+  }
+
+  if (force2(XENO_F_LONG_BUILD)) {
+    if (restricted.buildRange < 128) restricted.buildRange = 129;
+  } else if (block2(XENO_B_LONG_BUILD)) {
+    if (128 < restricted.buildRange) restricted.buildRange = 128;
+  }
 
   return restricted;
 }
