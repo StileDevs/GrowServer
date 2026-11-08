@@ -55,7 +55,6 @@ function stock(player: Player, world: World, tile: VendingTile, itemId: number):
   v.count = removed;
 
   announce(world, `\`7[\`\`${player.displayName} put \`2${item.name}\`\` in the ${itemName(tile.data.fg)}.\`7]\`\``);
-  tile.sendDialog(player);
   return true;
 }
 
@@ -168,14 +167,24 @@ function setPrice(player: Player, world: World, tile: VendingTile, action: TextP
 function ownerAction(player: Player, world: World, tile: VendingTile, action: TextParser): boolean {
   const button = action.get("buttonClicked");
 
-  if (action.contains("stockitem")) return stock(player, world, tile, action.getInt("stockitem", 0, 0));
-  if (button === "addstock") return addStock(player, tile);
-  if (button === "pullstock") return pullStock(player, tile);
-  if (button === "withdraw") return withdraw(player, tile);
+  if (button === "change_price") {
+    player.variants.sendOnDialogRequest(tile.priceDialog().str());
+    return false;
+  }
 
-  // "Update" with price and mode checkboxes
-  if (!action.contains("setprice")) return false;
-  return setPrice(player, world, tile, action);
+  let changed = false;
+  if (action.contains("stockitem")) changed = stock(player, world, tile, action.getInt("stockitem", 0, 0));
+  else if (button === "addstock") changed = addStock(player, tile);
+  else if (button === "pullstock") changed = pullStock(player, tile);
+  else if (button === "withdraw") changed = withdraw(player, tile);
+  else if (action.contains("setprice")) changed = setPrice(player, world, tile, action);
+
+  if (changed) {
+    // the client only learns about stock moves from a full backpack refresh
+    player.sendInventory();
+    tile.sendDialog(player);
+  }
+  return changed;
 }
 
 // --- buyer -------------------------------------------------------------
@@ -308,9 +317,15 @@ registerDialog("vending", (player, action) => {
   if (getItem(block.fg)?.type !== ActionTypes.VENDING_MACHINE) return;
 
   const tile = new VendingTile(world, block);
+  if (!tile.isPlayerOnMachine(player)) {
+    player.sendTextBubble("Get closer!", false);
+    return;
+  }
+
   const changed = tile.canEdit(player) ? ownerAction(player, world, tile, action) : buy(player, world, tile, action);
 
   if (changed) {
+    if (!tile.canEdit(player)) player.sendInventory();
     tile.tileUpdate();
     world.markDirty();
   }

@@ -28,5 +28,7 @@ export async function handleChatInput(player: Player, rawText: string): Promise<
   const message = text.replace(/`./g, "");
   // modern clients render the bubble from the `player_chat=` payload
   world.broadcastVariant(Variant.from("OnTalkBubble", player.netID, `CP:0_PL:0_OID:_player_chat=${message}`, 0));
-  world.broadcastVariant(Variant.from({ netID: player.netID }, "OnConsoleMessage", `CP:0_PL:0_OID:_CT:[W]_ \`6<${player.formattedName}>\`\` \`$\`$${message}\`\`\`\``));
+  // the console line must not carry a net id, or the client treats it as
+  // bubble-only text and leaves it out of the chat history
+  world.broadcastVariant(Variant.from("OnConsoleMessage", `CP:0_PL:0_OID:_CT:[W]_ <${player.formattedName}> \`o${message}\`\``));
 }

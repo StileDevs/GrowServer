@@ -646,7 +646,7 @@ export class VariantHandler {
     if (delta === 0) return;
     const tank = GameUpdatePacket.create({
       type: TANK_PACKET_TYPE.MODIFY_ITEM_INVENTORY,
-      netID: -1,
+      netID: 0,
       itemID: itemId,
       jumpCount: delta < 0 ? -delta : 0,
       buildRange: delta > 0 ? delta : 0,
