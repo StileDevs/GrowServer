@@ -103,9 +103,11 @@ function bubbleToWorld(world: World, target: Player, message: string): void {
   for (const other of world.players) other.variants.sendOnTalkBubble(target.netID, message, false);
 }
 
-/** Whether the player may use world-owner items (door mover, lock mover, address change) here. */
+/**
+ * Whether the player may use world-owner items (door mover, lock mover,
+ * address change) here: the world must be world-locked by this player.
+ */
 function ownsWorld(player: Player, world: World): boolean {
-  if (player.isDeveloper) return true;
   const owner = world.getOwnerPlayerId();
   return owner !== undefined && owner === player.playerId;
 }

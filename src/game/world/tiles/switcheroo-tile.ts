@@ -49,6 +49,7 @@ export class SwitcheROO extends Tile {
       .defaultColor()
       .addLabelWithIcon(`\`wEdit ${itemMeta.name}\`\``, itemMeta.id ?? 0, "big")
       .addCheckbox("checkbox_public", "Usable by public", this.data.flags & TileFlags.PUBLIC ? "selected" : "not_selected")
+      .addCheckbox("checkbox_silence", "Silenced", this.data.flags & TileFlags.SILENCED ? "selected" : "not_selected")
       .embed("tilex", this.data.x)
       .embed("tiley", this.data.y)
       .endDialog("switcheroo_edit", "Cancel", "OK")
@@ -80,6 +81,9 @@ registerDialog("switcheroo_edit", async (player, action) => {
 
   if (action.get("checkbox_public") === "1") block.flags |= TileFlags.PUBLIC;
   else block.flags &= ~TileFlags.PUBLIC;
+  // silenced blocks keep working but the client mutes their sound
+  if (action.get("checkbox_silence") === "1") block.flags |= TileFlags.SILENCED;
+  else block.flags &= ~TileFlags.SILENCED;
 
   new SwitcheROO(world, block).tileUpdate();
   world.markDirty();
