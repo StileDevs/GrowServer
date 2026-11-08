@@ -62,7 +62,12 @@ export class Player {
   public id: string;
   /** Database unique player ID (primary key from database) */
   public playerId: number = 0;
-  public netID: number;
+  /**
+   * Avatar net ID inside the current world, assigned by the world on entry
+   * (starting at 1). 0 means the player is not in a world; the client treats
+   * 0 as "no avatar", so it must never be used for a spawned player.
+   */
+  public netID = 0;
   public serverLabel: string;
   public serverPort: number;
   public tankIDName = "";
@@ -123,7 +128,6 @@ export class Player {
     serverLabel: string,
     serverPort: number,
   ) {
-    this.netID = peer.id;
     this.serverLabel = serverLabel;
     this.serverPort = serverPort;
     this.id = `${serverLabel}:${peer.id}`;

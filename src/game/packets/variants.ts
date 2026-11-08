@@ -227,8 +227,9 @@ export class Variant {
       netID: this.options.netID ?? -1,
       targetNetID: 0,
       flags: TANK_PACKET_FLAGS.EXTENDED_DATA,
-      float_var: this.options.delay ?? 0,
-      itemID: 0,
+      float_var: 0,
+      // the client reads the variant delay (ms) from the int32 at offset 20
+      itemID: this.options.delay ?? 0,
       posX: 0,
       posY: 0,
       speedX: 0,

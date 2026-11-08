@@ -24,6 +24,9 @@ export interface DropOptions {
  * Persistence is handled by `WorldManager`; call `markDirty()` after changes.
  */
 export class World {
+  /** Next avatar net ID handed out to a player entering this world; 0 means "not in a world". */
+  private nextNetId = 1;
+
   constructor(public data: WorldData) {}
 
   public get name(): string {
@@ -140,6 +143,7 @@ export class World {
     const tileY = y ?? door?.y ?? 0;
 
     player.world = this;
+    player.netID = this.nextNetId++;
     player.state.world.name = this.name;
     player.state.x = tileX * 32;
     player.state.y = tileY * 32;
@@ -192,7 +196,9 @@ export class World {
   public leave(player: Player): void {
     if (player.world !== this) return;
 
+    const leftNetId = player.netID;
     player.world = null;
+    player.netID = 0;
     player.state.world.name = "";
     player.lastCheckpoint = null;
     player.actions.sendPlaySfx("audio/door_shut.wav");
@@ -201,7 +207,7 @@ export class World {
     const leaveMessage = `\`5<${player.displayName}\`\` left, \`w${remaining}\`\` others here\`5>\`\``;
 
     for (const other of this.players) {
-      other.variants.sendOnRemove(player.netID, player.playerId);
+      other.variants.sendOnRemove(leftNetId, player.playerId);
       other.variants.sendOnConsoleMessage(leaveMessage);
       other.variants.sendOnTalkBubble(player.netID, leaveMessage, true);
       other.actions.sendPlaySfx("audio/door_shut.wav");
