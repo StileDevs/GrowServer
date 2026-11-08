@@ -7,7 +7,7 @@ import type { Player } from "../../player";
 import { Tile } from "../tile";
 import { FloodFill } from "../flood-fill";
 import { tileFrom, tileUpdateMultiple } from "./index";
-import { ITEM_ID, LockPermission, LOCKS, TileExtraTypes, TileFlags } from "../constants";
+import { ITEM_ID, LockPermission, LOCKS, TileExtraTypes, TileFlags, WORLD_DATA_VERSION } from "../constants";
 
 /** One entry of `LOCKS`: an area lock and how many tiles it may own. */
 type AreaLockMeta = (typeof LOCKS)[number];
@@ -232,10 +232,9 @@ export class LockTile extends Tile {
     for (const adminId of lock?.adminIds ?? []) {
       buffer.writeU32(adminId);
     }
-    // the two fields newer world formats add after the access list: the
-    // minimum entry level, then the music tempo
-    buffer.writeU32(this.data.worldLockData?.minLevel ?? 0);
-    buffer.writeU32(bpm);
+    // newer world formats add two fields after the access list
+    if (WORLD_DATA_VERSION > 11) buffer.writeU32(this.data.worldLockData?.minLevel ?? 0);
+    if (WORLD_DATA_VERSION > 12) buffer.writeU32(bpm);
   }
 
   /** Claims the surrounding tiles for a freshly placed area lock. */

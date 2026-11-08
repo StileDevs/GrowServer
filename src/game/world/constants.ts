@@ -22,7 +22,9 @@ export const Y_END_DIRT = 55;
  * The 5.6x client logs "wrong world version" for it but still loads the world;
  * this layout is the one verified against the real client.
  */
-export const WORLD_DATA_VERSION = 0x14;
+// 0 is the format the ItsKyy reference sends to 5.6x clients: locks end with
+// the access list and carry the music tempo as a negated first entry
+export const WORLD_DATA_VERSION = 0;
 
 /** Well known item IDs used by the world code. */
 export const ITEM_ID = {

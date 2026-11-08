@@ -151,7 +151,7 @@ export class World {
     const name = this.name;
     const header = new ExtendBuffer(0);
     header.writeU16(WORLD_DATA_VERSION);
-    header.writeU32(0x40);
+    header.writeU32(WORLD_DATA_VERSION > 0 ? 0x40 : 0);
     header.writeString(name);
     header.writeU32(this.width);
     header.writeU32(this.height);
@@ -178,10 +178,14 @@ export class World {
       tail.writeU32(item.uid);
     }
 
-    tail.writeU16(this.data.weather.id);
-    tail.writeU16(this.data.weather.id === WEATHER_CLEAR ? 0 : 1);
-    tail.writeU32(0);
-    tail.writeU32(0);
+    // the weather trailer belongs to the newer formats only; the reference
+    // format ends with the dropped items and the weather arrives as a variant
+    if (WORLD_DATA_VERSION > 0) {
+      tail.writeU16(this.data.weather.id);
+      tail.writeU16(this.data.weather.id === WEATHER_CLEAR ? 0 : 1);
+      tail.writeU32(0);
+      tail.writeU32(0);
+    }
 
     return Buffer.concat([header.toBuffer(), tiles.toBuffer(), tail.toBuffer()]);
   }
