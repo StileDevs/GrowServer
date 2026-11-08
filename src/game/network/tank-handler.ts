@@ -88,6 +88,13 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
       return;
     }
 
+    // clothes are worn, never placed: clicking a tile with them selected only
+    // equips an item that is not already on
+    if (type === ActionTypes.CLOTHES || type === ActionTypes.ANCES) {
+      if (!player.inventory.isEquipped(itemMeta.id ?? 0)) player.equipClothes(itemMeta.id ?? 0);
+      return;
+    }
+
     if (!isPlaceableType(type)) {
       player.sendTextBubble("That item isn't supported on this server yet.");
       return;

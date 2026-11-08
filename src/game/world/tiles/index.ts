@@ -78,6 +78,8 @@ export const PENDING_EXTRA_TYPES: ReadonlySet<number> = new Set([
  * Whether an item may be placed with the current tile handlers.
  */
 export function isPlaceableType(actionType: number): boolean {
+  // wearable items are equipped, never turned into a block
+  if (actionType === ActionTypes.CLOTHES || actionType === ActionTypes.ANCES) return false;
   return !UNSUPPORTED_EXTRA_TYPES.has(actionType) && !PENDING_EXTRA_TYPES.has(actionType);
 }
 
