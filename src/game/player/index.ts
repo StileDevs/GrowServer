@@ -306,14 +306,16 @@ export class Player {
 
   /**
    * Removes items from the backpack and tells the client. Fist and wrench are never removed.
+   * @param notifyClient false when the client already subtracts the items
+   * itself, as it does for a block it placed (TILE_CHANGE_REQUEST echo).
    * @returns the amount actually removed.
    */
-  public removeItemInven(itemId: number, amount = 1): number {
+  public removeItemInven(itemId: number, amount = 1, notifyClient = true): number {
     if (PROTECTED_ITEMS.has(itemId) || itemId <= 0) return 0;
     const wasEquipped = this.inventory.isEquipped(itemId);
     const removed = this.inventory.removeItem(itemId, amount);
     if (removed > 0) {
-      this.variants.sendModifyItemInventory(itemId, -removed);
+      if (notifyClient) this.variants.sendModifyItemInventory(itemId, -removed);
       if (wasEquipped && !this.inventory.isEquipped(itemId)) this.onClothesChanged(itemId, false);
       this.scheduleInventorySave();
     }

@@ -65,7 +65,9 @@ export class Tile {
       }).parse()!,
     );
 
-    player.removeItemInven(itemId, 1);
+    // the client takes the placed block out of its backpack on its own when
+    // it receives the tile change echo above
+    player.removeItemInven(itemId, 1, false);
     return true;
   }
 
@@ -99,7 +101,7 @@ export class Tile {
       }).parse()!,
     );
 
-    player.removeItemInven(itemId, 1);
+    player.removeItemInven(itemId, 1, false);
     return true;
   }
 
