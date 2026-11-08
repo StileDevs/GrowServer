@@ -118,6 +118,26 @@ export class FloodFill {
     return result;
   }
 
+  private isAir(tile: TileData): boolean {
+    return tile.fg === 0 && tile.bg === 0;
+  }
+
+  /**
+   * Whether a block (not air) touches the lock or a claimed block. Blocks
+   * that only connect to the lock through air are not part of its area.
+   */
+  private touchesClaimedBlock(node: Node, claimed: Set<number>): boolean {
+    const { lock } = this.options;
+    for (const next of this.neighbours(node)) {
+      if (next.x === lock.x && next.y === lock.y) return true;
+      const index = this.indexOf(next);
+      if (!claimed.has(index)) continue;
+      const tile = this.world.getTileByIndex(index);
+      if (tile && !this.isAir(tile)) return true;
+    }
+    return false;
+  }
+
   /**
    * Runs the claim and stores the claimed tiles in `nodes`.
    */
@@ -128,21 +148,39 @@ export class FloodFill {
     const claimed = new Set<number>([startIndex]);
     this.nodes = [];
 
-    // 1. the default shape, nearest tiles first
+    // 1. the default shape: walk out from the lock through claimable tiles,
+    // staying inside the shape, so nothing behind bedrock or another lock
+    // is taken
+    const shape = new Set<number>();
     for (const offset of defaultShape(maxTiles)) {
-      if (this.nodes.length >= maxTiles) break;
       const node = { x: start.x + offset.x, y: start.y + offset.y };
-      if (!this.inBounds(node)) continue;
-
-      const index = this.indexOf(node);
-      const tile = this.world.getTileByIndex(index);
-      if (!tile || !this.canClaim(tile)) continue;
-
-      claimed.add(index);
-      this.nodes.push(node);
+      if (this.inBounds(node)) shape.add(this.indexOf(node));
     }
 
-    // 2. spread from the lock and the claimed tiles to the nearest free tiles
+    const queue: Node[] = [start];
+    const visited = new Set<number>([startIndex]);
+    while (queue.length > 0 && this.nodes.length < maxTiles) {
+      const node = queue.shift()!;
+      const candidates = this.neighbours(node).sort((a, b) => distance({ x: a.x - start.x, y: a.y - start.y }) - distance({ x: b.x - start.x, y: b.y - start.y }));
+
+      for (const next of candidates) {
+        const index = this.indexOf(next);
+        if (visited.has(index) || !shape.has(index)) continue;
+        visited.add(index);
+
+        const tile = this.world.getTileByIndex(index);
+        if (!tile || !this.canClaim(tile)) continue;
+        if (this.nodes.length >= maxTiles) break;
+
+        claimed.add(index);
+        this.nodes.push(next);
+        queue.push(next);
+      }
+    }
+
+    // 2. make up for unavailable shape tiles by spreading to the nearest
+    // free tiles; air spreads freely, a block only when it touches the lock
+    // or a block the lock already owns
     const rejected = new Set<number>();
     while (this.nodes.length < maxTiles) {
       let best: Node | undefined;
@@ -158,6 +196,7 @@ export class FloodFill {
             rejected.add(index);
             continue;
           }
+          if (!this.isAir(tile) && !this.touchesClaimedBlock(next, claimed)) continue;
 
           const dist = distance({ x: next.x - start.x, y: next.y - start.y });
           if (dist < bestDistance) {
