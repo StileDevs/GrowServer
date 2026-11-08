@@ -24,8 +24,14 @@ export async function startGameServer(): Promise<void> {
  */
 export async function shutdownGameServer(): Promise<void> {
   for (const player of serverManager.players.values()) {
+    player.variants.sendOnConsoleMessage("`4The server is restarting.`` Please reconnect in a moment.");
+    player.leaveWorld(false);
     await player.saveToDatabase();
+    player.disconnectLater();
   }
+  // give ENet a moment to deliver the disconnects before the sockets close
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  for (const server of serverManager.getAllServers()) server.stop();
   await worldManager.saveAll();
 }
 

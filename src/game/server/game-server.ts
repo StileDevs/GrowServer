@@ -2,6 +2,7 @@ import { NodeENetServer, Packet, PacketKind, type Peer } from "growtopia.wasm";
 import EventEmitter from "events";
 import dayjs from "dayjs";
 import { logger } from "../../utils/logger";
+import { isDevelopment } from "../../configs/server-config";
 import { Player, PlayerStateFlags } from "../player";
 import { Collection } from "../../utils/collection";
 import { serverManager } from "./server-manager";
@@ -136,8 +137,12 @@ export class GameServer extends EventEmitter {
     {
       const buf = new ExtendBuffer(Array.from(data));
       const type = buf.readI32();
-      const packetTypeName = PACKET_TYPE[type] ?? "UNKNOWN";
-      player.variants.sendOnConsoleMessage(new TextColor().dev("[DEBUG] ").white("Packet: ").yellow(packetTypeName).lightGray(` (${type})`).str());
+      // in-game protocol inspection during development: text packets only,
+      // game packets (movement) arrive many times per second and would flood the console
+      if (isDevelopment() && type !== PACKET_TYPE.GAME_PACKET) {
+        const packetTypeName = PACKET_TYPE[type] ?? "UNKNOWN";
+        player.variants.sendOnConsoleMessage(new TextColor().dev("[DEBUG] ").white("Packet: ").yellow(packetTypeName).lightGray(` (${type})`).str());
+      }
 
       switch (type) {
         case PACKET_TYPE.GENERIC_TEXT:

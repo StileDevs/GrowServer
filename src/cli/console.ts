@@ -57,6 +57,18 @@ export class ServerConsole {
         logger.info("pong");
       },
     });
+
+    this.registerCommand({
+      name: "stop",
+      aliases: ["exit", "shutdown"],
+      description: "Saves everything, disconnects players and stops the server",
+      usage: "stop",
+      execute: () => {
+        logger.info("stop requested from console");
+        // runs the same graceful shutdown path as ctrl+c
+        process.emit("SIGINT");
+      },
+    });
   }
 
   /**
