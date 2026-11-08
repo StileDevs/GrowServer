@@ -8,7 +8,18 @@ import type { TileData } from "../types";
 import type { World } from "../world";
 import { DoorTile } from "./door-tile";
 import { SignTile } from "./sign-tile";
+import { SeedTile } from "./seed-tile";
+import { LockTile } from "./lock-tile";
+import { DiceTile } from "./dice-tile";
+import { DisplayBlockTile } from "./display-block-tile";
+import { HeartMonitorTile } from "./heart-monitor-tile";
+import { SwitcheROO } from "./switcheroo-tile";
+import { WeatherTile } from "./weather-tile";
+import { VendingTile } from "./vending-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
+// dialog modules register their dialog returns on import
+import "./lock-dialogs";
+import "./vending-dialog";
 
 type TileClass = new (world: World, data: TileData) => Tile;
 
@@ -18,6 +29,14 @@ export const TileMap: Partial<Record<number, TileClass>> = {
   [ActionTypes.MAIN_DOOR]: DoorTile,
   [ActionTypes.PORTAL]: DoorTile,
   [ActionTypes.SIGN]: SignTile,
+  [ActionTypes.SEED]: SeedTile,
+  [ActionTypes.LOCK]: LockTile,
+  [ActionTypes.DICE]: DiceTile,
+  [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
+  [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
+  [ActionTypes.SWITCHEROO]: SwitcheROO,
+  [ActionTypes.WEATHER_MACHINE]: WeatherTile,
+  [ActionTypes.VENDING_MACHINE]: VendingTile,
 };
 
 /**
@@ -26,14 +45,6 @@ export const TileMap: Partial<Record<number, TileClass>> = {
  * cannot serialize (a missing payload crashes the client on world load).
  */
 export const PENDING_EXTRA_TYPES: ReadonlySet<number> = new Set([
-  ActionTypes.LOCK,
-  ActionTypes.SEED,
-  ActionTypes.DICE,
-  ActionTypes.HEART_MONITOR,
-  ActionTypes.DISPLAY_BLOCK,
-  ActionTypes.SWITCHEROO,
-  ActionTypes.WEATHER_MACHINE,
-  ActionTypes.VENDING_MACHINE,
   ActionTypes.PROVIDER,
   ActionTypes.CHEST,
   ActionTypes.TREASURE,

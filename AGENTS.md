@@ -109,13 +109,15 @@ public players: Collection<string, Player> = new Collection();
 
 ---
 
-## 9. World Binary Storage & MAP_DATA Guidelines
-- **Deterministic Sharded Storage:** World binary MAP_DATA files (`.bin`) are stored in `data/worlds/<first_char>/<world_name>.bin` (e.g., `data/worlds/s/start.bin`, `data/worlds/0-9/123farm.bin`).
-- **Atomic File Writes:** Always write world binary buffers using atomic temporary file swaps (`.tmp` -> `fs.rename`) to prevent data corruption during unexpected server shutdowns.
-- **Multi-Tier World Access:**
-  1. **L1 (Memory):** Active worlds in `Collection<string, World>`.
-  2. **L2 (Disk):** Binary files on disk via `WorldDB.readBinary()`.
-  3. **L3 (Procedural):** Generate a new world if neither exists.
+## 9. World Storage & MAP_DATA Guidelines
+- **Deterministic Sharded Storage:** World files (`.bin`) are stored in `data/worlds/<first_char>/<world_name>.bin` (e.g., `data/worlds/s/start.bin`, `data/worlds/0-9/123farm.bin`), resolved by `WorldDB.getFilePath()`.
+- **File Format (`src/game/world/world-manager.ts`):** A world file is an 8-byte header (`GSWD` magic + `u32` format version) followed by the deflated JSON of the server-side `WorldData` (`encodeWorldFile()` / `decodeWorldFile()`). The server state is the source of truth because the client's MAP_DATA layout cannot carry door destinations, lock access lists, tree timers or vending stock; the MAP_DATA packet is built from it on demand by `World.serialize()`. A binary MAP_DATA format can be added later as a new format version behind the same paths.
+- **Atomic File Writes:** Always write world files through `WorldDB.writeBinary()`, which uses atomic temporary file swaps (`.tmp` -> `fs.rename`) to prevent data corruption during unexpected server shutdowns. Saves are debounced by `WorldManager.markDirty()` and flushed on shutdown by `WorldManager.saveAll()`.
+- **Multi-Tier World Access (`worldManager.get(name)`):**
+  1. **L1 (Memory):** Active worlds in `WorldManager.worlds` (`Collection<string, World>`).
+  2. **L2 (Disk):** World files on disk via `WorldDB.readBinary()`.
+  3. **L3 (Procedural):** Generate a new world (`src/game/world/generation/default.ts`) if neither exists.
+- **Tiles (`src/game/world/tile.ts`, `src/game/world/tiles/`):** Every tile with client-side extra data has a `Tile` subclass registered in `TileMap` (`tiles/index.ts`) that owns its placement, punching, wrench dialog and `serialize()` payload. Item types that need extra data but have no handler yet are either served by `DefaultExtraTile` (known safe payloads) or refused when placed (`PENDING_EXTRA_TYPES`, `UNSUPPORTED_EXTRA_TYPES`): a tile sent without the payload the client expects crashes the client while loading the world.
 
 ---
 
@@ -265,3 +267,17 @@ public players: Collection<string, Player> = new Collection();
   - Automatically detached and stopped during graceful shutdown (`serverConsole.stop()` in `setupGracefulShutdown()`).
   - Configured with `terminal: true` to ensure the prompt (`> `), character echoing, and cursor navigation function reliably across different terminal environments.
 
+
+---
+
+## 20. Client Protocol Notes (Growtopia 5.6x)
+Findings verified against the real client; each one broke login, chat or rendering when missing.
+- **Logon acceptance (`VariantHandler.sendSuperMain`):** `OnOverrideGDPRFromServer(age, 1, 0, 1)` must precede `OnSuperMainStartAcceptLogon...`; the settings string must carry `isPayingUser=1` and echo the client's `protocol`. The logon user agent is matched by the `UbiServices_SDK` prefix only (`HTTPS.USER_AGENT_PREFIX`), because the suffix differs per platform.
+- **Login page (`src/services/login-server.ts`):** the token validation JSON must return `accountType: "growtopia"` and `accountAge: 2`. The client reads `accountAge` as an age category; any other value leaves the account in restricted mode ("Chat is disabled.").
+- **`enter_game` (`src/game/network/game-message-handler.ts`):** the client builds its UI when it sends `enter_game`, so backpack, `OnSetBux` (64-bit gem count), `OnSetVouchers`, `SetHasGrowID`, `OnTodaysDate`, `OnRequestHoustonPricing`, the world menu, the gazette, a `PING_REQUEST` and `OnSetFeatureEnableFlags` are sent in response to it, not only at transfer time.
+- **Feature flags (`LOGIN_FEATURE_FLAGS` / `WORLD_FEATURE_FLAGS` in `src/constants.ts`):** mirror the official payloads; never enable `CLASH`, and resend the in-world list after the player enters a world.
+- **Avatar net IDs:** assigned per world starting at 1 (`World.enter`); 0 means "not in a world". The client treats net ID 0 as "no avatar", which drops `OnSetClothing` and the profile HUD.
+- **Variants (`src/game/packets/variants.ts`):** non-negative numbers encode as unsigned ints; use `int32()` where the official server sends signed ints (GDPR override, GrowID flag, vouchers) and `int64()` for gem counts. The delay lives in the int32 at header offset 20. `OnSpawn` text must end with a newline.
+- **Action packets to the client** (`play_sfx`, `log`) use `PACKET_TYPE.GAME_MESSAGE`; the client rejects `GENERIC_TEXT` ("unknown packet type: 2").
+- **Skin color** is a raw 32-bit value (default `0x8295c3ff`); `action|setSkin` carries it in `color` and is validated by `normalizeSkinColor()`.
+- **Graceful restarts:** `shutdownGameServer()` kicks and saves every player before closing the ENet hosts. Clients attached to a force-killed server stay "connected" until their ENet timeout, so always stop the server with Ctrl+C or the console `stop` command while testing.

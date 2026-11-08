@@ -4,7 +4,8 @@ import { DialogBuilder } from "../../../utils/dialog-builder";
 import { getItem } from "../../item/item-utils";
 import type { Player } from "../../player";
 import { Tile } from "../tile";
-import { TileExtraTypes, TileFlags } from "../constants";
+import { LockPermission, TileExtraTypes, TileFlags } from "../constants";
+import { registerDialog, tileFromDialog } from "../../network/dialog-handler";
 
 /**
  * Signs. Extra data: label string + i32 (-1).
@@ -54,3 +55,15 @@ export class SignTile extends Tile {
     buffer.writeI32(-1);
   }
 }
+
+registerDialog("sign_edit", async (player, action) => {
+  const target = tileFromDialog(player, action);
+  if (!target?.block.sign) return;
+  const { world, block } = target;
+
+  if (!(await world.hasTilePermission(player, block, LockPermission.BUILD))) return;
+
+  block.sign = { label: action.get("label") };
+  new SignTile(world, block).tileUpdate();
+  world.markDirty();
+});

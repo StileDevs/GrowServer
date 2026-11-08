@@ -4,7 +4,8 @@ import { DialogBuilder } from "../../../utils/dialog-builder";
 import { getItem } from "../../item/item-utils";
 import type { Player } from "../../player";
 import { Tile } from "../tile";
-import { TileExtraTypes, TileFlags } from "../constants";
+import { LockPermission, TileExtraTypes, TileFlags } from "../constants";
+import { registerDialog, tileFromDialog } from "../../network/dialog-handler";
 
 /**
  * Doors, portals and the main door. Extra data: label string + lock byte.
@@ -62,3 +63,23 @@ export class DoorTile extends Tile {
     return true;
   }
 }
+
+registerDialog("door_edit", async (player, action) => {
+  const target = tileFromDialog(player, action);
+  if (!target?.block.door) return;
+  const { world, block } = target;
+
+  if (!(await world.hasTilePermission(player, block, LockPermission.BUILD))) return;
+
+  block.door = {
+    label: action.get("label"),
+    destination: action.get("target").toUpperCase(),
+    id: action.get("id").toUpperCase(),
+  };
+
+  if (action.get("checkbox_public") === "1") block.flags |= TileFlags.PUBLIC;
+  else block.flags &= ~TileFlags.PUBLIC;
+
+  new DoorTile(world, block).tileUpdate();
+  world.markDirty();
+});

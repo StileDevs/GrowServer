@@ -35,6 +35,37 @@ function State(player: Player, tank: GameUpdatePacket, world: World): void {
   }
 }
 
+/**
+ * Rayman's Fist punches two more tiles beyond the one hit, continuing in the
+ * punch direction: sideways when the target is on the player's row, up or
+ * down when it is on the player's column, diagonally otherwise.
+ */
+async function raymanPunch(player: Player, world: World, data: GameUpdatePacket["data"]): Promise<void> {
+  const playerTileX = Math.floor(data.posX / 32);
+  const playerTileY = Math.floor(data.posY / 32);
+  const facing = player.state.rotatedLeft ? -1 : 1;
+  const vertical = data.tileY < playerTileY ? -1 : 1;
+
+  let dx: number;
+  let dy: number;
+  if (data.tileY === playerTileY) {
+    dx = facing;
+    dy = 0;
+  } else if (data.tileX === playerTileX) {
+    dx = 0;
+    dy = vertical;
+  } else {
+    dx = facing;
+    dy = vertical;
+  }
+
+  for (let step = 1; step <= 2; step++) {
+    const block = world.getTileAt(data.tileX + dx * step, data.tileY + dy * step);
+    if (!block || (block.fg === 0 && block.bg === 0)) continue;
+    await tileFrom(world, block).onPunch(player);
+  }
+}
+
 /** Punch, wrench or place on a tile. */
 async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: World): Promise<void> {
   const data = tank.data;
@@ -43,6 +74,7 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
 
   if (data.itemID === ITEM_ID.FIST) {
     await tileFrom(world, block).onPunch(player);
+    if (player.inventory.clothes.hand === ITEM_ID.RAYMANS_FIST) await raymanPunch(player, world, data);
   } else if (data.itemID === ITEM_ID.WRENCH) {
     await tileFrom(world, block).onWrench(player);
   } else {

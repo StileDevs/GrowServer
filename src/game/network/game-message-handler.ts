@@ -3,11 +3,14 @@ import { DialogBuilder } from "../../utils/dialog-builder";
 import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
 import { getItemInfo } from "../item/item-wiki";
-import { Player, PlayerStateFlags, MAX_LEVEL } from "../player";
+import { Player, PlayerStateFlags, MAX_LEVEL, DEFAULT_SKIN_COLOR } from "../player";
+import { PLAYER_ROLE } from "../../constants";
 import { Variant, int32 } from "../packets/variants";
 import { serverManager } from "../server/server-manager";
 import { BlockFlags, ITEM_ID } from "../world/constants";
 import { handleDialogReturn } from "./dialog-handler";
+// registers the backpack and gazette dialog returns
+import "./item-dialogs";
 import { handleChatInput } from "./chat-handler";
 import { openStore, handleStoreBuy } from "./store-handler";
 
@@ -183,10 +186,27 @@ function Buy(player: Player, action: TextParser): void {
   handleStoreBuy(player, action.get("item"));
 }
 
+/** Skin colors every account may pick in the settings menu. */
+const BASIC_SKIN_COLORS: ReadonlySet<number> = new Set([0x505c78ff, 0x647296ff, 0x788ab4ff, 0x8295c3ff, 0x96ace1ff, 0xaac3ffff, 0xb4ceffff, 0xc8e5ffff]);
+/** Extra skin colors for supporters. */
+const SUPPORTER_SKIN_COLORS: ReadonlySet<number> = new Set([0xa3ddb1ff, 0xc5c241ff, 0x2b4bd7ff, 0x2a8a41ff, 0xd551a9ff, 0xf0f0f0ff, 0xd27a3cff, 0xefcbb1ff, 0x0b94ffff, 0x5032ffa0]);
+
+/**
+ * Validates a skin color picked by the client: basic colors for everyone,
+ * supporter colors for supporters and staff, anything else falls back to the default.
+ */
+function normalizeSkinColor(player: Player, color: number): number {
+  if (BASIC_SKIN_COLORS.has(color)) return color;
+  if (SUPPORTER_SKIN_COLORS.has(color) && (player.role === PLAYER_ROLE.SUPPORTER || player.isModerator)) return color;
+  if (player.isDeveloper) return color;
+  return DEFAULT_SKIN_COLOR;
+}
+
+/** `action|setSkin` from the settings menu (older clients send `set_skin`). */
 function SetSkin(player: Player, action: TextParser): void {
-  const color = action.getInt("color", 0, -1);
-  if (color < 0) return;
-  player.skinColor = color >>> 0;
+  const raw = action.get("color");
+  if (!/^\d+$/.test(raw)) return;
+  player.skinColor = normalizeSkinColor(player, Number.parseInt(raw, 10) >>> 0);
   player.sendClothesToWorld();
   player.scheduleInventorySave();
 }
@@ -221,6 +241,7 @@ export const GameMessageMap: Record<string, (player: Player, action: TextParser)
   store: Store,
   buy: Buy,
   set_skin: SetSkin,
+  setSkin: SetSkin,
   on_use_door_tutorial: TutorialDoor,
   validate_world: Ignore,
   log: Ignore,

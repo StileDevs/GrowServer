@@ -111,6 +111,8 @@ export interface Tree {
 
 export interface HeartMonitor {
   playerId: number;
+  /** Owner display name at placement time, so the tile serializes without a lookup. */
+  name?: string;
 }
 
 export interface DisplayBlock {
