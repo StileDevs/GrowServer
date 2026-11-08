@@ -232,9 +232,10 @@ export class LockTile extends Tile {
     for (const adminId of lock?.adminIds ?? []) {
       buffer.writeU32(adminId);
     }
-    // minimum entry level and world timer, as in the official world format
+    // the two fields newer world formats add after the access list: the
+    // minimum entry level, then the music tempo
     buffer.writeU32(this.data.worldLockData?.minLevel ?? 0);
-    buffer.writeU32(0);
+    buffer.writeU32(bpm);
   }
 
   /** Claims the surrounding tiles for a freshly placed area lock. */
