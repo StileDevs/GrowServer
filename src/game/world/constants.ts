@@ -45,6 +45,11 @@ export const ITEM_ID = {
   BUILDERS_LOCK: 4994,
   BLUE_GEM_LOCK: 7188,
   RAYMANS_FIST: 5480,
+  VIP_ENTRANCE: 3798,
+  ANTIGRAVITY_GENERATOR: 4992,
+  WEATHER_HEATWAVE: 3694,
+  WEATHER_STUFF: 3832,
+  WEATHER_BACKGROUND: 5000,
 } as const;
 
 /** Weather id of the default (clear) sky. */

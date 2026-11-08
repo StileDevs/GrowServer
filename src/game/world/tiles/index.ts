@@ -16,7 +16,11 @@ import { HeartMonitorTile } from "./heart-monitor-tile";
 import { SwitcheROO } from "./switcheroo-tile";
 import { WeatherTile } from "./weather-tile";
 import { VendingTile } from "./vending-tile";
+import { EntranceTile } from "./entrance-tile";
+import { VipEntranceTile } from "./vip-entrance-tile";
+import { AntigravityTile } from "./antigravity-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
+import { ITEM_ID } from "../constants";
 // dialog modules register their dialog returns on import
 import "./lock-dialogs";
 import "./vending-dialog";
@@ -36,7 +40,16 @@ export const TileMap: Partial<Record<number, TileClass>> = {
   [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
   [ActionTypes.SWITCHEROO]: SwitcheROO,
   [ActionTypes.WEATHER_MACHINE]: WeatherTile,
+  [ActionTypes.WEATHER_SPECIAL]: WeatherTile,
+  [ActionTypes.WEATHER_SPECIAL2]: WeatherTile,
   [ActionTypes.VENDING_MACHINE]: VendingTile,
+  [ActionTypes.GATEWAY]: EntranceTile,
+  [ActionTypes.VIP_ENTRANCE]: VipEntranceTile,
+};
+
+/** Tile behaviour for single items whose action type is shared with plain blocks. */
+export const TileMapByItem: Partial<Record<number, TileClass>> = {
+  [ITEM_ID.ANTIGRAVITY_GENERATOR]: AntigravityTile,
 };
 
 /**
@@ -61,10 +74,11 @@ export function isPlaceableType(actionType: number): boolean {
  * Builds the tile handler for a block. `actionType` overrides the type
  * derived from the foreground item (used while placing a new block).
  */
-export function tileFrom(world: World, data: TileData, actionType?: number): Tile {
+export function tileFrom(world: World, data: TileData, actionType?: number, itemId?: number): Tile {
   const type = actionType ?? getItem(data.fg)?.type ?? ActionTypes.FOREGROUND;
 
-  const TileClass = TileMap[type];
+  // `itemId` is the block about to be placed on an empty tile
+  const TileClass = TileMapByItem[itemId ?? data.fg] ?? TileMap[type];
   if (TileClass) return new TileClass(world, data);
 
   // No handler, but the client needs extra data for this type: send defaults

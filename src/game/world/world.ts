@@ -9,6 +9,7 @@ import { getItem } from "../item/item-utils";
 import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
 import { tileFrom } from "./tiles";
+import { isAntigravityActive } from "./tiles/antigravity-tile";
 import { ITEM_ID, LockPermission, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
 import type { DroppedItem, TileData, WorldData } from "./types";
 
@@ -166,7 +167,9 @@ export class World {
     player.variants.sendOnSetPos(player.netID, player.state.x, player.state.y);
     player.variants.sendClothes(player.netID, player.inventory.clothes, player.skinColor);
     player.sendBuffer(player.variants.buildCharacterState(player.netID, player.state.characterState, player.punchId));
-    player.variants.sendOnConsoleMessage(`World \`w${this.name}\`\` entered.  There are \`w${this.players.length - 1}\`\` other people here, \`w${serverManager.getTotalPlayersCount()}\`\` online.`);
+    // world modifiers shown in brackets, like the real game's "[ANTIGRAVITY]"
+    const mods = isAntigravityActive(this) ? " `0[`2ANTIGRAVITY```0]``" : "";
+    player.variants.sendOnConsoleMessage(`World \`w${this.name}\`\`${mods} entered.  There are \`w${this.players.length - 1}\`\` other people here, \`w${serverManager.getTotalPlayersCount()}\`\` online.`);
 
     const ownerName = await this.getOwnerName();
     if (ownerName) {

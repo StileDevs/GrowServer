@@ -21,6 +21,29 @@ export interface TileData {
   dice?: Dice;
   displayBlock?: DisplayBlock;
   vending?: Vending;
+  vip?: VipEntrance;
+  weatherSettings?: WeatherSettings;
+}
+
+/** Players allowed through a VIP Entrance besides the lock's owner and admins. */
+export interface VipEntrance {
+  playerIds: number[];
+}
+
+/** Settings of the weather machines that have a wrench dialog. */
+export interface WeatherSettings {
+  /** Background block (Weather Machine - Background) or item to rain down (Stuff). */
+  itemId?: number;
+  /** Stuff: fall speed, -500..500. */
+  gravity?: number;
+  /** Stuff: spin the falling items. */
+  spin?: boolean;
+  /** Stuff: invert the sky colors. */
+  invert?: boolean;
+  /** Heatwave: sky color channels, 0..255. */
+  red?: number;
+  green?: number;
+  blue?: number;
 }
 
 export interface Vending {

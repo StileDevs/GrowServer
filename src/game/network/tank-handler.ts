@@ -91,7 +91,7 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
       // keep the current foreground behaviour
       await tileFrom(world, block).onPlaceBackground(player, itemMeta);
     } else if (block.fg === 0) {
-      await tileFrom(world, block, type).onPlaceForeground(player, itemMeta);
+      await tileFrom(world, block, type, itemMeta.id).onPlaceForeground(player, itemMeta);
     } else {
       await tileFrom(world, block).onItemPlace(player, itemMeta);
     }

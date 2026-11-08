@@ -20,14 +20,14 @@ export class SwitcheROO extends Tile {
       // the block broke or the punch was refused: nothing to toggle
       if (!punched || this.data.fg === 0) return punched;
 
-      this.toggle();
+      this.toggle(player);
       return true;
     }
 
     if (this.data.flags & TileFlags.PUBLIC) {
       // visible punch without damage, then the authoritative state
       this.applyDamage(player, 0);
-      this.toggle();
+      this.toggle(player);
       return true;
     }
 
@@ -58,10 +58,15 @@ export class SwitcheROO extends Tile {
   }
 
   /** Flips the OPEN flag and sends the new state to everyone in the world. */
-  private toggle(): void {
+  protected toggle(player: Player): void {
     this.data.flags ^= TileFlags.OPEN;
     this.tileUpdate();
+    this.world.markDirty();
+    this.onToggled(player);
   }
+
+  /** Hook for blocks that do more than flip their flag (antigravity, jammers). */
+  protected onToggled(_player: Player): void {}
 }
 
 registerDialog("switcheroo_edit", async (player, action) => {
