@@ -15,6 +15,18 @@ import { LockPermission, TileFlags } from "../constants";
  * damaging it; otherwise they only hear the lock sound.
  */
 export class SwitcheROO extends Tile {
+  /**
+   * Toggleable blocks (Music Amplifier, Boombox, switches) are placed in the
+   * ON state, like the official server: the client then applies the block's
+   * effect right away instead of waiting for the first punch.
+   */
+  public override async onPlaceForeground(player: Player, itemMeta: Parameters<Tile["onPlaceForeground"]>[1]): Promise<boolean> {
+    if (!(await super.onPlaceForeground(player, itemMeta))) return false;
+    this.data.flags |= TileFlags.OPEN;
+    this.tileUpdate();
+    return true;
+  }
+
   public override async onPunch(player: Player): Promise<boolean> {
     if (await this.world.hasTilePermission(player, this.data, LockPermission.BREAK)) {
       const punched = await super.onPunch(player);
