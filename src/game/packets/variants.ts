@@ -1,7 +1,8 @@
 import { GameUpdatePacket } from "./game-packet";
 import { ExtendBuffer } from "../../utils/extend-buffer";
-import { LOGON_MODE, TANK_PACKET_FLAGS, TANK_PACKET_TYPE } from "../../constants";
-import type { Player, PlayerClothes } from "../player";
+import { CLIENT_FEATURE_FLAG, LOGON_MODE, TANK_PACKET_FLAGS, TANK_PACKET_TYPE } from "../../constants";
+import type { PlayerClothes, PlayerInventory } from "../player/inventory";
+import { worldManager } from "../world/world-manager";
 import { Packet, PacketKind, Peer } from "growtopia.wasm";
 import { TextParser } from "../../utils/text-parser";
 import { Color } from "../../utils/color";
@@ -169,6 +170,11 @@ export class Variant {
     return arr;
   }
 
+  /** Wraps the parsed variant into a reliable ENet packet. */
+  public parsePacket(): Packet {
+    return new Packet(this.parse(), PacketKind.Reliable);
+  }
+
   /**
    * Parses the data of the Variant and returns a GameUpdatePacket from it.
    */
@@ -292,7 +298,8 @@ export class VariantHandler {
     text.add("mstate", options.mstate ?? 0);
     text.add("smstate", options.smstate ?? 0);
     text.add("onlineID", options.onlineID ?? "");
-    text.add("type", options.type ?? "local");
+    // only the receiving client's own avatar carries `type|local`
+    if (options.type) text.add("type", options.type);
 
     const variant = Variant.from({ delay: -1 }, "OnSpawn", text.toString());
     const data = variant.parse();
@@ -457,18 +464,166 @@ export class VariantHandler {
     this.send(tank);
   }
 
-  public sendOnRequestWorldSelectMenu(): void {
-    // @TODO hardcoded for now
-    const worldMenuColor = 3529161471;
-    const topWorlds = ["START", "START1", "START2"];
+  /** Sends any variant to this peer. */
+  public sendVariant(variant: Variant): void {
+    this.send(variant.parse());
+  }
 
-    const worldSelectMenu = `add_heading|Top Worlds|
-${topWorlds.map((world) => `add_floater|${world}|0|0.5|${worldMenuColor}`).join("\n")}`;
+  public sendOnTalkBubble(netID: number, message: string, stacked = true): void {
+    this.send(Variant.from("OnTalkBubble", netID, message, 0, stacked ? 1 : 0).parse());
+  }
 
-    const variant = Variant.from({ netID: -1, delay: 0 }, "OnRequestWorldSelectMenu", worldSelectMenu);
+  public sendOnRemove(netID: number, playerId: number): void {
+    this.send(Variant.from("OnRemove", `netID|${netID}`, `pId|${playerId}`).parse());
+  }
 
-    const data = variant.parse();
-    this.send(data);
+  public sendOnSetCurrentWeather(weatherId: number): void {
+    this.send(Variant.from("OnSetCurrentWeather", weatherId).parse());
+  }
+
+  public sendOnCountryState(netID: number, state: string): void {
+    this.send(Variant.from({ netID }, "OnCountryState", state).parse());
+  }
+
+  public sendOnPlayPositioned(file: string, netID: number): void {
+    this.send(Variant.from({ netID }, "OnPlayPositioned", file).parse());
+  }
+
+  public sendOnSetFreezeState(netID: number, frozen: boolean, delay = 0): void {
+    this.send(Variant.from({ netID, delay }, "OnSetFreezeState", frozen ? 1 : 0).parse());
+  }
+
+  public sendOnKilled(netID: number): void {
+    this.send(Variant.from({ netID }, "OnKilled").parse());
+  }
+
+  public sendOnSetPos(netID: number, x: number, y: number, delay = 0): void {
+    this.send(Variant.from({ netID, delay }, "OnSetPos", [x, y]).parse());
+  }
+
+  public sendOnZoomCamera(zoom: number, duration: number): void {
+    this.send(Variant.from("OnZoomCamera", [zoom], duration).parse());
+  }
+
+  public sendOnFailedToEnterWorld(): void {
+    this.send(Variant.from("OnFailedToEnterWorld", 1).parse());
+  }
+
+  public sendOnTextOverlay(message: string): void {
+    this.send(Variant.from("OnTextOverlay", message).parse());
+  }
+
+  /**
+   * Updates the gem counter on the HUD.
+   */
+  public sendOnSetBux(gems: number, skipAnimation = false): void {
+    const now = new Date();
+    const secondsToday = Math.floor((now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 1000);
+    this.send(Variant.from("OnSetBux", gems, skipAnimation ? 1 : 0, 0, [secondsToday, 0, 0]).parse());
+  }
+
+  /**
+   * Tells the client (5.47+) which of its features are on. Without this the
+   * client treats the account as being in the tutorial and refuses to leave
+   * the world ("you must complete the tutorial first"). Everything is enabled
+   * except the two tutorial features, so REMOVE_TUTORIAL takes effect.
+   */
+  public sendOnSetFeatureEnableFlags(): void {
+    const enabled = Object.values(CLIENT_FEATURE_FLAG).filter(
+      (value): value is CLIENT_FEATURE_FLAG =>
+        typeof value === "number" && value !== CLIENT_FEATURE_FLAG.HOME_WORLD_TUTORIAL && value !== CLIENT_FEATURE_FLAG.WRENCH_TUTORIAL,
+    );
+    const payload = Buffer.from([enabled.length, ...enabled]).toString("base64");
+    this.send(Variant.from("OnSetFeatureEnableFlags", payload).parse());
+  }
+
+  /**
+   * Sends the full backpack (SEND_INVENTORY_STATE). Equipped items carry bit 8 of the amount.
+   */
+  public sendInventoryState(inventory: PlayerInventory): void {
+    const buffer = new ExtendBuffer(0);
+    buffer.writeU8(0x1);
+    buffer.writeU32(inventory.max);
+    buffer.writeU16(inventory.items.size);
+    for (const [itemId, amount] of inventory.items) {
+      buffer.writeU16(itemId);
+      buffer.writeU16(inventory.isEquipped(itemId) ? amount | (1 << 8) : amount);
+    }
+
+    const tank = GameUpdatePacket.create({
+      type: TANK_PACKET_TYPE.SEND_INVENTORY_STATE,
+      netID: -1,
+      extraData: buffer.data,
+    }).parse()!;
+    this.send(tank);
+  }
+
+  /**
+   * Adds or removes items from the client's backpack view (MODIFY_ITEM_INVENTORY).
+   * A positive delta adds, a negative one removes.
+   */
+  public sendModifyItemInventory(itemId: number, delta: number): void {
+    if (delta === 0) return;
+    const tank = GameUpdatePacket.create({
+      type: TANK_PACKET_TYPE.MODIFY_ITEM_INVENTORY,
+      netID: -1,
+      itemID: itemId,
+      jumpCount: delta < 0 ? -delta : 0,
+      buildRange: delta > 0 ? delta : 0,
+    }).parse()!;
+    this.send(tank);
+  }
+
+  /**
+   * Builds the SET_CHARACTER_STATE packet for a player: modifiers, punch id and
+   * the default movement values.
+   */
+  public buildCharacterState(netID: number, characterState: number, punchId: number): Buffer {
+    const tank = GameUpdatePacket.create({
+      type: TANK_PACKET_TYPE.SET_CHARACTER_STATE,
+      netID,
+      itemID: characterState,
+      posX: 1200,
+      posY: 200,
+      speedX: 300,
+      speedY: 600,
+    }).parse()!;
+
+    // byte layout after the 4-byte packet type header
+    tank.writeUInt8(punchId, 4 + 1); // objectType: punch effect id
+    tank.writeUInt8(0x80, 4 + 2); // jumpCount: build range
+    tank.writeUInt8(0x80, 4 + 3); // buildRange: punch range
+    tank.writeFloatLE(125.0, 4 + 16); // float_var: water speed
+    return tank;
+  }
+
+  /**
+   * Shows the world select menu: the most populated worlds plus the player's
+   * recently visited ones.
+   */
+  public sendOnRequestWorldSelectMenu(recentWorlds: string[] = [], delay = 0): void {
+    const topColor = 3529161471;
+    const recentColor = 3417414143;
+
+    const populated = worldManager.mostPopulated(6);
+    const topWorlds = ["START", "START1", "START2"].filter((name) => !populated.some((world) => world.name === name));
+
+    const lines = ["add_heading|Top Worlds|"];
+    for (const world of populated) lines.push(`add_floater|${world.name}|${world.players.length}|0.5|${topColor}`);
+    for (const name of topWorlds) lines.push(`add_floater|${name}|${worldManager.getLoaded(name)?.players.length ?? 0}|0.5|${topColor}`);
+
+    if (recentWorlds.length > 0) {
+      lines.push("add_heading|Recently Visited Worlds<CR>|");
+      for (const name of [...recentWorlds].reverse()) {
+        lines.push(`add_floater|${name}|${worldManager.getLoaded(name)?.players.length ?? 0}|0.5|${recentColor}`);
+      }
+    }
+
+    const variant = Variant.from({ netID: -1, delay }, "OnRequestWorldSelectMenu", lines.join("\n"));
+    this.send(variant.parse());
+
+    const online = serverManager.getTotalPlayersCount();
+    this.send(Variant.from({ delay }, "OnConsoleMessage", `Where would you like to go? (\`w${online}\`\` online)`).parse());
   }
 
   public sendGazette(): void {

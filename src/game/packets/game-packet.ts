@@ -1,6 +1,6 @@
 // Extending TankPacket
 
-import { PACKET_TYPE, TANK_HEADER_SIZE, type TANK_PACKET_TYPE } from "../../constants";
+import { PACKET_TYPE, TANK_HEADER_SIZE, TANK_PACKET_FLAGS, type TANK_PACKET_TYPE } from "../../constants";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 
 export interface GameUpdatePacketData {
@@ -28,6 +28,36 @@ export class GameUpdatePacket {
   constructor(public data: GameUpdatePacketData) {}
 
   public static from(data: GameUpdatePacketData) {
+    return new GameUpdatePacket(data);
+  }
+
+  /**
+   * Creates a packet from a partial description; every unspecified field is zero.
+   * `extraDataLength` is derived from `extraData` and the EXTENDED_DATA flag is
+   * set automatically when extra data is present.
+   */
+  public static create(partial: Partial<GameUpdatePacketData> & { type: TANK_PACKET_TYPE }): GameUpdatePacket {
+    const extraData = partial.extraData ?? [];
+    const data: GameUpdatePacketData = {
+      type: partial.type,
+      objectType: partial.objectType ?? 0,
+      jumpCount: partial.jumpCount ?? 0,
+      buildRange: partial.buildRange ?? 0,
+      netID: partial.netID ?? 0,
+      targetNetID: partial.targetNetID ?? 0,
+      flags: (partial.flags ?? 0) | (extraData.length > 0 ? TANK_PACKET_FLAGS.EXTENDED_DATA : 0),
+      float_var: partial.float_var ?? 0,
+      itemID: partial.itemID ?? 0,
+      posX: partial.posX ?? 0,
+      posY: partial.posY ?? 0,
+      speedX: partial.speedX ?? 0,
+      speedY: partial.speedY ?? 0,
+      particleID: partial.particleID ?? 0,
+      tileX: partial.tileX ?? 0,
+      tileY: partial.tileY ?? 0,
+      extraDataLength: partial.extraDataLength ?? extraData.length,
+      extraData,
+    };
     return new GameUpdatePacket(data);
   }
 

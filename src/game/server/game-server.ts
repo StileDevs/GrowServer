@@ -8,10 +8,11 @@ import { serverManager } from "./server-manager";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { TextParser } from "../../utils/text-parser";
 import { TextColor } from "../../utils/text-color";
-import { LOGON_MODE, PACKET_TYPE, TANK_PACKET_TYPE } from "../../constants";
+import { LOGON_MODE, PACKET_TYPE } from "../../constants";
 import { GameUpdatePacket } from "../packets/game-packet";
 import { PlayerDB, SessionDB } from "../../database/services";
 import { GameMessageMap } from "../network/game-message-handler";
+import { handleTankPacket } from "../network/tank-handler";
 
 export interface GameServerEvents {
   "server:started": (data: { port: number; serverLabel: string }) => void;
@@ -101,6 +102,8 @@ export class GameServer extends EventEmitter {
       const globalID = `${this.serverLabel}:${peer.id}`;
       const player = serverManager.getPlayerByID(globalID);
       if (player) {
+        player.leaveWorld(false);
+        void player.saveToDatabase();
         serverManager.unregisterPlayer(player);
         this.emit("player:disconnect", player);
       }
@@ -126,7 +129,7 @@ export class GameServer extends EventEmitter {
           // payload and also cleanup null terminators
           const payload = Buffer.from(data.slice(4)).toString("utf-8").replace(/\0+$/g, "");
           const text = new TextParser(payload);
-          console.log({ text: text.getEntries(), netID: player.netID });
+          logger.debug({ netID: player.netID, action: text.get("action") || undefined, keys: text.getEntries().map(([key]) => key) }, "text packet received");
 
           if (text.contains("action")) {
             const action = text.get("action");
@@ -135,7 +138,7 @@ export class GameServer extends EventEmitter {
               const actionFunc = GameMessageMap[action];
 
               if (actionFunc) {
-                actionFunc(player, text);
+                await actionFunc(player, text);
               } else {
                 throw new Error(`unknown action: ${action}`);
               }
@@ -221,18 +224,32 @@ export class GameServer extends EventEmitter {
 
             player.tankIDName = player.auth.tankIDName;
             player.displayName = player.auth.tankIDName;
+
+            // load role, gems, level and inventory from the database
+            const record = await PlayerDB.getById(player.playerId);
+            if (record) {
+              player.loadFromRecord(record);
+            } else {
+              player.loadFromRecord({ id: player.playerId, name: player.tankIDName, display_name: player.tankIDName } as Parameters<typeof player.loadFromRecord>[0]);
+              logger.warn({ id: player.id, playerId: player.playerId }, "player record not found, using defaults");
+            }
+
+            // a second connection of the same account replaces the first one
+            const previous = serverManager.players.find((other) => other !== player && other.playerId === player.playerId);
+            if (previous) {
+              previous.variants.sendOnConsoleMessage("`4Someone else logged into this account.``");
+              previous.leaveWorld(false);
+              previous.disconnectLater();
+            }
+
+            player.variants.sendOnSetFeatureEnableFlags();
             logger.info({ id: player.id, playerId: player.playerId, name: player.tankIDName }, "player sub-server transfer verified successfully");
           }
 
           break;
 
         case PACKET_TYPE.GAME_PACKET:
-          const gamePacket = GameUpdatePacket.fromExtendBuffer(buf);
-          if (gamePacket.data.type === TANK_PACKET_TYPE.DISCONNECT) {
-            player.disconnectNow();
-          }
-
-          // console.log({ gamePacket });
+          await handleTankPacket(player, GameUpdatePacket.fromExtendBuffer(buf));
           break;
       }
 

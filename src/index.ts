@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { init } from "./services/wasm-init";
-import { startGameServer } from "./game";
+import { startGameServer, shutdownGameServer } from "./game";
 import { createHonoServer } from "./services/https-server";
 import { createLoginServer } from "./services/login-server";
 import { createCdnServer } from "./services/cdn-server";
@@ -30,6 +30,13 @@ function setupGracefulShutdown(): void {
 
     // Stop console interface
     serverConsole.stop();
+
+    // Persist players and worlds before the connections go away
+    try {
+      await shutdownGameServer();
+    } catch (err) {
+      logger.error({ err }, "failed to save game state during shutdown");
+    }
 
     // Stop Caddy reverse proxy subprocess if running
     stopCaddy();
