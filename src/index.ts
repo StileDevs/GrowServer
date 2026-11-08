@@ -53,6 +53,13 @@ function setupGracefulShutdown(): void {
 
   process.on("SIGINT", () => handleShutdown("SIGINT"));
   process.on("SIGTERM", () => handleShutdown("SIGTERM"));
+  // log instead of dying when a background promise or callback throws
+  process.on("unhandledRejection", (reason) => {
+    logger.error({ err: reason }, "unhandled promise rejection");
+  });
+  process.on("uncaughtException", (err) => {
+    logger.error({ err }, "uncaught exception");
+  });
   process.on("exit", () => {
     serverConsole.stop();
     stopCaddy();

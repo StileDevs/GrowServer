@@ -118,6 +118,22 @@ export class GameServer extends EventEmitter {
       const player = serverManager.getPlayerByID(globalID);
       if (!player) return;
 
+      try {
+        await this.handlePacket(player, data);
+      } catch (err) {
+        // a bad packet or a vanished peer must never take the server down
+        logger.error({ err, id: player.id }, "failed to handle incoming packet");
+      }
+
+      this.emit("player:receive", player, packet, channelID);
+    });
+  }
+
+  /**
+   * Decodes one incoming packet and dispatches it to the text or tank handlers.
+   */
+  private async handlePacket(player: Player, data: Uint8Array): Promise<void> {
+    {
       const buf = new ExtendBuffer(Array.from(data));
       const type = buf.readI32();
       const packetTypeName = PACKET_TYPE[type] ?? "UNKNOWN";
@@ -235,8 +251,10 @@ export class GameServer extends EventEmitter {
               logger.warn({ id: player.id, playerId: player.playerId }, "player record not found, using defaults");
             }
 
-            // a second connection of the same account replaces the first one
-            const previous = serverManager.players.find((other) => other !== player && other.playerId === player.playerId);
+            // a second game connection of the same account replaces the first
+            // one; the login connection that redirected us is skipped because
+            // it is already closing
+            const previous = serverManager.players.find((other) => other !== player && other.playerId === player.playerId && other.hasStateStatus(PlayerStateFlags.IN_GAME));
             if (previous) {
               previous.variants.sendOnConsoleMessage("`4Someone else logged into this account.``");
               previous.leaveWorld(false);
@@ -258,9 +276,6 @@ export class GameServer extends EventEmitter {
           break;
       }
 
-      if (player) {
-        this.emit("player:receive", player, packet, channelID);
-      }
-    });
+    }
   }
 }

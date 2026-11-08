@@ -263,8 +263,11 @@ export class VariantHandler {
   constructor(private peer: Peer) {}
 
   private send(data: Buffer): void {
-    const packet = new Packet(data, PacketKind.Reliable);
-    this.peer.send(packet);
+    try {
+      this.peer.send(new Packet(data, PacketKind.Reliable));
+    } catch {
+      // the peer is already gone; nothing to deliver to
+    }
   }
 
   private createVariantNoNetID(...args: VariantArg[]): Variant {

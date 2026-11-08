@@ -207,14 +207,22 @@ export class Player {
     this.variants.sendOnSendToServer(address, port, this.playerId, doorID, logonMode, this.tankIDName || this.displayName, token);
   }
 
-  /** Send a packet to this player */
+  /**
+   * Send a packet to this player. A peer that already went away throws
+   * `NotConnected` inside the ENet binding; that is not an error worth
+   * crashing for, so it is swallowed and logged at debug level.
+   */
   public send(packet: Packet): void {
-    this.peer.send(packet);
+    try {
+      this.peer.send(packet);
+    } catch (err) {
+      logger.debug({ err, id: this.id }, "dropped packet for disconnected peer");
+    }
   }
 
   /** Send a raw packet buffer to this player */
   public sendBuffer(buffer: Buffer): void {
-    this.peer.send(new Packet(buffer, PacketKind.Reliable));
+    this.send(new Packet(buffer, PacketKind.Reliable));
   }
 
   /** Disconnect this player */
