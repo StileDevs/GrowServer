@@ -9,6 +9,8 @@ dist
 /configs
 /resources
 
+.tmpref
+Reference/
 # code coverage
 coverage
 *.lcov
