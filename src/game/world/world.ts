@@ -282,9 +282,10 @@ export class World {
 
   /**
    * Rebuilds a music block for every player after the amplified stream
-   * stopped: a plain tile update does not restart the client's own playback,
-   * a clear + place does. The placer is another avatar so no reader loses an
-   * item from the backpack.
+   * stopped. The client starts the block's own audio on the off -> on
+   * transition of a tile update, so the block is cleared, placed and then
+   * switched on a moment later. Another avatar is the actor of the place, so
+   * no reader loses an item from the backpack.
    */
   public restartMusicBlock(block: TileData): void {
     const actor = this.players.find((player) => player.playerId !== this.getOwnerPlayerId()) ?? this.players[0];
@@ -304,20 +305,27 @@ export class World {
           ),
         );
       }
-
-      // the place echo carries the default flags: re-assert the real state
-      player.send(
-        new Packet(
-          GameUpdatePacket.create({
-            type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
-            tileX: block.x,
-            tileY: block.y,
-            extraData: Array.from(tileFrom(this, block, undefined, undefined, player).parse().data),
-          }).parse()!,
-          PacketKind.Reliable,
-        ),
-      );
+      player.send(this.tileUpdatePacket(player, { ...block, flags: block.flags & ~TileFlags.OPEN }));
     }
+
+    // the place echo leaves the block disabled; enable it on a later tick so
+    // the client sees the transition and starts playing
+    setTimeout(() => {
+      for (const player of this.players) player.send(this.tileUpdatePacket(player, block));
+    }, 250);
+  }
+
+  /** One SEND_TILE_UPDATE_DATA packet for a tile, as seen by `player`. */
+  private tileUpdatePacket(player: Player, tile: TileData): Packet {
+    return new Packet(
+      GameUpdatePacket.create({
+        type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
+        tileX: tile.x,
+        tileY: tile.y,
+        extraData: Array.from(tileFrom(this, tile, undefined, undefined, player).parse().data),
+      }).parse()!,
+      PacketKind.Reliable,
+    );
   }
 
   /**
