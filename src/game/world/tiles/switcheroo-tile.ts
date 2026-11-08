@@ -135,8 +135,15 @@ export class MusicBlockTile extends SwitcheROO {
  */
 export class MusicAmplifierTile extends SwitcheROO {
   protected override onToggled(): void {
+    const enabled = (this.data.flags & TileFlags.OPEN) !== 0;
     this.world.invalidateMusic();
     this.world.syncMusic();
+
+    // switching the amplifier off stops the stream; the client cannot resume
+    // the block's own audio by itself, so it is given the world again
+    if (!enabled) {
+      for (const player of this.world.players) this.world.refreshWorld(player);
+    }
   }
 
   public override async onDestroy(player: Player): Promise<void> {
@@ -155,10 +162,12 @@ registerDialog("switcheroo_edit", async (player, action) => {
 
   if (action.get("checkbox_public") === "1") block.flags |= TileFlags.PUBLIC;
   else block.flags &= ~TileFlags.PUBLIC;
-  // silenced blocks keep working but the client mutes their sound
+  // silenced blocks keep working but must not be heard
   if (action.get("checkbox_silence") === "1") block.flags |= TileFlags.SILENCED;
   else block.flags &= ~TileFlags.SILENCED;
 
   new SwitcheROO(world, block).tileUpdate();
+  world.invalidateMusic();
+  world.syncMusic();
   world.markDirty();
 });

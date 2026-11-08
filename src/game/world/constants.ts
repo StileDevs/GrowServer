@@ -64,6 +64,15 @@ export const ITEM_ID = {
 /** Weather id of the default (clear) sky. */
 export const WEATHER_CLEAR = 41;
 
+/**
+ * Toggleable blocks whose sound is a piece of music (the wiki's music block
+ * list). Ambiance blocks — jammers, the antigravity generator, torches — also
+ * carry an audio file but must not be streamed as music.
+ */
+export const MUSIC_BLOCKS: ReadonlySet<number> = new Set([
+  62, 64, 114, 220, 246, 254, 480, 714, 786, 842, 1048, 1196, 1448, 1596, 1754, 1942, 2282, 3088, 4380, 5106, 5242, 5658, 8524, 10152, 10518, 10912, 11346, 11372, 11900, 12008, 15388,
+]);
+
 /** Toggleable jammer blocks: item id -> the world modifier shown while on. */
 export const JAMMERS: ReadonlyMap<number, string> = new Map([
   [226, "JAMMED"],

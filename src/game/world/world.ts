@@ -11,7 +11,7 @@ import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
 import { tileFrom } from "./tiles";
 import { isAntigravityActive } from "./tiles/antigravity-tile";
-import { DEFAULT_MUSIC_BPM, ActionTypes, ITEM_ID, JAMMERS, LockPermission, SIGNAL_JAMMER, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
+import { DEFAULT_MUSIC_BPM, ActionTypes, ITEM_ID, JAMMERS, MUSIC_BLOCKS, LockPermission, SIGNAL_JAMMER, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
 import type { DroppedItem, TileData, WorldData } from "./types";
 
 export interface DropOptions {
@@ -24,11 +24,6 @@ export interface DropOptions {
 /** A music block currently playing in a world. */
 interface MusicSource {
   file: string;
-  /** Block position, in tiles. */
-  x: number;
-  y: number;
-  /** Audible radius in pixels when no amplifier is next to it. */
-  radius: number;
   amplified: boolean;
 }
 
@@ -312,6 +307,9 @@ export class World {
     let source: MusicSource | null = null;
     for (const block of this.data.blocks) {
       if ((block.flags & TileFlags.OPEN) === 0) continue;
+      // silenced blocks keep their ability but must not be heard
+      if ((block.flags & TileFlags.SILENCED) !== 0) continue;
+      if (!MUSIC_BLOCKS.has(block.fg)) continue;
 
       const item = getItem(block.fg);
       const file = item?.extraFile;
@@ -319,7 +317,7 @@ export class World {
 
       const amplifier = this.getTileAt(block.x + 1, block.y);
       const amplified = amplifier !== undefined && (amplifier.flags & TileFlags.OPEN) !== 0 && getItem(amplifier.fg)?.id === ITEM_ID.MUSIC_AMPLIFIER;
-      source = { file, x: block.x, y: block.y, radius: Math.max(item?.audioVolume ?? 0, 384), amplified };
+      source = { file, amplified };
       break;
     }
 
@@ -335,21 +333,40 @@ export class World {
    */
   public syncMusic(): void {
     const source = this.musicSource();
+    // only an amplified block is streamed: unamplified music stays on the
+    // client's own positional audio, which fades with distance
+    const wanted = source?.amplified ? source.file : undefined;
 
     for (const player of this.players) {
-      let wanted: string | undefined;
-      if (source) {
-        const dx = player.state.x - (source.x * 32 + 16);
-        const dy = player.state.y - (source.y * 32 + 16);
-        if (source.amplified || Math.hypot(dx, dy) <= source.radius) wanted = source.file;
-      }
-
       const current = this.musicStreams.get(player.playerId);
       if (wanted === current) continue;
 
       if (wanted === undefined) this.musicStreams.delete(player.playerId);
       else this.musicStreams.set(player.playerId, wanted);
       player.actions.sendPlayMusic(wanted ?? "");
+    }
+  }
+
+  /**
+   * Re-sends the world to one player, like a re-entry: used to give the
+   * client back the block's own positional audio after an amplified stream
+   * stopped, since a stream occupies the client's music channel.
+   */
+  public refreshWorld(player: Player): void {
+    player.send(
+      new Packet(
+        GameUpdatePacket.create({
+          type: TANK_PACKET_TYPE.SEND_MAP_DATA,
+          flags: 8,
+          extraData: Array.from(this.serialize(player)),
+        }).parse()!,
+        PacketKind.Reliable,
+      ),
+    );
+
+    player.variants.sendOnSetCurrentWeather(this.data.weather.id);
+    for (const other of this.players) {
+      player.variants.sendOnSpawn(other.spawnOptions(other === player));
     }
   }
 
