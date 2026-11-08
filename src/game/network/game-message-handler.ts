@@ -43,7 +43,10 @@ function EnterGame(player: Player): void {
   // tells the client which GrowID it is logged in with; without it the client
   // stays in guest mode (chat disabled, empty profile)
   player.variants.sendSetHasGrowID(true, player.tankIDName, player.auth.metadata.tankIDPass || player.auth.transferSession?.sessionToken || "");
+  player.variants.sendOnTodaysDate();
+  player.variants.sendOnRequestHoustonPricing();
   player.variants.sendGazette();
+  player.variants.sendPingRequest();
   player.variants.sendOnSetFeatureEnableFlags();
   player.addStateStatus(PlayerStateFlags.IN_GAME);
 }

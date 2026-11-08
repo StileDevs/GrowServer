@@ -19,6 +19,7 @@ import {
 import { serverManager } from "../server/server-manager";
 import { getServerAddress, serverConfig } from "../../configs/server-config";
 import { DialogBuilder } from "../../utils/dialog-builder";
+import { buildEmoticonData, EMOTICON_DATA_VERSION } from "./emoticons";
 
 /**
  * Types for each Argument.
@@ -31,6 +32,7 @@ export enum VariantTypes {
   FLOAT_3,
   UNSIGNED_INT,
   SIGNED_INT = 0x9,
+  SIGNED_INT64 = 0xa,
 }
 
 /**
@@ -56,7 +58,19 @@ export interface VariantSignedInt {
   int: number;
 }
 
-export type VariantArg = string | number[] | number | VariantSignedInt;
+/** A number encoded as a signed 64-bit variant (type 10). */
+export interface VariantInt64 {
+  int64: number;
+}
+
+export type VariantArg = string | number[] | number | VariantSignedInt | VariantInt64;
+
+/**
+ * Marks a number as a signed 64-bit variant argument (used for gem counts on 5.61+).
+ */
+export function int64(value: number): VariantInt64 {
+  return { int64: value };
+}
 
 /**
  * Marks a number as a signed 32-bit variant argument. Plain non-negative
@@ -220,6 +234,13 @@ export class Variant {
 
         case "object": {
           if (!Array.isArray(arg)) {
+            if ("int64" in arg) {
+              extendBuf.writeU8(VariantTypes.SIGNED_INT64);
+              const bytes = Buffer.alloc(8);
+              bytes.writeBigInt64LE(BigInt(Math.trunc(arg.int64)));
+              extendBuf.writeBytes(bytes);
+              return;
+            }
             extendBuf.writeU8(VariantTypes.SIGNED_INT);
             extendBuf.writeI32(arg.int);
             return;
@@ -558,7 +579,29 @@ export class VariantHandler {
   public sendOnSetBux(gems: number, skipAnimation = false): void {
     const now = new Date();
     const secondsToday = Math.floor((now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 1000);
-    this.send(Variant.from("OnSetBux", gems, skipAnimation ? 1 : 0, 0, [secondsToday, 0, 0]).parse());
+    // 5.61+ clients read the gem count as a 64-bit integer
+    this.send(Variant.from("OnSetBux", int64(gems), int32(skipAnimation ? 1 : 0), int32(0), [secondsToday, 0, 0]).parse());
+  }
+
+  /** Sends the chat emoticon list (name, glyph, unlocked). */
+  public sendOnEmoticonDataChanged(): void {
+    this.send(Variant.from("OnEmoticonDataChanged", int32(EMOTICON_DATA_VERSION), buildEmoticonData()).parse());
+  }
+
+  /** Tells the client today's date for daily features. */
+  public sendOnTodaysDate(): void {
+    const now = new Date();
+    this.send(Variant.from("OnTodaysDate", int32(now.getMonth() + 1), int32(now.getDate()), 0, 0).parse());
+  }
+
+  /** Asks the client to request store pricing; the official server sends it at enter_game. */
+  public sendOnRequestHoustonPricing(): void {
+    this.send(Variant.from("OnRequestHoustonPricing").parse());
+  }
+
+  /** Sends a PING_REQUEST game packet; the client answers with PING_REPLY. */
+  public sendPingRequest(): void {
+    this.send(GameUpdatePacket.create({ type: TANK_PACKET_TYPE.PING_REQUEST }).parse()!);
   }
 
   /**

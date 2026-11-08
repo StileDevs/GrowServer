@@ -458,7 +458,7 @@ export class Player {
 
   /** Sends the country/name-tag state of this player and every player around. */
   public sendCountryState(): void {
-    const state = (player: Player) => `${player.country}|${player.level >= MAX_LEVEL ? "maxLevel" : ""}`;
+    const state = (player: Player) => `${player.country}${player.level >= MAX_LEVEL ? "|maxLevel" : ""}`;
 
     this.variants.sendOnCountryState(this.netID, state(this));
     if (!this.world) return;

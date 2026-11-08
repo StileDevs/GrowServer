@@ -161,9 +161,12 @@ export class World {
     );
 
     player.variants.sendOnSetCurrentWeather(this.data.weather.id);
+    player.variants.sendOnEmoticonDataChanged();
     player.variants.sendOnSpawn(player.spawnOptions(true));
+    player.variants.sendOnSetPos(player.netID, player.state.x, player.state.y);
     player.variants.sendClothes(player.netID, player.inventory.clothes, player.skinColor);
     player.sendBuffer(player.variants.buildCharacterState(player.netID, player.state.characterState, player.punchId));
+    player.variants.sendOnConsoleMessage(`World \`w${this.name}\`\` entered.  There are \`w${this.players.length - 1}\`\` other people here, \`w${serverManager.getTotalPlayersCount()}\`\` online.`);
 
     const ownerName = await this.getOwnerName();
     if (ownerName) {
