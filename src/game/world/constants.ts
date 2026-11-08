@@ -58,6 +58,7 @@ export const ITEM_ID = {
   ORGAN_PIANO: 11346,
   VINTAGE_JUKEBOX: 11372,
   KARAOKE_MACHINE: 15388,
+  MUSIC_AMPLIFIER: 12358,
 } as const;
 
 /** Weather id of the default (clear) sky. */

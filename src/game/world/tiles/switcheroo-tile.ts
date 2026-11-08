@@ -4,7 +4,7 @@ import { registerDialog, tileFromDialog } from "../../network/dialog-handler";
 import { getItem } from "../../item/item-utils";
 import type { Player } from "../../player";
 import { Tile } from "../tile";
-import { LockPermission, TileFlags } from "../constants";
+import { ITEM_ID, LockPermission, TileFlags } from "../constants";
 
 /**
  * Switcheroo-type blocks (switches, toggleable platforms, ...). No extra data:
@@ -97,6 +97,33 @@ export class SwitcheROO extends Tile {
  */
 export class MusicBlockTile extends SwitcheROO {
   protected startsOn = false;
+
+  /**
+   * A music block that starts playing refreshes the state of the amplifiers
+   * next to it, so the client re-evaluates whether the tune is amplified.
+   */
+  protected override onToggled(player: Player): void {
+    const playing = (this.data.flags & TileFlags.OPEN) !== 0;
+    const amplifiers = [-1, 1]
+      .map((dx) => this.world.getTileAt(this.data.x + dx, this.data.y))
+      .filter((tile) => tile !== undefined && getItem(tile.fg)?.id === ITEM_ID.MUSIC_AMPLIFIER);
+
+    logger.info(
+      {
+        world: this.world.name,
+        x: this.data.x,
+        y: this.data.y,
+        item: this.data.fg,
+        playing,
+        by: player.tankIDName,
+        amplifiers: amplifiers.map((tile) => `${tile!.x},${tile!.y}:${(tile!.flags & TileFlags.OPEN) !== 0 ? "on" : "off"}`),
+      },
+      "music block toggled",
+    );
+
+    if (!playing) return;
+    for (const tile of amplifiers) new SwitcheROO(this.world, tile!).tileUpdate();
+  }
 }
 
 registerDialog("switcheroo_edit", async (player, action) => {
