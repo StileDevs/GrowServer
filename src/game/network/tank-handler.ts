@@ -9,6 +9,7 @@ import { ActionTypes, ITEM_ID } from "../world/constants";
 import { isPlaceableType, tileFrom } from "../world/tiles";
 import type { World } from "../world/world";
 import { worldManager } from "../world/world-manager";
+import { handleFishingCast, handleFishingMovement, handleFishingPunch } from "../fishing/fishing-manager";
 
 type TankHandler = (player: Player, tank: GameUpdatePacket, world: World) => Promise<void> | void;
 
@@ -22,6 +23,8 @@ function State(player: Player, tank: GameUpdatePacket, world: World): void {
   player.state.rotatedLeft = (data.flags & 0x10) !== 0;
   // walking in or out of a music block's radius starts or stops its stream
   world.syncMusic();
+
+  handleFishingMovement(player, world);
 
   world.broadcast(tank.parse()!, player.id);
 
@@ -76,11 +79,14 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
   if (!block) return;
 
   if (data.itemID === ITEM_ID.FIST) {
+    if (handleFishingPunch(player, world)) return;
     await tileFrom(world, block).onPunch(player);
     if (player.inventory.clothes.hand === ITEM_ID.RAYMANS_FIST) await raymanPunch(player, world, data);
   } else if (data.itemID === ITEM_ID.WRENCH) {
     await tileFrom(world, block).onWrench(player);
   } else {
+    if (await handleFishingCast(player, world, data.itemID, data.tileX, data.tileY)) return;
+
     const itemMeta = getItem(data.itemID);
     if (!itemMeta) return;
     const type = itemMeta.type ?? ActionTypes.FOREGROUND;

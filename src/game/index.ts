@@ -6,6 +6,7 @@ import { serverManager } from "./server/server-manager";
 import { worldManager } from "./world/world-manager";
 import { registerGameConsoleCommands } from "../cli/game-commands";
 import { loadStoreCatalog } from "./network/store-catalog";
+import { tickFishing } from "./fishing/fishing-manager";
 
 export async function startGameServer(): Promise<void> {
   const ports = serverConfig?.game.server_ports ?? [];
@@ -56,6 +57,13 @@ function startPlayModTicker(): void {
         player.playMods.tick();
       } catch (err) {
         logger.error({ err, id: player.id }, "play mod tick failed");
+      }
+    }
+    for (const world of worldManager.worlds.values()) {
+      try {
+        tickFishing(world);
+      } catch (err) {
+        logger.error({ err, world: world.name }, "fishing tick failed");
       }
     }
   }, PLAY_MOD_TICK_MS);
