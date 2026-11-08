@@ -24,11 +24,6 @@ export interface DropOptions {
 /** A music block currently playing in a world. */
 interface MusicSource {
   file: string;
-  /** Block position, in tiles. */
-  x: number;
-  y: number;
-  /** Audible radius in pixels when no amplifier is next to it. */
-  radius: number;
   amplified: boolean;
 }
 
@@ -339,7 +334,7 @@ export class World {
 
       const amplifier = this.getTileAt(block.x + 1, block.y);
       const amplified = amplifier !== undefined && (amplifier.flags & TileFlags.OPEN) !== 0 && getItem(amplifier.fg)?.id === ITEM_ID.MUSIC_AMPLIFIER;
-      source = { file, x: block.x, y: block.y, radius: Math.max(item?.audioVolume ?? 0, 384), amplified };
+      source = { file, amplified };
       break;
     }
 
@@ -355,18 +350,11 @@ export class World {
    */
   public syncMusic(): void {
     const source = this.musicSource();
+    // only an amplified block is streamed: an unamplified one keeps the
+    // client's own positional audio, which fades with distance
+    const wanted = source?.amplified ? source.file : undefined;
 
     for (const player of this.players) {
-      // an amplifier spreads the tune to the world; otherwise it is only
-      // streamed inside the block's audible radius (the client cannot resume
-      // its own positional audio once a stream took the channel)
-      let wanted: string | undefined;
-      if (source) {
-        const dx = player.state.x - (source.x * 32 + 16);
-        const dy = player.state.y - (source.y * 32 + 16);
-        if (source.amplified || Math.hypot(dx, dy) <= source.radius) wanted = source.file;
-      }
-
       const current = this.musicStreams.get(player.playerId);
       if (wanted === current) continue;
 
