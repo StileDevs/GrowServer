@@ -9,10 +9,10 @@
 
 # HTTPS for localhost and the Growtopia logon hosts (the client alternates between growtopia1.com and growtopia2.com)
 https://localhost:443, https://growtopia1.com:443, https://www.growtopia1.com:443, https://growtopia2.com:443, https://www.growtopia2.com:443 {
-	#log {
-	#    output stdout
-	#    format console
-	#}
+	log {
+		output stdout
+		format console
+	}
 
 	tls .cache/tls/cert.pem .cache/tls/key.pem
 	handle /growtopia/server_data.php {

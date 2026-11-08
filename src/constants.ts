@@ -11,7 +11,12 @@ export const HTTPS = {
   get LOGIN_URL(): string {
     return serverConfig?.server?.login_domain || "login.growserver.test";
   },
-  USER_AGENT: "UbiServices_SDK_2022.Release.9_PC64_ansi_static",
+  /**
+   * Every Growtopia client sends a UbiServices SDK user agent, but the suffix
+   * differs per platform (e.g. `..._PC64_ansi_static`, `..._ANDROID64_static`),
+   * so only the shared prefix is matched.
+   */
+  USER_AGENT_PREFIX: "UbiServices_SDK",
 };
 
 // Login server (we i just did is redirect and let growtopia handle the validation)
