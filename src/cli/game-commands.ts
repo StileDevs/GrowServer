@@ -73,7 +73,9 @@ export function registerGameConsoleCommands(): void {
         logger.warn("usage: say <message>");
         return;
       }
-      serverManager.broadcast(Variant.from("OnConsoleMessage", `CP:0_PL:4_OID:_CT:[SB]_ \`5**\`\` from \`$\`2Server\`\` ** :\`\` \`#${message}`).parsePacket());
+      serverManager.broadcast(
+        Variant.from("OnConsoleMessage", "CP:_PL:0_OID:_CT:[SB]_ `5** from (`0Server`````5) in [```$the console```5] ** : ```$" + message + "``").parsePacket(),
+      );
       for (const player of serverManager.players.values()) player.sendSfx("audio/beep.wav");
     },
   });

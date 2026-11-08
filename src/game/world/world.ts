@@ -10,7 +10,7 @@ import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
 import { tileFrom } from "./tiles";
 import { isAntigravityActive } from "./tiles/antigravity-tile";
-import { DEFAULT_MUSIC_BPM, ActionTypes, ITEM_ID, LockPermission, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
+import { DEFAULT_MUSIC_BPM, ActionTypes, ITEM_ID, JAMMERS, LockPermission, SIGNAL_JAMMER, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
 import type { DroppedItem, TileData, WorldData } from "./types";
 
 export interface DropOptions {
@@ -113,6 +113,23 @@ export class World {
   /** Tile at a block index. */
   public getTileByIndex(index: number): TileData | undefined {
     return this.data.blocks[index];
+  }
+
+  /** Modifier labels of the jammers that are switched on in this world. */
+  public get worldMods(): string[] {
+    const mods = new Set<string>();
+    for (const block of this.data.blocks) {
+      if ((block.flags & TileFlags.OPEN) === 0) continue;
+      const label = JAMMERS.get(block.fg);
+      if (label) mods.add(label);
+    }
+    if (isAntigravityActive(this)) mods.add("ANTIGRAVITY");
+    return [...mods];
+  }
+
+  /** Whether a switched on signal jammer hides this world from world lists. */
+  public get signalJammed(): boolean {
+    return this.data.blocks.some((block) => block.fg === SIGNAL_JAMMER && (block.flags & TileFlags.OPEN) !== 0);
   }
 
   /** Schedules this world to be saved. */
@@ -290,7 +307,7 @@ export class World {
     player.variants.sendClothes(player.netID, player.inventory.clothes, player.effectiveSkinColor);
     player.sendBuffer(player.variants.buildCharacterState(player.netID, player.characterStats, player.state.characterState, player.punchId));
     // world modifiers shown in brackets, like the real game's "[ANTIGRAVITY]"
-    const mods = isAntigravityActive(this) ? " `0[`2ANTIGRAVITY```0]``" : "";
+    const mods = this.worldMods.map((mod) => ` \`0[\`2${mod}\`\`\`0]\`\``).join("");
     player.variants.sendOnConsoleMessage(`World \`w${this.name}\`\`${mods} entered.  There are \`w${this.players.length - 1}\`\` other people here, \`w${serverManager.getTotalPlayersCount()}\`\` online.`);
 
     const ownerName = await this.getOwnerName();

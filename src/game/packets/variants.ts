@@ -694,7 +694,8 @@ export class VariantHandler {
     const topColor = 3529161471;
     const recentColor = 3417414143;
 
-    const populated = worldManager.mostPopulated(6);
+    // signal-jammed worlds stay hidden from the world list
+    const populated = worldManager.mostPopulated(6).filter((world) => !world.signalJammed);
     const topWorlds = ["START", "START1", "START2"].filter((name) => !populated.some((world) => world.name === name));
 
     const lines = ["add_heading|Top Worlds|"];

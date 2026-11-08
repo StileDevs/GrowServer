@@ -94,8 +94,14 @@ registerCommand({
     if (args.length === 0) return player.variants.sendOnConsoleMessage("Message are required.");
     const message = args.join(" ").replace(/`./g, "");
     const location = player.currentWorld || "the menu";
+    // super broadcasts use the retail layout, with the world hidden when a
+    // signal jammer is on
+    const worldLabel = player.world?.signalJammed ? "`4JAMMED!``" : location;
+    const textColor = player.isDeveloper ? "`5" : player.isModerator ? "`^" : "`$";
 
-    serverManager.broadcast(Variant.from("OnConsoleMessage", `CP:0_PL:4_OID:_CT:[SB]_ \`5**\`\` from \`$\`2${player.displayName} \`\`\`\`(in \`$${location}\`\`) ** :\`\` \`#${message}`).parsePacket());
+    serverManager.broadcast(
+      Variant.from("OnConsoleMessage", "CP:_PL:0_OID:_CT:[SB]_ `5** from (`0" + player.displayName + "`````5) in [```$" + worldLabel + "```5] ** : ``" + textColor + message + "``").parsePacket(),
+    );
     for (const other of serverManager.players.values()) other.sendSfx("audio/beep.wav");
   },
 });

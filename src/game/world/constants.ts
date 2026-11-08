@@ -59,6 +59,19 @@ export const ITEM_ID = {
 /** Weather id of the default (clear) sky. */
 export const WEATHER_CLEAR = 41;
 
+/** Toggleable jammer blocks: item id -> the world modifier shown while on. */
+export const JAMMERS: ReadonlyMap<number, string> = new Map([
+  [226, "JAMMED"],
+  [1276, "NOPUNCH"],
+  [1278, "IMMUNE"],
+  [3616, "GUARDED"],
+  [4758, "MINIMOD"],
+  [4884, "NOWAR"],
+]);
+
+/** The signal jammer hides its world from the world list. */
+export const SIGNAL_JAMMER = 226;
+
 /** Sheet music tempo of a world without a world lock. */
 export const DEFAULT_MUSIC_BPM = 100;
 
