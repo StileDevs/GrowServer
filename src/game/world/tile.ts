@@ -202,12 +202,23 @@ export class Tile {
     const flags = itemMeta.flags ?? 0;
 
     if (flags & BlockFlags.PERMANENT) {
+      // perma-items go straight back to the breaker; when the backpack has
+      // no room they are dropped on the tile instead so they are never lost
+      if (!player.inventory.canAddItem(destroyedItemId)) {
+        this.world.drop(player, this.data.x * 32 + 8, this.data.y * 32 + 8, destroyedItemId, 1, { tree: true });
+        return;
+      }
+
+      // spawn a one-item object on the tile, then let the player collect it:
+      // the client counts the item itself from the collect packet, so the
+      // backpack is updated here without a MODIFY_ITEM_INVENTORY packet
       const objectId = ++this.world.data.dropped.uid;
       this.world.broadcast(
         GameUpdatePacket.create({
           type: TANK_PACKET_TYPE.ITEM_CHANGE_OBJECT,
           netID: -1,
           targetNetID: -1,
+          float_var: 1,
           itemID: destroyedItemId,
           posX: this.data.x * 32,
           posY: this.data.y * 32,
@@ -221,7 +232,7 @@ export class Tile {
           itemID: objectId,
         }).parse()!,
       );
-      player.addItemInven(destroyedItemId, 1);
+      player.addItemInven(destroyedItemId, 1, false);
       player.variants.sendOnConsoleMessage(`Collected \`w1 ${itemMeta.name}\`\`.`);
       return;
     } else if (flags & BlockFlags.DROPLESS) {

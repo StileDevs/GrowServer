@@ -300,16 +300,18 @@ export class World {
       }).parse()!,
     );
 
+    // the client adds the collected amount to its backpack on its own when it
+    // receives the collect packet above, so the items are added silently here
     if (isGems) {
       player.addGems(droppedItem.amount);
     } else if (owned + droppedItem.amount > 200) {
       const extra = owned + droppedItem.amount - 200;
-      player.variants.sendOnConsoleMessage(`Collected \`w${200 - owned} ${itemMeta?.name}`);
-      player.addItemInven(droppedItem.id, 200 - owned);
+      player.variants.sendOnConsoleMessage(`Collected \`w${200 - owned} ${itemMeta?.name}\`\`.`);
+      player.addItemInven(droppedItem.id, 200 - owned, false);
       this.drop(player, droppedItem.x, droppedItem.y, droppedItem.id, extra, { noSimilar: true, tree: true });
     } else {
-      player.addItemInven(droppedItem.id, droppedItem.amount);
-      player.variants.sendOnConsoleMessage(`Collected \`w${droppedItem.amount} ${itemMeta?.name}`);
+      player.addItemInven(droppedItem.id, droppedItem.amount, false);
+      player.variants.sendOnConsoleMessage(`Collected \`w${droppedItem.amount} ${itemMeta?.name}\`\`.`);
     }
 
     this.data.dropped.items = this.data.dropped.items.filter((item) => item.uid !== droppedItem.uid);

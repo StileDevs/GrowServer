@@ -291,12 +291,14 @@ export class Player {
 
   /**
    * Adds items to the backpack and tells the client.
+   * @param notifyClient false when the client already counts the items
+   * itself, as it does for a collected drop (ITEM_CHANGE_OBJECT).
    * @returns the amount actually added.
    */
-  public addItemInven(itemId: number, amount = 1): number {
+  public addItemInven(itemId: number, amount = 1, notifyClient = true): number {
     const added = this.inventory.addItem(itemId, amount);
     if (added > 0) {
-      this.variants.sendModifyItemInventory(itemId, added);
+      if (notifyClient) this.variants.sendModifyItemInventory(itemId, added);
       this.scheduleInventorySave();
     }
     return added;
