@@ -23,6 +23,15 @@ export interface TileData {
   vending?: Vending;
   vip?: VipEntrance;
   weatherSettings?: WeatherSettings;
+  xenonite?: XenoniteSettings;
+}
+
+/** Settings of a Xenonite Crystal: bit masks of the powers it alters. */
+export interface XenoniteSettings {
+  /** One bit per power in `XENONITE_POWERS`; set = that power is removed. */
+  mods: number;
+  /** One bit per powerup in `XENONITE_POWERUPS`; set = that powerup is blocked. */
+  powerups: number;
 }
 
 /** Players allowed through a VIP Entrance besides the lock's owner and admins. */
