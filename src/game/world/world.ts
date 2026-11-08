@@ -10,7 +10,7 @@ import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
 import { tileFrom } from "./tiles";
 import { isAntigravityActive } from "./tiles/antigravity-tile";
-import { DEFAULT_MUSIC_BPM, ITEM_ID, LockPermission, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
+import { DEFAULT_MUSIC_BPM, ActionTypes, ITEM_ID, LockPermission, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
 import type { DroppedItem, TileData, WorldData } from "./types";
 
 export interface DropOptions {
@@ -147,7 +147,7 @@ export class World {
   /**
    * Serializes the world into the SEND_MAP_DATA payload.
    */
-  public serialize(): Buffer {
+  public serialize(viewer?: Player): Buffer {
     const name = this.name;
     const header = new ExtendBuffer(0);
     header.writeU16(WORLD_DATA_VERSION);
@@ -160,7 +160,7 @@ export class World {
 
     const tiles = new ExtendBuffer(0);
     for (const block of this.data.blocks) {
-      tiles.writeBytes(tileFrom(this, block).parse().data);
+      tiles.writeBytes(tileFrom(this, block, undefined, undefined, viewer).parse().data);
     }
 
     const tail = new ExtendBuffer(0);
@@ -178,9 +178,14 @@ export class World {
       tail.writeU32(item.uid);
     }
 
-    // the weather trailer belongs to the newer formats only; the reference
-    // format ends with the dropped items and the weather arrives as a variant
-    if (WORLD_DATA_VERSION > 0) {
+    // modern worlds end with the weather trailer: base weather, an unknown
+    // field, the current weather and six reserved bytes
+    if (WORLD_DATA_VERSION >= 0x19) {
+      tail.writeU16(this.data.weather.id);
+      tail.writeU16(0);
+      tail.writeU16(this.data.weather.id);
+      tail.writeBytes(Buffer.alloc(6));
+    } else if (WORLD_DATA_VERSION > 0) {
       tail.writeU16(this.data.weather.id);
       tail.writeU16(this.data.weather.id === WEATHER_CLEAR ? 0 : 1);
       tail.writeU32(0);
@@ -188,6 +193,67 @@ export class World {
     }
 
     return Buffer.concat([header.toBuffer(), tiles.toBuffer(), tail.toBuffer()]);
+  }
+
+  /**
+   * Re-creates every sheet music tile for one player.
+   *
+   * The client decides whether a note is invisible when it creates the tile,
+   * not while it streams the map, so a fresh world load leaves the existing
+   * notes drawn. Replaying a block change (clear, then place) makes the client
+   * recreate each tile after it already knows the world lock's settings.
+   */
+  private syncMusicTiles(player: Player): void {
+    const lockIndex = this.data.worldLockIndex;
+    const lockTile = lockIndex === undefined ? undefined : this.getTileByIndex(lockIndex);
+    const lockData = lockTile?.worldLockData;
+    if (!lockTile || !lockData || (!lockData.invisMusicBlocks && !lockData.customMusicBlocksDisabled)) return;
+
+    player.send(
+      new Packet(
+        GameUpdatePacket.create({
+          type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
+          tileX: lockTile.x,
+          tileY: lockTile.y,
+          extraData: Array.from(tileFrom(this, lockTile, undefined, undefined, player).parse().data),
+        }).parse()!,
+        PacketKind.Reliable,
+      ),
+    );
+
+    // a tile change placed by the reader itself would make the client take an
+    // item out of the backpack, so borrow another avatar (or the lock owner)
+    const actor = this.players.find((other) => other !== player) ?? this.players[0];
+
+    for (const block of this.data.blocks) {
+      if (getItem(block.fg)?.type !== ActionTypes.SHEET_MUSIC) continue;
+
+      // clearing first forces the client to build the tile again
+      player.send(
+        new Packet(
+          GameUpdatePacket.create({
+            type: TANK_PACKET_TYPE.TILE_CHANGE_REQUEST,
+            netID: actor?.netID ?? 0,
+            itemID: 0,
+            tileX: block.x,
+            tileY: block.y,
+          }).parse()!,
+          PacketKind.Reliable,
+        ),
+      );
+      player.send(
+        new Packet(
+          GameUpdatePacket.create({
+            type: TANK_PACKET_TYPE.TILE_CHANGE_REQUEST,
+            netID: actor?.netID ?? 0,
+            itemID: block.fg,
+            tileX: block.x,
+            tileY: block.y,
+          }).parse()!,
+          PacketKind.Reliable,
+        ),
+      );
+    }
   }
 
   /**
@@ -211,7 +277,7 @@ export class World {
         GameUpdatePacket.create({
           type: TANK_PACKET_TYPE.SEND_MAP_DATA,
           flags: 8,
-          extraData: Array.from(this.serialize()),
+          extraData: Array.from(this.serialize(player)),
         }).parse()!,
         PacketKind.Reliable,
       ),
@@ -248,6 +314,9 @@ export class World {
       player.variants.sendClothes(other.netID, other.inventory.clothes, other.effectiveSkinColor);
       player.sendBuffer(player.variants.buildCharacterState(other.netID, other.characterStats, other.state.characterState, other.punchId));
     }
+
+    // every avatar is spawned now, so the tile changes have a valid actor
+    this.syncMusicTiles(player);
 
     logger.debug({ player: player.tankIDName, world: this.name, players: othersCount + 1 }, "player entered world");
   }

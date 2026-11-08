@@ -1,4 +1,5 @@
 import type { ItemDefinition } from "grow-items";
+import { Packet, PacketKind } from "growtopia.wasm";
 import { TANK_PACKET_TYPE } from "../../constants";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { GameUpdatePacket } from "../packets/game-packet";
@@ -17,6 +18,9 @@ const PUNCH_DAMAGE = 6;
  * (doors, signs, ...) extend this class and override `serialize`.
  */
 export class Tile {
+  /** Player the tile is being serialized for, when the payload is personal. */
+  public viewer: Player | undefined;
+
   constructor(
     public world: World,
     public data: TileData,
@@ -188,11 +192,30 @@ export class Tile {
       GameUpdatePacket.create({
         type: TANK_PACKET_TYPE.TILE_CHANGE_REQUEST,
         netID: player.netID,
+        buildRange: ITEM_ID.FIST,
         itemID: ITEM_ID.FIST,
         tileX: this.data.x,
         tileY: this.data.y,
       }).parse()!,
     );
+
+    // the punch echo alone does not make every client drop the block: send
+    // the authoritative cleared tile (a plain tile carries no extra data)
+    const cleared = new Tile(this.world, this.data);
+    const clearedBytes = cleared.parse().data;
+    for (const other of this.world.players) {
+      other.send(
+        new Packet(
+          GameUpdatePacket.create({
+            type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
+            tileX: this.data.x,
+            tileY: this.data.y,
+            extraData: clearedBytes,
+          }).parse()!,
+          PacketKind.Reliable,
+        ),
+      );
+    }
   }
 
   /**
@@ -262,12 +285,17 @@ export class Tile {
   /**
    * Triggered when an item is used on a tile that already has a foreground
    * block (seeds on trees, consumables, ...). The base implementation only
-   * checks permissions.
+   * checks permissions, and lets sheet music stack behind the block.
    */
-  public async onItemPlace(player: Player, _item: ItemDefinition): Promise<boolean> {
+  public async onItemPlace(player: Player, item: ItemDefinition): Promise<boolean> {
     if (!(await this.world.hasTilePermission(player, this.data, LockPermission.BUILD))) {
       await this.onPlaceFail(player);
       return false;
+    }
+
+    // a note placed on an occupied tile goes into the empty background layer
+    if (this.data.bg === 0 && item.type === ActionTypes.SHEET_MUSIC) {
+      return this.onPlaceBackground(player, item);
     }
     return true;
   }
@@ -345,15 +373,24 @@ export class Tile {
 
   /** Sends the current tile state to everyone in the world. */
   public tileUpdate(): void {
-    const serialized = this.parse();
-    this.world.broadcast(
-      GameUpdatePacket.create({
-        type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
-        tileX: this.data.x,
-        tileY: this.data.y,
-        extraData: serialized.data,
-      }).parse()!,
-    );
+    // lock tiles embed their access list, which differs per reader
+    const previous = this.viewer;
+    for (const player of this.world.players) {
+      this.viewer = player;
+      const serialized = this.parse();
+      player.send(
+        new Packet(
+          GameUpdatePacket.create({
+            type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
+            tileX: this.data.x,
+            tileY: this.data.y,
+            extraData: serialized.data,
+          }).parse()!,
+          PacketKind.Reliable,
+        ),
+      );
+    }
+    this.viewer = previous;
   }
 
   protected sendLockSound(player: Player): void {

@@ -19,12 +19,12 @@ export const Y_END_DIRT = 55;
 
 /**
  * World serialization version sent in the SEND_MAP_DATA header.
- * The 5.6x client logs "wrong world version" for it but still loads the world;
- * this layout is the one verified against the real client.
+ * 0x19 is the oldest format the modern (5.6x) client parses with the current
+ * tile extra layout: a 5 byte debug field after the tile count, 12 bytes before
+ * the dropped items, the weather trailer after them and the extra lock fields
+ * (minimum level, music tempo) after the access list.
  */
-// 0 is the format the ItsKyy reference sends to 5.6x clients: locks end with
-// the access list and carry the music tempo as a negated first entry
-export const WORLD_DATA_VERSION = 0;
+export const WORLD_DATA_VERSION = 0x19;
 
 /** Well known item IDs used by the world code. */
 export const ITEM_ID = {
@@ -48,6 +48,8 @@ export const ITEM_ID = {
   BLUE_GEM_LOCK: 7188,
   RAYMANS_FIST: 5480,
   VIP_ENTRANCE: 3798,
+  ROULETTE_WHEEL: 758,
+  SLOT_MACHINE: 756,
   ANTIGRAVITY_GENERATOR: 4992,
   WEATHER_HEATWAVE: 3694,
   WEATHER_STUFF: 3832,

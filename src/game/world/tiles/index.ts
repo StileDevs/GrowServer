@@ -6,6 +6,7 @@ import { Tile } from "../tile";
 import { ActionTypes } from "../constants";
 import type { TileData } from "../types";
 import type { World } from "../world";
+import type { Player } from "../../player";
 import { DoorTile } from "./door-tile";
 import { SignTile } from "./sign-tile";
 import { SeedTile } from "./seed-tile";
@@ -19,6 +20,7 @@ import { VendingTile } from "./vending-tile";
 import { EntranceTile } from "./entrance-tile";
 import { VipEntranceTile } from "./vip-entrance-tile";
 import { AntigravityTile } from "./antigravity-tile";
+import { RouletteTile } from "./roulette-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
 import { ITEM_ID } from "../constants";
 // dialog modules register their dialog returns on import
@@ -54,6 +56,9 @@ export const TileMap: Partial<Record<number, TileClass>> = {
 /** Tile behaviour for single items whose action type is shared with plain blocks. */
 export const TileMapByItem: Partial<Record<number, TileClass>> = {
   [ITEM_ID.ANTIGRAVITY_GENERATOR]: AntigravityTile,
+  // the roulette wheel and the slot machine spin when punched
+  [ITEM_ID.ROULETTE_WHEEL]: RouletteTile,
+  [ITEM_ID.SLOT_MACHINE]: RouletteTile,
 };
 
 /**
@@ -78,18 +83,15 @@ export function isPlaceableType(actionType: number): boolean {
  * Builds the tile handler for a block. `actionType` overrides the type
  * derived from the foreground item (used while placing a new block).
  */
-export function tileFrom(world: World, data: TileData, actionType?: number, itemId?: number): Tile {
+export function tileFrom(world: World, data: TileData, actionType?: number, itemId?: number, viewer?: Player): Tile {
   const type = actionType ?? getItem(data.fg)?.type ?? ActionTypes.FOREGROUND;
 
   // `itemId` is the block about to be placed on an empty tile
   const TileClass = TileMapByItem[itemId ?? data.fg] ?? TileMap[type];
-  if (TileClass) return new TileClass(world, data);
-
-  // No handler, but the client needs extra data for this type: send defaults
-  // so it renders without crashing.
-  if (getDefaultExtra(type, data.fg)) return new DefaultExtraTile(world, data);
-
-  return new Tile(world, data);
+  const tile = TileClass ? new TileClass(world, data) : getDefaultExtra(type, data.fg) ? new DefaultExtraTile(world, data) : new Tile(world, data);
+  // some tile payloads (lock access lists) are personal to the reader
+  tile.viewer = viewer;
+  return tile;
 }
 
 /**

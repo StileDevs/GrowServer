@@ -220,6 +220,11 @@ export class LockTile extends Tile {
 
   public override serialize(buffer: ExtendBuffer): void {
     const lock = this.data.lock;
+    const adminIds = lock?.adminIds ?? [];
+    const viewerId = this.viewer?.playerId;
+    // the client colors the lock for whoever reads the payload, and it finds
+    // the reader in the access list
+    const viewerHasAccess = viewerId !== undefined && viewerId !== lock?.ownerPlayerId && adminIds.includes(viewerId);
 
     buffer.writeU8(this.extraType);
     buffer.writeU8(this.settingsFlags());
@@ -227,14 +232,25 @@ export class LockTile extends Tile {
     // the access list starts with the music tempo, negated, which the
     // client uses to play the world's sheet music
     const bpm = this.data.worldLockData?.bpm ?? this.world.musicBpm;
-    buffer.writeU32((lock?.adminIds.length ?? 0) + 1);
+    buffer.writeU32(adminIds.length + 1);
     buffer.writeI32(-bpm);
-    for (const adminId of lock?.adminIds ?? []) {
+    if (viewerHasAccess) buffer.writeU32(viewerId);
+    for (const adminId of adminIds) {
+      if (viewerHasAccess && adminId === viewerId) continue;
       buffer.writeU32(adminId);
     }
     // newer world formats add two fields after the access list
-    if (WORLD_DATA_VERSION > 11) buffer.writeU32(this.data.worldLockData?.minLevel ?? 0);
-    if (WORLD_DATA_VERSION > 12) buffer.writeU32(bpm);
+    if (WORLD_DATA_VERSION >= 0x19) {
+      // 5.6x: u8 minimum level, then seven reserved bytes that carry the
+      // tempo as the last field
+      buffer.writeU8(Math.min(this.data.worldLockData?.minLevel ?? 0, 0xff));
+      buffer.writeU8(0);
+      buffer.writeU16(0);
+      buffer.writeU32(bpm);
+    } else {
+      if (WORLD_DATA_VERSION > 11) buffer.writeU32(this.data.worldLockData?.minLevel ?? 0);
+      if (WORLD_DATA_VERSION > 12) buffer.writeU32(bpm);
+    }
   }
 
   /** Claims the surrounding tiles for a freshly placed area lock. */
