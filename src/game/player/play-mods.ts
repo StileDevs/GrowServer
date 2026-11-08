@@ -74,7 +74,8 @@ for (const def of [
   mod({ id: "feelin_blue", name: "Feelin' Blue", displayItem: 196, addMessage: "A `!blueberry`` slides down your throat!", removeMessage: "The effects of the `!blueberry`` have worn off.", skinColor: [0, 0, 255, 255], duration: 3600, sound: "audio/spray.wav" }),
   mod({ id: "stinky", name: "Stinky", displayItem: 372, addMessage: "You really really smell.", removeMessage: "The air clears.", charState: CHARACTER_STATE.HAVE_CIGAR, duration: 300, sound: "audio/spray.wav" }),
   mod({ id: "frozen", name: "Frozen", displayItem: 1368, addMessage: "Your body has turned to ice. You can't move!", removeMessage: "You've thawed out.", charState: CHARACTER_STATE.IS_FROZEN, skinColor: [100, 200, 255, 255], duration: 2, sound: "audio/freeze.wav" }),
-  mod({ id: "egged", name: "Egged!", displayItem: 874, addMessage: "You have egg on your face.", removeMessage: "You washed your face!", charState: CHARACTER_STATE.IS_EGGED, duration: 180 }),
+  mod({ id: "egged", name: "Egged!", displayItem: 874, addMessage: "You have egg on your face.", removeMessage: "You washed your face!", charState: CHARACTER_STATE.IS_EGGED, skinColor: [255, 221, 0, 255], duration: 180 }),
+  mod({ id: "muddy", name: "Muddy", displayItem: 368, addMessage: "You've been splattered with mud!", removeMessage: "Clean again!", skinColor: [101, 67, 33, 255], speed: -200, gravity: 900, duration: 3, sound: "audio/splat.wav" }),
   mod({ id: "irradiated", name: "Irradiated", displayItem: 2206, addMessage: "You are aglow with radiation!", removeMessage: "You have recovered.", charState: CHARACTER_STATE.HAVE_GEIGER_RADIATION, duration: 1800 }),
   mod({ id: "duct_tape", name: "Duct Tape", displayItem: 408, addMessage: "Duct tape has covered your mouth!", removeMessage: "Duct tape removed. OUCH!", charState: CHARACTER_STATE.IS_DUCTAPED, duration: 600, sound: "audio/already_used.wav" }),
   mod({ id: "valentine", name: "Valentine", displayItem: 384, addMessage: "You are somebody's valentine!", removeMessage: "Yuck!", skinColor: [255, 150, 200, 255], duration: 3600, sound: "audio/choir.wav" }),
@@ -161,7 +162,7 @@ export function formatDuration(totalSeconds: number): string {
  */
 export function computeStats(active: Iterable<ActivePlayMod>): CharacterStats {
   const stats: CharacterStats = { ...BASE_STATS };
-  let tint: [number, number, number, number] | undefined;
+  const tints: [number, number, number, number][] = [];
 
   for (const entry of active) {
     const def = PLAY_MODS.get(entry.id);
@@ -176,18 +177,44 @@ export function computeStats(active: Iterable<ActivePlayMod>): CharacterStats {
     stats.buildRange += def.buildRange ?? 0;
     stats.punchRange += def.punchRange ?? 0;
 
-    if (def.skinColor) {
-      tint = tint ? [(tint[0] * def.skinColor[0]) / 255, (tint[1] * def.skinColor[1]) / 255, (tint[2] * def.skinColor[2]) / 255, (tint[3] * def.skinColor[3]) / 255] : [...def.skinColor];
-    }
+    if (def.skinColor) tints.push(def.skinColor);
   }
 
+  const tint = mixTints(tints);
   if (tint) stats.skinTint = tint;
   return stats;
 }
 
-/** Applies a tint to a packed `0xRRGGBBAA` skin color. */
+/**
+ * Averages the colors of the active effect mods, weighted by their alpha, so
+ * stacked effects (egg + tomato, ...) mix instead of multiplying into black.
+ * The strongest alpha is kept as the coverage over the base skin color.
+ */
+export function mixTints(tints: readonly (readonly [number, number, number, number])[]): [number, number, number, number] | undefined {
+  let red = 0, green = 0, blue = 0, weight = 0, alpha = 0;
+
+  for (const [r, g, b, a] of tints) {
+    const coverage = a / 255;
+    if (coverage <= 0) continue;
+    red += r * coverage;
+    green += g * coverage;
+    blue += b * coverage;
+    weight += coverage;
+    alpha = Math.max(alpha, a);
+  }
+
+  if (weight === 0) return undefined;
+  return [Math.round(red / weight), Math.round(green / weight), Math.round(blue / weight), alpha];
+}
+
+/** Composites the tint over a packed `0xRRGGBBAA` skin color. */
 export function tintSkinColor(color: number, tint: [number, number, number, number] | undefined): number {
   if (!tint) return color >>> 0;
-  const channel = (shift: number, factor: number) => Math.round((((color >>> shift) & 0xff) * factor) / 255) & 0xff;
-  return ((channel(24, tint[0]) << 24) | (channel(16, tint[1]) << 16) | (channel(8, tint[2]) << 8) | channel(0, tint[3])) >>> 0;
+  const [red, green, blue, alpha] = tint;
+  const coverage = alpha / 255;
+  const channel = (shift: number, value: number) => {
+    const base = (color >>> shift) & 0xff;
+    return Math.round(base * (1 - coverage) + value * coverage) & 0xff;
+  };
+  return ((channel(24, red) << 24) | (channel(16, green) << 16) | (channel(8, blue) << 8) | 0xff) >>> 0;
 }

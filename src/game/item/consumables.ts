@@ -78,6 +78,7 @@ const CONSUMABLES: Partial<Record<number, ConsumableEffect>> = {
   1474: { action: "apply", mod: "extra_xp" },
   6906: { action: "apply", mod: "composer", bubble: ":D`#YUM!``" },
   // thrown
+  368: { action: "throw", mod: "muddy", effectId: 42 },
   874: { action: "throw", mod: "egged", effectId: 42 },
   962: { action: "throw", mod: "saucy", effectId: 45 },
   3064: { action: "throw", effectId: 34, bubble: "`wSPLASH!``" },
