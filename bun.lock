@@ -11,7 +11,7 @@
         "concurrently": "^10.0.5",
         "dayjs": "^1.11.20",
         "fast-xml-parser": "^5.11.1",
-        "grow-items": "^1.3.5",
+        "grow-items": "^1.3.8",
         "growtopia.wasm": "^0.2.0",
         "hono": "^4.12.19",
         "ky": "^2.0.2",
@@ -197,7 +197,7 @@
 
     "get-east-asian-width": ["get-east-asian-width@1.7.0", "", {}, "sha512-XjH1AECxf0giL2V1aU8vKyRR2ppRUb5c0EvT7zuJTokQ74bNo52zOtghqdWIqrhUD79fo3x0WfKZdOqxF6LG1Q=="],
 
-    "grow-items": ["grow-items@1.3.5", "", {}, "sha512-P+5nU6r+2jVlqfhbyutJCyP0fE2NI6Ktsws20pWAIzgdgQHFfrsxKaYznYUHKZtBoLRm3TJgfuBhY2DxaDi6ng=="],
+    "grow-items": ["grow-items@1.3.8", "", {}, "sha512-zmaLFUQp3Y4ExSWrAi0TGTVM69MEZpUpD4Jk2REiusOJ8JvOuKQRpEfqcb3CqCNdFHFaP6GrCRAeq0yl4viMRg=="],
 
     "growtopia.wasm": ["growtopia.wasm@0.2.0", "", { "dependencies": { "nanoevents": "^10.0.0" } }, "sha512-8hjy0ZoE7ZErLCeS7T0uKE6qOkplwj+ijls12i5xZnD1Oxx4glFAMbSkmjRlLoUs/eET2HMC6Q2KKnZBFdQHiQ=="],
 
