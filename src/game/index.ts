@@ -5,6 +5,7 @@ import { loadItemsWiki } from "./item/item-wiki";
 import { serverManager } from "./server/server-manager";
 import { worldManager } from "./world/world-manager";
 import { registerGameConsoleCommands } from "../cli/game-commands";
+import { loadStoreCatalog } from "./network/store-catalog";
 
 export async function startGameServer(): Promise<void> {
   const ports = serverConfig?.game.server_ports ?? [];
@@ -15,6 +16,7 @@ export async function startGameServer(): Promise<void> {
 
   await initItems();
   await loadItemsWiki();
+  loadStoreCatalog();
   registerGameConsoleCommands();
   startAutosave();
   logger.info({ totalServers: ports.length }, "all game servers initialized");

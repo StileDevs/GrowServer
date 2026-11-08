@@ -7,6 +7,8 @@ import { executeCommand } from "../commands";
  * Handles the `input` action: slash commands or world chat.
  */
 export async function handleChatInput(player: Player, rawText: string): Promise<void> {
+  // temporary: show the exact bytes the client sends after the typed text
+  logger.info({ text: JSON.stringify(rawText), codes: [...rawText].map((c) => c.charCodeAt(0)).slice(-6) }, "chat input received");
   const text = rawText.trim();
   if (!text || text.replace(/`.|`/g, "").length < 1) return;
 

@@ -13,6 +13,7 @@ import { handleDialogReturn } from "./dialog-handler";
 import "./item-dialogs";
 import { handleChatInput } from "./chat-handler";
 import { openStore, handleStoreBuy } from "./store-handler";
+import { selfProfileDialog, otherProfileDialog } from "./profile-dialogs";
 
 function Quit(player: Player): void {
   player.disconnect();
@@ -89,20 +90,15 @@ function DialogReturn(player: Player, action: TextParser): Promise<void> {
   return handleDialogReturn(player, action);
 }
 
-/** Wrench on yourself: player information dialog. */
-function Wrench(player: Player): void {
-  const requiredXp = player.level >= MAX_LEVEL ? "max" : Player.requiredXpForLevel(player.level);
-  const dialog = new DialogBuilder()
-    .defaultColor()
-    .addLabelWithIcon(`${player.formattedName}\`w's Information (uid: ${player.playerId})`, ITEM_ID.WRENCH, "big")
-    .addTextBox("Player Information")
-    .addSmallText(`Level: ${player.level} (${player.xp}/${requiredXp})`)
-    .addSmallText(`Gems: ${player.gems}`)
-    .addSmallText(`NetID: ${player.netID}`)
-    .addQuickExit()
-    .endDialog("wrench_end", "Cancel", "OK")
-    .str();
-  player.variants.sendOnDialogRequest(dialog);
+/** Wrench on an avatar: the profile menu for yourself, the player menu for others. */
+function Wrench(player: Player, action: TextParser): void {
+  const netId = action.getInt("netid", 0, player.netID);
+  if (netId === player.netID || !player.world) {
+    player.variants.sendOnDialogRequest(selfProfileDialog(player));
+    return;
+  }
+  const target = player.world.players.find((other) => other.netID === netId);
+  if (target) player.variants.sendOnDialogRequest(otherProfileDialog(target));
 }
 
 function Drop(player: Player, action: TextParser): void {
@@ -188,7 +184,7 @@ function Buy(player: Player, action: TextParser): void {
 
 /** 5.x store navigation: `item` is the tab, `selection` the chosen entry. */
 function StoreNavigate(player: Player, action: TextParser): void {
-  handleStoreBuy(player, action.get("selection") || action.get("item"));
+  handleStoreBuy(player, action.get("item"), action.get("selection"));
 }
 
 /** Skin colors every account may pick in the settings menu. */
