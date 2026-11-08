@@ -281,26 +281,42 @@ export class World {
   }
 
   /**
-   * Drops a music block's enabled state and restores it, making the client
-   * restart its own positional playback after the amplified stream stopped.
+   * Rebuilds a music block for every player after the amplified stream
+   * stopped: a plain tile update does not restart the client's own playback,
+   * a clear + place does. The placer is another avatar so no reader loses an
+   * item from the backpack.
    */
   public restartMusicBlock(block: TileData): void {
-    const silent: TileData = { ...block, flags: block.flags & ~TileFlags.OPEN };
+    const actor = this.players.find((player) => player.playerId !== this.getOwnerPlayerId()) ?? this.players[0];
 
     for (const player of this.players) {
-      for (const tile of [silent, block]) {
+      for (const itemID of [0, block.fg]) {
         player.send(
           new Packet(
             GameUpdatePacket.create({
-              type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
-              tileX: tile.x,
-              tileY: tile.y,
-              extraData: Array.from(tileFrom(this, tile, undefined, undefined, player).parse().data),
+              type: TANK_PACKET_TYPE.TILE_CHANGE_REQUEST,
+              netID: actor?.netID ?? 0,
+              itemID,
+              tileX: block.x,
+              tileY: block.y,
             }).parse()!,
             PacketKind.Reliable,
           ),
         );
       }
+
+      // the place echo carries the default flags: re-assert the real state
+      player.send(
+        new Packet(
+          GameUpdatePacket.create({
+            type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
+            tileX: block.x,
+            tileY: block.y,
+            extraData: Array.from(tileFrom(this, block, undefined, undefined, player).parse().data),
+          }).parse()!,
+          PacketKind.Reliable,
+        ),
+      );
     }
   }
 
