@@ -312,7 +312,7 @@ function buy(player: Player, world: World, tile: VendingTile, action: TextParser
     v.count = 0;
   }
 
-  announce(world, `\`7[\`\`\`9${player.displayName} bought ${items} ${name} for ${cost} World Lock${cost === 1 ? "" : "s"}.\`\`\`7]\`\``);
+  announce(world, player, `\`7[\`\`\`9${player.displayName} bought ${items} ${name} for ${cost} World Lock${cost === 1 ? "" : "s"}.\`\`\`7]\`\``);
   world.playPositioned("audio/cash_register.wav", player.netID);
   return true;
 }
