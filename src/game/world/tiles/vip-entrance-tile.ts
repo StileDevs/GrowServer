@@ -125,6 +125,11 @@ export class VipEntranceTile extends Tile {
     const lock = this.data.lockedBy ? this.world.getTileAt(this.data.lockedBy.parentX, this.data.lockedBy.parentY)?.lock : undefined;
     for (const adminId of lock?.adminIds ?? []) allowed.add(adminId);
 
+    // an entrance outside a locked area inherits the world lock's access list
+    const lockIndex = this.world.data.worldLockIndex;
+    const worldLock = lockIndex === undefined ? undefined : this.world.getTileByIndex(lockIndex);
+    for (const adminId of worldLock?.lock?.adminIds ?? []) allowed.add(adminId);
+
     if (isPublic) {
       for (const other of this.world.players) allowed.add(other.playerId);
     }
@@ -215,39 +220,14 @@ registerDialog("vip_edit", async (player, action) => {
   world.markDirty();
 });
 
-/** Drops the player's own VIP list entry and lock admin entry. */
+/** Drops the player's own VIP list entry. Lock access is never touched. */
 function revokeOwnAccess(player: Player, world: World, block: TileData): boolean {
-  const ownerId = world.getTileOwnerPlayerId(block) ?? world.getOwnerPlayerId();
-  if (ownerId === player.playerId) return false;
+  const index = block.vip?.playerIds.indexOf(player.playerId) ?? -1;
+  if (index === -1) return false;
 
-  let removed = false;
-  const vipIndex = block.vip?.playerIds.indexOf(player.playerId) ?? -1;
-  if (vipIndex !== -1) {
-    block.vip!.playerIds.splice(vipIndex, 1);
-    removed = true;
-  }
-
-  const parent = block.lockedBy ? world.getTileAt(block.lockedBy.parentX, block.lockedBy.parentY) : undefined;
-  const adminIndex = parent?.lock ? parent.lock.adminIds.indexOf(player.playerId) : -1;
-  if (parent?.lock && adminIndex !== -1) {
-    parent.lock.adminIds.splice(adminIndex, 1);
-    removed = true;
-  }
-
-  // access taken from the world lock itself, when the entrance sits in the
-  // world-locked part of the world
-  const lockIndex = world.data.worldLockIndex;
-  const worldLock = lockIndex === undefined ? undefined : world.getTileByIndex(lockIndex);
-  const worldAdminIndex = worldLock?.lock ? worldLock.lock.adminIds.indexOf(player.playerId) : -1;
-  if (worldLock?.lock && worldAdminIndex !== -1) {
-    worldLock.lock.adminIds.splice(worldAdminIndex, 1);
-    removed = true;
-  }
-
-  if (removed) {
-    broadcastConsole(world, `${player.formattedName}\`\` removed their access from a \`$VIP Entrance\`\`.`);
-  }
-  return removed;
+  block.vip!.playerIds.splice(index, 1);
+  broadcastConsole(world, `${player.formattedName}\`\` removed their access from a \`$VIP Entrance\`\`.`);
+  return true;
 }
 
 registerDialog("vip_revoke", async (player, action) => {
@@ -256,7 +236,11 @@ registerDialog("vip_revoke", async (player, action) => {
   const { world, block } = target;
 
   if (getItem(block.fg)?.type !== ActionTypes.VIP_ENTRANCE) return;
-  if (!revokeOwnAccess(player, world, block)) return;
+  if (!revokeOwnAccess(player, world, block)) {
+    // access inherited from the lock stays: only the lock dialog can drop it
+    player.sendTextBubble("Your access comes from the lock, wrench the lock to remove it.", false);
+    return;
+  }
 
   new VipEntranceTile(world, block).tileUpdate();
   world.markDirty();

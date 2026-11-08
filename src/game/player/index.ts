@@ -222,8 +222,9 @@ export class Player {
   }
 
   /**
-   * Name as shown in chat and name tags, colored by role: owners black,
-   * developers orange, moderators purple, supporters blue, users white.
+   * Name as shown in chat and name tags. Role colors win (owners black,
+   * developers orange, moderators purple, supporters blue); below them the
+   * world role colors the name green for the world owner and its co-owners.
    */
   public get formattedName(): string {
     switch (this.role) {
@@ -235,9 +236,16 @@ export class Player {
         return `\`5@${this.displayName}\`\``;
       case PLAYER_ROLE.SUPPORTER:
         return `\`e${this.displayName}\`\``;
-      default:
-        return `\`w${this.displayName}\`\``;
     }
+
+    if (this.isWorldOwner) return `\`2${this.displayName}\`\``;
+    if (this.world?.isWorldAdmin(this.playerId)) return `\`2${this.displayName}\`\``;
+    return `\`w${this.displayName}\`\``;
+  }
+
+  /** Whether this player owns the world lock of the world they are in. */
+  public get isWorldOwner(): boolean {
+    return this.world !== null && this.world.getOwnerPlayerId() === this.playerId;
   }
 
   /** OnSpawn parameters for this player. `local` marks the receiving client's own avatar. */

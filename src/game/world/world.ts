@@ -274,6 +274,35 @@ export class World {
   }
 
   /**
+   * Re-asserts every switched-on Music Amplifier and the music block on its
+   * left, after the world map was parsed: the client builds the sound when it
+   * reads the music block, which happens before the amplifier tile is known.
+   */
+  private syncMusicAmplifiers(player: Player): void {
+    for (const block of this.data.blocks) {
+      if (block.fg !== ITEM_ID.MUSIC_AMPLIFIER || (block.flags & TileFlags.OPEN) === 0) continue;
+
+      const left = this.getTileAt(block.x - 1, block.y);
+      if (!left || (left.flags & TileFlags.OPEN) === 0) continue;
+      if (!getItem(left.fg)?.extraFile?.startsWith("audio/")) continue;
+
+      for (const tile of [left, block]) {
+        player.send(
+          new Packet(
+            GameUpdatePacket.create({
+              type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
+              tileX: tile.x,
+              tileY: tile.y,
+              extraData: Array.from(tileFrom(this, tile, undefined, undefined, player).parse().data),
+            }).parse()!,
+            PacketKind.Reliable,
+          ),
+        );
+      }
+    }
+  }
+
+  /**
    * Puts a player into this world at a block position (defaults to the main
    * door, or the top-left corner when there is none) and announces it.
    */
@@ -334,6 +363,7 @@ export class World {
 
     // every avatar is spawned now, so the tile changes have a valid actor
     this.syncMusicTiles(player);
+    this.syncMusicAmplifiers(player);
 
     logger.debug({ player: player.tankIDName, world: this.name, players: othersCount + 1 }, "player entered world");
   }
@@ -517,6 +547,13 @@ export class World {
 
     // no locks and no owner
     return true;
+  }
+
+  /** Whether the player is on the world lock's access list. */
+  public isWorldAdmin(playerId: number): boolean {
+    if (this.data.worldLockIndex === undefined) return false;
+    const worldLock = this.getTileByIndex(this.data.worldLockIndex);
+    return worldLock?.lock?.adminIds.includes(playerId) ?? false;
   }
 
   /** Database id of the world lock owner, if the world is locked. */
