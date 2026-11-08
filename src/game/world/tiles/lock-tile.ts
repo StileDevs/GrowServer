@@ -15,6 +15,15 @@ type AreaLockMeta = (typeof LOCKS)[number];
 /** Sound played when a lock is applied. */
 const USE_LOCK_SOUND = "audio/use_lock.wav";
 
+/** Bits of the settings byte in a lock's extra data. */
+const enum LockSettings {
+  IGNORE_EMPTY_AIR = 1 << 0,
+  DISABLE_MUSIC = 1 << 4,
+  INVISIBLE_MUSIC = 1 << 5,
+  BUILD_ONLY = 1 << 6,
+  ADMINS_LIMITED = 1 << 7,
+}
+
 /**
  * Area locks (small, big, huge, builder's) and the world lock.
  * Extra data: u8 type, u8 0, u32 owner, u32 admin count, u32 per admin, 8 zero bytes.
@@ -191,11 +200,29 @@ export class LockTile extends Tile {
     return true;
   }
 
+  /**
+   * The settings byte of the lock's extra data; the client draws the
+   * builder's lock with its build-only / break-only face from it.
+   */
+  private settingsFlags(): number {
+    const lock = this.data.lock;
+    let flags = 0;
+    if (lock?.ignoreEmptyAir) flags |= LockSettings.IGNORE_EMPTY_AIR;
+    if (this.data.fg === ITEM_ID.BUILDERS_LOCK) {
+      if (lock && lock.permission & LockPermission.BUILD) flags |= LockSettings.BUILD_ONLY;
+      if (lock?.adminLimited) flags |= LockSettings.ADMINS_LIMITED;
+    }
+    const worldLock = this.data.worldLockData;
+    if (worldLock?.customMusicBlocksDisabled) flags |= LockSettings.DISABLE_MUSIC;
+    if (worldLock?.invisMusicBlocks) flags |= LockSettings.INVISIBLE_MUSIC;
+    return flags;
+  }
+
   public override serialize(buffer: ExtendBuffer): void {
     const lock = this.data.lock;
 
     buffer.writeU8(this.extraType);
-    buffer.writeU8(0);
+    buffer.writeU8(this.settingsFlags());
     buffer.writeU32(lock?.ownerPlayerId ?? 0);
     buffer.writeU32(lock?.adminIds.length ?? 0);
     for (const adminId of lock?.adminIds ?? []) {
