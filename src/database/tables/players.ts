@@ -22,6 +22,10 @@ export interface PlayerTable {
   gems: Generated<number>;
   level: Generated<number>;
   xp: Generated<number>;
+  /** Seconds spent online, shown in the profile. */
+  playtime: Generated<number>;
+  /** JSON list of active timed play mods. */
+  play_mods: string | null;
   created_at: Generated<string>;
   updated_at: Generated<string>;
   deleted_at: string | null;

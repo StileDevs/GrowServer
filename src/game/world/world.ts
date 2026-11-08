@@ -52,6 +52,38 @@ export class World {
     return this.data.blocks.find((block) => block.fg === ITEM_ID.MAIN_DOOR);
   }
 
+  /** Plays a particle effect (SEND_PARTICLE_EFFECT) at a pixel position for everyone here. */
+  public sendParticleEffect(effectId: number, x: number, y: number, delayMs = 0): void {
+    this.broadcast(
+      GameUpdatePacket.create({
+        type: TANK_PACKET_TYPE.SEND_PARTICLE_EFFECT,
+        netID: effectId,
+        speedY: effectId,
+        posX: x,
+        posY: y,
+        float_var: delayMs,
+      }).parse()!,
+    );
+  }
+
+  /**
+   * Shows an item being used by `user` on `target` (ITEM_EFFECT): the eat /
+   * throw animation of consumables.
+   */
+  public sendItemEffect(itemId: number, user: Player, target: Player): void {
+    this.broadcast(
+      GameUpdatePacket.create({
+        type: TANK_PACKET_TYPE.ITEM_EFFECT,
+        buildRange: 5,
+        targetNetID: target.netID,
+        tileX: itemId,
+        tileY: user.netID,
+        posX: user.state.x + 10,
+        posY: user.state.y + 16,
+      }).parse()!,
+    );
+  }
+
   /** Tile at a block position, or undefined when out of bounds. */
   public getTileAt(x: number, y: number): TileData | undefined {
     if (x < 0 || y < 0 || x >= this.width || y >= this.height) return undefined;
@@ -165,8 +197,8 @@ export class World {
     player.variants.sendOnEmoticonDataChanged();
     player.variants.sendOnSpawn(player.spawnOptions(true));
     player.variants.sendOnSetPos(player.netID, player.state.x, player.state.y);
-    player.variants.sendClothes(player.netID, player.inventory.clothes, player.skinColor);
-    player.sendBuffer(player.variants.buildCharacterState(player.netID, player.state.characterState, player.punchId));
+    player.variants.sendClothes(player.netID, player.inventory.clothes, player.effectiveSkinColor);
+    player.sendBuffer(player.variants.buildCharacterState(player.netID, player.characterStats, player.state.characterState, player.punchId));
     // world modifiers shown in brackets, like the real game's "[ANTIGRAVITY]"
     const mods = isAntigravityActive(this) ? " `0[`2ANTIGRAVITY```0]``" : "";
     player.variants.sendOnConsoleMessage(`World \`w${this.name}\`\`${mods} entered.  There are \`w${this.players.length - 1}\`\` other people here, \`w${serverManager.getTotalPlayersCount()}\`\` online.`);
@@ -182,15 +214,15 @@ export class World {
 
     for (const other of others) {
       other.variants.sendOnSpawn(player.spawnOptions(false));
-      other.variants.sendClothes(player.netID, player.inventory.clothes, player.skinColor);
-      other.sendBuffer(other.variants.buildCharacterState(player.netID, player.state.characterState, player.punchId));
+      other.variants.sendClothes(player.netID, player.inventory.clothes, player.effectiveSkinColor);
+      other.sendBuffer(other.variants.buildCharacterState(player.netID, player.characterStats, player.state.characterState, player.punchId));
       other.variants.sendOnConsoleMessage(joinMessage);
       other.variants.sendOnTalkBubble(player.netID, joinMessage, true);
       other.actions.sendPlaySfx("audio/door_open.wav");
 
       player.variants.sendOnSpawn(other.spawnOptions(false));
-      player.variants.sendClothes(other.netID, other.inventory.clothes, other.skinColor);
-      player.sendBuffer(player.variants.buildCharacterState(other.netID, other.state.characterState, other.punchId));
+      player.variants.sendClothes(other.netID, other.inventory.clothes, other.effectiveSkinColor);
+      player.sendBuffer(player.variants.buildCharacterState(other.netID, other.characterStats, other.state.characterState, other.punchId));
     }
 
     logger.debug({ player: player.tankIDName, world: this.name, players: othersCount + 1 }, "player entered world");

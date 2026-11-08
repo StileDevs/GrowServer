@@ -2,6 +2,7 @@ import { GameUpdatePacket } from "./game-packet";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { CLIENT_FEATURE_FLAG, LOGIN_FEATURE_FLAGS, LOGON_MODE, TANK_PACKET_FLAGS, TANK_PACKET_TYPE } from "../../constants";
 import type { PlayerClothes, PlayerInventory } from "../player/inventory";
+import type { CharacterStats } from "../player/play-mods";
 import { worldManager } from "../world/world-manager";
 import { Packet, PacketKind, Peer } from "growtopia.wasm";
 import { TextParser } from "../../utils/text-parser";
@@ -658,22 +659,22 @@ export class VariantHandler {
    * Builds the SET_CHARACTER_STATE packet for a player: modifiers, punch id and
    * the default movement values.
    */
-  public buildCharacterState(netID: number, characterState: number, punchId: number): Buffer {
+  public buildCharacterState(netID: number, stats: CharacterStats, extraState = 0, punchId = stats.punchType): Buffer {
     const tank = GameUpdatePacket.create({
       type: TANK_PACKET_TYPE.SET_CHARACTER_STATE,
       netID,
-      itemID: characterState,
-      posX: 1200,
-      posY: 200,
-      speedX: 300,
-      speedY: 600,
+      itemID: stats.charState | extraState,
+      posX: stats.speed,
+      posY: stats.punchPower,
+      speedX: stats.accel,
+      speedY: stats.gravity,
     }).parse()!;
 
     // byte layout after the 4-byte packet type header
-    tank.writeUInt8(punchId, 4 + 1); // objectType: punch effect id
-    tank.writeUInt8(0x80, 4 + 2); // jumpCount: build range
-    tank.writeUInt8(0x80, 4 + 3); // buildRange: punch range
-    tank.writeFloatLE(125.0, 4 + 16); // float_var: water speed
+    tank.writeUInt8(punchId & 0xff, 4 + 1); // objectType: punch effect id
+    tank.writeUInt8(Math.min(255, stats.buildRange), 4 + 2); // jumpCount: build range
+    tank.writeUInt8(Math.min(255, stats.punchRange), 4 + 3); // buildRange: punch range
+    tank.writeFloatLE(stats.waterSpeed, 4 + 16); // float_var: water speed
     return tank;
   }
 

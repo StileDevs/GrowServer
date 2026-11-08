@@ -3,6 +3,8 @@ import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
 import { Variant } from "../packets/variants";
 import { MAX_LEVEL, Player } from "../player";
+import { formatDuration } from "../player/play-mods";
+import { PLAYER_ROLE_NAMES } from "../../constants";
 import { ITEM_ID } from "../world/constants";
 import { worldManager } from "../world/world-manager";
 import { registerDialog } from "./dialog-handler";
@@ -47,13 +49,21 @@ export function selfProfileDialog(player: Player): string {
   wrenchButton(dialog, "trade_scan", "gui_wrench_trades");
   wrenchButton(dialog, "wrench_customization", "gui_wrench_customization");
 
+  dialog.addCustomBreak().addSpacer("small").raw("set_custom_spacing|x:0;y:0|\n").addSpacer("small");
+
+  // active play mods, like the real game's "Active effects" list
+  const mods = player.playMods.list();
+  if (mods.length > 0) {
+    dialog.addTextBox("`wActive effects:``");
+    for (const { def, secondsLeft } of mods) {
+      const left = secondsLeft > 0 ? ` \`o(\`w${formatDuration(secondsLeft)} \`oleft)\`\`` : "";
+      dialog.addLabelWithIcon(`\`w${def.name}\`\`${left}`, def.displayItem, "small");
+    }
+    dialog.addSpacer("small");
+  }
+
+  const since = player.createdAt.toISOString().slice(0, 10);
   dialog
-    .addCustomBreak()
-    .addSpacer("small")
-    .raw("set_custom_spacing|x:0;y:0|\n")
-    .addSpacer("small")
-    .addTextBox("`wActive effects:``")
-    .addSpacer("small")
     .addTextBox(`\`oYou have \`w${player.inventory.max}\`\` backpack slots.\`\``)
     .addTextBox(
       world
@@ -61,7 +71,9 @@ export function selfProfileDialog(player: Player): string {
         : "`oYou are not in a world.``",
     )
     .addSpacer("small")
-    .addTextBox(`\`oGems: \`w${player.gems}\`\`  Role: \`w${player.isDeveloper ? "Developer" : player.isModerator ? "Moderator" : "Player"}\`\``)
+    .addTextBox(`\`oGems: \`w${player.gems}\`\`  Role: \`w${PLAYER_ROLE_NAMES[player.role] ?? "Player"}\`\``)
+    .addTextBox(`\`oTime played: \`w${formatDuration(player.playtime)}\`\``)
+    .addTextBox(`\`oPlaying since: \`w${since}\`\` (\`w${player.accountAgeDays}\`\` ${player.accountAgeDays === 1 ? "day" : "days"} ago)\`\``)
     .addSpacer("small")
     .addQuickExit()
     .endDialog("popup", "", "Continue");

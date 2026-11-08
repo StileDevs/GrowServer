@@ -13,6 +13,8 @@ import type { World } from "../world/world";
 import { worldManager } from "../world/world-manager";
 import { ActionTypes, ITEM_ID } from "../world/constants";
 import type { BlockPosition } from "../world/types";
+import { PlayModController } from "./play-mod-controller";
+import { tintSkinColor, type CharacterStats } from "./play-mods";
 
 export * from "./inventory";
 
@@ -95,6 +97,15 @@ export class Player {
   /** Whether `loadFromRecord` ran; only then may this instance write to the database. */
   private recordLoaded = false;
 
+  /** When the account was created (profile "playing since"). */
+  public createdAt: Date = new Date();
+  /** Seconds online before this session, from the database. */
+  private savedPlaytime = 0;
+  /** When this session's playtime started counting. */
+  private sessionStartedAt = Date.now();
+  /** Wearable and timed play mods. */
+  public playMods: PlayModController = new PlayModController(this);
+
   public state: PlayerState = {
     x: 0,
     y: 0,
@@ -171,6 +182,10 @@ export class Player {
     const storedSkin = (record.skin_color ?? 0) >>> 0;
     // 0 and the registration placeholder mean "never chosen"
     this.skinColor = storedSkin && storedSkin !== PLACEHOLDER_SKIN_COLOR ? storedSkin : DEFAULT_SKIN_COLOR;
+    this.createdAt = record.created_at ? new Date(record.created_at.endsWith("Z") || record.created_at.includes("+") ? record.created_at : `${record.created_at.replace(" ", "T")}Z`) : new Date();
+    this.savedPlaytime = record.playtime ?? 0;
+    this.sessionStartedAt = Date.now();
+    this.playMods.load(record.play_mods);
 
     if (!this.inventory.load(record.inventory)) {
       this.inventory.addItem(ITEM_ID.FIST, 1);
@@ -179,6 +194,28 @@ export class Player {
     // the tools can never be missing
     if (!this.inventory.hasItem(ITEM_ID.FIST)) this.inventory.addItem(ITEM_ID.FIST, 1);
     if (!this.inventory.hasItem(ITEM_ID.WRENCH)) this.inventory.addItem(ITEM_ID.WRENCH, 1);
+
+    this.playMods.syncWearables(false);
+  }
+
+  /** Seconds spent online, including the current session. */
+  public get playtime(): number {
+    return this.savedPlaytime + Math.floor((Date.now() - this.sessionStartedAt) / 1000);
+  }
+
+  /** Days since the account was created. */
+  public get accountAgeDays(): number {
+    return Math.floor((Date.now() - this.createdAt.getTime()) / 86_400_000);
+  }
+
+  /** The avatar modifiers currently in effect. */
+  public get characterStats(): CharacterStats {
+    return this.playMods.stats;
+  }
+
+  /** Skin color as drawn, with the active mods' tint. */
+  public get effectiveSkinColor(): number {
+    return tintSkinColor(this.skinColor, this.playMods.stats.skinTint);
   }
 
   /**
@@ -341,12 +378,17 @@ export class Player {
       this.inventorySaveTimer = null;
     }
     try {
+      // fold the session so far into the saved total and start counting again
+      this.savedPlaytime = this.playtime;
+      this.sessionStartedAt = Date.now();
       await PlayerDB.updateById(this.playerId, {
         inventory: this.inventory.toBuffer(),
         gems: this.gems,
         level: this.level,
         xp: this.xp,
         skin_color: this.skinColor,
+        playtime: this.savedPlaytime,
+        play_mods: this.playMods.serialize(),
       });
     } catch (err) {
       logger.error({ err, playerId: this.playerId }, "failed to save player");
@@ -442,38 +484,30 @@ export class Player {
   /** Sends the current clothes to everyone in the world (including this player). */
   public sendClothesToWorld(): void {
     if (this.world) {
-      for (const other of this.world.players) other.variants.sendClothes(this.netID, this.inventory.clothes, this.skinColor);
+      for (const other of this.world.players) other.variants.sendClothes(this.netID, this.inventory.clothes, this.effectiveSkinColor);
     } else {
-      this.variants.sendClothes(this.netID, this.inventory.clothes, this.skinColor);
+      this.variants.sendClothes(this.netID, this.inventory.clothes, this.effectiveSkinColor);
     }
   }
 
-  /** Recomputes character modifiers from the worn clothes and sends them. */
+  /** Recomputes the play mods granted by the worn clothes and sends the result. */
   public applyPlayMods(): void {
-    let characterState = 0;
-    for (const itemId of Object.values(this.inventory.clothes)) {
-      if (!itemId) continue;
-      for (const mod of getItemInfo(itemId)?.playMods ?? []) {
-        if (mod.toLowerCase().includes("double jump")) characterState |= CHARACTER_STATE.DOUBLE_JUMP;
-      }
-    }
-    this.state.characterState = characterState;
-    this.sendCharacterState();
+    this.playMods.syncWearables(true);
   }
 
   /** Sends SET_CHARACTER_STATE for this player to the world. */
   public sendCharacterState(): void {
-    const buffer = this.variants.buildCharacterState(this.netID, this.state.characterState, this.punchId);
+    const buffer = this.variants.buildCharacterState(this.netID, this.characterStats, this.state.characterState, this.punchId);
     this.sendBuffer(buffer);
     this.world?.broadcast(buffer, this.id);
   }
 
-  /** Punch effect id forced with /pid; null uses the worn hand item. */
+  /** Punch effect id forced with /pid; null uses the active mods' punch type. */
   public customPunchId: number | null = null;
 
-  /** Punch effect id of the worn hand item, 0 for the plain fist. */
+  /** Punch effect id: forced, or the one of the active mods, 0 for the plain fist. */
   public get punchId(): number {
-    return this.customPunchId ?? 0;
+    return this.customPunchId ?? this.characterStats.punchType;
   }
 
   /** Sends the country/name-tag state of this player and every player around. */

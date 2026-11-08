@@ -41,6 +41,24 @@ function startAutosave(): void {
   autosaveTimer = setInterval(() => {
     saveGameState().catch((err) => logger.error({ err }, "autosave failed"));
   }, AUTOSAVE_INTERVAL_MS);
+  startPlayModTicker();
+}
+
+/** Interval at which timed play mods are checked for expiry. */
+const PLAY_MOD_TICK_MS = 1000;
+let playModTimer: ReturnType<typeof setInterval> | null = null;
+
+function startPlayModTicker(): void {
+  if (playModTimer) return;
+  playModTimer = setInterval(() => {
+    for (const player of serverManager.players.values()) {
+      try {
+        player.playMods.tick();
+      } catch (err) {
+        logger.error({ err, id: player.id }, "play mod tick failed");
+      }
+    }
+  }, PLAY_MOD_TICK_MS);
 }
 
 /**
@@ -50,6 +68,10 @@ export async function shutdownGameServer(): Promise<void> {
   if (autosaveTimer) {
     clearInterval(autosaveTimer);
     autosaveTimer = null;
+  }
+  if (playModTimer) {
+    clearInterval(playModTimer);
+    playModTimer = null;
   }
   for (const player of serverManager.players.values()) {
     player.variants.sendOnConsoleMessage("`4The server is restarting.`` Please reconnect in a moment.");
