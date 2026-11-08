@@ -167,7 +167,9 @@ registerCommand({
 
 function sendFindResults(player: Player, query: string, seedsOnly: boolean): void {
   const dialog = new DialogBuilder().defaultColor().addQuickExit().addLabelWithIcon("Find the item", 6016, "big").addSpacer("small");
-  const needle = query.toLowerCase();
+  // input boxes and chat both append the pressed Enter as a trailing
+  // newline; color codes come along for the ride too
+  const needle = query.replace(/[\r\n]+/g, " ").replace(/`./g, "").trim().toLowerCase();
   let count = 0;
 
   for (const item of items.meta.items.values()) {
