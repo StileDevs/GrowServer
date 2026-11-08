@@ -172,7 +172,7 @@ export class GameServer extends EventEmitter {
           if (text.contains("tankIDName") && !text.contains("ltoken") && text.contains("token")) {
             // lift the GDPR chat restriction before the logon is accepted
             player.variants.sendOnOverrideGdprFromServer(Math.max(18, text.getInt("player_age", 0, 18)));
-            player.variants.sendSuperMain();
+            player.variants.sendSuperMain(text.getInt("protocol", 0, 216));
           }
 
           if (text.contains("ltoken")) {

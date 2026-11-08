@@ -367,19 +367,25 @@ export class VariantHandler {
     this.send(Variant.from("OnOverrideGDPRFromServer", int32(age), int32(canChat ? 1 : 0), int32(0), int32(1)).parse());
   }
 
-  public sendSuperMain() {
+  /**
+   * Accepts the logon: items.dat hash, CDN location and the client settings
+   * string. The settings mirror the official server's; `isPayingUser=1` is
+   * required because the client restricts chat for non-paying accounts, and
+   * `proto` echoes the protocol the client reported.
+   */
+  public sendSuperMain(protocol = 216) {
     const serverTick = Date.now() >>> 0;
 
     const settings = [
-      "proto=216",
+      `proto=${protocol}`,
       "choosemusic=audio/mp3/about_theme.mp3",
-      "active_holiday=6",
+      "active_holiday=0",
       "wing_week_day=0",
       "ubi_week_day=0",
       `server_tick=${serverTick}`,
       "clash_active=0",
       "drop_lavacheck_faster=1",
-      "isPayingUser=0",
+      "isPayingUser=1",
       "usingStoreNavigation=1",
       "enableInventoryTab=1",
       "bigBackpack=1",
