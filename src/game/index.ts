@@ -16,13 +16,39 @@ export async function startGameServer(): Promise<void> {
   await initItems();
   await loadItemsWiki();
   registerGameConsoleCommands();
+  startAutosave();
   logger.info({ totalServers: ports.length }, "all game servers initialized");
+}
+
+/** Interval between periodic saves of online players and changed worlds. */
+const AUTOSAVE_INTERVAL_MS = 60_000;
+let autosaveTimer: ReturnType<typeof setInterval> | null = null;
+
+/**
+ * Saves every online player and every world with unsaved changes.
+ */
+export async function saveGameState(): Promise<void> {
+  for (const player of serverManager.players.values()) {
+    await player.saveToDatabase();
+  }
+  await worldManager.saveAll();
+}
+
+function startAutosave(): void {
+  if (autosaveTimer) return;
+  autosaveTimer = setInterval(() => {
+    saveGameState().catch((err) => logger.error({ err }, "autosave failed"));
+  }, AUTOSAVE_INTERVAL_MS);
 }
 
 /**
  * Persists every player and pending world before the process exits.
  */
 export async function shutdownGameServer(): Promise<void> {
+  if (autosaveTimer) {
+    clearInterval(autosaveTimer);
+    autosaveTimer = null;
+  }
   for (const player of serverManager.players.values()) {
     player.variants.sendOnConsoleMessage("`4The server is restarting.`` Please reconnect in a moment.");
     player.leaveWorld(false);

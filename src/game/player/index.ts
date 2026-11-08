@@ -92,6 +92,8 @@ export class Player {
   public lastVisitedWorlds: string[] = [];
 
   private inventorySaveTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Whether `loadFromRecord` ran; only then may this instance write to the database. */
+  private recordLoaded = false;
 
   public state: PlayerState = {
     x: 0,
@@ -152,6 +154,7 @@ export class Player {
    * inventory). New players get the default fist and wrench.
    */
   public loadFromRecord(record: PlayerRecord): void {
+    this.recordLoaded = true;
     this.playerId = record.id;
     this.tankIDName = record.name;
     this.displayName = record.display_name || record.name;
@@ -315,7 +318,9 @@ export class Player {
 
   /** Writes inventory, gems, level and xp to the database. */
   public async saveToDatabase(): Promise<void> {
-    if (this.playerId <= 0) return;
+    // the login-hop connection knows the player id but never loaded the
+    // record; saving it would overwrite the real inventory with an empty one
+    if (this.playerId <= 0 || !this.recordLoaded) return;
     if (this.inventorySaveTimer) {
       clearTimeout(this.inventorySaveTimer);
       this.inventorySaveTimer = null;
