@@ -376,7 +376,10 @@ export async function createLoginServer(): Promise<void> {
       token: decodedToken,
       url: "",
       accountType: "growtopia",
-      accountAge: 25,
+      // the client treats this as an age category, not years: 2 is the value
+      // the official login returns for a normal adult account and the one the
+      // client needs to enable chat
+      accountAge: 2,
     });
 
     return c.html(payload);
