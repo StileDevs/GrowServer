@@ -483,10 +483,14 @@ export class Player {
 
   /** Sends the current clothes to everyone in the world (including this player). */
   public sendClothesToWorld(): void {
+    const skin = this.effectiveSkinColor;
     if (this.world) {
-      for (const other of this.world.players) other.variants.sendClothes(this.netID, this.inventory.clothes, this.effectiveSkinColor);
+      for (const other of this.world.players) {
+        other.variants.sendClothes(this.netID, this.inventory.clothes, skin);
+        other.variants.sendOnChangeSkin(this.netID, skin);
+      }
     } else {
-      this.variants.sendClothes(this.netID, this.inventory.clothes, this.effectiveSkinColor);
+      this.variants.sendClothes(this.netID, this.inventory.clothes, skin);
     }
   }
 

@@ -559,6 +559,14 @@ export class VariantHandler {
     this.send(Variant.from({ netID }, "OnKilled").parse());
   }
 
+  /**
+   * Recolors an avatar that is already in the world; OnSetClothing alone
+   * only updates the HUD portrait of an existing avatar.
+   */
+  public sendOnChangeSkin(netID: number, skinColor: number): void {
+    this.send(Variant.from({ netID }, "OnChangeSkin", int32(skinColor | 0)).parse());
+  }
+
   public sendOnSetPos(netID: number, x: number, y: number, delay = 0): void {
     this.send(Variant.from({ netID, delay }, "OnSetPos", [x, y]).parse());
   }

@@ -109,8 +109,9 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
 /** Door usage. */
 async function TileActivateRequest(player: Player, tank: GameUpdatePacket, world: World): Promise<void> {
   const block = world.getTileAt(tank.data.tileX, tank.data.tileY);
+  // the main door always leads out, even when its door data went missing
+  if (block?.fg === ITEM_ID.MAIN_DOOR) return player.leaveWorld();
   if (!block?.door) return;
-  if (block.fg === ITEM_ID.MAIN_DOOR) return player.leaveWorld();
 
   const [rawWorld, rawId] = (block.door.destination ?? "").split(":");
   const targetWorld = rawWorld?.trim().toUpperCase() || world.name;

@@ -161,11 +161,19 @@ export async function useConsumable(player: Player, world: World, item: ItemDefi
   }
 
   const target = playerAt(world, tileX, tileY);
-  if (!target) {
+
+  // thrown items splat wherever they land; the rest must hit a person
+  if (!target && effect.action !== "throw") {
     player.sendTextBubble("Must be used on a person.", true);
     return;
   }
   if (player.removeItemInven(itemId, 1) <= 0) return;
+
+  if (!target) {
+    if (effect.effectId) world.sendParticleEffect(effect.effectId, tileX * 32 + 16, tileY * 32 + 16);
+    world.playPositioned("audio/splat.wav", player.netID);
+    return;
+  }
 
   world.sendItemEffect(itemId, player, target);
   if (effect.bubble) bubbleToWorld(world, target, effect.bubble);
@@ -202,8 +210,11 @@ function moveDoor(player: Player, world: World, tileX: number, tileY: number): v
 
   const changed: TileData[] = [];
   const oldDoor = world.mainDoor;
+  const doorData = oldDoor?.door ?? { label: "EXIT", destination: "EXIT" };
   if (oldDoor) {
     oldDoor.fg = 0;
+    delete oldDoor.door;
+    oldDoor.flags &= ~(TileFlags.TILEEXTRA | TileFlags.PUBLIC);
     changed.push(oldDoor);
     const oldBase = world.getTileAt(oldDoor.x, oldDoor.y + 1);
     if (oldBase?.fg === ITEM_ID.BEDROCK) {
@@ -212,7 +223,10 @@ function moveDoor(player: Player, world: World, tileX: number, tileY: number): v
     }
   }
 
+  // the main door keeps its exit data and stays public, or nobody can leave
   top!.fg = ITEM_ID.MAIN_DOOR;
+  top!.door = doorData;
+  top!.flags |= TileFlags.TILEEXTRA | TileFlags.PUBLIC;
   bottom!.fg = ITEM_ID.BEDROCK;
   changed.push(top!, bottom!);
   for (const tile of changed) tileFrom(world, tile).tileUpdate();
