@@ -11,7 +11,7 @@ import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
 import { tileFrom } from "./tiles";
 import { isAntigravityActive } from "./tiles/antigravity-tile";
-import { DEFAULT_MUSIC_BPM, ActionTypes, ITEM_ID, JAMMERS, MUSIC_BLOCKS, LockPermission, SIGNAL_JAMMER, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
+import { DEFAULT_MUSIC_BPM, ActionTypes, CLIENT_UNAMPLIFIED_MUSIC_TYPE, ITEM_ID, JAMMERS, MUSIC_BLOCKS, LockPermission, SIGNAL_JAMMER, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
 import type { DroppedItem, TileData, WorldData, XenoniteSettings } from "./types";
 
 export interface DropOptions {
@@ -30,6 +30,10 @@ interface MusicSource {
   /** Audible radius in pixels when no amplifier is next to it. */
   radius: number;
   amplified: boolean;
+  /** The client plays this block family by itself, amplifier included. */
+  native: boolean;
+  /** Identifies the block and its tune, used to remember relayed players. */
+  key: string;
 }
 
 /**
@@ -72,10 +76,12 @@ export class World {
     this.xenoniteCache = undefined;
   }
 
-  /** Cached music source, `undefined` when it must be recomputed. */
-  private musicCache: MusicSource | null | undefined;
+  /** Cached music sources, `undefined` when they must be recomputed. */
+  private musicCache: MusicSource[] | undefined;
   /** Audio file currently streamed to each player, keyed by player id. */
   private musicStreams: Collection<number, string> = new Collection();
+  /** Players whose own tile audio was replaced by the server relay, keyed by player id. */
+  private musicRelayed: Collection<number, string> = new Collection();
 
   public get players(): Player[] {
     return serverManager.players.filter((player) => player.world === this);
@@ -320,13 +326,15 @@ export class World {
   }
 
   /**
-   * The block currently playing in this world: any toggled-on block with an
-   * audio file. The first one wins; an amplifier on its right spreads it.
+   * Every open music block with an audio file, in block order. Native boombox
+   * style blocks (types 12 / 22 / 23) are played and amplified by the client
+   * itself; the animated type 122 blocks only play positionally and never
+   * spread, so the server relays those once amplified.
    */
-  private musicSource(): MusicSource | null {
+  private musicSources(): MusicSource[] {
     if (this.musicCache !== undefined) return this.musicCache;
 
-    let source: MusicSource | null = null;
+    const sources: MusicSource[] = [];
     for (const block of this.data.blocks) {
       if ((block.flags & TileFlags.OPEN) === 0) continue;
       // silenced blocks keep their ability but must not be heard
@@ -339,45 +347,71 @@ export class World {
 
       const amplifier = this.getTileAt(block.x + 1, block.y);
       const amplified = amplifier !== undefined && (amplifier.flags & TileFlags.OPEN) !== 0 && getItem(amplifier.fg)?.id === ITEM_ID.MUSIC_AMPLIFIER;
-      source = { file, x: block.x, y: block.y, radius: Math.max(item?.audioVolume ?? 0, 384), amplified };
-      break;
+      sources.push({
+        file,
+        x: block.x,
+        y: block.y,
+        radius: Math.max(item?.audioVolume ?? 0, 384),
+        amplified,
+        native: item?.type !== CLIENT_UNAMPLIFIED_MUSIC_TYPE,
+        key: `${block.x},${block.y},${file}`,
+      });
     }
 
-    this.musicCache = source;
-    return source;
+    this.musicCache = sources;
+    return sources;
   }
 
   /**
-   * Reconciles the music stream of every player with the world's source: an
-   * amplified block plays for the whole world, an unamplified one only for
-   * players inside its audible radius. The client does not restart a block's
-   * own playback from tile updates, so the stream is the single source.
+   * Reconciles the music stream of every player with the world's sources.
+   *
+   * Native blocks are left to the client entirely. For the animated blocks,
+   * an amplified tune is relayed to the whole world; without an amplifier the
+   * client's own positional playback is kept unless it was already replaced by
+   * a relay, in which case the block's radius is streamed to cover it. The
+   * client's music stream is a single channel, so an amplified block wins over
+   * a radius one and the first amplified block wins over later ones.
    */
   public syncMusic(): void {
-    const source = this.musicSource();
+    const sources = this.musicSources().filter((source) => !source.native);
 
     for (const player of this.players) {
-      // an amplifier spreads the tune to the world; without one it is still
-      // streamed inside the block's radius, since stopping the stream leaves
-      // the client with no music at all (it cannot resume its own playback)
       let wanted: string | undefined;
-      if (source) {
-        const dx = player.state.x - (source.x * 32 + 16);
-        const dy = player.state.y - (source.y * 32 + 16);
-        if (source.amplified || Math.hypot(dx, dy) <= source.radius) wanted = source.file;
+      let key: string | undefined;
+      for (const source of sources) {
+        if (source.amplified) {
+          wanted = source.file;
+          key = source.key;
+          break;
+        }
+        if (this.musicRelayed.get(player.playerId) === source.key) {
+          const dx = player.state.x - (source.x * 32 + 16);
+          const dy = player.state.y - (source.y * 32 + 16);
+          if (Math.hypot(dx, dy) <= source.radius) {
+            wanted = source.file;
+            key = source.key;
+          }
+        }
       }
 
       const current = this.musicStreams.get(player.playerId);
       if (wanted === current) continue;
 
-      if (wanted === undefined) this.musicStreams.delete(player.playerId);
-      else this.musicStreams.set(player.playerId, wanted);
-      player.actions.sendPlayMusic(wanted ?? "");
+      if (wanted === undefined) {
+        this.musicStreams.delete(player.playerId);
+        player.actions.sendPlayMusic("");
+        continue;
+      }
+
+      this.musicStreams.set(player.playerId, wanted);
+      if (key !== undefined) this.musicRelayed.set(player.playerId, key);
+      player.actions.sendPlayMusic(wanted);
     }
   }
 
   /** Stops the stream of a player that leaves the world. */
   public stopMusicFor(player: Player): void {
+    this.musicRelayed.delete(player.playerId);
     if (!this.musicStreams.delete(player.playerId)) return;
     player.actions.sendPlayMusic("");
   }
@@ -448,6 +482,7 @@ export class World {
     // every avatar is spawned now, so the tile changes have a valid actor
     this.syncMusicTiles(player);
     this.musicStreams.delete(player.playerId);
+    this.musicRelayed.delete(player.playerId);
     this.syncMusic();
 
     logger.debug({ player: player.tankIDName, world: this.name, players: othersCount + 1 }, "player entered world");

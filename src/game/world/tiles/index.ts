@@ -65,6 +65,11 @@ export const TileMapByItem: Partial<Record<number, TileClass>> = {
   [ITEM_ID.ORGAN_PIANO]: MusicBlockTile,
   [ITEM_ID.VINTAGE_JUKEBOX]: MusicBlockTile,
   [ITEM_ID.KARAOKE_MACHINE]: MusicBlockTile,
+  [ITEM_ID.WINDUP_MUSICAL_BOX]: MusicBlockTile,
+  [ITEM_ID.HARMONIPAN]: MusicBlockTile,
+  [ITEM_ID.BLENDER_BOP]: MusicBlockTile,
+  [ITEM_ID.DANCING_SNOW_GLOBE]: MusicBlockTile,
+  [ITEM_ID.DANCING_ZOMBIE]: MusicBlockTile,
   // the roulette wheel and the slot machine spin when punched
   [ITEM_ID.ROULETTE_WHEEL]: RouletteTile,
   [ITEM_ID.SLOT_MACHINE]: RouletteTile,

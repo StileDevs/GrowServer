@@ -29,7 +29,15 @@ export class SwitcheROO extends Tile {
       this.data.flags |= TileFlags.OPEN;
       this.tileUpdate();
     }
+    this.world.invalidateMusic();
+    this.world.syncMusic();
     return true;
+  }
+
+  public override async onDestroy(player: Player): Promise<void> {
+    await super.onDestroy(player);
+    this.world.invalidateMusic();
+    this.world.syncMusic();
   }
 
   public override async onPunch(player: Player): Promise<boolean> {
@@ -85,15 +93,18 @@ export class SwitcheROO extends Tile {
     this.onToggled(player);
   }
 
-  /** Hook for blocks that do more than flip their flag (antigravity, jammers). */
-  protected onToggled(_player: Player): void {}
+  /** Any toggled block can change which music block comes first. */
+  protected onToggled(_player: Player): void {
+    this.world.invalidateMusic();
+    this.world.syncMusic();
+  }
 }
 
 /**
- * Music blocks that play a tune while toggled on (Mystic Record Player, Organ
- * Piano, Vintage Jukebox). They start silent and play after a punch, and the
- * Music Amplifier next to them needs that ON state to extend their sound to
- * the whole world.
+ * Music blocks of the animated (type 122) family: record players, pianos,
+ * jukeboxes, karaoke machines, ... They start silent and play after a punch,
+ * and the Music Amplifier next to them needs that ON state to extend their
+ * sound to the whole world.
  */
 export class MusicBlockTile extends SwitcheROO {
   protected startsOn = false;
@@ -118,14 +129,7 @@ export class MusicBlockTile extends SwitcheROO {
       "music block toggled",
     );
 
-    this.world.invalidateMusic();
-    this.world.syncMusic();
-  }
-
-  public override async onDestroy(player: Player): Promise<void> {
-    await super.onDestroy(player);
-    this.world.invalidateMusic();
-    this.world.syncMusic();
+    super.onToggled(player);
   }
 }
 
@@ -133,18 +137,7 @@ export class MusicBlockTile extends SwitcheROO {
  * Music Amplifier: spreads the music of the block on its left side to the
  * whole world instead of the audible radius around it.
  */
-export class MusicAmplifierTile extends SwitcheROO {
-  protected override onToggled(): void {
-    this.world.invalidateMusic();
-    this.world.syncMusic();
-  }
-
-  public override async onDestroy(player: Player): Promise<void> {
-    await super.onDestroy(player);
-    this.world.invalidateMusic();
-    this.world.syncMusic();
-  }
-}
+export class MusicAmplifierTile extends SwitcheROO {}
 
 registerDialog("switcheroo_edit", async (player, action) => {
   const target = tileFromDialog(player, action);

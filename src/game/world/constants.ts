@@ -60,6 +60,11 @@ export const ITEM_ID = {
   ORGAN_PIANO: 11346,
   VINTAGE_JUKEBOX: 11372,
   KARAOKE_MACHINE: 15388,
+  WINDUP_MUSICAL_BOX: 10518,
+  HARMONIPAN: 11900,
+  BLENDER_BOP: 12196,
+  DANCING_SNOW_GLOBE: 11512,
+  DANCING_ZOMBIE: 12778,
   MUSIC_AMPLIFIER: 12358,
 } as const;
 
@@ -70,10 +75,24 @@ export const WEATHER_CLEAR = 41;
  * Toggleable blocks whose sound is a piece of music (the wiki's music block
  * list). Ambiance blocks — jammers, the antigravity generator, torches — also
  * carry an audio file but must not be streamed as music.
+ *
+ * Two client families hide in the media files: boombox style blocks (types
+ * 12 / 22 / 23) play and amplify themselves, while the animated type 122
+ * blocks (record players, pianos, jukeboxes, ...) only play positionally and
+ * ignore the Music Amplifier, so the server has to relay those.
  */
 export const MUSIC_BLOCKS: ReadonlySet<number> = new Set([
-  62, 64, 114, 220, 246, 254, 480, 714, 786, 842, 1048, 1196, 1448, 1596, 1754, 1942, 2282, 3088, 4380, 5106, 5242, 5658, 8524, 10152, 10518, 10912, 11346, 11372, 11900, 12008, 15388,
+  62, 64, 114, 220, 246, 254, 480, 714, 786, 842, 1048, 1196, 1448, 1596, 1754, 1942, 2282, 3088, 4380, 5106, 5242, 5658, 8524, 10152, 10518, 10912, 11346, 11372, 11900, 12008,
+  12196, 12778, 15084, 15388, 11512,
 ]);
+
+/**
+ * Action type of the animated foreground blocks (items.dat calls the first
+ * entry of this family "Green Fountain"). The client plays their audio with a
+ * radius but never spreads it to the world, so these are the music blocks the
+ * server streams instead of relying on native playback.
+ */
+export const CLIENT_UNAMPLIFIED_MUSIC_TYPE = 122;
 
 /** Toggleable jammer blocks: item id -> the world modifier shown while on. */
 export const JAMMERS: ReadonlyMap<number, string> = new Map([
