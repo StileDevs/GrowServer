@@ -104,6 +104,11 @@ const WORLD_SPRAY_SECONDS: Partial<Record<number, number>> = {
   13574: 86_400, // Deluxe World Spray
 };
 
+/** Growth (in seconds) a spray adds to a provider on the used tile, keyed by item id. */
+const PROVIDER_SPRAY_SECONDS: Partial<Record<number, number>> = {
+  10290: 21_600, // Provider Spray (6 hours)
+};
+
 /** Experience granted by an Experience Potion. */
 const EXPERIENCE_POTION_XP = 10_000;
 /** Particle effect of fireworks. */
@@ -219,6 +224,12 @@ export async function useConsumable(player: Player, world: World, item: ItemDefi
     return;
   }
 
+  const providerSpray = PROVIDER_SPRAY_SECONDS[itemId];
+  if (providerSpray !== undefined) {
+    useProviderSpray(player, world, itemId, providerSpray, tileX, tileY);
+    return;
+  }
+
   const effect = CONSUMABLES[itemId];
   if (!effect) {
     player.sendTextBubble("`4That item isn't supported on this server yet.``", true);
@@ -310,6 +321,34 @@ function useWorldSpray(player: Player, world: World, itemId: number, seconds: nu
 
   player.variants.sendOnTextOverlay(`All trees in the world aged \`$${describeAge(seconds)}\``);
   player.variants.sendOnPlayPositioned("audio/spray.wav", player.netID);
+  player.removeItemInven(itemId, 1);
+  world.markDirty();
+}
+
+/** Ages a provider block on the used tile by one provider spray. */
+function useProviderSpray(player: Player, world: World, itemId: number, seconds: number, tileX: number, tileY: number): void {
+  const block = world.getTileAt(tileX, tileY);
+  if (!block || !block.provider) {
+    player.sendTextBubble("Use this on a provider to speed it up.", true);
+    return;
+  }
+
+  const itemMeta = getItem(block.fg);
+  const growTime = itemMeta?.growTime ?? 86400;
+  const now = Date.now();
+  const elapsed = Math.floor((now - block.provider.plantedAt) / 1000);
+
+  if (elapsed >= growTime) {
+    player.sendTextBubble("This provider is already ready, don't waste your spray on it!", true);
+    return;
+  }
+
+  block.provider.plantedAt -= seconds * 1000;
+  const newElapsed = Math.floor((now - block.provider.plantedAt) / 1000);
+  const name = itemMeta?.name ?? "Provider";
+  player.variants.sendOnTextOverlay(newElapsed >= growTime ? `${name} Provider is ready!` : `${name} Provider aged \`$${describeAge(seconds)}\``);
+  player.variants.sendOnPlayPositioned("audio/spray.wav", player.netID);
+  tileFrom(world, block).tileUpdate();
   player.removeItemInven(itemId, 1);
   world.markDirty();
 }

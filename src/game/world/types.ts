@@ -24,6 +24,9 @@ export interface TileData {
   vip?: VipEntrance;
   weatherSettings?: WeatherSettings;
   xenonite?: XenoniteSettings;
+  provider?: {
+    plantedAt: number;
+  };
   charger?: {
     chargedAt: number;
     hasGeiger: boolean;

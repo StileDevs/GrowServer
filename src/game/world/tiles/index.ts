@@ -22,6 +22,7 @@ import { VipEntranceTile } from "./vip-entrance-tile";
 import { AntigravityTile } from "./antigravity-tile";
 import { RouletteTile } from "./roulette-tile";
 import { XenoniteTile } from "./xenonite-tile";
+import { ProviderTile } from "./provider-tile";
 import { GeigerChargerTile } from "./geiger-charger-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
 import { ITEM_ID } from "../constants";
@@ -54,6 +55,7 @@ export const TileMap: Partial<Record<number, TileClass>> = {
   [ActionTypes.GATEWAY]: EntranceTile,
   [ActionTypes.VIP_ENTRANCE]: VipEntranceTile,
   [ActionTypes.XENONITE]: XenoniteTile,
+  [ActionTypes.PROVIDER]: ProviderTile,
   [ActionTypes.GEIGER_CHARGER]: GeigerChargerTile,
 };
 
@@ -84,7 +86,6 @@ export const TileMapByItem: Partial<Record<number, TileClass>> = {
  * cannot serialize (a missing payload crashes the client on world load).
  */
 export const PENDING_EXTRA_TYPES: ReadonlySet<number> = new Set([
-  ActionTypes.PROVIDER,
   ActionTypes.CHEST,
   ActionTypes.TREASURE,
 ]);
