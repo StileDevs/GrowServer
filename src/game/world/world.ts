@@ -10,7 +10,7 @@ import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
 import { tileFrom } from "./tiles";
 import { isAntigravityActive } from "./tiles/antigravity-tile";
-import { ITEM_ID, LockPermission, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
+import { DEFAULT_MUSIC_BPM, ITEM_ID, LockPermission, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
 import type { DroppedItem, TileData, WorldData } from "./types";
 
 export interface DropOptions {
@@ -50,6 +50,13 @@ export class World {
   /** The main door tile, if the world still has one. */
   public get mainDoor(): TileData | undefined {
     return this.data.blocks.find((block) => block.fg === ITEM_ID.MAIN_DOOR);
+  }
+
+  /** Tempo of the world's sheet music, from the world lock (100 when unlocked). */
+  public get musicBpm(): number {
+    const index = this.data.worldLockIndex;
+    const lock = index === undefined ? undefined : this.getTileByIndex(index);
+    return lock?.worldLockData?.bpm ?? DEFAULT_MUSIC_BPM;
   }
 
   /** Plays a particle effect (SEND_PARTICLE_EFFECT) at a pixel position for everyone here. */

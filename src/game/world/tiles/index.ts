@@ -39,6 +39,10 @@ export const TileMap: Partial<Record<number, TileClass>> = {
   [ActionTypes.DISPLAY_BLOCK]: DisplayBlockTile,
   [ActionTypes.HEART_MONITOR]: HeartMonitorTile,
   [ActionTypes.SWITCHEROO]: SwitcheROO,
+  // music blocks, amplifier and other on/off blocks: punch to toggle
+  [ActionTypes.BOOMBOX]: SwitcheROO,
+  // World Architect: toggles the client's grid overlay
+  [ActionTypes.ARCHITECT_MACHINE]: SwitcheROO,
   [ActionTypes.WEATHER_MACHINE]: WeatherTile,
   [ActionTypes.WEATHER_SPECIAL]: WeatherTile,
   [ActionTypes.WEATHER_SPECIAL2]: WeatherTile,

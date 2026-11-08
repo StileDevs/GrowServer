@@ -182,12 +182,12 @@ export class LockTile extends Tile {
       }
     } else {
       const worldLock = this.data.worldLockData;
-      dialog.addCheckbox("disable_music", "Disable Custom Music Blocks (NOT IMPLEMENTED)", worldLock.customMusicBlocksDisabled ? "selected" : "not_selected");
+      dialog.addCheckbox("disable_music", "Disable Custom Music Blocks", worldLock.customMusicBlocksDisabled ? "selected" : "not_selected");
       if (!worldLock.customMusicBlocksDisabled) {
-        dialog.addInputBox("tempo", "Music BPM (NOT IMPLEMENTED)", worldLock.bpm, 3);
+        dialog.addInputBox("tempo", "Music BPM", worldLock.bpm, 3);
       }
       dialog
-        .addCheckbox("invisible_music", "Make Custom Music Block Invisible (NOT IMPLEMENTED)", worldLock.invisMusicBlocks ? "selected" : "not_selected")
+        .addCheckbox("invisible_music", "Make Custom Music Block Invisible", worldLock.invisMusicBlocks ? "selected" : "not_selected")
         .addCheckbox("home_world", "Set as Home World (NOT IMPLEMENTED)", "not_selected")
         .addInputBox("minimum_level", "World Level: (NOT IMPLEMENTED)", worldLock.minLevel)
         .addSmallText("Set minimum world entry level")
@@ -224,7 +224,11 @@ export class LockTile extends Tile {
     buffer.writeU8(this.extraType);
     buffer.writeU8(this.settingsFlags());
     buffer.writeU32(lock?.ownerPlayerId ?? 0);
-    buffer.writeU32(lock?.adminIds.length ?? 0);
+    // the access list starts with the music tempo, negated, which the
+    // client uses to play the world's sheet music
+    const bpm = this.data.worldLockData?.bpm ?? this.world.musicBpm;
+    buffer.writeU32((lock?.adminIds.length ?? 0) + 1);
+    buffer.writeI32(-bpm);
     for (const adminId of lock?.adminIds ?? []) {
       buffer.writeU32(adminId);
     }

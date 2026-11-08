@@ -55,6 +55,9 @@ export const ITEM_ID = {
 /** Weather id of the default (clear) sky. */
 export const WEATHER_CLEAR = 41;
 
+/** Sheet music tempo of a world without a world lock. */
+export const DEFAULT_MUSIC_BPM = 100;
+
 export enum TileFlags {
   TILEEXTRA = 0x0001,
   LOCKED = 0x0002,
