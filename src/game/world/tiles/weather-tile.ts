@@ -11,49 +11,13 @@ import { ActionTypes, ITEM_ID, LockPermission, TileExtraTypes, TileFlags, WEATHE
 import { getDefaultExtra } from "./default-extra-tile";
 
 /**
- * Weather id per weather machine item id (carried over from the legacy
- * `getWeatherId` helper). Machines missing here fall back to the item's
- * `audioVolume` field, which items.dat uses for the weather id.
+ * Weather id a weather machine item switches the world to. items.dat stores
+ * it in the item's `audioVolume` field (sunny 4, night 2, arid 3, ...), which
+ * is why the hardcoded table that used to live here was off by one machine.
  */
-const WEATHER_MACHINE_IDS: Partial<Record<number, number>> = {
-  934: 2, // Weather Machine - Night
-  946: 3, // Weather Machine - Sunny
-  932: 9, // Weather Machine - Arid
-  984: 5, // Weather Machine - Rainy City
-  1210: 8, // Weather Machine - Spooky
-  1364: 11, // Weather Machine - Warp Speed
-  1490: 10, // Weather Machine - Undersea
-  1750: 15, // Weather Machine - Nothingness
-  2046: 17, // Weather Machine - Jungle
-  2284: 18, // Weather Machine - Balloon Warz
-  2744: 19, // Weather Machine - Comet
-  3252: 20, // Weather Machine - Pagoda
-  3446: 21, // Weather Machine - Apocalypse
-  3534: 22, // Weather Machine - Mars
-  3694: 28, // Weather Machine - Heatwave
-  3832: 29, // Weather Machine - Stuff
-  4242: 30, // Weather Machine - Howling Sky
-  4486: 31, // Weather Machine - Bountiful
-  4776: 32, // Weather Machine - Meteor Shower
-  4892: 33, // Weather Machine - Balloon Warz (new)
-  5000: 34, // Weather Machine - Background
-  5112: 35, // Weather Machine - Snowy
-  5654: 36, // Weather Machine - Monochrome
-  5716: 37, // Weather Machine - Surgery
-  5958: 38, // Weather Machine - Party
-  6854: 42, // Weather Machine - Digital Rain
-  7644: 44, // Weather Machine - Frozen Cliffs
-  8836: 48, // Weather Machine - Mt. Growmore
-  8896: 47, // Weather Machine - Black Hole
-  10286: 51, // Weather Machine - St. Paddy's
-  11880: 59, // Weather Machine - Bubble Bath
-  12054: 60, // Weather Machine - Sunny Reef
-  12056: 61, // Weather Machine - Night Reef
-  12408: 62, // Weather Machine - Cyber City
-  12844: 64, // Weather Machine - Royal Winter
-  13004: 65, // Weather Machine - Royal Spring
-  13070: 66, // Weather Machine - Sakura
-};
+export function getWeatherId(itemId: number): number {
+  return getItem(itemId)?.audioVolume ?? 0;
+}
 
 /** Default settings of the machines that have a dialog. */
 const DEFAULT_SETTINGS: Partial<Record<number, WeatherSettings>> = {
@@ -69,13 +33,6 @@ const MIN_HEATWAVE_CHANNEL = 40;
 
 /** Action types whose tiles are weather machines. */
 export const WEATHER_ACTION_TYPES: ReadonlySet<number> = new Set([ActionTypes.WEATHER_MACHINE, ActionTypes.WEATHER_SPECIAL, ActionTypes.WEATHER_SPECIAL2]);
-
-/**
- * Weather id a weather machine item switches the world to, 0 when unknown.
- */
-export function getWeatherId(itemId: number): number {
-  return WEATHER_MACHINE_IDS[itemId] ?? getItem(itemId)?.audioVolume ?? 0;
-}
 
 /**
  * Weather machines. Punching one with break access toggles the world weather
