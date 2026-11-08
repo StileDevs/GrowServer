@@ -118,6 +118,12 @@ export class ServerConsole {
       }
     });
 
+    // readline swallows ctrl+c while it owns the terminal; forward it to the
+    // process so the graceful shutdown handlers run
+    this.rl.on("SIGINT", () => {
+      process.emit("SIGINT");
+    });
+
     this.rl.on("close", () => {
       this.stop();
     });
