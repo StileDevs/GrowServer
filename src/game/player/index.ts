@@ -15,6 +15,7 @@ import { ActionTypes, ITEM_ID } from "../world/constants";
 import type { BlockPosition } from "../world/types";
 import { PlayModController } from "./play-mod-controller";
 import { applyXenonite, tintSkinColor, type CharacterStats } from "./play-mods";
+import { QuestController } from "../quests/quest-state";
 
 export * from "./inventory";
 
@@ -105,6 +106,8 @@ export class Player {
   private sessionStartedAt = Date.now();
   /** Wearable and timed play mods. */
   public playMods: PlayModController = new PlayModController(this);
+  /** Quest state: Crazy Jim delivery, personal points, role levels, surgery skill. */
+  public quests: QuestController = new QuestController(this);
   /** World `/home` warps to, null when the player has not set one. */
   public homeWorld: string | null = null;
 
@@ -188,6 +191,7 @@ export class Player {
     this.savedPlaytime = record.playtime ?? 0;
     this.sessionStartedAt = Date.now();
     this.playMods.load(record.play_mods);
+    this.quests.load(record.quest_data);
     this.homeWorld = record.home_world ?? null;
 
     if (!this.inventory.load(record.inventory)) {
@@ -402,6 +406,7 @@ export class Player {
         skin_color: this.skinColor,
         playtime: this.savedPlaytime,
         play_mods: this.playMods.serialize(),
+        quest_data: this.quests.serialize(),
       });
     } catch (err) {
       logger.error({ err, playerId: this.playerId }, "failed to save player");

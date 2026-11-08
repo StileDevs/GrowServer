@@ -26,6 +26,8 @@ export interface PlayerTable {
   playtime: Generated<number>;
   /** JSON list of active timed play mods. */
   play_mods: string | null;
+  /** JSON blob of the quest systems (daily delivery, personal points, role levels, surgery skill). */
+  quest_data: string | null;
   /** World the player warps to with /home, null when unset. */
   home_world: Generated<string | null>;
   created_at: Generated<string>;

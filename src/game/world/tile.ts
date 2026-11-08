@@ -4,6 +4,7 @@ import { TANK_PACKET_TYPE } from "../../constants";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { GameUpdatePacket } from "../packets/game-packet";
 import { getItem } from "../item/item-utils";
+import { addRoleXp } from "../quests/role-quests";
 import type { Player } from "../player";
 import type { World } from "./world";
 import type { TileData } from "./types";
@@ -187,6 +188,7 @@ export class Tile {
     this.data.flags = this.data.flags & (TileFlags.LOCKED | TileFlags.WATER);
 
     this.onDrop(player, destroyedItemId);
+    addRoleXp(player, "builder", 1);
 
     this.world.broadcast(
       GameUpdatePacket.create({

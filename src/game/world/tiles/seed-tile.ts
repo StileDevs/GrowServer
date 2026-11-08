@@ -2,6 +2,7 @@ import type { ItemDefinition } from "grow-items";
 import { TANK_PACKET_TYPE } from "../../../constants";
 import type { ExtendBuffer } from "../../../utils/extend-buffer";
 import { getItem, seedIdOf } from "../../item/item-utils";
+import { addRoleXp } from "../../quests/role-quests";
 import { itemsWiki } from "../../item/item-wiki";
 import { GameUpdatePacket } from "../../packets/game-packet";
 import type { Player } from "../../player";
@@ -103,7 +104,9 @@ export class SeedTile extends Tile {
       this.data.flags = this.data.flags & (TileFlags.LOCKED | TileFlags.WATER);
       delete this.data.tree;
 
-      player.addXp(this.harvestXp(seedMeta.rarity ?? 0, tree.fruitCount));
+      const xp = this.harvestXp(seedMeta.rarity ?? 0, tree.fruitCount);
+      player.addXp(xp);
+      addRoleXp(player, "farmer", xp);
       return true;
     }
 

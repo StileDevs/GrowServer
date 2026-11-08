@@ -7,6 +7,7 @@ import { formatDuration } from "../player/play-mods";
 import { PLAYER_ROLE_NAMES } from "../../constants";
 import { ITEM_ID } from "../world/constants";
 import { worldManager } from "../world/world-manager";
+import { questDailyDialog, sendGoalsDialog } from "../quests";
 import { registerDialog } from "./dialog-handler";
 
 /** Buttons of the wrench menu that open one of the client's RML pages. */
@@ -72,6 +73,9 @@ export function selfProfileDialog(player: Player): string {
     )
     .addSpacer("small")
     .addTextBox(`\`oGems: \`w${player.gems}\`\`  Role: \`w${PLAYER_ROLE_NAMES[player.role] ?? "Player"}\`\``)
+    .addSpacer("small")
+    .addButton("daily_quests", "`2Daily Quests``")
+    .addButton("role_goals", "`2Goals``")
     .addTextBox(`\`oTime played: \`w${formatDuration(player.playtime)}\`\``)
     .addTextBox(`\`oPlaying since: \`w${since}\`\` (\`w${player.accountAgeDays}\`\` ${player.accountAgeDays === 1 ? "day" : "days"} ago)\`\``)
     .addSpacer("small")
@@ -114,6 +118,14 @@ registerDialog("popup", (player, action) => {
   const target = player.world?.players.find((other) => other.netID === targetNetId);
 
   switch (button) {
+    case "daily_quests": {
+      player.variants.sendOnDialogRequest(questDailyDialog(player));
+      return;
+    }
+    case "role_goals": {
+      sendGoalsDialog(player);
+      return;
+    }
     case "my_worlds": {
       const dialog = new DialogBuilder()
         .defaultColor()
