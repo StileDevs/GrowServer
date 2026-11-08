@@ -44,9 +44,9 @@ export class VipEntranceTile extends Tile {
     const itemMeta = getItem(this.data.fg);
     if (!itemMeta) return false;
 
+    // the owner edits the entrance; anyone else with access (lock admins,
+    // world lock admins, the VIP list itself) gets the revoke dialog
     if (!canEditEntrance(this.world, player, this.data)) {
-      // someone with access (but not the owner) may drop their own access,
-      // like the wrench dialog of a lock does
       if (!this.hasAccess(player)) {
         await this.onPlaceFail(player);
         return false;
@@ -98,11 +98,21 @@ export class VipEntranceTile extends Tile {
   }
 
   /** Whether a player who is not the owner may pass through this entrance. */
-  private hasAccess(player: Player): boolean {
+  public hasAccess(player: Player): boolean {
     if (this.vip.playerIds.includes(player.playerId)) return true;
-    if (!this.data.lockedBy) return false;
-    const parent = this.world.getTileAt(this.data.lockedBy.parentX, this.data.lockedBy.parentY);
-    return parent?.lock?.adminIds.includes(player.playerId) ?? false;
+
+    // the lock covering the entrance, when it is placed in a locked area
+    if (this.data.lockedBy) {
+      const parent = this.world.getTileAt(this.data.lockedBy.parentX, this.data.lockedBy.parentY);
+      if (parent?.lock) {
+        return parent.lock.ownerPlayerId === player.playerId || parent.lock.adminIds.includes(player.playerId);
+      }
+    }
+
+    // otherwise the world lock of the world itself
+    const index = this.world.data.worldLockIndex;
+    const worldLock = index === undefined ? undefined : this.world.getTileByIndex(index);
+    return worldLock?.lock?.adminIds.includes(player.playerId) ?? false;
   }
 
   public override serialize(buffer: ExtendBuffer): void {
@@ -205,15 +215,10 @@ registerDialog("vip_edit", async (player, action) => {
   world.markDirty();
 });
 
-registerDialog("vip_revoke", async (player, action) => {
-  const target = tileFromDialog(player, action);
-  if (!target) return;
-  const { world, block } = target;
-
-  if (getItem(block.fg)?.type !== ActionTypes.VIP_ENTRANCE) return;
-
+/** Drops the player's own VIP list entry and lock admin entry. */
+function revokeOwnAccess(player: Player, world: World, block: TileData): boolean {
   const ownerId = world.getTileOwnerPlayerId(block) ?? world.getOwnerPlayerId();
-  if (ownerId === player.playerId) return;
+  if (ownerId === player.playerId) return false;
 
   let removed = false;
   const vipIndex = block.vip?.playerIds.indexOf(player.playerId) ?? -1;
@@ -229,9 +234,30 @@ registerDialog("vip_revoke", async (player, action) => {
     removed = true;
   }
 
-  if (!removed) return;
+  // access taken from the world lock itself, when the entrance sits in the
+  // world-locked part of the world
+  const lockIndex = world.data.worldLockIndex;
+  const worldLock = lockIndex === undefined ? undefined : world.getTileByIndex(lockIndex);
+  const worldAdminIndex = worldLock?.lock ? worldLock.lock.adminIds.indexOf(player.playerId) : -1;
+  if (worldLock?.lock && worldAdminIndex !== -1) {
+    worldLock.lock.adminIds.splice(worldAdminIndex, 1);
+    removed = true;
+  }
 
-  broadcastConsole(world, `${player.formattedName}\`\` removed their access from a \`$VIP Entrance\`\`.`);
+  if (removed) {
+    broadcastConsole(world, `${player.formattedName}\`\` removed their access from a \`$VIP Entrance\`\`.`);
+  }
+  return removed;
+}
+
+registerDialog("vip_revoke", async (player, action) => {
+  const target = tileFromDialog(player, action);
+  if (!target) return;
+  const { world, block } = target;
+
+  if (getItem(block.fg)?.type !== ActionTypes.VIP_ENTRANCE) return;
+  if (!revokeOwnAccess(player, world, block)) return;
+
   new VipEntranceTile(world, block).tileUpdate();
   world.markDirty();
 });
