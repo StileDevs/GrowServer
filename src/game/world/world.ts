@@ -347,29 +347,6 @@ export class World {
     }
   }
 
-  /**
-   * Re-sends the world to one player, like a re-entry: used to give the
-   * client back the block's own positional audio after an amplified stream
-   * stopped, since a stream occupies the client's music channel.
-   */
-  public refreshWorld(player: Player): void {
-    player.send(
-      new Packet(
-        GameUpdatePacket.create({
-          type: TANK_PACKET_TYPE.SEND_MAP_DATA,
-          flags: 8,
-          extraData: Array.from(this.serialize(player)),
-        }).parse()!,
-        PacketKind.Reliable,
-      ),
-    );
-
-    player.variants.sendOnSetCurrentWeather(this.data.weather.id);
-    for (const other of this.players) {
-      player.variants.sendOnSpawn(other.spawnOptions(other === player));
-    }
-  }
-
   /** Stops the stream of a player that leaves the world. */
   public stopMusicFor(player: Player): void {
     if (!this.musicStreams.delete(player.playerId)) return;

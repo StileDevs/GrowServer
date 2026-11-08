@@ -135,15 +135,8 @@ export class MusicBlockTile extends SwitcheROO {
  */
 export class MusicAmplifierTile extends SwitcheROO {
   protected override onToggled(): void {
-    const enabled = (this.data.flags & TileFlags.OPEN) !== 0;
     this.world.invalidateMusic();
     this.world.syncMusic();
-
-    // switching the amplifier off stops the stream; the client cannot resume
-    // the block's own audio by itself, so it is given the world again
-    if (!enabled) {
-      for (const player of this.world.players) this.world.refreshWorld(player);
-    }
   }
 
   public override async onDestroy(player: Player): Promise<void> {
