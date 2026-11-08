@@ -1,6 +1,6 @@
 import { DialogBuilder } from "../../utils/dialog-builder";
 import { Collection } from "../../utils/collection";
-import { Variant } from "../packets/variants";
+import { Variant, int32 } from "../packets/variants";
 import type { Player } from "../player";
 import { ITEM_ID } from "../world/constants";
 
@@ -74,7 +74,7 @@ function findStoreItem(name: string): StoreItem | undefined {
 
 /** Opens the in-game store on the main tab. */
 export function openStore(player: Player): void {
-  player.variants.sendVariant(Variant.from("OnSetVouchers", 0));
+  player.variants.sendVariant(Variant.from("OnSetVouchers", int32(0)));
   player.variants.sendVariant(Variant.from("OnStoreRequest", storeDialog("main")));
 }
 

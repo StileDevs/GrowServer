@@ -51,7 +51,21 @@ export enum PacketTypes {
 /**
  * The argument type for the variant.
  */
-export type VariantArg = string | number[] | number;
+/** A number that must be encoded as a signed 32-bit variant (type 9) even when it is not negative. */
+export interface VariantSignedInt {
+  int: number;
+}
+
+export type VariantArg = string | number[] | number | VariantSignedInt;
+
+/**
+ * Marks a number as a signed 32-bit variant argument. Plain non-negative
+ * numbers are encoded unsigned; the client reads some parameters (GDPR
+ * override, GrowID flag) as signed ints, matching the official server.
+ */
+export function int32(value: number): VariantSignedInt {
+  return { int: value };
+}
 
 /**
  * Options for the Variant Packet
@@ -205,7 +219,11 @@ export class Variant {
         }
 
         case "object": {
-          if (!Array.isArray(arg)) return;
+          if (!Array.isArray(arg)) {
+            extendBuf.writeU8(VariantTypes.SIGNED_INT);
+            extendBuf.writeI32(arg.int);
+            return;
+          }
 
           const type = VariantTypes[`FLOAT_${arg.length}` as "FLOAT_1" | "FLOAT_2" | "FLOAT_3"];
           if (!type) return;
@@ -346,7 +364,7 @@ export class VariantHandler {
    * acceptance.
    */
   public sendOnOverrideGdprFromServer(age = 18, canChat = true): void {
-    this.send(Variant.from("OnOverrideGDPRFromServer", age, canChat ? 1 : 0, 0, 1).parse());
+    this.send(Variant.from("OnOverrideGDPRFromServer", int32(age), int32(canChat ? 1 : 0), int32(0), int32(1)).parse());
   }
 
   public sendSuperMain() {
@@ -449,7 +467,7 @@ export class VariantHandler {
   }
 
   public sendSetHasGrowID(isSet: boolean, playerName: string, sessionToken: string): void {
-    const variant = this.createVariantNoNetID("SetHasGrowID", isSet ? 1 : 0, playerName, sessionToken);
+    const variant = this.createVariantNoNetID("SetHasGrowID", int32(isSet ? 1 : 0), playerName, sessionToken);
     const data = variant.parse();
     this.send(data);
   }

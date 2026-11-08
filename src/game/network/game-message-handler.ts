@@ -4,7 +4,7 @@ import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
 import { getItemInfo } from "../item/item-wiki";
 import { Player, PlayerStateFlags, MAX_LEVEL } from "../player";
-import { Variant } from "../packets/variants";
+import { Variant, int32 } from "../packets/variants";
 import { serverManager } from "../server/server-manager";
 import { BlockFlags, ITEM_ID } from "../world/constants";
 import { handleDialogReturn } from "./dialog-handler";
@@ -37,7 +37,9 @@ function EnterGame(player: Player): void {
   player.variants.sendOnConsoleMessage(`Welcome back, ${player.formattedName}. There are \`w${serverManager.getTotalPlayersCount()}\`\` players online.`);
   player.sendInventory();
   player.variants.sendOnSetBux(player.gems, true);
-  player.variants.sendVariant(Variant.from("OnSetVouchers", 0));
+  player.variants.sendVariant(Variant.from("OnSetVouchers", int32(0)));
+  // the GDPR override is also sent when the UI is (re)built
+  player.variants.sendOnOverrideGdprFromServer(Math.max(18, player.auth.metadata.playerAge || 18));
   // tells the client which GrowID it is logged in with; without it the client
   // stays in guest mode (chat disabled, empty profile)
   player.variants.sendSetHasGrowID(true, player.tankIDName, player.auth.metadata.tankIDPass || player.auth.transferSession?.sessionToken || "");
