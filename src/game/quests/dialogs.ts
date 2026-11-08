@@ -2,10 +2,12 @@ import { registerDialog } from "../network/dialog-handler";
 import { deliverDailyQuest, questDailyDialog } from "./daily-quest";
 import { ROLES, type RoleId } from "./constants";
 import { claimRoleReward, parseClaimButton, roleRewardDialog, sendGoalsDialog } from "./role-quests";
+import { handleSurgeryAction, startSurgery } from "../surgery/surgery-manager";
 
 /**
  * Dialog returns of the quest systems: the Crazy Jim daily delivery, the
- * goals overview and the per-role milestone reward dialogs.
+ * goals overview, the per-role milestone reward dialogs and the surgery
+ * confirm/tool dialogs.
  */
 
 registerDialog("quest_daily", async (player, action) => {
@@ -39,3 +41,26 @@ for (const id of Object.keys(ROLES) as RoleId[]) {
     player.variants.sendOnDialogRequest(roleRewardDialog(player, claim.role));
   });
 }
+
+/**
+ * The robot/bed confirm dialog returns `surge`. `surge_start` (or any accept
+ * label an older client sends) starts the surgery; `surge_cancel` aborts.
+ * The tool tray dialog is named `surgery` and is handled separately.
+ */
+registerDialog("surge", async (player, action) => {
+  const world = player.world;
+  if (!world) return;
+  const button = action.get("buttonClicked") ?? "";
+  if (button === "surge_cancel" || button === "Cancel") {
+    player.surgery = null;
+    return;
+  }
+  startSurgery(player, world);
+});
+
+// The tray dialog itself uses end_dialog|surgery|||.
+registerDialog("surgery", async (player, action) => {
+  const world = player.world;
+  if (!world) return;
+  handleSurgeryAction(player, world, action.get("buttonClicked") ?? "");
+});

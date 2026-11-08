@@ -18,6 +18,7 @@ import { applyXenonite, tintSkinColor, type CharacterStats } from "./play-mods";
 import { QuestController } from "../quests/quest-state";
 import type { FishingSession } from "../fishing/fishing-manager";
 import type { GeigerSession } from "../geiger/geiger-manager";
+import type { ActiveSurgery } from "../surgery/surgery-manager";
 
 export * from "./inventory";
 
@@ -114,6 +115,8 @@ export class Player {
   public fishing: FishingSession | null = null;
   /** Geiger counter radiation tracking state. */
   public geiger: GeigerSession | null = null;
+  /** Active surgery session, if performing surgery. */
+  public surgery: ActiveSurgery | null = null;
   /** World `/home` warps to, null when the player has not set one. */
   public homeWorld: string | null = null;
 
@@ -474,6 +477,16 @@ export class Player {
     if (this.inventory.isEquipped(itemId)) {
       this.unequipClothes(itemId);
       return;
+    }
+
+    // Special item effects on equip (from GTOS world.h:7384)
+    if (itemId === 3172 && this.playMods.has("malpractice")) {
+      this.sendTextBubble("`2Your briefs have stunned the judge!", true);
+      this.removeItemInven(3172, 1, true);
+      this.playMods.remove("malpractice");
+      this.variants.sendOnConsoleMessage("You've paid your debt to society! (`$Malpractice`` mod removed)");
+      this.sendSfx("audio/dialog_confirm.wav");
+      if (!this.inventory.hasItem(3172)) return;
     }
 
     const item = getItem(itemId);

@@ -114,6 +114,8 @@ for (const def of [
   mod({ id: "megaphone", name: "Megaphone!", displayItem: 2480, addMessage: "Broadcasting to ALL!", removeMessage: "You can broadcast once again.", duration: 600 }),
   mod({ id: "extra_xp", name: "Food: Extra XP", displayItem: 1474, addMessage: "25% chance of double XP for all actions.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/spray.wav" }),
   mod({ id: "composer", name: "Food: Composer", displayItem: 6906, addMessage: "You can see musical notes in the world!", removeMessage: "The music fades from your eyes.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "malpractice", name: "Malpractice", displayItem: 1258, addMessage: "You are not allowed to perform surgery for a while!", removeMessage: "You can perform surgery again.", duration: 3600 }),
+  mod({ id: "recovering", name: "Recovering", displayItem: 1256, addMessage: "Congratulations on your successful surgery!", removeMessage: "Fully recovered from surgery.", duration: 1200 }),
 ]) {
   PLAY_MODS.set(def.id, def);
 }

@@ -11,6 +11,7 @@ import type { World } from "../world/world";
 import { worldManager } from "../world/world-manager";
 import { handleFishingCast, handleFishingMovement, handleFishingPunch } from "../fishing/fishing-manager";
 import { handleGeigerMovement } from "../geiger/geiger-manager";
+import { handleSurgeryWrench } from "../surgery/surgery-manager";
 import { DEAD_GEIGER_COUNTER, depositDeadGeiger } from "../world/tiles/geiger-charger-tile";
 
 type TankHandler = (player: Player, tank: GameUpdatePacket, world: World) => Promise<void> | void;
@@ -86,6 +87,7 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
     await tileFrom(world, block).onPunch(player);
     if (player.inventory.clothes.hand === ITEM_ID.RAYMANS_FIST) await raymanPunch(player, world, data);
   } else if (data.itemID === ITEM_ID.WRENCH) {
+    if (handleSurgeryWrench(player, world, data.tileX, data.tileY, block.fg)) return;
     await tileFrom(world, block).onWrench(player);
   } else {
     if (await handleFishingCast(player, world, data.itemID, data.tileX, data.tileY)) return;
@@ -106,6 +108,10 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
     // clothes are never placed. Used on the player's own tile they toggle
     // wear/unwear, anywhere else the click is ignored
     if (type === ActionTypes.CLOTHES || type === ActionTypes.ANCES) {
+      if (itemMeta.id === 3172 && player.playMods.has("malpractice")) {
+        player.equipClothes(3172);
+        return;
+      }
       const ownX = Math.floor((player.state.x + 10) / 32);
       const ownY = Math.floor((player.state.y + 16) / 32);
       if (data.tileX === ownX && data.tileY === ownY) player.equipClothes(itemMeta.id ?? 0);
