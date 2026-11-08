@@ -1,4 +1,4 @@
-import { PLAYER_ROLE } from "../../constants";
+import { PLAYER_ROLE, playerRoleRank } from "../../constants";
 import { Collection } from "../../utils/collection";
 import type { Player } from "../player";
 
@@ -35,16 +35,7 @@ export function findCommand(name: string): ChatCommand | undefined {
 
 /** Role precedence: developers can do everything moderators can, and so on. */
 export function roleRank(role: PLAYER_ROLE): number {
-  switch (role) {
-    case PLAYER_ROLE.DEVELOPER:
-      return 3;
-    case PLAYER_ROLE.MODERATOR:
-      return 2;
-    case PLAYER_ROLE.SUPPORTER:
-      return 1;
-    default:
-      return 0;
-  }
+  return playerRoleRank(role);
 }
 
 export function canUseCommand(player: Player, command: ChatCommand): boolean {

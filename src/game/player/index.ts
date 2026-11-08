@@ -3,7 +3,7 @@ import { Variant, VariantHandler, type SpawnOptions } from "../packets/variants"
 import { PlayerInventory, CLOTH_MAP, type ClothTypes } from "./inventory";
 import { PlayerAuth } from "./auth";
 import { ActionsHandler } from "../packets/actions";
-import { CHARACTER_STATE, LOGON_MODE, PLAYER_ROLE, WORLD_FEATURE_FLAGS } from "../../constants";
+import { CHARACTER_STATE, LOGON_MODE, PLAYER_ROLE, WORLD_FEATURE_FLAGS, playerRoleRank } from "../../constants";
 import { logger } from "../../utils/logger";
 import { PlayerDB } from "../../database/services/player-db";
 import type { PlayerRecord } from "../../database/tables";
@@ -111,12 +111,18 @@ export class Player {
     return this.state.world.name;
   }
 
+  /** Developer or owner: unrestricted building and developer commands. */
   public get isDeveloper(): boolean {
-    return this.role === PLAYER_ROLE.DEVELOPER;
+    return playerRoleRank(this.role) >= playerRoleRank(PLAYER_ROLE.DEVELOPER);
   }
 
+  /** Moderator or above. */
   public get isModerator(): boolean {
-    return this.role === PLAYER_ROLE.DEVELOPER || this.role === PLAYER_ROLE.MODERATOR;
+    return playerRoleRank(this.role) >= playerRoleRank(PLAYER_ROLE.MODERATOR);
+  }
+
+  public get isOwner(): boolean {
+    return this.role === PLAYER_ROLE.OWNER;
   }
 
   /** Country shown on the name tag; developers get the "rt" badge. */
@@ -175,13 +181,18 @@ export class Player {
     if (!this.inventory.hasItem(ITEM_ID.WRENCH)) this.inventory.addItem(ITEM_ID.WRENCH, 1);
   }
 
-  /** Name as shown in chat and name tags, colored by role. */
+  /**
+   * Name as shown in chat and name tags, colored by role: owners black,
+   * developers orange, moderators purple, supporters blue, users white.
+   */
   public get formattedName(): string {
     switch (this.role) {
-      case PLAYER_ROLE.DEVELOPER:
+      case PLAYER_ROLE.OWNER:
         return `\`b@${this.displayName}\`\``;
+      case PLAYER_ROLE.DEVELOPER:
+        return `\`8@${this.displayName}\`\``;
       case PLAYER_ROLE.MODERATOR:
-        return `\`#@${this.displayName}\`\``;
+        return `\`5@${this.displayName}\`\``;
       case PLAYER_ROLE.SUPPORTER:
         return `\`e${this.displayName}\`\``;
       default:
@@ -196,10 +207,10 @@ export class Player {
       userID: this.playerId,
       x: this.state.x,
       y: this.state.y,
-      displayName: this.displayName,
+      displayName: this.formattedName,
       country: this.country,
       invis: this.state.isGhost ? 1 : 0,
-      mstate: this.isModerator ? 1 : 0,
+      mstate: this.isModerator && !this.isDeveloper ? 1 : 0,
       smstate: this.isDeveloper ? 1 : 0,
     };
     if (local) options.type = "local";

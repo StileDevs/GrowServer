@@ -335,7 +335,8 @@ export class VariantHandler {
     text.add("userID", options.userID ?? 0);
     text.add("colrect", 0, 0, 20, 30);
     text.add("posXY", options.x ?? 0, options.y ?? 0);
-    text.add("name", `\`w${options.displayName ?? ""}\`\``);
+    // the caller supplies the role-colored name (`Player.formattedName`)
+    text.add("name", options.displayName ?? "");
     text.add("country", options.country ?? "");
     text.add("invis", options.invis ?? 0);
     text.add("mstate", options.mstate ?? 0);

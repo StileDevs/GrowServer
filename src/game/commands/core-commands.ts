@@ -1,4 +1,4 @@
-import { CHARACTER_STATE, PLAYER_ROLE } from "../../constants";
+import { CHARACTER_STATE, PLAYER_ROLE, PLAYER_ROLE_NAMES } from "../../constants";
 import { DialogBuilder } from "../../utils/dialog-builder";
 import { PlayerDB } from "../../database/services/player-db";
 import { items } from "../item/item-info";
@@ -11,12 +11,7 @@ import { ActionTypes, ITEM_ID, LOCKS } from "../world/constants";
 import { worldManager } from "../world/world-manager";
 import { canUseCommand, commands, registerCommand, type ChatCommand } from "./registry";
 
-const ROLE_NAMES: Record<PLAYER_ROLE, string> = {
-  [PLAYER_ROLE.BASIC]: "Basic",
-  [PLAYER_ROLE.DEVELOPER]: "Developer",
-  [PLAYER_ROLE.MODERATOR]: "Moderator",
-  [PLAYER_ROLE.SUPPORTER]: "Supporter",
-};
+const ROLE_NAMES = PLAYER_ROLE_NAMES;
 
 /**
  * Resolves a command target written as `/name` (exact GrowID) or `#id`
@@ -316,13 +311,13 @@ registerCommand({
 registerCommand({
   name: "giverole",
   description: "Change a player's role.",
-  usage: "/giverole <target> <0 basic|1 developer|2 moderator|3 supporter>",
+  usage: "/giverole <target> <0 user|1 developer|2 moderator|3 supporter|4 owner>",
   role: PLAYER_ROLE.DEVELOPER,
   cooldown: 1,
   async execute(player, args) {
     const [rawTarget, rawRole] = args;
     const role = Number.parseInt(rawRole ?? "", 10) as PLAYER_ROLE;
-    if (!rawTarget || !(role in ROLE_NAMES)) return sendTargetUsage(player, "/giverole <target> <0|1|2|3>");
+    if (!rawTarget || !(role in ROLE_NAMES)) return sendTargetUsage(player, "/giverole <target> <0|1|2|3|4>");
 
     const target = await resolveTarget(rawTarget);
     if (!target?.playerId) return player.variants.sendOnConsoleMessage(`\`4Player \`o${rawTarget}\`4 not found.\`\``);

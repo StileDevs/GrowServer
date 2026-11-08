@@ -8,6 +8,8 @@ import { serverConsole } from "./console";
 
 const ROLE_BY_NAME: Record<string, PLAYER_ROLE> = {
   basic: PLAYER_ROLE.BASIC,
+  user: PLAYER_ROLE.BASIC,
+  owner: PLAYER_ROLE.OWNER,
   developer: PLAYER_ROLE.DEVELOPER,
   dev: PLAYER_ROLE.DEVELOPER,
   moderator: PLAYER_ROLE.MODERATOR,
@@ -33,13 +35,13 @@ export function registerGameConsoleCommands(): void {
 
   serverConsole.registerCommand({
     name: "role",
-    description: "Sets a player's role (basic, supporter, moderator, developer)",
+    description: "Sets a player's role (user, supporter, moderator, developer, owner)",
     usage: "role <growid> <role>",
     execute: async (args) => {
       const [name, roleName] = args;
       const role = roleName ? ROLE_BY_NAME[roleName.toLowerCase()] : undefined;
       if (!name || role === undefined) {
-        logger.warn("usage: role <growid> <basic|supporter|moderator|developer>");
+        logger.warn("usage: role <growid> <user|supporter|moderator|developer|owner>");
         return;
       }
 

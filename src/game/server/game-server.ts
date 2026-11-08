@@ -148,7 +148,11 @@ export class GameServer extends EventEmitter {
         case PACKET_TYPE.GENERIC_TEXT:
         case PACKET_TYPE.GAME_MESSAGE:
           // payload and also cleanup null terminators
-          const payload = Buffer.from(data.slice(4)).toString("utf-8").replace(/\0+$/g, "");
+          // drop the terminator, control characters and the replacement
+          // character the client's occasional stray bytes decode to
+          const payload = Buffer.from(data.slice(4))
+            .toString("utf-8")
+            .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f�]/g, "");
           const text = new TextParser(payload);
           logger.debug({ netID: player.netID, action: text.get("action") || undefined, keys: text.getEntries().map(([key]) => key) }, "text packet received");
 

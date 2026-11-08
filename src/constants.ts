@@ -180,12 +180,42 @@ export enum CLIENT_FEATURE_FLAG {
   EVENT_BUTTON = 17,
 }
 
-/** Player roles stored in `players.role_id`. */
+/**
+ * Player roles stored in `players.role_id`. New accounts are BASIC (users);
+ * ranks are compared with `roleRank()` in `src/game/commands/registry.ts`,
+ * not with the enum values.
+ */
 export enum PLAYER_ROLE {
   BASIC = 0,
   DEVELOPER = 1,
   MODERATOR = 2,
   SUPPORTER = 3,
+  OWNER = 4,
+}
+
+/** Display names of the roles. */
+export const PLAYER_ROLE_NAMES: Record<PLAYER_ROLE, string> = {
+  [PLAYER_ROLE.BASIC]: "User",
+  [PLAYER_ROLE.SUPPORTER]: "Supporter",
+  [PLAYER_ROLE.MODERATOR]: "Moderator",
+  [PLAYER_ROLE.DEVELOPER]: "Developer",
+  [PLAYER_ROLE.OWNER]: "Owner",
+};
+
+/** Rank used for permission checks: higher roles can do everything lower ones can. */
+export function playerRoleRank(role: PLAYER_ROLE): number {
+  switch (role) {
+    case PLAYER_ROLE.OWNER:
+      return 4;
+    case PLAYER_ROLE.DEVELOPER:
+      return 3;
+    case PLAYER_ROLE.MODERATOR:
+      return 2;
+    case PLAYER_ROLE.SUPPORTER:
+      return 1;
+    default:
+      return 0;
+  }
 }
 
 /** Bits of the SET_CHARACTER_STATE `itemID` field (character modifiers). */
