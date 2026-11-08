@@ -165,6 +165,8 @@ export class GameServer extends EventEmitter {
 
           // this is how it handles server static content requests
           if (text.contains("tankIDName") && !text.contains("ltoken") && text.contains("token")) {
+            // lift the GDPR chat restriction before the logon is accepted
+            player.variants.sendOnOverrideGdprFromServer(Math.max(18, text.getInt("player_age", 0, 18)));
             player.variants.sendSuperMain();
           }
 

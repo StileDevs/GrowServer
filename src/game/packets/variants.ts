@@ -339,6 +339,16 @@ export class VariantHandler {
     this.send(data);
   }
 
+  /**
+   * Overrides the client's GDPR/age restrictions. Clients that report
+   * `GDPR|1` keep chat disabled until the server confirms the player's age
+   * and chat permission; the official server sends this before the logon
+   * acceptance.
+   */
+  public sendOnOverrideGdprFromServer(age = 18, canChat = true): void {
+    this.send(Variant.from("OnOverrideGDPRFromServer", age, canChat ? 1 : 0, 0, 1).parse());
+  }
+
   public sendSuperMain() {
     const serverTick = Date.now() >>> 0;
 
