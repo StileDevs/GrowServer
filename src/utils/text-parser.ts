@@ -27,7 +27,9 @@ export class TextParser {
     this.entries = [];
     if (!raw) return;
 
-    const lines = raw.split("\n");
+    // the client terminates some lines (chat input, dialog fields) with \r\n;
+    // the carriage return must never end up inside a value
+    const lines = raw.split("\n").map((line) => line.replace(/\r$/, ""));
 
     for (const line of lines) {
       const tokens = TextParser.tokenize(line, delimiter, true);
