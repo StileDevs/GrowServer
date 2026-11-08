@@ -186,6 +186,11 @@ function Buy(player: Player, action: TextParser): void {
   handleStoreBuy(player, action.get("item"));
 }
 
+/** 5.x store navigation: `item` is the tab, `selection` the chosen entry. */
+function StoreNavigate(player: Player, action: TextParser): void {
+  handleStoreBuy(player, action.get("selection") || action.get("item"));
+}
+
 /** Skin colors every account may pick in the settings menu. */
 const BASIC_SKIN_COLORS: ReadonlySet<number> = new Set([0x505c78ff, 0x647296ff, 0x788ab4ff, 0x8295c3ff, 0x96ace1ff, 0xaac3ffff, 0xb4ceffff, 0xc8e5ffff]);
 /** Extra skin colors for supporters. */
@@ -240,6 +245,7 @@ export const GameMessageMap: Record<string, (player: Player, action: TextParser)
   trash: Trash,
   store: Store,
   buy: Buy,
+  storenavigate: StoreNavigate,
   set_skin: SetSkin,
   setSkin: SetSkin,
   on_use_door_tutorial: TutorialDoor,
