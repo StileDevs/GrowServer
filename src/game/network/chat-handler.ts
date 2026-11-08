@@ -26,6 +26,7 @@ export async function handleChatInput(player: Player, rawText: string): Promise<
 
   // strip color codes from player chat so nobody can impersonate the server
   const message = text.replace(/`./g, "");
-  world.broadcastVariant(Variant.from("OnTalkBubble", player.netID, message, 0));
-  world.broadcastVariant(Variant.from("OnConsoleMessage", `CP:0_PL:0_OID:_CT:[W]_ <${player.formattedName}> ${message}`));
+  // modern clients render the bubble from the `player_chat=` payload
+  world.broadcastVariant(Variant.from("OnTalkBubble", player.netID, `CP:0_PL:0_OID:_player_chat=${message}`, 0));
+  world.broadcastVariant(Variant.from({ netID: player.netID }, "OnConsoleMessage", `CP:0_PL:0_OID:_CT:[W]_ \`6<${player.formattedName}>\`\` \`$\`$${message}\`\`\`\``));
 }

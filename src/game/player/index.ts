@@ -3,7 +3,7 @@ import { Variant, VariantHandler, type SpawnOptions } from "../packets/variants"
 import { PlayerInventory, CLOTH_MAP, type ClothTypes } from "./inventory";
 import { PlayerAuth } from "./auth";
 import { ActionsHandler } from "../packets/actions";
-import { CHARACTER_STATE, LOGON_MODE, PLAYER_ROLE } from "../../constants";
+import { CHARACTER_STATE, LOGON_MODE, PLAYER_ROLE, WORLD_FEATURE_FLAGS } from "../../constants";
 import { logger } from "../../utils/logger";
 import { PlayerDB } from "../../database/services/player-db";
 import type { PlayerRecord } from "../../database/tables";
@@ -485,6 +485,8 @@ export class Player {
     this.sendCountryState();
     this.sendSfx("audio/door_open.wav");
     this.applyPlayMods();
+    // the official server re-sends the feature flags once the player is in a world
+    this.variants.sendOnSetFeatureEnableFlags(WORLD_FEATURE_FLAGS);
 
     this.lastVisitedWorlds = this.lastVisitedWorlds.filter((name) => name !== world.name);
     this.lastVisitedWorlds.push(world.name);

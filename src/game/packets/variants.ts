@@ -1,6 +1,6 @@
 import { GameUpdatePacket } from "./game-packet";
 import { ExtendBuffer } from "../../utils/extend-buffer";
-import { CLIENT_FEATURE_FLAG, LOGON_MODE, TANK_PACKET_FLAGS, TANK_PACKET_TYPE } from "../../constants";
+import { CLIENT_FEATURE_FLAG, LOGIN_FEATURE_FLAGS, LOGON_MODE, TANK_PACKET_FLAGS, TANK_PACKET_TYPE } from "../../constants";
 import type { PlayerClothes, PlayerInventory } from "../player/inventory";
 import { worldManager } from "../world/world-manager";
 import { Packet, PacketKind, Peer } from "growtopia.wasm";
@@ -540,15 +540,12 @@ export class VariantHandler {
   /**
    * Tells the client (5.47+) which of its features are on. Without this the
    * client treats the account as being in the tutorial and refuses to leave
-   * the world ("you must complete the tutorial first"). Everything is enabled
-   * except the two tutorial features, so REMOVE_TUTORIAL takes effect.
+   * the world ("you must complete the tutorial first"). The payload is
+   * `[count, ...flags]` base64 encoded; the default list mirrors the official
+   * server's login payload (see `LOGIN_FEATURE_FLAGS`).
    */
-  public sendOnSetFeatureEnableFlags(): void {
-    const enabled = Object.values(CLIENT_FEATURE_FLAG).filter(
-      (value): value is CLIENT_FEATURE_FLAG =>
-        typeof value === "number" && value !== CLIENT_FEATURE_FLAG.HOME_WORLD_TUTORIAL && value !== CLIENT_FEATURE_FLAG.WRENCH_TUTORIAL,
-    );
-    const payload = Buffer.from([enabled.length, ...enabled]).toString("base64");
+  public sendOnSetFeatureEnableFlags(flags: readonly CLIENT_FEATURE_FLAG[] = LOGIN_FEATURE_FLAGS): void {
+    const payload = Buffer.from([flags.length, ...flags]).toString("base64");
     this.send(Variant.from("OnSetFeatureEnableFlags", payload).parse());
   }
 
