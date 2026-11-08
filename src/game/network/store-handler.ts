@@ -13,6 +13,8 @@ const MAX_BACKPACK_UPGRADES = 38;
 const BACKPACK_UPGRADE_SLOTS = 10;
 /** Pseudo item id the catalog uses for the backpack upgrade. */
 const BACKPACK_UPGRADE_ITEM = 9412;
+/** Sound played to the buyer after a successful purchase. */
+const PURCHASE_SOUND = "audio/cash_register.wav";
 
 /** Products shown on the home tab. */
 const FEATURED_BUTTONS = ["world_lock", "small_lock", "vending_machine", "small_seed_pack", "weather_sunny", "door_and_sign_hello_pack"];
@@ -53,7 +55,10 @@ function productCost(player: Player, product: StoreProduct): number {
 }
 
 function productButton(player: Player, product: StoreProduct): string {
-  return `add_button|${product.button}|${product.name}|${product.texture}|${product.description}|${product.textureX}|${product.textureY}|${productCost(player, product)}|0|||-1|-1||-1|-1||1||||||0|0|CustomParams:|\n`;
+  // a negative price makes the client draw the Growtoken icon instead of gems
+  const cost = productCost(player, product);
+  const shownCost = product.tab === StoreTab.GROWTOKENS ? -cost : cost;
+  return `add_button|${product.button}|${product.name}|${product.texture}|${product.description}|${product.textureX}|${product.textureY}|${shownCost}|0|||-1|-1||-1|-1||1||||||0|0|CustomParams:|\n`;
 }
 
 /**
@@ -173,6 +178,14 @@ function purchase(player: Player, product: StoreProduct): void {
     }
     player.addItemInven(entry.id, entry.amount);
     received.push(`${getItem(entry.id)?.name ?? entry.id}${entry.amount > 1 ? ` x${entry.amount}` : ""}`);
+  }
+
+  player.sendSfx(PURCHASE_SOUND);
+
+  // the backpack upgrade price and the Growtoken balance are part of the
+  // page, so redraw the tab before the result pops up over it
+  if (product.button === "upgrade_backpack" || withTokens) {
+    player.variants.sendVariant(Variant.from("OnStoreRequest", storePage(player, product.tab)));
   }
 
   const left = withTokens ? player.inventory.getAmount(ITEM_ID.GROWTOKEN) : player.gems;

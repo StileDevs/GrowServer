@@ -242,6 +242,8 @@ export const GameMessageMap: Record<string, (player: Player, action: TextParser)
   store: Store,
   buy: Buy,
   storenavigate: StoreNavigate,
+  // the client reports closing the store; nothing to do server-side
+  killstore: Ignore,
   set_skin: SetSkin,
   setSkin: SetSkin,
   on_use_door_tutorial: TutorialDoor,
