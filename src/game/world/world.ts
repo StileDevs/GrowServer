@@ -404,14 +404,18 @@ export class World {
 
     const others = this.players.filter((other) => other !== player);
     const othersCount = others.length;
-    const joinMessage = `\`5<${player.displayName}\`\` joined, \`w${othersCount}\`\` others here\`5>\`\``;
+    // retail only announces entrances to a small world, and never an invisible player
+    const joinMessage = `\`5<${player.formattedName}\`\` entered, \`w${othersCount}\`\` others here>\`\``;
+    const announceJoin = othersCount >= 1 && othersCount <= 14 && !player.state.isGhost;
 
     for (const other of others) {
       other.variants.sendOnSpawn(player.spawnOptions(false));
       other.variants.sendClothes(player.netID, player.inventory.clothes, player.effectiveSkinColor);
       other.sendBuffer(other.variants.buildCharacterState(player.netID, player.characterStats, player.state.characterState, player.punchId));
-      other.variants.sendOnConsoleMessage(joinMessage);
-      other.variants.sendOnTalkBubble(player.netID, joinMessage, true);
+      if (announceJoin) {
+        other.variants.sendOnConsoleMessage(joinMessage);
+        other.variants.sendOnTalkBubble(player.netID, joinMessage, true);
+      }
       other.actions.sendPlaySfx("audio/door_open.wav");
 
       player.variants.sendOnSpawn(other.spawnOptions(false));
@@ -436,6 +440,8 @@ export class World {
     if (player.world !== this) return;
 
     const leftNetId = player.netID;
+    // captured before the world is detached: the name color depends on it
+    const leftName = player.formattedName;
     player.world = null;
     player.netID = 0;
     player.state.world.name = "";
@@ -443,7 +449,7 @@ export class World {
     player.actions.sendPlaySfx("audio/door_shut.wav");
 
     const remaining = this.players.length;
-    const leaveMessage = `\`5<${player.displayName}\`\` left, \`w${remaining}\`\` others here\`5>\`\``;
+    const leaveMessage = `\`5<${leftName}\`\` left, \`w${remaining}\`\` others here>\`\``;
 
     for (const other of this.players) {
       other.variants.sendOnRemove(leftNetId, player.playerId);

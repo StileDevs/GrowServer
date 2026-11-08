@@ -100,7 +100,7 @@ registerCommand({
     const textColor = player.isDeveloper ? "`5" : player.isModerator ? "`^" : "`$";
 
     serverManager.broadcast(
-      Variant.from("OnConsoleMessage", "CP:_PL:0_OID:_CT:[SB]_ `5** from (`0" + player.displayName + "`````5) in [```$" + worldLabel + "```5] ** : ``" + textColor + message + "``").parsePacket(),
+      Variant.from("OnConsoleMessage", "CP:_PL:0_OID:_CT:[SB]_ `5** from (`0" + player.formattedName + "`````5) in [```$" + worldLabel + "```5] ** : ``" + textColor + message + "``").parsePacket(),
     );
     for (const other of serverManager.players.values()) other.sendSfx("audio/beep.wav");
   },
