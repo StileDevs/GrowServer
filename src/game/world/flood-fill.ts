@@ -25,6 +25,36 @@ interface Node {
   y: number;
 }
 
+/**
+ * The shape an area lock covers when nothing is in its way, as offsets from
+ * the lock, nearest first. These are the patterns of the real game:
+ * - small lock (10): the 3x3 around the lock plus one tile left and right;
+ * - big lock (48): a 7x7 square;
+ * - huge and builder's lock (200): a 15x15 square without its corners.
+ */
+function defaultShape(maxTiles: number): Node[] {
+  const offsets: Node[] = [];
+  const radius = maxTiles <= 10 ? 2 : maxTiles <= 48 ? 3 : 7;
+
+  for (let dy = -radius; dy <= radius; dy++) {
+    for (let dx = -radius; dx <= radius; dx++) {
+      if (dx === 0 && dy === 0) continue;
+      const cheb = Math.max(Math.abs(dx), Math.abs(dy));
+      const manhattan = Math.abs(dx) + Math.abs(dy);
+      if (maxTiles <= 10 && cheb === 2 && !(dy === 0)) continue;
+      if (maxTiles > 48 && manhattan > 11) continue;
+      offsets.push({ x: dx, y: dy });
+    }
+  }
+
+  offsets.sort((a, b) => distance(a) - distance(b));
+  return offsets.slice(0, maxTiles);
+}
+
+function distance(offset: Node): number {
+  return offset.x * offset.x + offset.y * offset.y;
+}
+
 export interface FloodFillOptions {
   world: World;
   /** The lock tile the fill starts from. */
@@ -36,9 +66,11 @@ export interface FloodFillOptions {
 }
 
 /**
- * Breadth-first flood fill used by area locks: starting at the lock, claims up
- * to `maxTiles` 4-connected tiles, skipping tiles owned by another lock, tiles
- * in `TileIgnore` and (optionally) empty air.
+ * Area claim used by area locks. The lock first takes its default shape
+ * (`defaultShape`), skipping tiles another lock owns, bedrock, doors and
+ * (optionally) empty air. When some of those tiles were unavailable, the
+ * lock spreads to the nearest reachable tiles beyond its shape until it owns
+ * `maxTiles`, like the real game.
  */
 export class FloodFill {
   /** Claimed tiles in discovery order, without the lock tile itself. */
@@ -52,6 +84,10 @@ export class FloodFill {
 
   private indexOf(node: Node): number {
     return node.x + node.y * this.world.width;
+  }
+
+  private inBounds(node: Node): boolean {
+    return node.x >= 0 && node.x < this.world.width && node.y >= 0 && node.y < this.world.height;
   }
 
   /** Whether a tile is already owned by the lock this fill runs for. */
@@ -76,40 +112,64 @@ export class FloodFill {
   private neighbours(node: Node): Node[] {
     const result: Node[] = [];
     for (const dir of DIRECTIONS) {
-      const x = node.x + dir.x;
-      const y = node.y + dir.y;
-      if (x < 0 || x >= this.world.width || y < 0 || y >= this.world.height) continue;
-      result.push({ x, y });
+      const next = { x: node.x + dir.x, y: node.y + dir.y };
+      if (this.inBounds(next)) result.push(next);
     }
     return result;
   }
 
   /**
-   * Runs the fill and stores the claimed tiles in `nodes`.
+   * Runs the claim and stores the claimed tiles in `nodes`.
    */
   public exec(): this {
     const { lock, maxTiles } = this.options;
     const start: Node = { x: lock.x, y: lock.y };
-    const visited = new Set<number>([this.indexOf(start)]);
-    const queue: Node[] = [start];
+    const startIndex = this.indexOf(start);
+    const claimed = new Set<number>([startIndex]);
     this.nodes = [];
 
-    outer: while (queue.length > 0) {
-      const node = queue.shift()!;
+    // 1. the default shape, nearest tiles first
+    for (const offset of defaultShape(maxTiles)) {
+      if (this.nodes.length >= maxTiles) break;
+      const node = { x: start.x + offset.x, y: start.y + offset.y };
+      if (!this.inBounds(node)) continue;
 
-      for (const neighbour of this.neighbours(node)) {
-        const index = this.indexOf(neighbour);
-        if (visited.has(index)) continue;
-        visited.add(index);
+      const index = this.indexOf(node);
+      const tile = this.world.getTileByIndex(index);
+      if (!tile || !this.canClaim(tile)) continue;
 
-        const tile = this.world.getTileByIndex(index);
-        if (!tile || !this.canClaim(tile)) continue;
+      claimed.add(index);
+      this.nodes.push(node);
+    }
 
-        if (this.nodes.length >= maxTiles) break outer;
+    // 2. spread from the lock and the claimed tiles to the nearest free tiles
+    const rejected = new Set<number>();
+    while (this.nodes.length < maxTiles) {
+      let best: Node | undefined;
+      let bestDistance = Number.POSITIVE_INFINITY;
 
-        queue.push(neighbour);
-        this.nodes.push(neighbour);
+      for (const from of [start, ...this.nodes]) {
+        for (const next of this.neighbours(from)) {
+          const index = this.indexOf(next);
+          if (claimed.has(index) || rejected.has(index)) continue;
+
+          const tile = this.world.getTileByIndex(index);
+          if (!tile || !this.canClaim(tile)) {
+            rejected.add(index);
+            continue;
+          }
+
+          const dist = distance({ x: next.x - start.x, y: next.y - start.y });
+          if (dist < bestDistance) {
+            bestDistance = dist;
+            best = next;
+          }
+        }
       }
+
+      if (!best) break;
+      claimed.add(this.indexOf(best));
+      this.nodes.push(best);
     }
 
     return this;
