@@ -52,6 +52,19 @@ export class World {
     return this.data.blocks.find((block) => block.fg === ITEM_ID.MAIN_DOOR);
   }
 
+  /**
+   * Why a player may not enter this world, or undefined when they may. The
+   * world lock's minimum level does not apply to the owner, admins or staff.
+   */
+  public entryDenial(player: Player): string | undefined {
+    const index = this.data.worldLockIndex;
+    const lock = index === undefined ? undefined : this.getTileByIndex(index);
+    const minLevel = lock?.worldLockData?.minLevel ?? 1;
+    if (minLevel <= 1 || player.level >= minLevel || player.isModerator) return undefined;
+    if (lock?.lock && (lock.lock.ownerPlayerId === player.playerId || lock.lock.adminIds.includes(player.playerId))) return undefined;
+    return `\`4You need to be level \`w${minLevel}\`4 to enter \`w${this.name}\`4.\`\``;
+  }
+
   /** Tempo of the world's sheet music, from the world lock (100 when unlocked). */
   public get musicBpm(): number {
     const index = this.data.worldLockIndex;

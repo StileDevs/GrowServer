@@ -63,7 +63,7 @@ export class SwitcheROO extends Tile {
     this.data.flags ^= TileFlags.OPEN;
     this.tileUpdate();
     this.world.markDirty();
-    logger.info({ world: this.world.name, x: this.data.x, y: this.data.y, item: this.data.fg, on: (this.data.flags & TileFlags.OPEN) !== 0, by: player.tankIDName }, "block toggled");
+    logger.debug({ world: this.world.name, x: this.data.x, y: this.data.y, item: this.data.fg, on: (this.data.flags & TileFlags.OPEN) !== 0, by: player.tankIDName }, "block toggled");
     this.onToggled(player);
   }
 

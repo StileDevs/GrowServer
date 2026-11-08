@@ -532,6 +532,15 @@ export class Player {
    */
   public async enterWorld(worldName: string, x?: number, y?: number): Promise<void> {
     const world = await worldManager.get(worldName);
+
+    const denial = world.entryDenial(this);
+    if (denial) {
+      this.variants.sendOnFailedToEnterWorld();
+      this.variants.sendOnConsoleMessage(denial);
+      this.sendTextBubble(denial, true);
+      return;
+    }
+
     if (this.world && this.world !== world) this.world.leave(this);
 
     await world.enter(this, x, y);

@@ -189,8 +189,8 @@ export class LockTile extends Tile {
       dialog
         .addCheckbox("invisible_music", "Make Custom Music Block Invisible", worldLock.invisMusicBlocks ? "selected" : "not_selected")
         .addCheckbox("home_world", "Set as Home World (NOT IMPLEMENTED)", "not_selected")
-        .addInputBox("minimum_level", "World Level: (NOT IMPLEMENTED)", worldLock.minLevel)
-        .addSmallText("Set minimum world entry level")
+        .addInputBox("minimum_level", "World Level:", worldLock.minLevel, 3)
+        .addSmallText("Set minimum world entry level.")
         .addButton("session_length", "Set World Timer (NOT IMPLEMENTED)")
         .addButton("set_category", "Category: None (NOT IMPLEMENTED)");
     }
@@ -232,7 +232,8 @@ export class LockTile extends Tile {
     for (const adminId of lock?.adminIds ?? []) {
       buffer.writeU32(adminId);
     }
-    buffer.writeU32(0);
+    // minimum entry level and world timer, as in the official world format
+    buffer.writeU32(this.data.worldLockData?.minLevel ?? 0);
     buffer.writeU32(0);
   }
 
