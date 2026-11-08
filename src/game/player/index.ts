@@ -14,7 +14,7 @@ import { worldManager } from "../world/world-manager";
 import { ActionTypes, ITEM_ID } from "../world/constants";
 import type { BlockPosition } from "../world/types";
 import { PlayModController } from "./play-mod-controller";
-import { tintSkinColor, type CharacterStats } from "./play-mods";
+import { applyXenonite, tintSkinColor, type CharacterStats } from "./play-mods";
 
 export * from "./inventory";
 
@@ -213,7 +213,9 @@ export class Player {
 
   /** The avatar modifiers currently in effect. */
   public get characterStats(): CharacterStats {
-    return this.playMods.stats;
+    const stats = this.playMods.stats;
+    const xenonite = this.world?.xenoniteSettings();
+    return xenonite ? applyXenonite(stats, xenonite.mods) : stats;
   }
 
   /** Skin color as drawn, with the active mods' tint. */

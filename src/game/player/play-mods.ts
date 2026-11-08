@@ -208,6 +208,38 @@ export function mixTints(tints: readonly (readonly [number, number, number, numb
 }
 
 /** Composites the tint over a packed `0xRRGGBBAA` skin color. */
+/**
+ * Bits of the Xenonite power list (see `XENONITE_POWERS`) that map to server
+ * stats; the others are applied by the client itself.
+ */
+const XENONITE_DOUBLE_JUMP = 0;
+const XENONITE_HIGH_JUMP = 1;
+const XENONITE_STRONG_PUNCH = 3;
+const XENONITE_LONG_PUNCH = 4;
+const XENONITE_SPEEDY = 5;
+const XENONITE_LONG_BUILD = 6;
+const XENONITE_WATER_SPEED = 7;
+const XENONITE_PUNCH_DAMAGE = 8;
+
+/** Takes the powers a Xenonite Crystal masks away from the stats. */
+export function applyXenonite(stats: CharacterStats, mask: number): CharacterStats {
+  if (!mask) return stats;
+
+  const blocked = (bit: number) => (mask & (1 << bit)) !== 0;
+  const restricted: CharacterStats = { ...stats };
+
+  if (blocked(XENONITE_DOUBLE_JUMP)) restricted.charState &= ~CHARACTER_STATE.DOUBLE_JUMP;
+  if (blocked(XENONITE_HIGH_JUMP)) restricted.gravity = Math.max(restricted.gravity, BASE_STATS.gravity);
+  if (blocked(XENONITE_STRONG_PUNCH)) restricted.punchPower = Math.min(restricted.punchPower, BASE_STATS.punchPower);
+  if (blocked(XENONITE_LONG_PUNCH)) restricted.punchRange = Math.min(restricted.punchRange, BASE_STATS.punchRange);
+  if (blocked(XENONITE_SPEEDY)) restricted.speed = Math.min(restricted.speed, BASE_STATS.speed);
+  if (blocked(XENONITE_LONG_BUILD)) restricted.buildRange = Math.min(restricted.buildRange, BASE_STATS.buildRange);
+  if (blocked(XENONITE_WATER_SPEED)) restricted.waterSpeed = Math.min(restricted.waterSpeed, BASE_STATS.waterSpeed);
+  if (blocked(XENONITE_PUNCH_DAMAGE)) restricted.punchDamage = Math.min(restricted.punchDamage, BASE_STATS.punchDamage);
+
+  return restricted;
+}
+
 export function tintSkinColor(color: number, tint: [number, number, number, number] | undefined): number {
   if (!tint) return color >>> 0;
   const [red, green, blue, alpha] = tint;

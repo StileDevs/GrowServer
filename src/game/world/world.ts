@@ -12,7 +12,7 @@ import { serverManager } from "../server/server-manager";
 import { tileFrom } from "./tiles";
 import { isAntigravityActive } from "./tiles/antigravity-tile";
 import { DEFAULT_MUSIC_BPM, ActionTypes, ITEM_ID, JAMMERS, MUSIC_BLOCKS, LockPermission, SIGNAL_JAMMER, TileFlags, WEATHER_CLEAR, WORLD_DATA_VERSION } from "./constants";
-import type { DroppedItem, TileData, WorldData } from "./types";
+import type { DroppedItem, TileData, WorldData, XenoniteSettings } from "./types";
 
 export interface DropOptions {
   /** Drop without attributing it to a player (e.g. from a broken block). */
@@ -24,6 +24,11 @@ export interface DropOptions {
 /** A music block currently playing in a world. */
 interface MusicSource {
   file: string;
+  /** Block position, in tiles. */
+  x: number;
+  y: number;
+  /** Audible radius in pixels when no amplifier is next to it. */
+  radius: number;
   amplified: boolean;
 }
 
@@ -50,6 +55,23 @@ export class World {
   }
 
   /** Players currently inside this world, across every game server. */
+  /** Cached Xenonite masks, `undefined` when they must be recomputed. */
+  private xenoniteCache: XenoniteSettings | null | undefined;
+
+  /** Powers a Xenonite Crystal takes away in this world, if one is placed. */
+  public xenoniteSettings(): XenoniteSettings | undefined {
+    if (this.xenoniteCache === undefined) {
+      const crystal = this.data.blocks.find((block) => getItem(block.fg)?.type === ActionTypes.XENONITE);
+      this.xenoniteCache = crystal?.xenonite ?? null;
+    }
+    return this.xenoniteCache ?? undefined;
+  }
+
+  /** Drops the cached Xenonite masks after the crystal changed. */
+  public invalidateXenonite(): void {
+    this.xenoniteCache = undefined;
+  }
+
   /** Cached music source, `undefined` when it must be recomputed. */
   private musicCache: MusicSource | null | undefined;
   /** Audio file currently streamed to each player, keyed by player id. */
@@ -317,7 +339,7 @@ export class World {
 
       const amplifier = this.getTileAt(block.x + 1, block.y);
       const amplified = amplifier !== undefined && (amplifier.flags & TileFlags.OPEN) !== 0 && getItem(amplifier.fg)?.id === ITEM_ID.MUSIC_AMPLIFIER;
-      source = { file, amplified };
+      source = { file, x: block.x, y: block.y, radius: Math.max(item?.audioVolume ?? 0, 384), amplified };
       break;
     }
 
@@ -333,11 +355,18 @@ export class World {
    */
   public syncMusic(): void {
     const source = this.musicSource();
-    // only an amplified block is streamed: unamplified music stays on the
-    // client's own positional audio, which fades with distance
-    const wanted = source?.amplified ? source.file : undefined;
 
     for (const player of this.players) {
+      // an amplifier spreads the tune to the world; otherwise it is only
+      // streamed inside the block's audible radius (the client cannot resume
+      // its own positional audio once a stream took the channel)
+      let wanted: string | undefined;
+      if (source) {
+        const dx = player.state.x - (source.x * 32 + 16);
+        const dy = player.state.y - (source.y * 32 + 16);
+        if (source.amplified || Math.hypot(dx, dy) <= source.radius) wanted = source.file;
+      }
+
       const current = this.musicStreams.get(player.playerId);
       if (wanted === current) continue;
 

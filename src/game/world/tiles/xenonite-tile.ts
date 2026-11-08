@@ -51,12 +51,16 @@ export class XenoniteTile extends Tile {
 
     this.data.flags |= TileFlags.TILEEXTRA;
     this.data.xenonite = { mods: 0, powerups: 0 };
+    this.world.invalidateXenonite();
+    for (const other of this.world.players) other.sendCharacterState();
     return true;
   }
 
   public override async onDestroy(player: Player): Promise<void> {
     await super.onDestroy(player);
     delete this.data.xenonite;
+    this.world.invalidateXenonite();
+    for (const other of this.world.players) other.sendCharacterState();
   }
 
   public override async onWrench(player: Player): Promise<boolean> {
@@ -119,7 +123,10 @@ registerDialog("xenonite_edit", async (player, action) => {
   block.xenonite = { mods, powerups };
   new XenoniteTile(world, block).tileUpdate();
 
+  // the masks change every player's stats, not just the client's own state
+  world.invalidateXenonite();
   for (const other of world.players) {
+    other.sendCharacterState();
     other.variants.sendOnConsoleMessage("`5Xenonite has changed everyone's powers!``");
   }
   world.markDirty();
