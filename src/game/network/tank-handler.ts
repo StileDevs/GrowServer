@@ -10,6 +10,8 @@ import { isPlaceableType, tileFrom } from "../world/tiles";
 import type { World } from "../world/world";
 import { worldManager } from "../world/world-manager";
 import { handleFishingCast, handleFishingMovement, handleFishingPunch } from "../fishing/fishing-manager";
+import { handleGeigerMovement } from "../geiger/geiger-manager";
+import { DEAD_GEIGER_COUNTER, depositDeadGeiger } from "../world/tiles/geiger-charger-tile";
 
 type TankHandler = (player: Player, tank: GameUpdatePacket, world: World) => Promise<void> | void;
 
@@ -25,6 +27,7 @@ function State(player: Player, tank: GameUpdatePacket, world: World): void {
   world.syncMusic();
 
   handleFishingMovement(player, world);
+  handleGeigerMovement(player, world);
 
   world.broadcast(tank.parse()!, player.id);
 
@@ -95,6 +98,10 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
       await useConsumable(player, world, itemMeta, data.tileX, data.tileY);
       return;
     }
+
+    // the Dead Geiger Counter is a wearable item, but using it on a Geiger
+    // Charger drops it in to charge
+    if (itemMeta.id === DEAD_GEIGER_COUNTER && (await depositDeadGeiger(player, world, block))) return;
 
     // clothes are never placed. Used on the player's own tile they toggle
     // wear/unwear, anywhere else the click is ignored

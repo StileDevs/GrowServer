@@ -22,6 +22,7 @@ import { VipEntranceTile } from "./vip-entrance-tile";
 import { AntigravityTile } from "./antigravity-tile";
 import { RouletteTile } from "./roulette-tile";
 import { XenoniteTile } from "./xenonite-tile";
+import { GeigerChargerTile } from "./geiger-charger-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
 import { ITEM_ID } from "../constants";
 // dialog modules register their dialog returns on import
@@ -53,6 +54,7 @@ export const TileMap: Partial<Record<number, TileClass>> = {
   [ActionTypes.GATEWAY]: EntranceTile,
   [ActionTypes.VIP_ENTRANCE]: VipEntranceTile,
   [ActionTypes.XENONITE]: XenoniteTile,
+  [ActionTypes.GEIGER_CHARGER]: GeigerChargerTile,
 };
 
 /** Tile behaviour for single items whose action type is shared with plain blocks. */
@@ -73,6 +75,7 @@ export const TileMapByItem: Partial<Record<number, TileClass>> = {
   // the roulette wheel and the slot machine spin when punched
   [ITEM_ID.ROULETTE_WHEEL]: RouletteTile,
   [ITEM_ID.SLOT_MACHINE]: RouletteTile,
+  4654: GeigerChargerTile,
 };
 
 /**

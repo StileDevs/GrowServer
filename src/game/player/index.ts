@@ -17,6 +17,7 @@ import { PlayModController } from "./play-mod-controller";
 import { applyXenonite, tintSkinColor, type CharacterStats } from "./play-mods";
 import { QuestController } from "../quests/quest-state";
 import type { FishingSession } from "../fishing/fishing-manager";
+import type { GeigerSession } from "../geiger/geiger-manager";
 
 export * from "./inventory";
 
@@ -111,6 +112,8 @@ export class Player {
   public quests: QuestController = new QuestController(this);
   /** Active fishing session, if currently fishing. */
   public fishing: FishingSession | null = null;
+  /** Geiger counter radiation tracking state. */
+  public geiger: GeigerSession | null = null;
   /** World `/home` warps to, null when the player has not set one. */
   public homeWorld: string | null = null;
 
