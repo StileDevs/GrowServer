@@ -4,6 +4,7 @@ import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
 import { getItemInfo } from "../item/item-wiki";
 import { Player, PlayerStateFlags, MAX_LEVEL } from "../player";
+import { Variant } from "../packets/variants";
 import { serverManager } from "../server/server-manager";
 import { BlockFlags, ITEM_ID } from "../world/constants";
 import { handleDialogReturn } from "./dialog-handler";
@@ -27,11 +28,21 @@ function RefreshPlayerTributeData(player: Player): void {
   player.variants.sendOnRefreshPlayerTributeData();
 }
 
+/**
+ * The client sends `enter_game` once it has loaded items.dat and built its UI.
+ * Everything that drives that UI (backpack, gems, GrowID state, world menu)
+ * is sent here, in the order the official server uses.
+ */
 function EnterGame(player: Player): void {
-  player.variants.sendOnSetFeatureEnableFlags();
+  player.variants.sendOnConsoleMessage(`Welcome back, ${player.formattedName}. There are \`w${serverManager.getTotalPlayersCount()}\`\` players online.`);
+  player.sendInventory();
+  player.variants.sendOnSetBux(player.gems, true);
+  player.variants.sendVariant(Variant.from("OnSetVouchers", 0));
+  // tells the client which GrowID it is logged in with; without it the client
+  // stays in guest mode (chat disabled, empty profile)
+  player.variants.sendSetHasGrowID(true, player.tankIDName, player.auth.metadata.tankIDPass || player.auth.transferSession?.sessionToken || "");
   player.variants.sendGazette();
-  player.variants.sendOnConsoleMessage(`Welcome ${player.formattedName}, there are \`w${serverManager.getTotalPlayersCount()}\`\` players online.`);
-  player.setGems(player.gems, true);
+  player.variants.sendOnSetFeatureEnableFlags();
   player.addStateStatus(PlayerStateFlags.IN_GAME);
 }
 

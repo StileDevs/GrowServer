@@ -12,8 +12,20 @@ export class ActionsHandler {
     }
   }
 
+  /**
+   * Sends an `action|...` text packet. Server-to-client actions use the
+   * GAME_MESSAGE type; the client rejects GENERIC_TEXT ("unknown packet type: 2").
+   */
+  public sendAction(...lines: string[]): void {
+    this.send(TextPacket.from(PACKET_TYPE.GAME_MESSAGE, ...lines).parse());
+  }
+
   public sendPlaySfx(pathFile: string, delayMS: number = 0): void {
-    const data = TextPacket.from(PACKET_TYPE.GENERIC_TEXT, "action|play", `file|${pathFile}`, `delayMS|${delayMS}`);
-    this.send(data.parse());
+    this.sendAction("action|play_sfx", `file|${pathFile}`, `delayMS|${delayMS}`);
+  }
+
+  /** Shows an `action|log` console line on the client. */
+  public sendLog(message: string): void {
+    this.sendAction("action|log", `msg|${message}`);
   }
 }

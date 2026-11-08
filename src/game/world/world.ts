@@ -85,7 +85,7 @@ export class World {
 
   /** Plays a sound effect for everyone in the world. */
   public playSfx(file: string, delayMs = 0): void {
-    this.broadcast(TextPacket.from(PACKET_TYPE.GENERIC_TEXT, "action|play_sfx", `file|${file}`, `delayMS|${delayMs}`).parse());
+    this.broadcast(TextPacket.from(PACKET_TYPE.GAME_MESSAGE, "action|play_sfx", `file|${file}`, `delayMS|${delayMs}`).parse());
   }
 
   /**
@@ -159,6 +159,7 @@ export class World {
     player.variants.sendOnSetCurrentWeather(this.data.weather.id);
     player.variants.sendOnSpawn(player.spawnOptions(true));
     player.variants.sendClothes(player.netID, player.inventory.clothes, player.skinColor);
+    player.sendBuffer(player.variants.buildCharacterState(player.netID, player.state.characterState, player.punchId));
 
     const ownerName = await this.getOwnerName();
     if (ownerName) {
@@ -172,12 +173,14 @@ export class World {
     for (const other of others) {
       other.variants.sendOnSpawn(player.spawnOptions(false));
       other.variants.sendClothes(player.netID, player.inventory.clothes, player.skinColor);
+      other.sendBuffer(other.variants.buildCharacterState(player.netID, player.state.characterState, player.punchId));
       other.variants.sendOnConsoleMessage(joinMessage);
       other.variants.sendOnTalkBubble(player.netID, joinMessage, true);
       other.actions.sendPlaySfx("audio/door_open.wav");
 
       player.variants.sendOnSpawn(other.spawnOptions(false));
       player.variants.sendClothes(other.netID, other.inventory.clothes, other.skinColor);
+      player.sendBuffer(player.variants.buildCharacterState(other.netID, other.state.characterState, other.punchId));
     }
 
     logger.debug({ player: player.tankIDName, world: this.name, players: othersCount + 1 }, "player entered world");

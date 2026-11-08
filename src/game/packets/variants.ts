@@ -304,7 +304,8 @@ export class VariantHandler {
     // only the receiving client's own avatar carries `type|local`
     if (options.type) text.add("type", options.type);
 
-    const variant = Variant.from({ delay: -1 }, "OnSpawn", text.toString());
+    // the client's line parser expects every entry, including the last one, to end with a newline
+    const variant = Variant.from({ delay: -1 }, "OnSpawn", `${text.toString()}\n`);
     const data = variant.parse();
 
     this.send(data);
