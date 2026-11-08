@@ -45,8 +45,24 @@ export class VipEntranceTile extends Tile {
     if (!itemMeta) return false;
 
     if (!canEditEntrance(this.world, player, this.data)) {
-      await this.onPlaceFail(player);
-      return false;
+      // someone with access (but not the owner) may drop their own access,
+      // like the wrench dialog of a lock does
+      if (!this.hasAccess(player)) {
+        await this.onPlaceFail(player);
+        return false;
+      }
+
+      const ownerName = await this.world.getTileOwnerName(this.data);
+      const dialog = new DialogBuilder()
+        .defaultColor("`o")
+        .addLabelWithIcon(`\`wEdit ${itemMeta.name}\`\``, itemMeta.id ?? 0, "big")
+        .addTextBox(`This ${itemMeta.name} is owned by ${ownerName ?? "someone else"}, but I have access on it.`)
+        .embed("tilex", this.data.x)
+        .embed("tiley", this.data.y)
+        .endDialog("vip_revoke", "Cancel", "Remove My Access");
+
+      player.variants.sendOnDialogRequest(dialog.str());
+      return true;
     }
 
     if (!isInLockedArea(this.world, this.data)) {
@@ -79,6 +95,14 @@ export class VipEntranceTile extends Tile {
 
     player.variants.sendOnDialogRequest(dialog.str());
     return true;
+  }
+
+  /** Whether a player who is not the owner may pass through this entrance. */
+  private hasAccess(player: Player): boolean {
+    if (this.vip.playerIds.includes(player.playerId)) return true;
+    if (!this.data.lockedBy) return false;
+    const parent = this.world.getTileAt(this.data.lockedBy.parentX, this.data.lockedBy.parentY);
+    return parent?.lock?.adminIds.includes(player.playerId) ?? false;
   }
 
   public override serialize(buffer: ExtendBuffer): void {
@@ -178,5 +202,36 @@ registerDialog("vip_edit", async (player, action) => {
   }
 
   tile.tileUpdate();
+  world.markDirty();
+});
+
+registerDialog("vip_revoke", async (player, action) => {
+  const target = tileFromDialog(player, action);
+  if (!target) return;
+  const { world, block } = target;
+
+  if (getItem(block.fg)?.type !== ActionTypes.VIP_ENTRANCE) return;
+
+  const ownerId = world.getTileOwnerPlayerId(block) ?? world.getOwnerPlayerId();
+  if (ownerId === player.playerId) return;
+
+  let removed = false;
+  const vipIndex = block.vip?.playerIds.indexOf(player.playerId) ?? -1;
+  if (vipIndex !== -1) {
+    block.vip!.playerIds.splice(vipIndex, 1);
+    removed = true;
+  }
+
+  const parent = block.lockedBy ? world.getTileAt(block.lockedBy.parentX, block.lockedBy.parentY) : undefined;
+  const adminIndex = parent?.lock ? parent.lock.adminIds.indexOf(player.playerId) : -1;
+  if (parent?.lock && adminIndex !== -1) {
+    parent.lock.adminIds.splice(adminIndex, 1);
+    removed = true;
+  }
+
+  if (!removed) return;
+
+  broadcastConsole(world, `${player.formattedName}\`\` removed their access from a \`$VIP Entrance\`\`.`);
+  new VipEntranceTile(world, block).tileUpdate();
   world.markDirty();
 });
