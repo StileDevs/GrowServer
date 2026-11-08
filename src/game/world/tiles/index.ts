@@ -14,7 +14,7 @@ import { LockTile } from "./lock-tile";
 import { DiceTile } from "./dice-tile";
 import { DisplayBlockTile } from "./display-block-tile";
 import { HeartMonitorTile } from "./heart-monitor-tile";
-import { SwitcheROO } from "./switcheroo-tile";
+import { MusicBlockTile, SwitcheROO } from "./switcheroo-tile";
 import { WeatherTile } from "./weather-tile";
 import { VendingTile } from "./vending-tile";
 import { EntranceTile } from "./entrance-tile";
@@ -58,6 +58,12 @@ export const TileMap: Partial<Record<number, TileClass>> = {
 /** Tile behaviour for single items whose action type is shared with plain blocks. */
 export const TileMapByItem: Partial<Record<number, TileClass>> = {
   [ITEM_ID.ANTIGRAVITY_GENERATOR]: AntigravityTile,
+  // record players / pianos / jukeboxes share the decorative animated type,
+  // so they are mapped by item: punch toggles the tune
+  [ITEM_ID.MYSTIC_RECORD_PLAYER]: MusicBlockTile,
+  [ITEM_ID.ORGAN_PIANO]: MusicBlockTile,
+  [ITEM_ID.VINTAGE_JUKEBOX]: MusicBlockTile,
+  [ITEM_ID.KARAOKE_MACHINE]: MusicBlockTile,
   // the roulette wheel and the slot machine spin when punched
   [ITEM_ID.ROULETTE_WHEEL]: RouletteTile,
   [ITEM_ID.SLOT_MACHINE]: RouletteTile,

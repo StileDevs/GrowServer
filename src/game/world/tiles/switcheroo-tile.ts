@@ -15,6 +15,9 @@ import { LockPermission, TileFlags } from "../constants";
  * damaging it; otherwise they only hear the lock sound.
  */
 export class SwitcheROO extends Tile {
+  /** Whether the block starts toggled on when it is placed. */
+  protected startsOn = true;
+
   /**
    * Toggleable blocks (Music Amplifier, Boombox, switches) are placed in the
    * ON state, like the official server: the client then applies the block's
@@ -22,8 +25,10 @@ export class SwitcheROO extends Tile {
    */
   public override async onPlaceForeground(player: Player, itemMeta: Parameters<Tile["onPlaceForeground"]>[1]): Promise<boolean> {
     if (!(await super.onPlaceForeground(player, itemMeta))) return false;
-    this.data.flags |= TileFlags.OPEN;
-    this.tileUpdate();
+    if (this.startsOn) {
+      this.data.flags |= TileFlags.OPEN;
+      this.tileUpdate();
+    }
     return true;
   }
 
@@ -82,6 +87,16 @@ export class SwitcheROO extends Tile {
 
   /** Hook for blocks that do more than flip their flag (antigravity, jammers). */
   protected onToggled(_player: Player): void {}
+}
+
+/**
+ * Music blocks that play a tune while toggled on (Mystic Record Player, Organ
+ * Piano, Vintage Jukebox). They start silent and play after a punch, and the
+ * Music Amplifier next to them needs that ON state to extend their sound to
+ * the whole world.
+ */
+export class MusicBlockTile extends SwitcheROO {
+  protected startsOn = false;
 }
 
 registerDialog("switcheroo_edit", async (player, action) => {

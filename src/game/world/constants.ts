@@ -54,6 +54,10 @@ export const ITEM_ID = {
   WEATHER_HEATWAVE: 3694,
   WEATHER_STUFF: 3832,
   WEATHER_BACKGROUND: 5000,
+  MYSTIC_RECORD_PLAYER: 10152,
+  ORGAN_PIANO: 11346,
+  VINTAGE_JUKEBOX: 11372,
+  KARAOKE_MACHINE: 15388,
 } as const;
 
 /** Weather id of the default (clear) sky. */
