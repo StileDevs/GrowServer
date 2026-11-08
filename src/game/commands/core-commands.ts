@@ -165,6 +165,63 @@ registerCommand({
   },
 });
 
+registerCommand({
+  name: "sethome",
+  aliases: ["addhome"],
+  description: "Set the world you are in as your home world.",
+  usage: "/sethome",
+  cooldown: 2,
+  execute(player) {
+    const world = player.world;
+    if (!world) return player.variants.sendOnConsoleMessage("`4You are not in a world.");
+
+    if (world.getOwnerPlayerId() === undefined) {
+      return player.variants.sendOnConsoleMessage("`4You can only set a home world in a world locked world.");
+    }
+    if (player.homeWorld === world.name) {
+      return player.variants.sendOnConsoleMessage(`\`2${world.name}\`\` is already your home world!`);
+    }
+
+    player.setHomeWorld(world.name);
+    const message = `\`2${world.name}\`\` has been set as your home world!`;
+    player.sendTextBubble(message, false);
+    player.variants.sendOnConsoleMessage(message);
+  },
+});
+
+registerCommand({
+  name: "removehome",
+  aliases: ["delhome", "unhome", "unsethome"],
+  description: "Remove the home world from your account.",
+  usage: "/removehome",
+  cooldown: 2,
+  execute(player) {
+    if (!player.homeWorld) return player.variants.sendOnConsoleMessage("`4You don't have a home world set.");
+
+    const removed = player.homeWorld;
+    player.setHomeWorld(null);
+    const message = `\`2${removed}\`\` has been removed as your home world!`;
+    player.sendTextBubble(message, false);
+    player.variants.sendOnConsoleMessage(message);
+  },
+});
+
+registerCommand({
+  name: "home",
+  description: "Warp to your home world.",
+  usage: "/home",
+  cooldown: 15,
+  async execute(player) {
+    const name = player.homeWorld;
+    if (!name) {
+      return player.variants.sendOnConsoleMessage("You haven't set a home world yet! Use `\`2/sethome\`\` in a world locked world to set one.");
+    }
+
+    player.variants.sendOnConsoleMessage(`Magically warping to home world \`5${name}\`\`...`);
+    await player.enterWorld(name);
+  },
+});
+
 function sendFindResults(player: Player, query: string, seedsOnly: boolean): void {
   const dialog = new DialogBuilder().defaultColor().addQuickExit().addLabelWithIcon("Find the item", 6016, "big").addSpacer("small");
   // input boxes and chat both append the pressed Enter as a trailing

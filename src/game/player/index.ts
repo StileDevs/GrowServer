@@ -105,6 +105,8 @@ export class Player {
   private sessionStartedAt = Date.now();
   /** Wearable and timed play mods. */
   public playMods: PlayModController = new PlayModController(this);
+  /** World `/home` warps to, null when the player has not set one. */
+  public homeWorld: string | null = null;
 
   public state: PlayerState = {
     x: 0,
@@ -186,6 +188,7 @@ export class Player {
     this.savedPlaytime = record.playtime ?? 0;
     this.sessionStartedAt = Date.now();
     this.playMods.load(record.play_mods);
+    this.homeWorld = record.home_world ?? null;
 
     if (!this.inventory.load(record.inventory)) {
       this.inventory.addItem(ITEM_ID.FIST, 1);
@@ -492,6 +495,16 @@ export class Player {
     } else {
       this.variants.sendClothes(this.netID, this.inventory.clothes, skin);
     }
+  }
+
+  /** Sets (or clears) the player's home world and persists it. */
+  public setHomeWorld(worldName: string | null = null): void {
+    this.homeWorld = worldName;
+    if (!this.recordLoaded || this.playerId <= 0) return;
+
+    PlayerDB.updateById(this.playerId, { home_world: worldName }).catch((err) =>
+      logger.error({ err, playerId: this.playerId }, "failed to save the player home world"),
+    );
   }
 
   /** Recomputes the play mods granted by the worn clothes and sends the result. */

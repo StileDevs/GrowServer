@@ -188,7 +188,7 @@ export class LockTile extends Tile {
       }
       dialog
         .addCheckbox("invisible_music", "Make Custom Music Block Invisible", worldLock.invisMusicBlocks ? "selected" : "not_selected")
-        .addCheckbox("home_world", "Set as Home World (NOT IMPLEMENTED)", "not_selected")
+        .addCheckbox("home_world", "Set as Home World", player.homeWorld === this.world.name ? "selected" : "not_selected")
         .addInputBox("minimum_level", "World Level:", worldLock.minLevel, 3)
         .addSmallText("Set minimum world entry level.")
         .addButton("session_length", "Set World Timer (NOT IMPLEMENTED)")

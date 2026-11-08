@@ -91,6 +91,13 @@ registerDialog("area_lock_edit", async (player, action) => {
     worldLock.invisMusicBlocks = action.get("invisible_music") === "1";
     if (action.contains("tempo")) worldLock.bpm = Math.max(20, Math.min(200, action.getInt("tempo", 0, worldLock.bpm)));
     if (action.contains("minimum_level")) worldLock.minLevel = Math.max(1, action.getInt("minimum_level", 0, worldLock.minLevel));
+
+    // the home world is a per-player setting stored on the account
+    const wantsHome = action.get("home_world") === "1";
+    if (wantsHome !== (player.homeWorld === world.name)) {
+      player.setHomeWorld(wantsHome ? world.name : null);
+      player.sendTextBubble(`${world.name} has been ${wantsHome ? "set as" : "removed as"} your home world!`, false);
+    }
   } else {
     lock.ignoreEmptyAir = action.get("ignore_empty") === "1";
     if (block.fg === ITEM_ID.BUILDERS_LOCK) {
