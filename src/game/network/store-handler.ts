@@ -17,7 +17,7 @@ const BACKPACK_UPGRADE_ITEM = 9412;
 const PURCHASE_SOUND = "audio/cash_register.wav";
 
 /** Products shown on the home tab. */
-const FEATURED_BUTTONS = ["world_lock", "small_lock", "vending_machine", "small_seed_pack", "weather_sunny", "door_and_sign_hello_pack"];
+const FEATURED_BUTTONS = ["world_lock", "small_lock", "vending_machine", "surg_pack", "deluxe_surg_pack", "fishin_pack"];
 
 const TAB_BUTTONS = `enable_tabs|1
 add_tab_button|main_menu|Home|interface/large/btn_shop.rttex||{0}|0|0|0||||-1|-1|||0|0|CustomParams:|
@@ -103,7 +103,7 @@ export function handleStoreBuy(player: Player, name: string, selection = ""): vo
     return;
   }
 
-  const product = storeProducts.get(name);
+  const product = storeProducts.get(name) ?? (name === "surgery_pack" ? storeProducts.get("surg_pack") : undefined);
   if (!product) return;
   purchase(player, product);
 }
@@ -157,11 +157,23 @@ function purchase(player: Player, product: StoreProduct): void {
 
   // everything must fit before anything is charged
   const physical = granted.filter((entry) => entry.id !== BACKPACK_UPGRADE_ITEM);
+  let newSlotsNeeded = 0;
   for (const entry of physical) {
-    if (!player.inventory.canAddItem(entry.id, entry.amount)) {
-      player.variants.sendVariant(Variant.from("OnStorePurchaseResult", "`4You don't have room in your backpack for that!``"));
-      return;
+    const current = player.inventory.getAmount(entry.id);
+    if (current === 0) {
+      newSlotsNeeded++;
+    } else {
+      const maxStack = getItem(entry.id)?.maxAmount || 200;
+      if (current + entry.amount > maxStack) {
+        player.variants.sendVariant(Variant.from("OnStorePurchaseResult", "`4You don't have room in your backpack for that!``"));
+        return;
+      }
     }
+  }
+  const freeSlots = player.inventory.max - player.inventory.items.size;
+  if (newSlotsNeeded > freeSlots) {
+    player.variants.sendVariant(Variant.from("OnStorePurchaseResult", "`4You don't have enough free spaces in your backpack for all items in this pack!``"));
+    return;
   }
 
   if (withTokens) player.removeItemInven(ITEM_ID.GROWTOKEN, cost);
