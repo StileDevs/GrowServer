@@ -87,6 +87,21 @@ const CONSUMABLES: Partial<Record<number, ConsumableEffect>> = {
 const USE_COOLDOWN_MS = 350;
 const lastUse = new WeakMap<Player, number>();
 
+/** Growth (in seconds) a spray adds to the tree on the used tile, keyed by item id. */
+const TREE_SPRAY_SECONDS: Partial<Record<number, number>> = {
+  228: 3_600, // Grow Spray Fertilizer
+  1062: 2_592_000, // Ultra Grow Spray
+  1778: 86_400, // Deluxe Grow Spray
+  5764: 86_400, // Lunar Spice Spray
+  10672: 3_600, // My First Grow Spray Fertilizer
+};
+
+/** Growth (in seconds) a spray adds to every growing tree in the world, keyed by item id. */
+const WORLD_SPRAY_SECONDS: Partial<Record<number, number>> = {
+  12600: 2_592_000, // Ultra World Spray
+  13574: 86_400, // Deluxe World Spray
+};
+
 /** Experience granted by an Experience Potion. */
 const EXPERIENCE_POTION_XP = 10_000;
 /** Particle effect of fireworks. */
@@ -154,6 +169,18 @@ export async function useConsumable(player: Player, world: World, item: ItemDefi
       return;
   }
 
+  const treeSpray = TREE_SPRAY_SECONDS[itemId];
+  if (treeSpray !== undefined) {
+    useTreeSpray(player, world, itemId, treeSpray, tileX, tileY);
+    return;
+  }
+
+  const worldSpray = WORLD_SPRAY_SECONDS[itemId];
+  if (worldSpray !== undefined) {
+    useWorldSpray(player, world, itemId, worldSpray);
+    return;
+  }
+
   const effect = CONSUMABLES[itemId];
   if (!effect) {
     player.sendTextBubble("`4That item isn't supported on this server yet.``", true);
@@ -184,6 +211,69 @@ export async function useConsumable(player: Player, world: World, item: ItemDefi
     const name = getItem(itemId)?.name ?? "something";
     for (const other of world.players) other.variants.sendOnConsoleMessage(`\`7[\`\`${player.displayName} used \`2${name}\`\` on ${target.displayName}.\`7]\`\``);
   }
+}
+
+// --- grow spray --------------------------------------------------------------
+
+/** "1 hour" / "24 hours" / "30 days", as shown in the overlay text. */
+function describeAge(seconds: number): string {
+  if (seconds >= 86_400) {
+    const days = Math.round(seconds / 86_400);
+    return `${days} day${days === 1 ? "" : "s"}`;
+  }
+  const hours = Math.round(seconds / 3_600);
+  return `${hours} hour${hours === 1 ? "" : "s"}`;
+}
+
+/** Ages the growing tree on the used tile by one spray. */
+function useTreeSpray(player: Player, world: World, itemId: number, seconds: number, tileX: number, tileY: number): void {
+  const block = world.getTileAt(tileX, tileY);
+  const tree = block?.tree;
+  if (!block || !tree) {
+    player.sendTextBubble("Use this on a growing tree to speed its growth.", true);
+    return;
+  }
+
+  const now = Date.now();
+  if (tree.fullyGrownAt <= now) {
+    player.sendTextBubble("This tree has already bloomed, don't waste your spray on it!", true);
+    return;
+  }
+
+  const ms = seconds * 1000;
+  tree.plantedAt -= ms;
+  tree.fullyGrownAt -= ms;
+  // the tile stores the seed, so the grown block is the id before it
+  const name = getItem(block.fg - 1)?.name ?? getItem(block.fg)?.name ?? "Tree";
+  player.variants.sendOnTextOverlay(tree.fullyGrownAt <= now ? `${name} Tree grew to full size!` : `${name} Tree aged \`$${describeAge(seconds)}\``);
+  player.variants.sendOnPlayPositioned("audio/spray.wav", player.netID);
+  tileFrom(world, block).tileUpdate();
+  player.removeItemInven(itemId, 1);
+  world.markDirty();
+}
+
+/** Ages every growing tree in the world by one world spray. */
+function useWorldSpray(player: Player, world: World, itemId: number, seconds: number): void {
+  const now = Date.now();
+  const ms = seconds * 1000;
+  let aged = 0;
+  for (const block of world.data.blocks) {
+    if (!block.tree || block.tree.fullyGrownAt <= now) continue;
+    block.tree.plantedAt -= ms;
+    block.tree.fullyGrownAt -= ms;
+    tileFrom(world, block).tileUpdate();
+    aged++;
+  }
+
+  if (aged === 0) {
+    player.sendTextBubble("There are no growing trees in this world to spray!", true);
+    return;
+  }
+
+  player.variants.sendOnTextOverlay(`All trees in the world aged \`$${describeAge(seconds)}\``);
+  player.variants.sendOnPlayPositioned("audio/spray.wav", player.netID);
+  player.removeItemInven(itemId, 1);
+  world.markDirty();
 }
 
 // --- door mover --------------------------------------------------------------
