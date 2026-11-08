@@ -98,17 +98,12 @@ export class SwitcheROO extends Tile {
 export class MusicBlockTile extends SwitcheROO {
   protected startsOn = false;
 
-  /**
-   * A music block that starts playing refreshes the state of the amplifiers
-   * next to it, so the client re-evaluates whether the tune is amplified.
-   */
+  /** Toggles the tune of the block and reconciles the world's music stream. */
   protected override onToggled(player: Player): void {
     const playing = (this.data.flags & TileFlags.OPEN) !== 0;
-    const file = getItem(this.data.fg)?.extraFile;
     const amplifiers = [-1, 1]
       .map((dx) => this.world.getTileAt(this.data.x + dx, this.data.y))
       .filter((tile) => tile !== undefined && getItem(tile.fg)?.id === ITEM_ID.MUSIC_AMPLIFIER);
-    const amplified = amplifiers.some((tile) => (tile!.flags & TileFlags.OPEN) !== 0);
 
     logger.info(
       {
@@ -123,38 +118,31 @@ export class MusicBlockTile extends SwitcheROO {
       "music block toggled",
     );
 
-    if (!file?.startsWith("audio/")) return;
-    if (!playing) {
-      if (amplified) this.world.stopAmplifiedMusic();
-      return;
-    }
+    this.world.invalidateMusic();
+    this.world.syncMusic();
+  }
 
-    for (const tile of amplifiers) new SwitcheROO(this.world, tile!).tileUpdate();
-    if (amplified) this.world.playAmplifiedMusic(file);
+  public override async onDestroy(player: Player): Promise<void> {
+    await super.onDestroy(player);
+    this.world.invalidateMusic();
+    this.world.syncMusic();
   }
 }
 
 /**
  * Music Amplifier: spreads the music of the block on its left side to the
- * whole world instead of the tile radius around it.
+ * whole world instead of the audible radius around it.
  */
 export class MusicAmplifierTile extends SwitcheROO {
   protected override onToggled(): void {
-    const left = this.world.getTileAt(this.data.x - 1, this.data.y);
-    const playing = left !== undefined && (left.flags & TileFlags.OPEN) !== 0;
-    const file = playing ? getItem(left.fg)?.extraFile : undefined;
-    if (!file?.startsWith("audio/") || !left) return;
+    this.world.invalidateMusic();
+    this.world.syncMusic();
+  }
 
-    // the client only amplifies on its own for some blocks, so the world
-    // stream is started here as well
-    if ((this.data.flags & TileFlags.OPEN) !== 0) {
-      this.world.playAmplifiedMusic(file);
-      return;
-    }
-
-    // switched off: back to the block's own positional playback
-    this.world.stopAmplifiedMusic();
-    this.world.restartMusicBlock(left);
+  public override async onDestroy(player: Player): Promise<void> {
+    await super.onDestroy(player);
+    this.world.invalidateMusic();
+    this.world.syncMusic();
   }
 }
 

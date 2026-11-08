@@ -20,6 +20,8 @@ function State(player: Player, tank: GameUpdatePacket, world: World): void {
   player.state.x = data.posX;
   player.state.y = data.posY;
   player.state.rotatedLeft = (data.flags & 0x10) !== 0;
+  // walking in or out of a music block's radius starts or stops its stream
+  world.syncMusic();
 
   world.broadcast(tank.parse()!, player.id);
 

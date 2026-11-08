@@ -2,6 +2,7 @@ import { Packet, PacketKind, TextPacket } from "growtopia.wasm";
 import { PACKET_TYPE, TANK_PACKET_TYPE } from "../../constants";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { logger } from "../../utils/logger";
+import { Collection } from "../../utils/collection";
 import { PlayerDB } from "../../database/services/player-db";
 import { GameUpdatePacket } from "../packets/game-packet";
 import { Variant } from "../packets/variants";
@@ -18,6 +19,17 @@ export interface DropOptions {
   tree?: boolean;
   /** Never merge into an existing stack on the same tile. */
   noSimilar?: boolean;
+}
+
+/** A music block currently playing in a world. */
+interface MusicSource {
+  file: string;
+  /** Block position, in tiles. */
+  x: number;
+  y: number;
+  /** Audible radius in pixels when no amplifier is next to it. */
+  radius: number;
+  amplified: boolean;
 }
 
 /**
@@ -43,6 +55,11 @@ export class World {
   }
 
   /** Players currently inside this world, across every game server. */
+  /** Cached music source, `undefined` when it must be recomputed. */
+  private musicCache: MusicSource | null | undefined;
+  /** Audio file currently streamed to each player, keyed by player id. */
+  private musicStreams: Collection<number, string> = new Collection();
+
   public get players(): Player[] {
     return serverManager.players.filter((player) => player.world === this);
   }
@@ -280,108 +297,66 @@ export class World {
     }
   }
 
+  /** Drops the cached music source after a tile or amplifier change. */
+  public invalidateMusic(): void {
+    this.musicCache = undefined;
+  }
+
   /**
-   * Rebuilds a music block for every player after the amplified stream
-   * stopped. The client starts the block's own audio on the off -> on
-   * transition of a tile update, so the block is cleared, placed and then
-   * switched on a moment later. Another avatar is the actor of the place, so
-   * no reader loses an item from the backpack.
+   * The block currently playing in this world: any toggled-on block with an
+   * audio file. The first one wins; an amplifier on its right spreads it.
    */
-  public restartMusicBlock(block: TileData): void {
-    const actor = this.players.find((player) => player.playerId !== this.getOwnerPlayerId()) ?? this.players[0];
+  private musicSource(): MusicSource | null {
+    if (this.musicCache !== undefined) return this.musicCache;
+
+    let source: MusicSource | null = null;
+    for (const block of this.data.blocks) {
+      if ((block.flags & TileFlags.OPEN) === 0) continue;
+
+      const item = getItem(block.fg);
+      const file = item?.extraFile;
+      if (!file?.startsWith("audio/")) continue;
+
+      const amplifier = this.getTileAt(block.x + 1, block.y);
+      const amplified = amplifier !== undefined && (amplifier.flags & TileFlags.OPEN) !== 0 && getItem(amplifier.fg)?.id === ITEM_ID.MUSIC_AMPLIFIER;
+      source = { file, x: block.x, y: block.y, radius: Math.max(item?.audioVolume ?? 0, 384), amplified };
+      break;
+    }
+
+    this.musicCache = source;
+    return source;
+  }
+
+  /**
+   * Reconciles the music stream of every player with the world's source: an
+   * amplified block plays for the whole world, an unamplified one only for
+   * players inside its audible radius. The client does not restart a block's
+   * own playback from tile updates, so the stream is the single source.
+   */
+  public syncMusic(): void {
+    const source = this.musicSource();
 
     for (const player of this.players) {
-      for (const itemID of [0, block.fg]) {
-        player.send(
-          new Packet(
-            GameUpdatePacket.create({
-              type: TANK_PACKET_TYPE.TILE_CHANGE_REQUEST,
-              netID: actor?.netID ?? 0,
-              itemID,
-              tileX: block.x,
-              tileY: block.y,
-            }).parse()!,
-            PacketKind.Reliable,
-          ),
-        );
+      let wanted: string | undefined;
+      if (source) {
+        const dx = player.state.x - (source.x * 32 + 16);
+        const dy = player.state.y - (source.y * 32 + 16);
+        if (source.amplified || Math.hypot(dx, dy) <= source.radius) wanted = source.file;
       }
-      player.send(this.tileUpdatePacket(player, { ...block, flags: block.flags & ~TileFlags.OPEN }));
+
+      const current = this.musicStreams.get(player.playerId);
+      if (wanted === current) continue;
+
+      if (wanted === undefined) this.musicStreams.delete(player.playerId);
+      else this.musicStreams.set(player.playerId, wanted);
+      player.actions.sendPlayMusic(wanted ?? "");
     }
-
-    // the place echo leaves the block disabled; enable it on a later tick so
-    // the client sees the transition and starts playing
-    setTimeout(() => {
-      for (const player of this.players) player.send(this.tileUpdatePacket(player, block));
-    }, 250);
   }
 
-  /** One SEND_TILE_UPDATE_DATA packet for a tile, as seen by `player`. */
-  private tileUpdatePacket(player: Player, tile: TileData): Packet {
-    return new Packet(
-      GameUpdatePacket.create({
-        type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
-        tileX: tile.x,
-        tileY: tile.y,
-        extraData: Array.from(tileFrom(this, tile, undefined, undefined, player).parse().data),
-      }).parse()!,
-      PacketKind.Reliable,
-    );
-  }
-
-  /**
-   * Audio file of the first music block playing with a switched-on Music
-   * Amplifier on its right, if any.
-   */
-  public findAmplifiedMusic(): string | undefined {
-    for (const block of this.data.blocks) {
-      if (block.fg !== ITEM_ID.MUSIC_AMPLIFIER || (block.flags & TileFlags.OPEN) === 0) continue;
-
-      const left = this.getTileAt(block.x - 1, block.y);
-      if (!left || (left.flags & TileFlags.OPEN) === 0) continue;
-
-      const file = getItem(left.fg)?.extraFile;
-      if (file?.startsWith("audio/")) return file;
-    }
-    return undefined;
-  }
-
-  /** Plays an amplified music block to everyone in the world. */
-  public playAmplifiedMusic(file: string): void {
-    for (const player of this.players) player.actions.sendPlayMusic(file);
-  }
-
-  /** Stops the amplified music stream. */
-  public stopAmplifiedMusic(): void {
-    for (const player of this.players) player.actions.sendPlayMusic("");
-  }
-
-  /**
-   * Re-asserts every switched-on Music Amplifier and the music block on its
-   * left, after the world map was parsed: the client builds the sound when it
-   * reads the music block, which happens before the amplifier tile is known.
-   */
-  private syncMusicAmplifiers(player: Player): void {
-    for (const block of this.data.blocks) {
-      if (block.fg !== ITEM_ID.MUSIC_AMPLIFIER || (block.flags & TileFlags.OPEN) === 0) continue;
-
-      const left = this.getTileAt(block.x - 1, block.y);
-      if (!left || (left.flags & TileFlags.OPEN) === 0) continue;
-      if (!getItem(left.fg)?.extraFile?.startsWith("audio/")) continue;
-
-      for (const tile of [left, block]) {
-        player.send(
-          new Packet(
-            GameUpdatePacket.create({
-              type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
-              tileX: tile.x,
-              tileY: tile.y,
-              extraData: Array.from(tileFrom(this, tile, undefined, undefined, player).parse().data),
-            }).parse()!,
-            PacketKind.Reliable,
-          ),
-        );
-      }
-    }
+  /** Stops the stream of a player that leaves the world. */
+  public stopMusicFor(player: Player): void {
+    if (!this.musicStreams.delete(player.playerId)) return;
+    player.actions.sendPlayMusic("");
   }
 
   /**
@@ -449,10 +424,8 @@ export class World {
 
     // every avatar is spawned now, so the tile changes have a valid actor
     this.syncMusicTiles(player);
-    this.syncMusicAmplifiers(player);
-
-    const amplified = this.findAmplifiedMusic();
-    if (amplified) player.actions.sendPlayMusic(amplified);
+    this.musicStreams.delete(player.playerId);
+    this.syncMusic();
 
     logger.debug({ player: player.tankIDName, world: this.name, players: othersCount + 1 }, "player entered world");
   }
@@ -466,6 +439,7 @@ export class World {
     const leftNetId = player.netID;
     // captured before the world is detached: the name color depends on it
     const leftName = player.formattedName;
+    this.stopMusicFor(player);
     player.world = null;
     player.netID = 0;
     player.state.world.name = "";
