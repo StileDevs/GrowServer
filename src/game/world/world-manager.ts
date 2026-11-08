@@ -161,6 +161,34 @@ export class WorldManager {
   }
 
   /**
+   * Gives a loaded world a new name: the in-memory registry, the database
+   * record and the world file all move. The new name must be free.
+   */
+  public async rename(world: World, newName: string): Promise<void> {
+    const oldName = world.name;
+    const target = WorldManager.normalizeName(newName);
+    if (target === oldName) return;
+
+    const pending = this.pendingSaves.get(oldName);
+    if (pending) {
+      clearTimeout(pending);
+      this.pendingSaves.delete(oldName);
+    }
+
+    this.worlds.delete(oldName);
+    world.data.name = target;
+    this.worlds.set(target, world);
+    for (const player of world.players) player.state.world.name = target;
+
+    if (await WorldDB.getByName(oldName)) await WorldDB.updateByName(oldName, { name: target });
+    else if (!(await WorldDB.exists(target))) await WorldDB.create(target);
+
+    await WorldDB.writeBinary(target, encodeWorldFile(world.data));
+    await WorldDB.deleteBinary(oldName);
+    logger.info({ from: oldName, to: target }, "world renamed");
+  }
+
+  /**
    * Drops an empty world from memory after saving it.
    */
   public async unloadIfEmpty(world: World): Promise<void> {

@@ -1,6 +1,7 @@
 import { TANK_PACKET_TYPE } from "../../constants";
 import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
+import { useConsumable } from "../item/consumables";
 import type { GameUpdatePacket } from "../packets/game-packet";
 import { Variant } from "../packets/variants";
 import type { Player } from "../player";
@@ -81,6 +82,11 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
     const itemMeta = getItem(data.itemID);
     if (!itemMeta) return;
     const type = itemMeta.type ?? ActionTypes.FOREGROUND;
+
+    if (type === ActionTypes.CONSUMABLE) {
+      await useConsumable(player, world, itemMeta, data.tileX, data.tileY);
+      return;
+    }
 
     if (!isPlaceableType(type)) {
       player.sendTextBubble("That item isn't supported on this server yet.");
@@ -174,6 +180,12 @@ async function ItemActivateRequest(player: Player, tank: GameUpdatePacket): Prom
 
   if (item.type === ActionTypes.CLOTHES || item.type === ActionTypes.ANCES) {
     player.equipClothes(itemId);
+    return;
+  }
+
+  // a consumable used from the backpack is used on the player's own tile
+  if (item.type === ActionTypes.CONSUMABLE && player.world) {
+    await useConsumable(player, player.world, item, Math.floor((player.state.x + 10) / 32), Math.floor((player.state.y + 15) / 32));
   }
 }
 
