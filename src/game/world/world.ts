@@ -274,6 +274,33 @@ export class World {
   }
 
   /**
+   * Audio file of the first music block playing with a switched-on Music
+   * Amplifier on its right, if any.
+   */
+  public findAmplifiedMusic(): string | undefined {
+    for (const block of this.data.blocks) {
+      if (block.fg !== ITEM_ID.MUSIC_AMPLIFIER || (block.flags & TileFlags.OPEN) === 0) continue;
+
+      const left = this.getTileAt(block.x - 1, block.y);
+      if (!left || (left.flags & TileFlags.OPEN) === 0) continue;
+
+      const file = getItem(left.fg)?.extraFile;
+      if (file?.startsWith("audio/")) return file;
+    }
+    return undefined;
+  }
+
+  /** Plays an amplified music block to everyone in the world. */
+  public playAmplifiedMusic(file: string): void {
+    for (const player of this.players) player.actions.sendPlayMusic(file);
+  }
+
+  /** Stops the amplified music stream. */
+  public stopAmplifiedMusic(): void {
+    for (const player of this.players) player.actions.sendPlayMusic("");
+  }
+
+  /**
    * Re-asserts every switched-on Music Amplifier and the music block on its
    * left, after the world map was parsed: the client builds the sound when it
    * reads the music block, which happens before the amplifier tile is known.
@@ -364,6 +391,9 @@ export class World {
     // every avatar is spawned now, so the tile changes have a valid actor
     this.syncMusicTiles(player);
     this.syncMusicAmplifiers(player);
+
+    const amplified = this.findAmplifiedMusic();
+    if (amplified) player.actions.sendPlayMusic(amplified);
 
     logger.debug({ player: player.tankIDName, world: this.name, players: othersCount + 1 }, "player entered world");
   }

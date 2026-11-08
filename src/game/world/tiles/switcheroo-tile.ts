@@ -104,9 +104,11 @@ export class MusicBlockTile extends SwitcheROO {
    */
   protected override onToggled(player: Player): void {
     const playing = (this.data.flags & TileFlags.OPEN) !== 0;
+    const file = getItem(this.data.fg)?.extraFile;
     const amplifiers = [-1, 1]
       .map((dx) => this.world.getTileAt(this.data.x + dx, this.data.y))
       .filter((tile) => tile !== undefined && getItem(tile.fg)?.id === ITEM_ID.MUSIC_AMPLIFIER);
+    const amplified = amplifiers.some((tile) => (tile!.flags & TileFlags.OPEN) !== 0);
 
     logger.info(
       {
@@ -121,8 +123,31 @@ export class MusicBlockTile extends SwitcheROO {
       "music block toggled",
     );
 
-    if (!playing) return;
+    if (!file?.startsWith("audio/")) return;
+    if (!playing) {
+      if (amplified) this.world.stopAmplifiedMusic();
+      return;
+    }
+
     for (const tile of amplifiers) new SwitcheROO(this.world, tile!).tileUpdate();
+    if (amplified) this.world.playAmplifiedMusic(file);
+  }
+}
+
+/**
+ * Music Amplifier: spreads the music of the block on its left side to the
+ * whole world instead of the tile radius around it.
+ */
+export class MusicAmplifierTile extends SwitcheROO {
+  protected override onToggled(): void {
+    const left = this.world.getTileAt(this.data.x - 1, this.data.y);
+    const file = left && (left.flags & TileFlags.OPEN) !== 0 ? getItem(left.fg)?.extraFile : undefined;
+    if (!file?.startsWith("audio/")) return;
+
+    // the client only amplifies on its own for some blocks, so the world
+    // stream is started here as well
+    if ((this.data.flags & TileFlags.OPEN) !== 0) this.world.playAmplifiedMusic(file);
+    else this.world.stopAmplifiedMusic();
   }
 }
 

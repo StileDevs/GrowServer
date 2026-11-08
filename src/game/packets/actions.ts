@@ -24,6 +24,13 @@ export class ActionsHandler {
     this.sendAction("action|play_sfx", `file|${pathFile}`, `delayMS|${delayMS}`);
   }
 
+  /**
+   * Starts (or replaces) the client's music stream. An empty path stops it.
+   */
+  public sendPlayMusic(pathFile: string): void {
+    this.sendAction("action|play_music", `file|${pathFile}`, "delayMS|0");
+  }
+
   /** Shows an `action|log` console line on the client. */
   public sendLog(message: string): void {
     this.sendAction("action|log", `msg|${message}`);
