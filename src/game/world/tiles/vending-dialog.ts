@@ -167,11 +167,6 @@ function setPrice(player: Player, world: World, tile: VendingTile, action: TextP
 function ownerAction(player: Player, world: World, tile: VendingTile, action: TextParser): boolean {
   const button = action.get("buttonClicked");
 
-  if (button === "change_price") {
-    player.variants.sendOnDialogRequest(tile.priceDialog().str());
-    return false;
-  }
-
   let changed = false;
   if (action.contains("stockitem")) changed = stock(player, world, tile, action.getInt("stockitem", 0, 0));
   else if (button === "addstock") changed = addStock(player, tile);
@@ -283,6 +278,12 @@ function buy(player: Player, world: World, tile: VendingTile, action: TextParser
   }
   if (!player.inventory.canAddItem(v.itemId, items)) {
     tell(player, "You don't have room in your backpack!");
+    return false;
+  }
+
+  // first pass: the real game asks the buyer to confirm the deal
+  if (!action.contains("verify")) {
+    player.variants.sendOnDialogRequest(tile.purchaseConfirmation(cost, items, want).str());
     return false;
   }
 

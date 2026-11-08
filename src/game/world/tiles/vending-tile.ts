@@ -141,100 +141,119 @@ export class VendingTile extends Tile {
       .embed("tiley", this.data.y);
   }
 
-
-  /** Human readable offer, e.g. "3 World Locks each" or "25 per World Lock". */
-  private priceText(): string {
+  /** The "For a cost of / You will get" block of the real game's dialog. */
+  private addOffer(dialog: DialogBuilder, itemName: string): void {
     const v = this.vending;
-    if (v.price === 0) return "`4not for sale``";
-    if (v.price > 0) return `\`w${v.price} World Lock${v.price === 1 ? "" : "s"}\`\` each`;
-    return `\`w${-v.price}\`\` per World Lock`;
+    dialog
+      .addSpacer("small")
+      .addTextBox("For a cost of:")
+      .addLabelWithIcon(`${v.price < 0 ? 1 : v.price} x \`8World Lock\`\``, ITEM_ID.WORLD_LOCK, "small")
+      .addSpacer("small")
+      .addTextBox("You will get:")
+      .addLabelWithIcon(`${v.price < 0 ? -v.price : 1} x \`2${itemName}\`\``, v.itemId, "small")
+      .addSpacer("small");
   }
 
   /**
-   * Owner view: stock, price and earnings with the management buttons, or an
-   * item picker while the machine is empty.
+   * Owner view, laid out like the real game: contents, the current offer,
+   * add/empty buttons, the price input with its mode, and earnings.
    */
   private ownerDialog(player: Player): DialogBuilder {
     const v = this.vending;
+    const machineName = getItem(this.data.fg)?.name ?? "Vending Machine";
     const dialog = this.baseDialog();
 
-    if (v.itemId === 0 || v.count <= 0) {
+    if (v.itemId === 0) {
       dialog.addTextBox("This machine is empty.").addItemPicker("stockitem", "`wPut an item in``", "Choose an item to put in the machine!");
-      if (v.earned > 0) {
-        dialog.addSpacer("small").addTextBox(`\`oEarnings: \`w${v.earned} World Locks\`\``).addButton("withdraw", "`2Collect earnings``");
-      }
-      return dialog.addSpacer("small").addQuickExit().endDialog("vending", "", "Close");
+      if (v.earned > 0) dialog.addSmallText(`You have earned ${v.earned} World Locks.`).addButton("withdraw", "Withdraw World Locks");
+      return dialog.addSpacer("small").endDialog("vending", "Close", "");
     }
 
     const itemName = getItem(v.itemId)?.name ?? "item";
     const inBackpack = player.inventory.getAmount(v.itemId);
 
-    dialog
-      .addLabelWithIcon(`\`oStock: \`w${v.count}x ${itemName}\`\``, v.itemId, "small")
-      .addTextBox(`\`oPrice: ${this.priceText()}`)
-      .addTextBox(`\`oEarnings: \`w${v.earned} World Locks\`\``)
-      .addSpacer("small");
+    dialog.addLabelWithIcon(`The machine contains a total of ${v.count} \`2${itemName}\`\`.`, v.itemId, "small");
+
+    if (v.price === 0) {
+      dialog.addSpacer("small").addTextBox("Not currently for sale!");
+    } else {
+      this.addOffer(dialog, itemName);
+    }
+
+    if (inBackpack > 0) {
+      dialog.addSmallText(`You have ${inBackpack} ${itemName} in your backpack.`).addButton("addstock", "Add them to the machine");
+    }
+    dialog.addButton("pullstock", "Empty the machine");
 
     if (v.price < 0 && -v.price > v.count) {
       dialog.addSmallText("`4(You need to add more items or people can't purchase at this price!)``");
     }
-    if (inBackpack > 0) dialog.addButton("addstock", `\`oAdd ${inBackpack} more from backpack\`\``);
-    dialog.addButton("change_price", "`oChange price``");
-    if (v.earned > 0) dialog.addButton("withdraw", "`2Collect earnings``");
-    dialog.addButton("pullstock", "`4Take everything out``");
-
-    return dialog.addSpacer("small").addQuickExit().endDialog("vending", "", "Close");
-  }
-
-  /**
-   * Price dialog opened from the owner view: amount plus the pricing mode.
-   */
-  public priceDialog(): DialogBuilder {
-    const v = this.vending;
-    const machineName = getItem(this.data.fg)?.name ?? "Vending Machine";
-    return this.baseDialog()
-      .addTextBox(`Set the price of \`2${getItem(v.itemId)?.name ?? "the item"}\`\`:`)
+    dialog
+      .addSmallText(`\`5(${machineName} will not function when price is set to 0)\`\``)
       .addInputBox("setprice", "Price", Math.abs(v.price), 5)
       .addCheckbox("chk_peritem", "World Locks per Item", v.price >= 0 ? "selected" : "not_selected")
-      .addCheckbox("chk_perlock", "Items per World Lock", v.price < 0 ? "selected" : "not_selected")
-      .addSmallText(`\`5(${machineName} will not function when price is set to 0)\`\``)
-      .addSpacer("small")
-      .endDialog("vending", "Cancel", "Set price");
+      .addCheckbox("chk_perlock", "Items per World Lock", v.price < 0 ? "selected" : "not_selected");
+
+    if (v.earned > 0) {
+      dialog.addSmallText(`You have earned ${v.earned} World Locks.`).addButton("withdraw", "Withdraw World Locks");
+    }
+
+    return dialog.addSpacer("small").endDialog("vending", "Close", "Update");
   }
 
   /**
-   * Buyer view: what is sold, for how much, and how many the buyer wants.
+   * Buyer view: the offer and how many to buy; the purchase is confirmed in
+   * a second dialog (see `purchaseConfirmation`).
    */
   private buyerDialog(player: Player): DialogBuilder {
     const v = this.vending;
     const dialog = this.baseDialog();
 
-    if (v.itemId === 0 || v.count <= 0 || v.price === 0) {
-      return dialog.addTextBox("`oThis vending machine is empty.``").addQuickExit().endDialog("vending", "", "Close");
+    if (v.itemId === 0 || v.price === 0) {
+      return dialog.addTextBox("This machine is out of order.").endDialog("vending", "Close", "");
     }
 
     const itemName = getItem(v.itemId)?.name ?? "item";
-    const locks = countWorldLocks(player);
-    dialog
-      .addTextBox("`oThis machine is selling:")
-      .addLabelWithIcon(`\`w${itemName}\`\``, v.itemId, "big")
-      .addTextBox(`\`oPrice: ${this.priceText()}`)
-      .addTextBox(`\`oIn stock: \`w${v.count}\`\``)
-      .addTextBox(`\`oYou have: \`w${locks} World Locks\`\``)
-      .addSpacer("small");
+    dialog.addLabelWithIcon(`The machine contains a total of ${v.count} \`2${itemName}\`\`.`, v.itemId, "small");
+    this.addOffer(dialog, itemName);
 
     if (v.price < 0 && -v.price > v.count) {
-      return dialog.addTextBox("`4You'll need to wait for the owner to stock up to at least 1 World Lock's worth before you can buy.``").addQuickExit().endDialog("vending", "", "Close");
-    }
-    if (locks < (v.price > 0 ? v.price : 1)) {
-      return dialog.addTextBox("`4You don't have enough World Locks!``").addQuickExit().endDialog("vending", "", "Close");
+      return dialog.addTextBox("You'll need to wait for the owner to stock up to at least 1 World Lock's worth before you can buy.").endDialog("vending", "Close", "");
     }
 
     return dialog
-      .addInputBox("buycount", "How many would you like to buy?", v.price > 0 ? 1 : -v.price, 3)
+      .addTextBox(`You have ${countWorldLocks(player)} World Locks.`)
+      .addInputBox("buycount", "How many would you like to buy?", 0, 3)
       .embed("expectprice", v.price)
       .embed("expectitem", v.itemId)
-      .addQuickExit()
-      .endDialog("vending", "Cancel", "Buy");
+      .endDialog("vending", "Close", "Buy");
+  }
+
+  /** "Are you sure?" dialog shown before a purchase goes through. */
+  public purchaseConfirmation(cost: number, items: number, buyCount: number): DialogBuilder {
+    const v = this.vending;
+    const itemName = getItem(v.itemId)?.name ?? "item";
+    return new DialogBuilder()
+      .defaultColor("`o")
+      .addLabelWithIcon("`wPurchase Confirmation``", 1366, "big")
+      .addSpacer("small")
+      .embed("tilex", this.data.x)
+      .embed("tiley", this.data.y)
+      .addSpacer("small")
+      .addTextBox("`4You'll give:``")
+      .addSpacer("small")
+      .addLabelWithIcon(`(\`w${cost}\`\`) \`8World Locks\`\``, ITEM_ID.WORLD_LOCK, "small")
+      .addSpacer("small")
+      .addTextBox("`2You'll get:``")
+      .addSpacer("small")
+      .addLabelWithIcon(`(\`w${items}\`\`) \`2${itemName}\`\``, v.itemId, "small")
+      .addSpacer("small")
+      .addSpacer("small")
+      .addTextBox("Are you sure you want to make this purchase?")
+      .embed("verify", 1)
+      .embed("buycount", buyCount)
+      .embed("expectprice", v.price)
+      .embed("expectitem", v.itemId)
+      .endDialog("vending", "Cancel", "OK");
   }
 }
