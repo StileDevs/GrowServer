@@ -314,18 +314,18 @@ export class VariantHandler {
     this.send(data);
   }
 
-  public sendClothes(targetNetID: number, clothes: PlayerClothes, skinColor: Color) {
-    if (!skinColor) skinColor = new Color(180, 138, 120, 255); // @TODO still hardcoded skin color
-
-    const vec3ClothingData = [];
-
+  /**
+   * Sends OnSetClothing for an avatar.
+   * @param skinColor Raw 32-bit skin color exactly as the client expects it (e.g. 0x8295c3ff).
+   */
+  public sendClothes(targetNetID: number, clothes: PlayerClothes, skinColor: number) {
     const variant = Variant.from(
       { netID: targetNetID },
       "OnSetClothing",
       [clothes.hair, clothes.shirt, clothes.pants],
       [clothes.feet, clothes.face, clothes.hand],
       [clothes.back, clothes.mask, clothes.necklace],
-      skinColor.toDecimal(),
+      skinColor >>> 0,
       [clothes.ances, 0.0, 0.0],
     );
 

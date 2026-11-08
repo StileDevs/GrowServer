@@ -1,6 +1,5 @@
 import type { TextParser } from "../../utils/text-parser";
 import { DialogBuilder } from "../../utils/dialog-builder";
-import { Color } from "../../utils/color";
 import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
 import { getItemInfo } from "../item/item-wiki";
@@ -171,7 +170,7 @@ function Buy(player: Player, action: TextParser): void {
 function SetSkin(player: Player, action: TextParser): void {
   const color = action.getInt("color", 0, -1);
   if (color < 0) return;
-  player.skinColor = Color.fromDecimal(color >>> 0);
+  player.skinColor = color >>> 0;
   player.sendClothesToWorld();
   player.scheduleInventorySave();
 }

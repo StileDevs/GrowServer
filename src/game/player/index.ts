@@ -4,7 +4,6 @@ import { PlayerInventory, CLOTH_MAP, type ClothTypes } from "./inventory";
 import { PlayerAuth } from "./auth";
 import { ActionsHandler } from "../packets/actions";
 import { CHARACTER_STATE, LOGON_MODE, PLAYER_ROLE } from "../../constants";
-import { Color } from "../../utils/color";
 import { logger } from "../../utils/logger";
 import { PlayerDB } from "../../database/services/player-db";
 import type { PlayerRecord } from "../../database/tables";
@@ -23,6 +22,10 @@ const INVENTORY_SAVE_DEBOUNCE_MS = 1500;
 const MAX_RECENT_WORLDS = 6;
 /** Highest reachable level. */
 export const MAX_LEVEL = 125;
+/** Default avatar skin color (the client's default peach tone). */
+export const DEFAULT_SKIN_COLOR = 0x8295c3ff;
+/** Value the login server writes for new accounts before a skin is chosen. */
+const PLACEHOLDER_SKIN_COLOR = 0x80808080;
 
 export interface PlayerStateWorld {
   name: string;
@@ -68,7 +71,8 @@ export class Player {
   public gems = 0;
   public level = 1;
   public xp = 0;
-  public skinColor: Color = new Color(180, 138, 120, 255);
+  /** Raw 32-bit skin color as sent to the client. */
+  public skinColor: number = DEFAULT_SKIN_COLOR;
 
   public variants: VariantHandler;
   public actions: ActionsHandler;
@@ -151,7 +155,9 @@ export class Player {
     this.gems = record.gems ?? 0;
     this.level = record.level || 1;
     this.xp = record.xp ?? 0;
-    if (record.skin_color) this.skinColor = Color.fromDecimal(record.skin_color >>> 0);
+    const storedSkin = (record.skin_color ?? 0) >>> 0;
+    // 0 and the registration placeholder mean "never chosen"
+    this.skinColor = storedSkin && storedSkin !== PLACEHOLDER_SKIN_COLOR ? storedSkin : DEFAULT_SKIN_COLOR;
 
     if (!this.inventory.load(record.inventory)) {
       this.inventory.addItem(ITEM_ID.FIST, 1);
@@ -308,7 +314,7 @@ export class Player {
         gems: this.gems,
         level: this.level,
         xp: this.xp,
-        skin_color: this.skinColor.toDecimal(),
+        skin_color: this.skinColor,
       });
     } catch (err) {
       logger.error({ err, playerId: this.playerId }, "failed to save player");

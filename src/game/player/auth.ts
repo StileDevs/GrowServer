@@ -51,6 +51,8 @@ export interface SubServerTransferSession {
   targetServer?: string | undefined;
   targetWorld?: string | undefined;
   targetDoor?: string | undefined;
+  /** Session token the client keeps as its saved password. */
+  sessionToken?: string | undefined;
   createdAt: number;
   expiresAt: number;
 }
@@ -286,6 +288,7 @@ export class PlayerAuth {
     targetServer?: string | undefined;
     targetWorld?: string | undefined;
     targetDoor?: string | undefined;
+    sessionToken?: string | undefined;
     ttlSeconds?: number | undefined;
   }): SubServerTransferSession {
     const token = Math.floor(100000 + Math.random() * 900000);
@@ -300,6 +303,7 @@ export class PlayerAuth {
       targetServer: options.targetServer,
       targetWorld: options.targetWorld,
       targetDoor: options.targetDoor,
+      sessionToken: options.sessionToken,
       createdAt: now,
       expiresAt: now + ttlSeconds * 1000,
     };

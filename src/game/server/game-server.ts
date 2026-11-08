@@ -189,6 +189,7 @@ export class GameServer extends EventEmitter {
               playerId: player.playerId,
               sourceServer: this.serverLabel,
               targetServer: targetServerLabel,
+              sessionToken,
             });
 
             player.variants.sendSetHasGrowID(true, player.tankIDName, sessionToken);
@@ -242,6 +243,10 @@ export class GameServer extends EventEmitter {
               previous.disconnectLater();
             }
 
+            // the client treats the connection as a guest (chat disabled, no
+            // profile) until it is told the GrowID it is logged in with
+            const savedToken = player.auth.metadata.tankIDPass || player.auth.transferSession?.sessionToken || "";
+            player.variants.sendSetHasGrowID(true, player.tankIDName, savedToken);
             player.variants.sendOnSetFeatureEnableFlags();
             logger.info({ id: player.id, playerId: player.playerId, name: player.tankIDName }, "player sub-server transfer verified successfully");
           }

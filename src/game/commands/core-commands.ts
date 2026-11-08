@@ -1,6 +1,5 @@
 import { CHARACTER_STATE, PLAYER_ROLE } from "../../constants";
 import { DialogBuilder } from "../../utils/dialog-builder";
-import { Color } from "../../utils/color";
 import { PlayerDB } from "../../database/services/player-db";
 import { items } from "../item/item-info";
 import { getItem } from "../item/item-utils";
@@ -263,7 +262,7 @@ registerCommand({
       player.variants.sendOnConsoleMessage("`2Ghost mode enabled``. You can now walk through blocks!");
       // semi-transparent white appearance
       for (const other of player.world?.players ?? [player]) {
-        other.variants.sendClothes(player.netID, player.inventory.clothes, Color.fromDecimal(0xffffff80));
+        other.variants.sendClothes(player.netID, player.inventory.clothes, 0xffffff80);
       }
     } else {
       player.state.characterState &= ~GHOST_STATE;
