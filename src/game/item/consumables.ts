@@ -8,7 +8,7 @@ import { registerDialog } from "../network/dialog-handler";
 import { Variant } from "../packets/variants";
 import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
-import { ITEM_ID, TileFlags } from "../world/constants";
+import { ITEM_ID, LockPermission, TileFlags } from "../world/constants";
 import { tileFrom } from "../world/tiles";
 import type { TileData } from "../world/types";
 import type { World } from "../world/world";
@@ -25,6 +25,7 @@ const CONSUMABLE_ID = {
   LOCK_MOVER: 3560,
   BIRTH_CERTIFICATE: 1280,
   CHANGE_OF_ADDRESS: 2580,
+  WATER_BUCKET: 822,
 } as const;
 
 /** What a consumable does when used on the person standing on the tile. */
@@ -129,6 +130,39 @@ function ownsWorld(player: Player, world: World): boolean {
 }
 
 /**
+ * Water Bucket: floods an empty tile or scoops the water back out (the
+ * reference toggles the water tile flag). Filling consumes the bucket;
+ * emptying has a 50% chance to return it. Main doors and bedrock can never
+ * be flooded.
+ */
+async function useWaterBucket(player: Player, world: World, tileX: number, tileY: number): Promise<void> {
+  const block = world.getTileAt(tileX, tileY);
+  if (!block) return;
+
+  const targetItem = block.fg || block.bg;
+  if (targetItem === ITEM_ID.MAIN_DOOR || targetItem === ITEM_ID.BEDROCK) return;
+
+  if (!(await world.hasTilePermission(player, block, LockPermission.BUILD))) {
+    player.sendTextBubble("You don't have permission to do that here!", true);
+    return;
+  }
+
+  if ((block.flags & TileFlags.WATER) !== 0) {
+    block.flags &= ~TileFlags.WATER;
+    if (Math.random() < 0.5) player.addItemInven(CONSUMABLE_ID.WATER_BUCKET, 1);
+    player.sendTextBubble("You scooped the water back up.", true);
+  } else {
+    if (player.removeItemInven(CONSUMABLE_ID.WATER_BUCKET, 1) <= 0) return;
+    block.flags |= TileFlags.WATER;
+    player.sendTextBubble("You poured out the water.", true);
+  }
+
+  world.playPositioned("audio/splash.wav", player.netID);
+  tileFrom(world, block).tileUpdate();
+  world.markDirty();
+}
+
+/**
  * Uses a consumable on a tile: special items first, then the generic
  * effect list. The item is only taken from the backpack when it worked.
  */
@@ -167,6 +201,9 @@ export async function useConsumable(player: Player, world: World, item: ItemDefi
       return;
     case CONSUMABLE_ID.CHANGE_OF_ADDRESS:
       openWorldSwap(player);
+      return;
+    case CONSUMABLE_ID.WATER_BUCKET:
+      await useWaterBucket(player, world, tileX, tileY);
       return;
   }
 

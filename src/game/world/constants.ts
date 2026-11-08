@@ -16,6 +16,8 @@ export const Y_START_DIRT = 24;
 export const Y_LAVA_START = 50;
 /** Row where the dirt layer ends and bedrock begins. */
 export const Y_END_DIRT = 55;
+/** Row of the pond the procedural world generates for fishing. */
+export const Y_WATER_LAKE = 24;
 
 /**
  * World serialization version sent in the SEND_MAP_DATA header.
