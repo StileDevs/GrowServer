@@ -273,6 +273,37 @@ export class World {
     }
   }
 
+  /** Re-sends every avatar's name so world-role colors update immediately. */
+  public refreshNameColors(): void {
+    for (const player of this.players) {
+      this.broadcastVariant(Variant.from({ netID: player.netID }, "OnNameChanged", player.formattedName));
+    }
+  }
+
+  /**
+   * Drops a music block's enabled state and restores it, making the client
+   * restart its own positional playback after the amplified stream stopped.
+   */
+  public restartMusicBlock(block: TileData): void {
+    const silent: TileData = { ...block, flags: block.flags & ~TileFlags.OPEN };
+
+    for (const player of this.players) {
+      for (const tile of [silent, block]) {
+        player.send(
+          new Packet(
+            GameUpdatePacket.create({
+              type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
+              tileX: tile.x,
+              tileY: tile.y,
+              extraData: Array.from(tileFrom(this, tile, undefined, undefined, player).parse().data),
+            }).parse()!,
+            PacketKind.Reliable,
+          ),
+        );
+      }
+    }
+  }
+
   /**
    * Audio file of the first music block playing with a switched-on Music
    * Amplifier on its right, if any.

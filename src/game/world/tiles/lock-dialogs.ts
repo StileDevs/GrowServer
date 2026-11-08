@@ -122,6 +122,9 @@ registerDialog("area_lock_edit", async (player, action) => {
     broadcastConsole(world, `${removed?.display_name ?? removed?.name ?? "A player"} was removed from a ${lockName}`);
   }
 
+  // world owners and admins are colored green: refresh the name tags live
+  world.refreshNameColors();
+
   tileFrom(world, block).tileUpdate();
   world.markDirty();
 });
@@ -142,6 +145,7 @@ registerDialog("revoke_lock_access", (player, action) => {
   lock.adminIds.splice(index, 1);
 
   broadcastConsole(world, `${player.displayName} removed their access from a ${itemMeta.name}`);
+  world.refreshNameColors();
 
   tileFrom(world, block).tileUpdate();
   world.markDirty();

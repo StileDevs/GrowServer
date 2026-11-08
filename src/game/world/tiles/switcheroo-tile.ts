@@ -141,13 +141,20 @@ export class MusicBlockTile extends SwitcheROO {
 export class MusicAmplifierTile extends SwitcheROO {
   protected override onToggled(): void {
     const left = this.world.getTileAt(this.data.x - 1, this.data.y);
-    const file = left && (left.flags & TileFlags.OPEN) !== 0 ? getItem(left.fg)?.extraFile : undefined;
-    if (!file?.startsWith("audio/")) return;
+    const playing = left !== undefined && (left.flags & TileFlags.OPEN) !== 0;
+    const file = playing ? getItem(left.fg)?.extraFile : undefined;
+    if (!file?.startsWith("audio/") || !left) return;
 
     // the client only amplifies on its own for some blocks, so the world
     // stream is started here as well
-    if ((this.data.flags & TileFlags.OPEN) !== 0) this.world.playAmplifiedMusic(file);
-    else this.world.stopAmplifiedMusic();
+    if ((this.data.flags & TileFlags.OPEN) !== 0) {
+      this.world.playAmplifiedMusic(file);
+      return;
+    }
+
+    // switched off: back to the block's own positional playback
+    this.world.stopAmplifiedMusic();
+    this.world.restartMusicBlock(left);
   }
 }
 
