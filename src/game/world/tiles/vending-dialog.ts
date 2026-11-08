@@ -23,9 +23,19 @@ function tell(player: Player, message: string): void {
   player.variants.sendOnConsoleMessage(message);
 }
 
-/** Console message for everyone in the world. */
-function announce(world: World, message: string): void {
-  for (const other of world.players) other.variants.sendOnConsoleMessage(message);
+/** Sound everyone hears when the owner changes the price. */
+const PRICE_CHANGE_SOUND = "audio/terraform.wav";
+
+/**
+ * Tells everyone in the world what the owner did: a bubble over the owner
+ * and a console line, optionally with a sound, like the real game.
+ */
+function announce(world: World, player: Player, message: string, sfx?: string): void {
+  for (const other of world.players) {
+    other.variants.sendOnTalkBubble(player.netID, message, false);
+    other.variants.sendOnConsoleMessage(message);
+    if (sfx) other.sendSfx(sfx);
+  }
 }
 
 // --- owner -------------------------------------------------------------
@@ -54,7 +64,7 @@ function stock(player: Player, world: World, tile: VendingTile, itemId: number):
   v.itemId = itemId;
   v.count = removed;
 
-  announce(world, `\`7[\`\`${player.displayName} put \`2${item.name}\`\` in the ${itemName(tile.data.fg)}.\`7]\`\``);
+  announce(world, player, `\`7[\`\`${player.displayName} put \`2${item.name}\`\` in the ${itemName(tile.data.fg)}.\`7]\`\``);
   return true;
 }
 
@@ -140,7 +150,7 @@ function setPrice(player: Player, world: World, tile: VendingTile, action: TextP
 
   if (Number.isNaN(price) || price === 0) {
     v.price = 0;
-    announce(world, `\`7[\`\`${player.displayName} disabled the ${itemName(tile.data.fg)}.\`7]\`\``);
+    announce(world, player, `\`7[\`\`${player.displayName} disabled the ${itemName(tile.data.fg)}.\`7]\`\``, PRICE_CHANGE_SOUND);
     return true;
   }
   if (price < 0 || price > MAX_PRICE) {
@@ -160,7 +170,7 @@ function setPrice(player: Player, world: World, tile: VendingTile, action: TextP
 
   v.price = perLock ? -price : price;
   const priceText = perLock ? `${price} per World Lock` : `${price} World Lock${price === 1 ? "" : "s"} each`;
-  announce(world, `\`7[\`\`${player.displayName} changed the price of \`2${itemName(v.itemId)}\`\` to ${priceText}.\`7]\`\``);
+  announce(world, player, `\`7[\`\`${player.displayName} changed the price of \`2${itemName(v.itemId)}\`\` to ${priceText}.\`7]\`\``, PRICE_CHANGE_SOUND);
   return true;
 }
 
