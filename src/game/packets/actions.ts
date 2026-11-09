@@ -1,10 +1,13 @@
-import { Packet, PacketKind, Peer, TextPacket } from "growtopia.wasm";
+import { Packet, PacketKind, type Peer, TextPacket } from "growtopia.wasm";
 import { PACKET_TYPE } from "../../constants";
 
+/**
+ * Handles client action packets (e.g. audio SFX, particle actions, client dialogs).
+ */
 export class ActionsHandler {
   constructor(private peer: Peer) {}
 
-  private send(data: Buffer): void {
+  public send(data: Buffer): void {
     try {
       this.peer.send(new Packet(data, PacketKind.Reliable));
     } catch {
@@ -25,6 +28,13 @@ export class ActionsHandler {
   }
 
   /**
+   * Plays a sound effect on the client (upstream alias).
+   */
+  public playSFX(file: string, delayMS = 0): void {
+    this.sendPlaySfx(file, delayMS);
+  }
+
+  /**
    * Starts (or replaces) the client's music stream. An empty path stops it.
    */
   public sendPlayMusic(pathFile: string): void {
@@ -36,3 +46,5 @@ export class ActionsHandler {
     this.sendAction("action|log", `msg|${message}`);
   }
 }
+
+export const PlayerAction = ActionsHandler;

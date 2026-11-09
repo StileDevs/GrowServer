@@ -131,7 +131,6 @@ export class ServerManager extends EventEmitter {
     return result;
   }
 
-  /** Find an online player by tankIDName or displayName across all servers */
   public getPlayerByName(name: string): Player | undefined {
     const lowerName = name.toLowerCase();
     return this.players.find((p) => p.tankIDName.toLowerCase() === lowerName || p.displayName.toLowerCase() === lowerName);

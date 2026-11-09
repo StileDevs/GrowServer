@@ -14,7 +14,11 @@ https://localhost:443, https://growtopia1.com:443, https://www.growtopia1.com:44
 		format console
 	}
 
-	tls .cache/tls/cert.pem .cache/tls/key.pem
+  # Deprecated v5.59+, we'll use internal TLS instead
+	# tls .cache/tls/cert.pem .cache/tls/key.pem
+
+	tls internal
+
 	handle /growtopia/server_data.php {
 		reverse_proxy localhost:17900 {
 			header_up Upgrade {http.request.header.Upgrade}

@@ -15,6 +15,7 @@ import { runSetup, isInitialSetupNeeded } from "./scripts/setup";
 import { runDoctor } from "./scripts/doctor";
 import { buildItemsInfo } from "./scripts/generate-wiki";
 import { serverConsole } from "./cli/console";
+import { worldManager } from "./game/world/world-manager";
 
 let isShuttingDown = false;
 
@@ -40,6 +41,11 @@ function setupGracefulShutdown(): void {
 
     // Stop Caddy reverse proxy subprocess if running
     stopCaddy();
+
+    // Save all active worlds to disk
+    try {
+      await worldManager.saveAll();
+    } catch {}
 
     // Close database pool connections
     try {

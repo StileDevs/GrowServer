@@ -29,7 +29,7 @@ export async function createHonoServer(): Promise<void> {
     return c.text("hello world");
   });
 
-  app.post("/growtopia/server_data.php", async (c) => {
+  app.all("/growtopia/server_data.php", async (c) => {
     const userAgent = c.req.header("user-agent") || "";
     const body = await c.req.parseBody();
 
@@ -37,7 +37,8 @@ export async function createHonoServer(): Promise<void> {
     const version = typeof body["version"] === "string" ? body["version"] : "";
     const platform = typeof body["platform"] === "string" ? body["platform"] : "";
 
-    if (!userAgent.startsWith(HTTPS.USER_AGENT_PREFIX) || !protocol || !version || !platform) {
+    const isValidUserAgent = userAgent.startsWith(HTTPS.USER_AGENT_PREFIX) || HTTPS.USER_AGENTS.includes(userAgent);
+    if (!isValidUserAgent || !protocol || !version || !platform) {
       logger.warn(
         { userAgent, protocol, version, platform },
         "rejected server data request with unexpected user agent or body",

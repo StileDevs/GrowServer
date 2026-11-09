@@ -17,6 +17,7 @@ export const HTTPS = {
    * so only the shared prefix is matched.
    */
   USER_AGENT_PREFIX: "UbiServices_SDK",
+  USER_AGENTS: ["UbiServices_SDK_2022.Release.9_PC64_ansi_static", "UbiServices_SDK_2022.Release.9_ANDROID64_static"],
 };
 
 // Login server (we i just did is redirect and let growtopia handle the validation)
@@ -119,6 +120,40 @@ export enum TANK_PACKET_TYPE {
   SELECTILE_INDEX,
   SEND_PLAYER_TRIBUTE_DATA,
   ON_STEP_ONILE_MOD,
+}
+
+export const Y_START_DIRT = 24;
+export const Y_LAVA_START = 50;
+export const Y_END_DIRT = 55;
+
+export enum TILE_FLAGS {
+  NONE = 0,
+  TILEEXTRA = 1 << 0,
+  LOCKED = 1 << 1,
+  WAS_SPLICED = 1 << 2,
+  WILL_SPAWN_SEEDS_TOO = 1 << 3,
+  SEED = 1 << 4,
+  TREE = (1 << 4) | (1 << 3) | (1 << 0),
+  FLIPPED = 1 << 5,
+  ROTATED_LEFT = (1 << 5) | (1 << 4),
+  OPEN = 1 << 6,
+  PUBLIC = 1 << 7,
+  SILENCED = 1 << 9,
+  WATER = 1 << 10,
+  FIRE = 1 << 12,
+  RED = 1 << 13,
+  GREEN = 1 << 14,
+  BLUE = 1 << 15,
+  YELLOW = (1 << 13) | (1 << 14),
+  PURPLE = (1 << 13) | (1 << 15),
+}
+
+export enum TILE_EXTRA_TYPES {
+  NONE = 0,
+  DOOR = 1,
+  SIGN = 2,
+  LOCK = 3,
+  SEED = 4,
 }
 
 export enum TANK_PACKET_FLAGS {
