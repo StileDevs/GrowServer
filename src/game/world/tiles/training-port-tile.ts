@@ -65,14 +65,14 @@ export class TrainingPortTile extends Tile {
   public override serialize(buffer: ExtendBuffer): void {
     buffer.writeU8(this.extraType); // 61
     const tp = this.data.trainingPort;
+    // Exactly 22 bytes matching Growtopia client deserialization:
+    // u32 fish_lb, u16 fish_status, u32 fish_id, u32 fish_total_exp, u32 fish_level, u32 unknown_2
     buffer.writeU32(tp?.weight ?? 0);
     buffer.writeU16(tp?.status ?? 0);
     buffer.writeU32(tp?.fishId ?? 0);
     buffer.writeU32(tp?.exp ?? 0);
-    buffer.writeBytes(Buffer.alloc(8));
     buffer.writeU32(tp?.level ?? 0);
     buffer.writeU32(0);
-    buffer.writeBytes(Buffer.alloc(5));
   }
 
   public override async onWrench(player: Player): Promise<boolean> {
@@ -174,14 +174,14 @@ registerDialog("training_port_dialog", (player, action) => {
     tp.lastFed = Date.now();
     target.world.markDirty();
 
-    const { tileFrom } = require("./index");
-    tileFrom(target.world, tileData).tileUpdate();
+    new TrainingPortTile(target.world, tileData).tileUpdate();
     player.sendInventory();
     player.sendSfx("audio/splash.wav");
 
     const fishName = getItem(fishId)?.name ?? "Fish";
-    player.variants.sendOnConsoleMessage(`You placed the \`2${owned} lb. ${fishName}\`\` in the Training Port!`);
-    player.sendTextBubble(`\`2Started training ${fishName}!\`\``, true);
+    const perfectStr = owned >= 200 ? " `#(Perfect!)``" : "";
+    player.variants.sendOnConsoleMessage(`You placed the \`2${owned} lb. ${fishName}${perfectStr}\`\` in the Training Port!`);
+    player.sendTextBubble(`\`2Started training ${fishName}!${perfectStr}\`\``, true);
     return;
   }
 
@@ -205,8 +205,7 @@ registerDialog("training_port_dialog", (player, action) => {
     }
 
     target.world.markDirty();
-    const { tileFrom } = require("./index");
-    tileFrom(target.world, tileData).tileUpdate();
+    new TrainingPortTile(target.world, tileData).tileUpdate();
     return;
   }
 
@@ -229,8 +228,7 @@ registerDialog("training_port_dialog", (player, action) => {
     }
 
     target.world.markDirty();
-    const { tileFrom } = require("./index");
-    tileFrom(target.world, tileData).tileUpdate();
+    new TrainingPortTile(target.world, tileData).tileUpdate();
     return;
   }
 
@@ -255,8 +253,7 @@ registerDialog("training_port_dialog", (player, action) => {
     player.sendInventory();
     player.sendSfx("audio/splash.wav");
 
-    const { tileFrom } = require("./index");
-    tileFrom(target.world, tileData).tileUpdate();
+    new TrainingPortTile(target.world, tileData).tileUpdate();
 
     const fishName = getItem(fishId)?.name ?? "Fish";
     player.variants.sendOnConsoleMessage(`You retrieved your \`2${weight} lb. ${fishName}\`\` from training!`);

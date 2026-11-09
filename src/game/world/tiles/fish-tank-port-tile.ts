@@ -17,6 +17,7 @@ const MAX_FISH_PER_TANK = 10;
  * Rules:
  * - Must be placed on top of a Fish Tank background block (ITEM_ID.FISH_TANK = 3004).
  * - Stores and displays fish swimming in the connected tank.
+ * - Fish size scales automatically with its weight (lb), and 200 lb perfect fish emit a glow.
  * - Only the world owner / build permitted players can add or retrieve fish.
  */
 export class FishTankPortTile extends Tile {
@@ -35,7 +36,7 @@ export class FishTankPortTile extends Tile {
     if (!(await super.onPlaceForeground(player, itemMeta))) return false;
 
     this.data.flags |= TileFlags.TILEEXTRA;
-    this.data.fishTank = { fishes: [] };
+    this.data.fishTank = { fishes: [], glowing: true };
     return true;
   }
 
@@ -60,9 +61,13 @@ export class FishTankPortTile extends Tile {
 
   public override serialize(buffer: ExtendBuffer): void {
     buffer.writeU8(this.extraType);
-    buffer.writeU8(0); // flags
     const fishes = this.data.fishTank?.fishes ?? [];
-    buffer.writeU32(fishes.length);
+    // flags (u8): bit 0 enables glowing aura for 200 lb / megafish in the tank
+    const glowing = this.data.fishTank?.glowing !== false;
+    buffer.writeU8(glowing ? 1 : 0);
+    // Growtopia client loops: for (int i = 0; i < fish_count / 2; i++)
+    // Therefore fish_count must be the count of uint32 values (fishes.length * 2)
+    buffer.writeU32(fishes.length * 2);
     for (const f of fishes) {
       buffer.writeU32(f.id);
       buffer.writeU32(f.weight);
@@ -90,11 +95,14 @@ export class FishTankPortTile extends Tile {
       for (let i = 0; i < fishes.length; i++) {
         const fish = fishes[i]!;
         const name = getItem(fish.id)?.name ?? "Fish";
-        dialog.addLabelWithIcon(`\`2#${i + 1}: \`w${fish.weight} lb. ${name}\`\``, fish.id, "small");
+        const perfectNote = fish.weight >= 200 ? " `#(Perfect!)``" : "";
+        dialog.addLabelWithIcon(`\`2#${i + 1}: \`w${fish.weight} lb. ${name}${perfectNote}\`\``, fish.id, "small");
         dialog.addButton(`retrieve_${i}`, "Retrieve to Backpack");
         dialog.addSpacer("small");
       }
     }
+
+    dialog.addCheckbox("chk_glowing", "Glowing Fish (for 200 lb & Megafishes)", this.data.fishTank?.glowing !== false ? "selected" : "not_selected");
 
     if (fishes.length < MAX_FISH_PER_TANK) {
       const petFishInven: Array<{ id: number; amount: number }> = [];
@@ -115,7 +123,7 @@ export class FishTankPortTile extends Tile {
       }
     }
 
-    dialog.endDialog("fishtank_port_dialog", "Close", "");
+    dialog.endDialog("fishtank_port_dialog", "Close", "Update");
     player.variants.sendOnDialogRequest(dialog.str());
     return true;
   }
@@ -126,9 +134,15 @@ registerDialog("fishtank_port_dialog", (player, action) => {
   if (!target || !(target.block.fg === ITEM_ID.FISH_TANK_PORT)) return;
 
   const tileData = target.block;
-  if (!tileData.fishTank) tileData.fishTank = { fishes: [] };
+  if (!tileData.fishTank) tileData.fishTank = { fishes: [], glowing: true };
   const fishes = tileData.fishTank.fishes;
   const button = action.get("buttonClicked");
+
+  if (action.contains("chk_glowing")) {
+    tileData.fishTank.glowing = action.get("chk_glowing") === "1";
+    target.world.markDirty();
+    new FishTankPortTile(target.world, tileData).tileUpdate();
+  }
 
   // Adding a fish
   if (button.startsWith("addfish_")) {
@@ -150,14 +164,14 @@ registerDialog("fishtank_port_dialog", (player, action) => {
     fishes.push({ id: fishId, weight: owned });
     target.world.markDirty();
 
-    const { tileFrom } = require("./index");
-    tileFrom(target.world, tileData).tileUpdate();
+    new FishTankPortTile(target.world, tileData).tileUpdate();
     player.sendInventory();
     player.sendSfx("audio/splash.wav");
 
     const fishName = getItem(fishId)?.name ?? "Fish";
-    player.variants.sendOnConsoleMessage(`You put the \`2${owned} lb. ${fishName}\`\` into the Fish Tank!`);
-    player.sendTextBubble(`\`2Added ${owned} lb. ${fishName}!\`\``, true);
+    const perfectStr = owned >= 200 ? " `#(Perfect!)``" : "";
+    player.variants.sendOnConsoleMessage(`You put the \`2${owned} lb. ${fishName}${perfectStr}\`\` into the Fish Tank!`);
+    player.sendTextBubble(`\`2Added ${owned} lb. ${fishName}!${perfectStr}\`\``, true);
     return;
   }
 
@@ -179,8 +193,7 @@ registerDialog("fishtank_port_dialog", (player, action) => {
     player.sendInventory();
     player.sendSfx("audio/splash.wav");
 
-    const { tileFrom } = require("./index");
-    tileFrom(target.world, tileData).tileUpdate();
+    new FishTankPortTile(target.world, tileData).tileUpdate();
 
     const fishName = getItem(fish.id)?.name ?? "Fish";
     player.variants.sendOnConsoleMessage(`You retrieved the \`2${fish.weight} lb. ${fishName}\`\` from the Fish Tank!`);
