@@ -28,10 +28,11 @@ export async function handleChatInput(player: Player, rawText: string): Promise<
   const message = text.replace(/`./g, "");
   const name = player.formattedName;
 
-  // retail layout: the bubble payload carries the sender name and the text
-  world.broadcastVariant(Variant.from("OnTalkBubble", player.netID, "player_chat= `6<```0" + name + "`` `#" + message + "```6>``", 0));
+  // retail layout: `<`name`>` followed by the message, both in the bubble and
+  // in the chat history line
+  world.broadcastVariant(Variant.from("OnTalkBubble", player.netID, "player_chat= `6<``" + name + "```6>`` `#" + message, 0));
   // the console line must not carry a net id, or the client treats it as
   // bubble-only text and leaves it out of the chat history; the channel tag
   // must be the standard [W] one, anything else renders like an emote
-  world.broadcastVariant(Variant.from("OnConsoleMessage", "CP:0_PL:0_OID:_CT:[W]_ `6<``" + name + "`` `#" + message + "```6>``"));
+  world.broadcastVariant(Variant.from("OnConsoleMessage", "CP:0_PL:0_OID:_CT:[W]_ `6<``" + name + "```6>`` `#" + message));
 }
