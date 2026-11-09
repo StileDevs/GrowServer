@@ -29,7 +29,7 @@ export async function createHonoServer(): Promise<void> {
     return c.text("hello world");
   });
 
-  app.post("/growtopia/server_data.php", async (c) => {
+  app.all("/growtopia/server_data.php", async (c) => {
     const userAgent = c.req.header("user-agent") || "";
     const body = await c.req.parseBody();
 
@@ -37,7 +37,8 @@ export async function createHonoServer(): Promise<void> {
     const version = typeof body["version"] === "string" ? body["version"] : "";
     const platform = typeof body["platform"] === "string" ? body["platform"] : "";
 
-    if (userAgent !== HTTPS.USER_AGENT || !protocol || !version || !platform) {
+    if (!HTTPS.USER_AGENTS.includes(userAgent) || !protocol || !version || !platform) {
+      console.log("yuh", { userAgent, protocol, version, platform });
       return c.text("forbidden", 403);
     }
 

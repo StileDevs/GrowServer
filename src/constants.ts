@@ -11,7 +11,7 @@ export const HTTPS = {
   get LOGIN_URL(): string {
     return serverConfig?.server?.login_domain || "login.growserver.test";
   },
-  USER_AGENT: "UbiServices_SDK_2022.Release.9_PC64_ansi_static",
+  USER_AGENTS: ["UbiServices_SDK_2022.Release.9_PC64_ansi_static", "UbiServices_SDK_2022.Release.9_ANDROID64_static"],
 };
 
 // Login server (we i just did is redirect and let growtopia handle the validation)
@@ -184,4 +184,3 @@ export enum TANK_PACKET_FLAGS {
   ON_USE_ABILITY = 1 << 30,
   // MAX = 31
 }
-
