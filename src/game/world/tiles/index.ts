@@ -26,6 +26,8 @@ import { ProviderTile } from "./provider-tile";
 import { GeigerChargerTile } from "./geiger-charger-tile";
 import { LobsterTrapTile } from "./lobster-trap-tile";
 import { CuttingBoardTile } from "./cutting-board-tile";
+import { FishTankPortTile } from "./fish-tank-port-tile";
+import { TrainingPortTile } from "./training-port-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
 import { ITEM_ID } from "../constants";
 // dialog modules register their dialog returns on import
@@ -60,6 +62,8 @@ export const TileMap: Partial<Record<number, TileClass>> = {
   [ActionTypes.PROVIDER]: ProviderTile,
   [ActionTypes.GEIGER_CHARGER]: GeigerChargerTile,
   [ActionTypes.LOBSTER_TRAP]: LobsterTrapTile,
+  [ActionTypes.FISHTANK]: FishTankPortTile,
+  [ActionTypes.FISHGOTCHI_TANK]: TrainingPortTile,
 };
 
 /** Tile behaviour for single items whose action type is shared with plain blocks. */
@@ -81,6 +85,8 @@ export const TileMapByItem: Partial<Record<number, TileClass>> = {
   [ITEM_ID.ROULETTE_WHEEL]: RouletteTile,
   [ITEM_ID.SLOT_MACHINE]: RouletteTile,
   [ITEM_ID.CUTTING_BOARD]: CuttingBoardTile,
+  [ITEM_ID.FISH_TANK_PORT]: FishTankPortTile,
+  [ITEM_ID.TRAINING_PORT]: TrainingPortTile,
   4654: GeigerChargerTile,
   [3448]: LobsterTrapTile,
 };

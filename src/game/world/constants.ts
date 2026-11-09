@@ -70,6 +70,9 @@ export const ITEM_ID = {
   FISH_CHUNK: 3468,
   CUTTING_BOARD: 3470,
   BUTCHER_KNIFE: 4506,
+  FISH_TANK: 3004,
+  FISH_TANK_PORT: 3002,
+  TRAINING_PORT: 5530,
 } as const;
 
 /** Weather id of the default (clear) sky. */
@@ -216,6 +219,7 @@ export enum TileExtraTypes {
   WEATHER_SPECIAL2 = 49,
   FOSSIL_PREP = 50,
   DNA_MACHINE = 51,
+  TRAINING_PORT = 61,
   MAGPLANT = 62,
   GROWSCAN = 66,
   TESSERACT_MANIPULATOR = 69,

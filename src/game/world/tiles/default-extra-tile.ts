@@ -81,6 +81,7 @@ const DEFAULT_EXTRA_BY_ACTION: Partial<Record<number, number[]>> = {
   [ActionTypes.WEATHER_INFINITY]: [77, ...z(8)], // u32, u32 count
   [ActionTypes.KRANKENS_BLOCK]: [80, ...z(8)],
   [ActionTypes.FRIENDS_ENTRANCE]: [81, ...z(8)], // u32 owner, u16, u16 count
+  [ActionTypes.FISHGOTCHI_TANK]: [61, ...z(35)], // Training Port (35 bytes: u32 FishLb, u16 Status, u32 FishId, u32 Exp, 8B unk, u32 Level, 4B unk, 5B unk)
 };
 
 /** Extra data chosen by item ID rather than action type. */
@@ -108,7 +109,6 @@ export const UNSUPPORTED_EXTRA_TYPES: ReadonlySet<number> = new Set([
   ActionTypes.SWING, // Sewing Machine: u16 vs u32 count
   ActionTypes.CHALLENGE_FLAG,
   ActionTypes.PORTRAIT, // 22 vs 26 vs 32 bytes
-  ActionTypes.FISHGOTCHI_TANK, // 22 vs 35 bytes
   ActionTypes.ITEM_PLANTER,
   ActionTypes.AUTO_ACTION_HARVEST, // Heart of Gaia: unknown
   ActionTypes.AUTO_ACTION_HARVEST_SUCK, // Techno-Organic Engine: unknown

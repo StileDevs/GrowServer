@@ -39,6 +39,19 @@ export interface TileData {
     startedAt: number;
     readyAt: number;
   };
+  /** Fish Tank Port with stored fish. */
+  fishTank?: {
+    fishes: Array<{ id: number; weight: number }>;
+  };
+  /** Training Port for fish training. */
+  trainingPort?: {
+    fishId: number;
+    weight: number;
+    level: number;
+    exp: number;
+    status: number;
+    lastFed: number;
+  };
 }
 
 /**
