@@ -84,6 +84,7 @@ for (const def of [
   mod({ id: "putt_putt_putt", name: "Putt Putt Putt", displayItem: 898, addMessage: "Tractors are not speedy.", removeMessage: "You can walk faster than that thing!", speed: -100, items: [898, 1830, 1966] }),
   mod({ id: "hunting_ghosts", name: "Hunting Ghosts", displayItem: 3716, addMessage: "You fire Neutron Beams (requires Neutron Pack to work).", removeMessage: "You're afraid of a ghost.", punchType: 69, punchRange: 2, items: [3716] }),
   mod({ id: "geiger_counter", name: "Geiger Counter", displayItem: 2204, addMessage: "You are detecting radiation...", removeMessage: "Geiger Counter removed.", items: [2204] }),
+  mod({ id: "slasher", name: "Slasher", displayItem: 3466, addMessage: "You can slash with your blade!", removeMessage: "You put your blade away.", punchType: 29, items: [3466, 4506] }),
 
   // --- world-driven ------------------------------------------------------------
   // granted while a Xenonite Crystal is placed in the world; its masks, not the

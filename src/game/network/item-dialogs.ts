@@ -28,6 +28,12 @@ registerDialog("drop_end", (player, action) => {
   if (count <= 0) return player.sendTextBubble("Nice try. You remind me of myself at that age.");
   if (itemId === ITEM_ID.FIST || itemId === ITEM_ID.WRENCH) return player.sendTextBubble("You'd be sorry if you lost that.");
 
+  const isFish = getItem(itemId)?.type === ActionTypes.PETFISH;
+  if (isFish && count !== owned) {
+    player.sendInventory();
+    return player.sendTextBubble("Please don't chop up the fish.");
+  }
+
   const world = player.world;
   if (!world) return;
 
@@ -35,11 +41,9 @@ registerDialog("drop_end", (player, action) => {
   const x = player.state.x + (player.state.rotatedLeft ? -25 : 25) + extra;
   const y = player.state.y + extra - Math.floor(Math.random() * 4 - 3);
 
-  const isFish = getItem(itemId)?.type === ActionTypes.PETFISH;
-  const dropAmount = isFish ? owned : count;
-
-  player.removeItemInven(itemId, dropAmount);
-  world.drop(player, x, y, itemId, dropAmount, { noSimilar: isFish });
+  player.removeItemInven(itemId, count);
+  world.drop(player, x, y, itemId, count, { noSimilar: isFish });
+  if (isFish) player.sendInventory();
   player.sendClothesToWorld();
 });
 
@@ -55,12 +59,16 @@ registerDialog("trash_end", (player, action) => {
   if (count <= 0) return player.sendTextBubble("Nice try. You remind me of myself at that age.");
 
   const isFish = getItem(itemId)?.type === ActionTypes.PETFISH;
-  const trashAmount = isFish ? owned : count;
+  if (isFish && count !== owned) {
+    player.sendInventory();
+    return player.sendTextBubble("Please don't chop up the fish.");
+  }
 
-  player.removeItemInven(itemId, trashAmount);
+  player.removeItemInven(itemId, count);
+  if (isFish) player.sendInventory();
   player.sendSfx("audio/trash.wav");
   player.sendClothesToWorld();
   player.variants.sendOnConsoleMessage(
-    isFish ? `You trashed \`w${trashAmount} lb. ${getItem(itemId)?.name}` : `You trashed \`w${trashAmount} ${getItem(itemId)?.name}`,
+    isFish ? `You trashed \`w${count} lb. ${getItem(itemId)?.name}` : `You trashed \`w${count} ${getItem(itemId)?.name}`,
   );
 });

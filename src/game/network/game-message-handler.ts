@@ -7,7 +7,7 @@ import { Player, PlayerStateFlags, MAX_LEVEL, DEFAULT_SKIN_COLOR } from "../play
 import { PLAYER_ROLE } from "../../constants";
 import { Variant, int32 } from "../packets/variants";
 import { serverManager } from "../server/server-manager";
-import { BlockFlags, ITEM_ID } from "../world/constants";
+import { BlockFlags, ITEM_ID, ActionTypes } from "../world/constants";
 import { handleDialogReturn } from "./dialog-handler";
 // registers the backpack and gazette dialog returns
 import "./item-dialogs";
@@ -110,15 +110,28 @@ function Drop(player: Player, action: TextParser): void {
   const item = getItem(itemId);
   if (!item || !player.inventory.hasItem(itemId)) return;
 
+  const isFish = item.type === ActionTypes.PETFISH;
+  const owned = player.inventory.getAmount(itemId);
+
   const dialog = new DialogBuilder()
     .defaultColor()
-    .addLabelWithIcon(`Drop ${item.name}`, itemId, "big")
-    .addTextBox("How many to drop?")
-    .addInputBox("drop_count", "", player.inventory.getAmount(itemId), 5)
+    .addLabelWithIcon(`Drop ${item.name}`, itemId, "big");
+
+  if (isFish) {
+    dialog
+      .addTextBox(`Drop this ${owned} lb. ${item.name}?`)
+      .addInputBox("drop_count", "", owned, 5);
+  } else {
+    dialog
+      .addTextBox("How many to drop?")
+      .addInputBox("drop_count", "", owned, 5);
+  }
+
+  dialog
     .embed("itemID", itemId)
-    .endDialog("drop_end", "Cancel", "OK")
-    .str();
-  player.variants.sendOnDialogRequest(dialog);
+    .endDialog("drop_end", "Cancel", "OK");
+
+  player.variants.sendOnDialogRequest(dialog.str());
 }
 
 function Info(player: Player, action: TextParser): void {
@@ -163,15 +176,28 @@ function Trash(player: Player, action: TextParser): void {
     return;
   }
 
+  const isFish = item.type === ActionTypes.PETFISH;
+  const owned = player.inventory.getAmount(itemId);
+
   const dialog = new DialogBuilder()
     .defaultColor()
-    .addLabelWithIcon(`Trash ${item.name}`, itemId, "big")
-    .addTextBox("How many to `4destroy`o?")
-    .addInputBox("trash_count", "", 0, 5)
+    .addLabelWithIcon(`Trash ${item.name}`, itemId, "big");
+
+  if (isFish) {
+    dialog
+      .addTextBox(`Trash this ${owned} lb. ${item.name}?`)
+      .addInputBox("trash_count", "", owned, 5);
+  } else {
+    dialog
+      .addTextBox("How many to `4destroy`o?")
+      .addInputBox("trash_count", "", 0, 5);
+  }
+
+  dialog
     .embed("itemID", itemId)
-    .endDialog("trash_end", "Cancel", "OK")
-    .str();
-  player.variants.sendOnDialogRequest(dialog);
+    .endDialog("trash_end", "Cancel", "OK");
+
+  player.variants.sendOnDialogRequest(dialog.str());
 }
 
 function Store(player: Player): void {
