@@ -1,0 +1,16 @@
+# GrowServer LAN hosts
+#
+# Point the Growtopia client and its login/CDN virtual hosts at the PC that
+# runs GrowServer. This is the phone/Android copy; on the PC itself use
+# 127.0.0.1 (see update-hosts.ps1 -Hosts).
+#
+# PC LAN IP: 192.168.8.30 (Wi-Fi). Update the address below when it changes.
+# Android needs root for /system/etc/hosts, or feed these records to a local
+# DNS server (Pi-hole / dnsmasq / router override).
+
+192.168.8.30 growtopia1.com
+192.168.8.30 www.growtopia1.com
+192.168.8.30 growtopia2.com
+192.168.8.30 www.growtopia2.com
+192.168.8.30 login.growserver.test
+192.168.8.30 cdn.growserver.test

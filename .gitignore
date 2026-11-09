@@ -37,3 +37,10 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # Finder (MacOS) folder config
 .DS_Store
+
+# legacy monorepo artifacts and tool directories
+apps/
+packages/
+.commandcode/
+rootCA.pem
+
