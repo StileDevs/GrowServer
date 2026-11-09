@@ -1,3 +1,4 @@
+import { isFishPerfect, getFishMaxWeight } from "../../fishing/fish-weights";
 import type { ItemDefinition } from "grow-items";
 import type { ExtendBuffer } from "../../../utils/extend-buffer";
 import { DialogBuilder } from "../../../utils/dialog-builder";
@@ -141,7 +142,7 @@ export class TrainingPortTile extends Tile {
 
   public override serializedFlags(flags: number): number {
     const hasFish = (this.data.trainingPort?.fishId ?? 0) > 0;
-    return flags | TileFlags.TILEEXTRA | (hasFish ? TileFlags.OPEN : 0);
+    return (flags & ~TILE_ALT_MODE) | TileFlags.TILEEXTRA | (hasFish ? TileFlags.OPEN : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {
@@ -171,25 +172,25 @@ export class TrainingPortTile extends Tile {
       dialog
         .addLabelWithIcon("`wFish Training Port``", ITEM_ID.TRAINING_PORT, "big")
         .addSpacer("small")
-        .addTextBox("This port trains `2Full (200 lb. Perfect)`` fish up to Level 10 to earn exclusive leashes, hats, and mounts!")
+        .addTextBox("This port trains `2Perfect (maximum weight)`` fish and enormous crabs up to Level 10 to earn exclusive leashes, hats, and mounts!")
         .addSpacer("small");
 
-      // Only accept full 200 lb fish
+      // Only accept perfect fish / enormous crabs (at species max weight)
       const petFishInven: Array<{ id: number; amount: number }> = [];
       for (const [id, amount] of player.inventory.items) {
-        if (getItem(id)?.type === ActionTypes.PETFISH && amount >= 200) {
+        if (FISH_TRAINING_REWARDS[id] && isFishPerfect(id, amount)) {
           petFishInven.push({ id, amount });
         }
       }
 
       if (petFishInven.length > 0) {
-        dialog.addTextBox("`wChoose a 200 lb. perfect fish from your backpack to train:`\``");
+        dialog.addTextBox("`wChoose a perfect fish or enormous crab from your backpack to train:`\``");
         for (const it of petFishInven) {
           const name = getItem(it.id)?.name ?? "Fish";
-          dialog.addButtonWithIcon(`trainstart_${it.id}`, it.id, `Train 200 lb. ${name}`);
+          dialog.addButtonWithIcon(`trainstart_${it.id}`, it.id, `Train ${it.amount} lb. ${name} (Perfect!)`);
         }
       } else {
-        dialog.addSmallText("`4You don't have any full (200 lb.) perfect fish in your backpack to train.`\``");
+        dialog.addSmallText("`4You don't have any perfect (maximum weight) fish in your backpack to train.`\``");
       }
 
       dialog.addCustomBreak().addSpacer("small").endDialog("training_port_dialog", "Close", "");
@@ -260,8 +261,8 @@ registerDialog("training_port_dialog", (player, action) => {
     if (!fishId || isNaN(fishId)) return;
 
     const owned = player.inventory.getAmount(fishId);
-    if (owned < 200) {
-      player.sendTextBubble("Only full (200 lb) perfect fish can be trained!", true);
+    if (!isFishPerfect(fishId, owned)) {
+      player.sendTextBubble(`Only perfect (${getFishMaxWeight(fishId)} lb.) fish can be trained!`, true);
       return;
     }
 
@@ -279,8 +280,8 @@ registerDialog("training_port_dialog", (player, action) => {
     player.sendSfx("audio/splash.wav");
 
     const fishName = getItem(fishId)?.name ?? "Fish";
-    player.variants.sendOnConsoleMessage(`You placed the \`2200 lb. ${fishName} (Perfect!)\`\` in the Training Port!`);
-    player.sendTextBubble(`\`2Started training 200 lb. ${fishName}!\`\``, true);
+    player.variants.sendOnConsoleMessage(`You placed the \`2${owned} lb. ${fishName} (Perfect!)\`\` in the Training Port!`);
+    player.sendTextBubble(`\`2Started training ${owned} lb. ${fishName}!\`\``, true);
     return;
   }
 

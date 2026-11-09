@@ -1,3 +1,4 @@
+import { getFishMaxWeight } from "./fish-weights";
 import { TANK_PACKET_TYPE } from "../../constants";
 import { getItem } from "../item/item-utils";
 import { GameUpdatePacket } from "../packets/game-packet";
@@ -560,10 +561,11 @@ function reelIn(player: Player, world: World): void {
   // Weight calculation for fish catches
   if (isFish) {
     const baitLimit = BAIT_MAX_WEIGHT[session.baitId] ?? 200;
-    const effectiveMax = Math.min(rod.maxLbs, baitLimit);
+    const speciesMax = getFishMaxWeight(caughtItem);
+    const effectiveMax = Math.min(rod.maxLbs, baitLimit, speciesMax);
     count = Math.floor(Math.random() * effectiveMax) + 1;
-    if (rod.sizeBonus) count = Math.min(rod.maxLbs, Math.ceil(count * (1 + rod.sizeBonus / 100)));
-    count = Math.min(rod.maxLbs, count + Math.floor(fishLevel * 0.5));
+    if (rod.sizeBonus) count = Math.min(speciesMax, Math.ceil(count * (1 + rod.sizeBonus / 100)));
+    count = Math.min(speciesMax, count + Math.floor(fishLevel * 0.5));
   }
 
   // Role perks: an infusion bonus at level 2+, a rare bonus at level 3+.

@@ -1,3 +1,4 @@
+import { isFishPerfect } from "../../fishing/fish-weights";
 import type { ItemDefinition } from "grow-items";
 import type { ExtendBuffer } from "../../../utils/extend-buffer";
 import { DialogBuilder } from "../../../utils/dialog-builder";
@@ -35,7 +36,7 @@ export class FishTankPortTile extends Tile {
 
     if (!(await super.onPlaceForeground(player, itemMeta))) return false;
 
-    this.data.flags |= TileFlags.TILEEXTRA | TileFlags.OPEN | TILE_ALT_MODE;
+    this.data.flags |= TileFlags.TILEEXTRA | TileFlags.OPEN;
     this.data.fishTank = { fishes: [], glowing: true };
     return true;
   }
@@ -57,7 +58,7 @@ export class FishTankPortTile extends Tile {
 
   public override serializedFlags(flags: number): number {
     const glowing = this.data.fishTank?.glowing !== false;
-    return flags | TileFlags.TILEEXTRA | (glowing ? TileFlags.OPEN : 0);
+    return (flags & ~TILE_ALT_MODE) | TileFlags.TILEEXTRA | (glowing ? TileFlags.OPEN : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {
@@ -65,9 +66,7 @@ export class FishTankPortTile extends Tile {
     const fishes = this.data.fishTank?.fishes ?? [];
     const glowing = this.data.fishTank?.glowing !== false;
     buffer.writeU8(glowing ? 1 : 0);
-    // Growtopia client loops: for (int i = 0; i < fish_count / 2; i++)
-    // Therefore fish_count must be the count of uint32 values (fishes.length * 2)
-    buffer.writeU32(fishes.length * 2);
+    buffer.writeU32(fishes.length);
     for (const f of fishes) {
       buffer.writeU32(f.id);
       buffer.writeU32(f.weight);
@@ -95,7 +94,7 @@ export class FishTankPortTile extends Tile {
       for (let i = 0; i < fishes.length; i++) {
         const fish = fishes[i]!;
         const name = getItem(fish.id)?.name ?? "Fish";
-        const perfectNote = fish.weight >= 200 ? " `#(Perfect!)``" : "";
+        const perfectNote = isFishPerfect(fish.id, fish.weight) ? " `#(Perfect!)``" : "";
         dialog.addLabelWithIcon(`\`2#${i + 1}: \`w${fish.weight} lb. ${name}${perfectNote}\`\``, fish.id, "small");
         dialog.addButton(`retrieve_${i}`, "Retrieve to Backpack");
         dialog.addSpacer("small");
@@ -125,7 +124,7 @@ export class FishTankPortTile extends Tile {
 
     dialog.addSpacer("small");
     dialog.addCustomBreak();
-    dialog.addCheckbox("chk_glowing", "Glowing Fish (for 200 lb & Megafishes)", this.data.fishTank?.glowing !== false ? "selected" : "not_selected");
+    dialog.addCheckbox("chk_glowing", "Glowing Fish (for Perfect & Megafishes)", this.data.fishTank?.glowing !== false ? "selected" : "not_selected");
     dialog.addSpacer("small");
     dialog.addCustomBreak();
     dialog.endDialog("fishtank_port_dialog", "Close", "Update");
@@ -185,7 +184,7 @@ registerDialog("fishtank_port_dialog", (player, action) => {
     player.sendSfx("audio/splash.wav");
 
     const fishName = getItem(fishId)?.name ?? "Fish";
-    const perfectStr = owned >= 200 ? " `#(Perfect!)``" : "";
+    const perfectStr = isFishPerfect(fishId, owned) ? " `#(Perfect!)``" : "";
     player.variants.sendOnConsoleMessage(`You put the \`2${owned} lb. ${fishName}${perfectStr}\`\` into the Fish Tank!`);
     player.sendTextBubble(`\`2Added ${owned} lb. ${fishName}!${perfectStr}\`\``, true);
     return;
