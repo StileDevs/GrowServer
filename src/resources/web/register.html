@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create GrowID - GrowServer</title>
+    <style>
+      :root {
+        --vp-c-default-1: #c9f2ff;
+        --vp-c-default-2: #8edffe;
+        --vp-c-default-3: #45bdea;
+        --vp-c-default-soft: rgba(69, 189, 234, 0.16);
+
+        --vp-c-brand-1: #45bdea;
+        --vp-c-brand-2: #8edffe;
+        --vp-c-brand-3: #45bdea;
+        --vp-c-brand-soft: rgba(69, 189, 234, 0.16);
+
+        --vp-c-tip-1: #45bdea;
+        --vp-c-tip-2: #8edffe;
+        --vp-c-tip-3: #45bdea;
+        --vp-c-tip-soft: rgba(69, 189, 234, 0.16);
+
+        --vp-c-warning-1: #fdcc04;
+        --vp-c-warning-2: #ffd84a;
+        --vp-c-warning-3: #fdcc04;
+        --vp-c-warning-soft: rgba(253, 204, 4, 0.16);
+
+        --vp-c-danger-1: #ff6b6b;
+        --vp-c-danger-2: #ff9999;
+        --vp-c-danger-3: #ff6b6b;
+        --vp-c-danger-soft: rgba(255, 107, 107, 0.16);
+
+        /* Dark theme */
+        --vp-c-bg: #5396c8;
+        --vp-c-bg-alt: #3a7a9f;
+        --vp-c-bg-soft: #2d6680;
+        --vp-c-bg-mute: #4a8aaf;
+        --vp-c-text-1: #ffffff;
+        --vp-c-text-2: #c9f2ff;
+        --vp-c-text-3: #8edffe;
+        --vp-c-border: rgba(69, 189, 234, 0.2);
+        --vp-c-divider: rgba(69, 189, 234, 0.12);
+
+        /* Navbar */
+        --vp-nav-bg-color: #0f2a3f;
+        --vp-nav-bg-hover-color: #1d4d6f;
+        --vp-nav-bg-alt: #1a3f5f;
+        --vp-nav-text-color: #ffffff;
+        --vp-nav-text-hover-color: #45bdea;
+        --vp-nav-text-active-color: #fdcc04;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Century Gothic", "Arial", sans-serif !important;
+        font-weight: 900;
+      }
+
+      /* Strict transparent background to preserve in-game webview overlay */
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        background: transparent !important;
+        background-color: transparent !important;
+        color: var(--vp-c-text-1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+
+      .portal-container {
+        width: 100%;
+        max-width: 400px;
+        padding: 16px;
+      }
+
+      .portal-card {
+        background: #0e2c46 !important;
+        border: 4px solid #45bdea !important;
+        border-radius: 8px !important;
+        box-shadow:
+          inset 3px 3px 0 black,
+          inset 0 0px 0 rgba(0, 0, 0, 0.35),
+          3px 3px 8px black !important;
+        padding: 24px;
+        position: relative;
+      }
+
+      .portal-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .portal-title {
+        font-size: 26px !important;
+        color: #ffffff !important;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-shadow: 2px 2px 0 black !important;
+        margin-bottom: 4px;
+      }
+
+      .portal-subtitle {
+        font-size: 13px !important;
+        color: var(--vp-c-text-2) !important;
+        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
+      }
+
+      .portal-field {
+        margin-bottom: 14px;
+      }
+
+      .portal-label {
+        display: block;
+        font-size: 13px !important;
+        color: #ffe681 !important;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        text-shadow: 1px 1px 0 black;
+      }
+
+      .portal-input {
+        width: 100%;
+        min-height: 42px;
+        padding: 8px 14px;
+        background: #0f2a3f !important;
+        border: 2px solid #45bdea !important;
+        border-radius: 4px !important;
+        color: #ffffff !important;
+        font-size: 15px !important;
+        outline: none;
+        box-shadow: inset 2px 2px 0 black;
+        transition:
+          border-color 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .portal-input:focus {
+        border-color: #8edffe !important;
+        box-shadow:
+          inset 2px 2px 0 black,
+          0 0 0 2px rgba(69, 189, 234, 0.4);
+      }
+
+      .portal-input::placeholder {
+        color: #8edffe;
+        opacity: 0.6;
+      }
+
+      .portal-alert {
+        display: none;
+        padding: 10px 14px;
+        border-radius: 4px;
+        font-size: 13px !important;
+        margin-bottom: 14px;
+        line-height: 1.4;
+        text-shadow: 1px 1px 0 black;
+      }
+
+      .portal-alert.error {
+        display: block;
+        background: rgba(255, 107, 107, 0.2) !important;
+        border: 2px solid #ff6b6b !important;
+        color: #ff9999 !important;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+      }
+
+      .portal-alert.success {
+        display: block;
+        background: rgba(58, 170, 53, 0.2) !important;
+        border: 2px solid #3aaa35 !important;
+        color: #a8f0b3 !important;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+      }
+
+      .portal-btn {
+        cursor: pointer;
+        width: 100%;
+        min-height: 44px;
+        height: 44px;
+        display: inline-flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        color: white;
+        font-weight: bold;
+        font-size: 18px !important;
+        border: 0;
+        padding: 0 16px !important;
+        border-radius: 4px !important;
+        text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.7);
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.7);
+        transition: 0.15s;
+        line-height: 1 !important;
+        box-sizing: border-box;
+        gap: 8px;
+        margin-top: 6px;
+        background: #fdcc04;
+      }
+
+      .portal-btn:hover:not(:disabled) {
+        box-shadow: none !important;
+        background: #ffd84a;
+        filter: brightness(0.95);
+      }
+
+      .portal-btn:active:not(:disabled) {
+        transform: translate(2px, 2px);
+      }
+
+      .portal-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .portal-spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-top-color: #ffffff;
+        border-radius: 50%;
+        animation: portal-spin 0.8s linear infinite;
+      }
+
+      @keyframes portal-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .portal-switch-link {
+        display: block;
+        text-align: center;
+        margin-top: 16px;
+        font-size: 13px !important;
+        color: var(--vp-c-text-2) !important;
+        text-decoration: none;
+        text-shadow: 1px 1px 0 black;
+      }
+
+      .portal-switch-link span {
+        color: var(--vp-c-brand-1) !important;
+        font-weight: bold;
+      }
+
+      .portal-switch-link:hover span {
+        color: #ffffff !important;
+        text-decoration: underline;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="portal-container">
+      <div class="portal-card">
+        <div class="portal-header">
+          <h1 class="portal-title">Create GrowID</h1>
+          <p class="portal-subtitle">Register a new GrowServer account</p>
+        </div>
+
+        <div id="alertBox" class="portal-alert {{ALERT_CLASS}}" style="{{ALERT_STYLE}}">{{ERROR_MSG}}</div>
+
+        <form id="registerForm" action="/player/growid/register/validate" method="POST" onsubmit="return handleRegister(event)">
+          <input type="hidden" name="data" id="loginDataInput" value="{{DATA}}" />
+          <input type="hidden" name="clientData" id="loginClientDataInput" value="{{DATA}}" />
+
+          <div class="portal-field">
+            <label class="portal-label" for="registerGrowId">GrowID (Username)</label>
+            <input
+              type="text"
+              id="registerGrowId"
+              name="growId"
+              class="portal-input"
+              placeholder="3-18 characters"
+              required
+              autocomplete="username"
+              minlength="3"
+              maxlength="18"
+              value="{{GROWID}}"
+            />
+          </div>
+
+          <div class="portal-field">
+            <label class="portal-label" for="registerPassword">Password</label>
+            <input
+              type="password"
+              id="registerPassword"
+              name="password"
+              class="portal-input"
+              placeholder="Minimum 6 characters"
+              required
+              autocomplete="new-password"
+              minlength="6"
+              maxlength="128"
+            />
+          </div>
+
+          <div class="portal-field">
+            <label class="portal-label" for="registerConfirmPassword">Confirm Password</label>
+            <input
+              type="password"
+              id="registerConfirmPassword"
+              name="confirmPassword"
+              class="portal-input"
+              placeholder="Re-type your password"
+              required
+              autocomplete="new-password"
+              minlength="6"
+              maxlength="128"
+            />
+          </div>
+
+          <button type="submit" id="registerSubmitBtn" class="portal-btn">
+            <span class="portal-spinner" id="registerSpinner"></span>
+            <span id="registerBtnText">Create GrowID</span>
+          </button>
+        </form>
+
+        <a href="/login" class="portal-switch-link" id="loginLink">Already have a GrowID? <span>Log in here</span></a>
+      </div>
+    </div>
+
+    <script>
+      function getLoginData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryData = urlParams.get("clientData") || urlParams.get("data");
+        if (queryData) return queryData;
+
+        const input = document.getElementById("loginDataInput") || document.getElementById("loginClientDataInput");
+        if (input && input.value && input.value !== "{{DATA}}") return input.value;
+        return "";
+      }
+
+      const initialData = getLoginData();
+      const dataInput = document.getElementById("loginDataInput");
+      const clientDataInput = document.getElementById("loginClientDataInput");
+      if (dataInput && (!dataInput.value || dataInput.value === "{{DATA}}")) {
+        dataInput.value = initialData;
+      }
+      if (clientDataInput && (!clientDataInput.value || clientDataInput.value === "{{DATA}}")) {
+        clientDataInput.value = initialData;
+      }
+
+      const loginLink = document.getElementById("loginLink");
+      if (loginLink && initialData) {
+        loginLink.href = `/login?data=${encodeURIComponent(initialData)}`;
+      }
+
+      function showAlert(msg, isError = true) {
+        const alertBox = document.getElementById("alertBox");
+        alertBox.textContent = msg;
+        alertBox.className = "portal-alert " + (isError ? "error" : "success");
+        alertBox.style.display = "block";
+      }
+
+      function clearAlert() {
+        const alertBox = document.getElementById("alertBox");
+        alertBox.textContent = "";
+        alertBox.className = "portal-alert";
+        alertBox.style.display = "none";
+      }
+
+      function handleRegister(e) {
+        clearAlert();
+        const growId = document.getElementById("registerGrowId").value.trim();
+        const password = document.getElementById("registerPassword").value;
+        const confirmPassword = document.getElementById("registerConfirmPassword").value;
+
+        if (!growId || growId.length < 3) {
+          e.preventDefault();
+          showAlert("GrowID must be at least 3 characters long.");
+          return false;
+        }
+
+        if (!password || password.length < 6) {
+          e.preventDefault();
+          showAlert("Password must be at least 6 characters long.");
+          return false;
+        }
+
+        if (password !== confirmPassword) {
+          e.preventDefault();
+          showAlert("Passwords do not match.");
+          return false;
+        }
+
+        const spinner = document.getElementById("registerSpinner");
+        const btnText = document.getElementById("registerBtnText");
+        if (spinner) spinner.style.display = "inline-block";
+        if (btnText) btnText.textContent = "Creating account...";
+        return true;
+      }
+    </script>
+  </body>
+</html>
