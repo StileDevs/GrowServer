@@ -66,6 +66,10 @@ export const ITEM_ID = {
   DANCING_SNOW_GLOBE: 11512,
   DANCING_ZOMBIE: 12778,
   MUSIC_AMPLIFIER: 12358,
+  SUSHI_KNIFE: 3466,
+  FISH_CHUNK: 3468,
+  CUTTING_BOARD: 3470,
+  BUTCHER_KNIFE: 4506,
 } as const;
 
 /** Weather id of the default (clear) sky. */

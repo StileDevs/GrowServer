@@ -25,6 +25,7 @@ import { XenoniteTile } from "./xenonite-tile";
 import { ProviderTile } from "./provider-tile";
 import { GeigerChargerTile } from "./geiger-charger-tile";
 import { LobsterTrapTile } from "./lobster-trap-tile";
+import { CuttingBoardTile } from "./cutting-board-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
 import { ITEM_ID } from "../constants";
 // dialog modules register their dialog returns on import
@@ -79,6 +80,7 @@ export const TileMapByItem: Partial<Record<number, TileClass>> = {
   // the roulette wheel and the slot machine spin when punched
   [ITEM_ID.ROULETTE_WHEEL]: RouletteTile,
   [ITEM_ID.SLOT_MACHINE]: RouletteTile,
+  [ITEM_ID.CUTTING_BOARD]: CuttingBoardTile,
   4654: GeigerChargerTile,
   [3448]: LobsterTrapTile,
 };

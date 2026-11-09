@@ -545,7 +545,10 @@ export class World {
     const blockX = Math.trunc(x / 32);
     const blockY = Math.trunc(y / 32);
 
-    const similarDrops = noSimilar
+    const isFish = getItem(id)?.type === ActionTypes.PETFISH;
+    const forceNoSimilar = noSimilar || isFish;
+
+    const similarDrops = forceNoSimilar
       ? []
       : this.data.dropped.items.filter((item) => item.id === id && item.block.x === blockX && item.block.y === blockY).sort((a, b) => a.amount - b.amount);
     const similarDrop = similarDrops[0];
@@ -585,6 +588,27 @@ export class World {
   }
 
   /**
+   * Removes a dropped item from the world and notifies clients to despawn it.
+   */
+  public removeDrop(uid: number, picker?: Player): boolean {
+    const droppedItem = this.data.dropped.items.find((item) => item.uid === uid);
+    if (!droppedItem) return false;
+
+    this.broadcast(
+      GameUpdatePacket.create({
+        type: TANK_PACKET_TYPE.ITEM_CHANGE_OBJECT,
+        netID: picker?.netID ?? -1,
+        targetNetID: -1,
+        itemID: uid,
+      }).parse()!,
+    );
+
+    this.data.dropped.items = this.data.dropped.items.filter((item) => item.uid !== uid);
+    this.markDirty();
+    return true;
+  }
+
+  /**
    * Gives a dropped item to a player.
    */
   public collect(player: Player, uid: number): void {
@@ -596,22 +620,20 @@ export class World {
 
     const owned = player.inventory.getAmount(droppedItem.id);
     const isGems = droppedItem.id === ITEM_ID.GEMS;
+    const isFish = itemMeta?.type === ActionTypes.PETFISH;
 
     if (!isGems && ((owned === 0 && player.inventory.isFull) || owned >= 200)) return;
+    if (isFish && owned > 0) return;
 
-    this.broadcast(
-      GameUpdatePacket.create({
-        type: TANK_PACKET_TYPE.ITEM_CHANGE_OBJECT,
-        netID: player.netID,
-        targetNetID: -1,
-        itemID: uid,
-      }).parse()!,
-    );
+    this.removeDrop(uid, player);
 
     // the client adds the collected amount to its backpack on its own when it
     // receives the collect packet above, so the items are added silently here
     if (isGems) {
       player.addGems(droppedItem.amount);
+    } else if (isFish) {
+      player.addItemInven(droppedItem.id, droppedItem.amount, false);
+      player.variants.sendOnConsoleMessage(`Collected \`w${droppedItem.amount} lb. ${itemMeta?.name}\`\`.`);
     } else if (owned + droppedItem.amount > 200) {
       const extra = owned + droppedItem.amount - 200;
       player.variants.sendOnConsoleMessage(`Collected \`w${200 - owned} ${itemMeta?.name}\`\`.`);
@@ -621,9 +643,6 @@ export class World {
       player.addItemInven(droppedItem.id, droppedItem.amount, false);
       player.variants.sendOnConsoleMessage(`Collected \`w${droppedItem.amount} ${itemMeta?.name}\`\`.`);
     }
-
-    this.data.dropped.items = this.data.dropped.items.filter((item) => item.uid !== droppedItem.uid);
-    this.markDirty();
   }
 
   /** Removes every dropped item (used by /clearworld and similar). */

@@ -552,11 +552,24 @@ function reelIn(player: Player, world: World): void {
   // let the prize fly from the water to the angler before it lands
   sendCatchAnimation(world, player, caughtItem, session.tileX, session.tileY);
 
-  const added = player.addItemInven(caughtItem, isFish ? 1 : count);
-  if (added <= 0) world.drop(player, player.state.x, player.state.y + 16, caughtItem, isFish ? 1 : count);
-
   const itemName = getItem(caughtItem)?.name ?? `item ${caughtItem}`;
   const catchText = isFish ? `${count} lb. ${itemName}` : itemName;
+
+  if (isFish) {
+    if (player.inventory.hasItem(caughtItem) || player.inventory.isFull) {
+      world.drop(player, player.state.x, player.state.y + 16, caughtItem, count, { noSimilar: true, tree: true });
+      player.variants.sendOnConsoleMessage(`Inventory full! Your ${count} lb. ${itemName} dropped on the floor.`);
+    } else {
+      player.addItemInven(caughtItem, count);
+    }
+  } else {
+    const added = player.addItemInven(caughtItem, count);
+    if (added <= 0) {
+      world.drop(player, player.state.x, player.state.y + 16, caughtItem, count, { noSimilar: false, tree: true });
+      player.variants.sendOnConsoleMessage(`Inventory full! Your ${count}x ${itemName} dropped on the floor.`);
+    }
+  }
+
   player.sendTextBubble(`\`wYou caught a \`2${catchText}\`w!\`\``, true);
   world.playPositioned("audio/getpoint.wav", player.netID);
 

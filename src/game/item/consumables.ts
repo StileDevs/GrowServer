@@ -49,6 +49,7 @@ const CONSUMABLES: Partial<Record<number, ConsumableEffect>> = {
   3404: YUM, 3406: YUM, 4422: YUM, 950: YUM, 968: YUM, 1058: YUM, 1096: YUM, 868: YUM, 4668: YUM, 1094: YUM, 1098: YUM, 4378: YUM, 1374: YUM, 406: YUM, 966: YUM, 958: YUM, 1580: YUM, 7052: YUM, 8520: YUM, 3546: YUM, 3600: YUM, 3836: YUM, 3240: YUM, 4984: YUM, 2734: YUM, 3622: YUM, 10988: YUM, 4764: YUM, 964: YUM, 3428: YUM, 4752: YUM, 3816: YUM, 1208: YUM,
   3536: { action: "consume", bubble: "Mmm, sugar!" },
   4410: { action: "consume", bubble: ":P`#Bleh.``" },
+  [ITEM_ID.FISH_CHUNK]: { action: "consume", bubble: "Blech! That was slimy!" },
   // play mods
   388: { action: "apply", mod: "stinky" },
   614: { action: "apply", mod: "stinky" },

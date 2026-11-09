@@ -1,6 +1,6 @@
 import { getItem } from "../item/item-utils";
 import type { Player } from "../player";
-import { ITEM_ID } from "../world/constants";
+import { ActionTypes, ITEM_ID } from "../world/constants";
 import { registerDialog } from "./dialog-handler";
 
 /**
@@ -35,8 +35,11 @@ registerDialog("drop_end", (player, action) => {
   const x = player.state.x + (player.state.rotatedLeft ? -25 : 25) + extra;
   const y = player.state.y + extra - Math.floor(Math.random() * 4 - 3);
 
-  player.removeItemInven(itemId, count);
-  world.drop(player, x, y, itemId, count);
+  const isFish = getItem(itemId)?.type === ActionTypes.PETFISH;
+  const dropAmount = isFish ? owned : count;
+
+  player.removeItemInven(itemId, dropAmount);
+  world.drop(player, x, y, itemId, dropAmount, { noSimilar: isFish });
   player.sendClothesToWorld();
 });
 
@@ -51,8 +54,13 @@ registerDialog("trash_end", (player, action) => {
   if (itemId === ITEM_ID.FIST || itemId === ITEM_ID.WRENCH) return player.sendTextBubble("Cannot trash this item.");
   if (count <= 0) return player.sendTextBubble("Nice try. You remind me of myself at that age.");
 
-  player.removeItemInven(itemId, count);
+  const isFish = getItem(itemId)?.type === ActionTypes.PETFISH;
+  const trashAmount = isFish ? owned : count;
+
+  player.removeItemInven(itemId, trashAmount);
   player.sendSfx("audio/trash.wav");
   player.sendClothesToWorld();
-  player.variants.sendOnConsoleMessage(`You trashed \`w${count} ${getItem(itemId)?.name}`);
+  player.variants.sendOnConsoleMessage(
+    isFish ? `You trashed \`w${trashAmount} lb. ${getItem(itemId)?.name}` : `You trashed \`w${trashAmount} ${getItem(itemId)?.name}`,
+  );
 });
