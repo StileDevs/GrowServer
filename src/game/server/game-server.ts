@@ -97,10 +97,11 @@ export class GameServer extends EventEmitter {
   }
 
   public onDisconnect(): void {
-    this.host.emitter.on("disconnect", (peer: Peer) => {
+    this.host.emitter.on("disconnect", async (peer: Peer) => {
       const globalID = `${this.serverLabel}:${peer.id}`;
       const player = serverManager.getPlayerByID(globalID);
       if (player) {
+        await player.world.leave();
         serverManager.unregisterPlayer(player);
         this.emit("player:disconnect", player);
       }
@@ -163,17 +164,26 @@ export class GameServer extends EventEmitter {
               return player.variants.sendOnConsoleMessage(new TextColor().crazyRed("Invalid or expired session token, please login again.").str());
             }
 
-            player.tankIDName = player.auth.tankIDName;
-            player.displayName = player.auth.tankIDName;
             player.playerId = session.player_id;
 
             player.removeStateStatus(PlayerStateFlags.LOGIN_REQUEST);
             player.addStateStatus(PlayerStateFlags.ENTERING_GAME);
 
-            // Fetch database player record to get unique database playerId
-            const dbPlayer = await PlayerDB.getByName(player.tankIDName);
+            // Fetch database player record to get unique database playerId and accurate displayName
+            const dbPlayer =
+              (session.player_id > 0 ? await PlayerDB.getById(session.player_id) : undefined) ??
+              (player.auth.tankIDName ? await PlayerDB.getByName(player.auth.tankIDName) : undefined);
+
             if (dbPlayer) {
               player.playerId = dbPlayer.id;
+              player.gems = dbPlayer.gems ?? 0;
+              player.username = dbPlayer.name.toLowerCase();
+              player.displayName = dbPlayer.display_name || dbPlayer.name;
+              player.tankIDName = dbPlayer.name.toLowerCase();
+            } else {
+              player.username = player.auth.tankIDName.toLowerCase();
+              player.displayName = player.auth.tankIDName;
+              player.tankIDName = player.auth.tankIDName.toLowerCase();
             }
 
             // Find optimal target game server dynamically instead of hardcoding
@@ -181,23 +191,26 @@ export class GameServer extends EventEmitter {
             const targetPort = optimalServer ? optimalServer.port : this.port;
             const targetServerLabel = optimalServer ? optimalServer.serverLabel : this.serverLabel;
 
-            // Prepare sub-server transfer token session with unique database playerId
+            // Prepare sub-server transfer token session with unique database playerId and displayName
             const transferSession = player.auth.prepareTransfer({
               playerId: player.playerId,
+              sessionToken,
+              tankIDName: player.tankIDName,
+              displayName: player.displayName,
               sourceServer: this.serverLabel,
               targetServer: targetServerLabel,
             });
 
-            player.variants.sendSetHasGrowID(true, player.tankIDName, sessionToken);
+            player.variants.sendSetHasGrowID(true, player.displayName || player.tankIDName, sessionToken);
             // Send OnSendToServer packet (server address defaults to 127.0.0.1 in dev or configured host)
             player.sendOnSendToServer(undefined, targetPort, "", LOGON_MODE.WELCOME, transferSession.token);
             player.disconnectLater();
           }
 
           // Handle incoming sub-server transfer validation (after sended OnSendToServer with WELCOME)
-          if (text.contains("token") && text.contains("user")) {
+          if ((text.contains("UUIDToken") || text.contains("token")) && text.contains("user")) {
             player.auth.parseRaw(payload);
-            const token = text.get("token");
+            const token = text.get("UUIDToken") || text.get("token");
             const user = text.get("user");
 
             player.addStateStatus(PlayerStateFlags.LOGIN_REQUEST);
@@ -217,11 +230,47 @@ export class GameServer extends EventEmitter {
             const parsedPlayerId = Number(user);
             if (!Number.isNaN(parsedPlayerId) && parsedPlayerId > 0) {
               player.playerId = parsedPlayerId;
+              const dbPlayer = await PlayerDB.getById(parsedPlayerId);
+              if (dbPlayer) {
+                player.gems = dbPlayer.gems ?? 0;
+                player.username = dbPlayer.name.toLowerCase();
+                player.displayName = dbPlayer.display_name || dbPlayer.name;
+                player.tankIDName = dbPlayer.name.toLowerCase();
+              }
             }
 
-            player.tankIDName = player.auth.tankIDName;
-            player.displayName = player.auth.tankIDName;
-            logger.info({ id: player.id, playerId: player.playerId, name: player.tankIDName }, "player sub-server transfer verified successfully");
+            if (!player.tankIDName) {
+              player.tankIDName = (player.auth.transferSession?.tankIDName || player.auth.tankIDName).toLowerCase();
+            }
+            if (!player.username) {
+              player.username = player.tankIDName;
+            }
+            if (!player.displayName) {
+              player.displayName = player.auth.transferSession?.displayName || player.auth.tankIDName;
+            }
+
+            const stalePlayer = serverManager.players.find(
+              (p) =>
+                p.id !== player.id &&
+                ((player.playerId > 0 && p.playerId === player.playerId) ||
+                  (player.username && p.username && p.username === player.username) ||
+                  (player.tankIDName && p.tankIDName.toLowerCase() === player.tankIDName.toLowerCase())),
+            );
+            if (stalePlayer) {
+              await stalePlayer.world.leave();
+              serverManager.unregisterPlayer(stalePlayer);
+              stalePlayer.disconnectLater();
+            }
+
+            // @TODO fix this "Secure my account"
+            const sessionToken = player.auth.transferSession?.sessionToken ?? player.auth.token ?? "";
+            player.variants.sendSetHasGrowID(true, player.displayName || player.tankIDName, sessionToken);
+            player.variants.sendOnSetBux(player.gems);
+
+            logger.info(
+              { id: player.id, playerId: player.playerId, name: player.displayName || player.tankIDName },
+              "player sub-server transfer verified successfully",
+            );
           }
 
           break;

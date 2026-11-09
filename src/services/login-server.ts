@@ -287,10 +287,10 @@ export async function createLoginServer(): Promise<void> {
         await PlayerDB.updateLastSeen(player.id, clientIp);
 
         const textParser = new TextParser(data || "");
-        textParser.set("tankIDName", player.name);
+        textParser.set("tankIDName", player.name.toLowerCase());
         const updatedLoginData = textParser.toString();
 
-        const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name);
+        const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name.toLowerCase());
 
         logger.info({ playerId: player.id, name: player.name }, "player session token verified automatically");
 
@@ -329,11 +329,11 @@ export async function createLoginServer(): Promise<void> {
           await PlayerDB.updateLastSeen(player.id, clientIp);
 
           const textParser = new TextParser(data || "");
-          textParser.set("tankIDName", player.name);
+          textParser.set("tankIDName", player.name.toLowerCase());
           textParser.set("tankIDPass", password);
           const updatedLoginData = textParser.toString();
 
-          const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name);
+          const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name.toLowerCase());
 
           logger.info({ playerId: player.id, name: player.name }, "player token verified automatically");
 
@@ -419,7 +419,7 @@ export async function createLoginServer(): Promise<void> {
         return c.json({ status: "error", message: firstError }, 400);
       }
       const template = getTemplateForRequest(c, "dashboard.html");
-      const html = await renderTemplate(template, {
+      const html = renderTemplate(template, {
         data,
         error: firstError,
         growId: rawGrowId,
@@ -493,11 +493,11 @@ export async function createLoginServer(): Promise<void> {
 
     // Update metadata with authenticated player credentials
     const textParser = new TextParser(parsedData || data || "");
-    textParser.set("tankIDName", player.name);
+    textParser.set("tankIDName", player.name.toLowerCase());
     textParser.set("tankIDPass", password);
     const updatedLoginData = textParser.toString();
 
-    const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name);
+    const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.LOGIN, player.name.toLowerCase());
 
     logger.info({ playerId: player.id, name: player.name }, "player authenticated successfully");
 
@@ -602,11 +602,11 @@ export async function createLoginServer(): Promise<void> {
     // 3. Create active session in sessions table (Better-Auth pattern)
     const session = await SessionDB.create(newPlayer.id, { ipAddress: clientIp, userAgent, ttlDays: 30 });
 
-    textParser.set("tankIDName", newPlayer.name);
+    textParser.set("tankIDName", newPlayer.name.toLowerCase());
     textParser.set("tankIDPass", password);
     const updatedLoginData = textParser.toString();
 
-    const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.REGISTER, newPlayer.name);
+    const token = generateLoginToken(session.token, updatedLoginData, LOGIN_TYPE.REGISTER, newPlayer.name.toLowerCase());
 
     logger.info({ playerId: newPlayer.id, name: newPlayer.name }, "new player registered successfully");
 
