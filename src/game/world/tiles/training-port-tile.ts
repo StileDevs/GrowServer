@@ -5,7 +5,7 @@ import { registerDialog, tileFromDialog } from "../../network/dialog-handler";
 import { getItem } from "../../item/item-utils";
 import type { Player } from "../../player";
 import { Tile } from "../tile";
-import { ActionTypes, ITEM_ID, LockPermission, TileExtraTypes, TileFlags } from "../constants";
+import { ActionTypes, ITEM_ID, LockPermission, TileExtraTypes, TileFlags, TILE_ALT_MODE } from "../constants";
 import type { TileData } from "../types";
 import type { World } from "../world";
 
@@ -60,7 +60,8 @@ export class TrainingPortTile extends Tile {
 
   public override serializedFlags(flags: number): number {
     const hasFish = (this.data.trainingPort?.fishId ?? 0) > 0;
-    return flags | TileFlags.TILEEXTRA | (hasFish ? TileFlags.OPEN : 0);
+    const isPerfect = (this.data.trainingPort?.weight ?? 0) >= 200;
+    return flags | TileFlags.TILEEXTRA | (hasFish ? TileFlags.OPEN : 0) | (isPerfect ? TILE_ALT_MODE : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {

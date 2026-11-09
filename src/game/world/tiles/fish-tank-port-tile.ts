@@ -5,7 +5,7 @@ import { registerDialog, tileFromDialog } from "../../network/dialog-handler";
 import { getItem } from "../../item/item-utils";
 import type { Player } from "../../player";
 import { Tile } from "../tile";
-import { ActionTypes, ITEM_ID, LockPermission, TileExtraTypes, TileFlags } from "../constants";
+import { ActionTypes, ITEM_ID, LockPermission, TileExtraTypes, TileFlags, TILE_ALT_MODE } from "../constants";
 import type { TileData } from "../types";
 import type { World } from "../world";
 
@@ -35,7 +35,7 @@ export class FishTankPortTile extends Tile {
 
     if (!(await super.onPlaceForeground(player, itemMeta))) return false;
 
-    this.data.flags |= TileFlags.TILEEXTRA | TileFlags.OPEN;
+    this.data.flags |= TileFlags.TILEEXTRA | TileFlags.OPEN | TILE_ALT_MODE;
     this.data.fishTank = { fishes: [], glowing: true };
     return true;
   }
@@ -57,15 +57,16 @@ export class FishTankPortTile extends Tile {
 
   public override serializedFlags(flags: number): number {
     const glowing = this.data.fishTank?.glowing !== false;
-    return flags | TileFlags.TILEEXTRA | (glowing ? TileFlags.OPEN : 0);
+    return flags | TileFlags.TILEEXTRA | (glowing ? (TileFlags.OPEN | TILE_ALT_MODE) : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {
     buffer.writeU8(this.extraType);
     const fishes = this.data.fishTank?.fishes ?? [];
-    // flags (u8): bit 0 enables glowing aura for 200 lb / megafish in the tank
+    // flags (u8): bitmask for fish tank port settings.
+    // 0xFF enables all potential glow bits (0x01, 0x02, 0x04, etc.) in the Growtopia client
     const glowing = this.data.fishTank?.glowing !== false;
-    buffer.writeU8(glowing ? 1 : 0);
+    buffer.writeU8(glowing ? 0xff : 0x00);
     // Growtopia client loops: for (int i = 0; i < fish_count / 2; i++)
     // Therefore fish_count must be the count of uint32 values (fishes.length * 2)
     buffer.writeU32(fishes.length * 2);
@@ -101,6 +102,7 @@ export class FishTankPortTile extends Tile {
         dialog.addButton(`retrieve_${i}`, "Retrieve to Backpack");
         dialog.addSpacer("small");
       }
+      dialog.addCustomBreak();
     }
 
     if (fishes.length < MAX_FISH_PER_TANK) {
@@ -124,8 +126,10 @@ export class FishTankPortTile extends Tile {
     }
 
     dialog.addSpacer("small");
+    dialog.addCustomBreak();
     dialog.addCheckbox("chk_glowing", "Glowing Fish (for 200 lb & Megafishes)", this.data.fishTank?.glowing !== false ? "selected" : "not_selected");
     dialog.addSpacer("small");
+    dialog.addCustomBreak();
     dialog.endDialog("fishtank_port_dialog", "Close", "Update");
     player.variants.sendOnDialogRequest(dialog.str());
     return true;
@@ -145,9 +149,9 @@ registerDialog("fishtank_port_dialog", (player, action) => {
     const isGlowing = action.get("chk_glowing") === "1";
     tileData.fishTank.glowing = isGlowing;
     if (isGlowing) {
-      tileData.flags |= TileFlags.OPEN;
+      tileData.flags |= TileFlags.OPEN | TILE_ALT_MODE;
     } else {
-      tileData.flags &= ~TileFlags.OPEN;
+      tileData.flags &= ~(TileFlags.OPEN | TILE_ALT_MODE);
     }
     target.world.markDirty();
     new FishTankPortTile(target.world, tileData).tileUpdate();
