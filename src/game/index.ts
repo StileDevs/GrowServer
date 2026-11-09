@@ -16,5 +16,6 @@ export async function startGameServer(): Promise<void> {
 
 export { serverManager };
 export * from "./player";
+export * from "./world";
 export * from "./server/game-server";
 export * from "./server/server-manager";

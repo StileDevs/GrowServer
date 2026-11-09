@@ -46,7 +46,9 @@ export interface PlayerAuthMetadata {
 export interface SubServerTransferSession {
   token: number;
   playerId: number | string;
+  sessionToken?: string | undefined;
   tankIDName: string;
+  displayName?: string | undefined;
   sourceServer: string;
   targetServer?: string | undefined;
   targetWorld?: string | undefined;
@@ -168,8 +170,8 @@ export class PlayerAuth {
     const lmode = parser.getInt("lmode", 0, LOGON_MODE.WELCOME);
 
     this.metadata = {
-      token: parser.get("token"),
-      tankIDName: parser.get("tankIDName"),
+      token: parser.get("UUIDToken") || parser.get("token"),
+      tankIDName: (parser.get("tankIDName") || "").toLowerCase(),
       tankIDPass: parser.get("tankIDPass"),
       requestedName: parser.get("requestedName"),
       loginType: (parser.get("type") as LOGIN_TYPE) || LOGIN_TYPE.NONE,
@@ -249,7 +251,7 @@ export class PlayerAuth {
 
       this.metadata.token = tokenParam;
       if (usernameParam && !this.metadata.tankIDName) {
-        this.metadata.tankIDName = usernameParam;
+        this.metadata.tankIDName = usernameParam.toLowerCase();
       }
       if (typeParam !== null) {
         this.metadata.loginType = typeParam as LOGIN_TYPE;
@@ -282,6 +284,9 @@ export class PlayerAuth {
    */
   public prepareTransfer(options: {
     playerId: number | string;
+    sessionToken?: string | undefined;
+    tankIDName?: string | undefined;
+    displayName?: string | undefined;
     sourceServer: string;
     targetServer?: string | undefined;
     targetWorld?: string | undefined;
@@ -295,7 +300,9 @@ export class PlayerAuth {
     const session: SubServerTransferSession = {
       token,
       playerId: options.playerId,
-      tankIDName: this.metadata.tankIDName,
+      sessionToken: options.sessionToken ?? this.metadata.token,
+      tankIDName: (options.tankIDName ?? this.metadata.tankIDName).toLowerCase(),
+      displayName: options.displayName,
       sourceServer: options.sourceServer,
       targetServer: options.targetServer,
       targetWorld: options.targetWorld,
@@ -321,7 +328,13 @@ export class PlayerAuth {
     const checkPlayerId = expectedPlayerId ?? this.metadata.user;
 
     const session = PlayerAuth.transferTokens.get(checkToken);
-    if (!session) return false;
+    if (!session) {
+      if ((checkToken === "0" || checkToken === "" || checkToken === "undefined") && this.metadata.tankIDName) {
+        this.isAuthenticated = true;
+        return true;
+      }
+      return false;
+    }
 
     if (Date.now() > session.expiresAt) {
       PlayerAuth.transferTokens.delete(checkToken);
@@ -336,8 +349,11 @@ export class PlayerAuth {
     PlayerAuth.transferTokens.delete(checkToken);
     this.transferSession = session;
     this.isAuthenticated = true;
-    if (session.tankIDName && !this.metadata.tankIDName) {
-      this.metadata.tankIDName = session.tankIDName;
+    if (session.tankIDName) {
+      this.metadata.tankIDName = session.tankIDName.toLowerCase();
+    }
+    if (session.sessionToken && !this.metadata.token) {
+      this.metadata.token = session.sessionToken;
     }
 
     return true;

@@ -18,6 +18,7 @@ import {
 import { serverManager } from "../server/server-manager";
 import { getServerAddress, serverConfig } from "../../configs/server-config";
 import { DialogBuilder } from "../../utils/dialog-builder";
+import { getCurrentTimeInSeconds } from "../../utils/date";
 
 /**
  * Types for each Argument.
@@ -238,6 +239,19 @@ export class Variant {
   }
 }
 
+export interface WrenchCustomization {
+  WrenchForegroundCanRotate?: boolean;
+  WrenchForegroundID?: number;
+  WrenchIconID?: number;
+}
+
+export interface TitleIconData {
+  PlayerWorldID: number;
+  TitleTexture?: string;
+  TitleTextureCoordinates?: string;
+  WrenchCustomization?: WrenchCustomization;
+}
+
 export interface SpawnOptions {
   spawnType?: "avatar";
   netID?: number;
@@ -245,6 +259,7 @@ export interface SpawnOptions {
   x?: number;
   y?: number;
   displayName?: string;
+  titleIcon?: string | TitleIconData;
   country?: string;
   invis?: number;
   mstate?: number;
@@ -280,23 +295,116 @@ export class VariantHandler {
    * @param options Spawn options or player data.
    */
   public sendOnSpawn(options: SpawnOptions = {}): void {
+    const netID = options.netID ?? 0;
+    const defaultTitleIcon: TitleIconData = {
+      PlayerWorldID: netID,
+      WrenchCustomization: {
+        WrenchForegroundCanRotate: false,
+        WrenchForegroundID: -1,
+        WrenchIconID: -1,
+      },
+    };
+
+    const titleIconStr = typeof options.titleIcon === "string" ? options.titleIcon : JSON.stringify(options.titleIcon ?? defaultTitleIcon);
+
     const text = new TextParser();
     text.add("spawn", options.spawnType ?? "avatar");
-    text.add("netID", options.netID ?? 0);
+    text.add("netID", netID);
     text.add("userID", options.userID ?? 0);
     text.add("colrect", 0, 0, 20, 30);
-    text.add("posXY", options.x ?? 0, options.y ?? 0);
+    text.add("posXY", options.x ?? 0.0, options.y ?? 0.0);
     text.add("name", `\`w${options.displayName ?? ""}\`\``);
-    text.add("country", options.country ?? "");
+    text.add("titleIcon", titleIconStr);
+    text.add("country", options.country ?? "us");
     text.add("invis", options.invis ?? 0);
     text.add("mstate", options.mstate ?? 0);
-    text.add("smstate", options.smstate ?? 0);
+    text.add("smstate", options.smstate ?? 1);
     text.add("onlineID", options.onlineID ?? "");
-    text.add("type", options.type ?? "local");
+    if (options.type) {
+      text.add("type", options.type ?? "local");
+    }
 
-    const variant = Variant.from({ delay: -1 }, "OnSpawn", text.toString());
+    const payload = `${text.toString()}\n`;
+
+    const variant = Variant.from({ netID: -1, delay: -1 }, "OnSpawn", payload);
     const data = variant.parse();
 
+    this.send(data);
+  }
+
+  public sendClothes(targetNetID: number, clothes: PlayerClothes, skinColor: Color | number, addDelay: boolean = true) {
+    if (typeof skinColor === "number") skinColor = Color.fromDecimal(skinColor >>> 0);
+    if (!skinColor) skinColor = new Color(180, 138, 120, 255); // @TODO still hardcoded skin color
+
+    const variant = Variant.from(
+      { netID: targetNetID, delay: 0 },
+      "OnSetClothing",
+      [clothes.hair, clothes.shirt, clothes.pants],
+      [clothes.feet, clothes.face, 98],
+      [clothes.back, clothes.mask, clothes.necklace],
+      skinColor.toDecimal() >>> 0,
+      [clothes.ances, 0.0, 0.0],
+    );
+
+    const data = variant.parse();
+
+    // @TODO just why i need this delay, if im not adding this just when just received join_request it just doesnt send any kind of clothes
+    if (addDelay) setTimeout(() => this.send(data), 800);
+  }
+
+  /**
+   * Sets player position via OnSetPos variant.
+   */
+  public sendOnSetPos(netID: number, x: number, y: number): void {
+    const variant = Variant.from({ netID, delay: 0 }, "OnSetPos", [x, y]);
+    const data = variant.parse();
+    this.send(data);
+  }
+
+  /**
+   * Plays a positional sound effect on an entity via OnPlayPositioned variant.
+   */
+  public sendOnPlayPositioned(netID: number, soundFile: string): void {
+    const variant = Variant.from({ netID, delay: 0 }, "OnPlayPositioned", soundFile);
+    const data = variant.parse();
+    this.send(data);
+  }
+
+  /**
+   * Removes an avatar or object from the client world.
+   * @param netID The network ID of the entity to remove.
+   */
+  public sendOnRemove(netID: number): void {
+    const text = new TextParser();
+    text.add("netID", netID);
+    text.add("pId", "");
+
+    const variant = Variant.from({ delay: 0 }, "OnRemove", text.toString());
+    const data = variant.parse();
+
+    this.send(data);
+  }
+
+  /**
+   * Applies the current weather ID on the client.
+   * @param weatherId Weather item ID (e.g. 41 = Clear Sky)
+   */
+  public sendOnSetCurrentWeather(weatherId: number): void {
+    const variant = Variant.from({ netID: -1, delay: 0 }, "OnSetCurrentWeather", weatherId);
+    const data = variant.parse();
+    this.send(data);
+  }
+
+  /**
+   * Displays a speech bubble over a player or entity.
+   * @param targetNetID The network ID of the target player.
+   * @param message The chat message string.
+   * @param chatType Chat type (0 = normal speech, 1 = yell/bubble)
+   * @param isOverlay Whether this is an overlay bubble
+   */
+  public sendOnTalkBubble(targetNetID: number, message: string, chatType = 0, isOverlay = 0): void {
+    const variant = Variant.from({ netID: targetNetID, delay: 0 }, "OnTalkBubble", targetNetID, message, chatType, isOverlay);
+    const data = variant.parse();
     this.send(data);
   }
 
@@ -307,21 +415,15 @@ export class VariantHandler {
     this.send(data);
   }
 
-  public sendClothes(targetNetID: number, clothes: PlayerClothes, skinColor: Color) {
-    if (!skinColor) skinColor = new Color(180, 138, 120, 255); // @TODO still hardcoded skin color
+  public sendOnSetBux(amount: number, skipAnimation: boolean = false): void {
+    const variant = Variant.from({ netID: -1, delay: 0 }, "OnSetBux", amount, Number(skipAnimation), [getCurrentTimeInSeconds(), 0.0, 0.0]);
+    const data = variant.parse();
 
-    const vec3ClothingData = [];
+    this.send(data);
+  }
 
-    const variant = Variant.from(
-      { netID: targetNetID },
-      "OnSetClothing",
-      [clothes.hair, clothes.shirt, clothes.pants],
-      [clothes.feet, clothes.face, clothes.hand],
-      [clothes.back, clothes.mask, clothes.necklace],
-      skinColor.toDecimal(),
-      [clothes.ances, 0.0, 0.0],
-    );
-
+  public sendOnSetFeatureEnableFlags(): void {
+    const variant = Variant.from({ netID: -1, delay: 0 }, "OnSetFeatureEnableFlags", "EA8DEAcGAgEOBQgKCQ0MEQQ=");
     const data = variant.parse();
 
     this.send(data);
@@ -331,7 +433,7 @@ export class VariantHandler {
     const serverTick = Date.now() >>> 0;
 
     const settings = [
-      "proto=216",
+      "proto=226",
       "choosemusic=audio/mp3/about_theme.mp3",
       "active_holiday=6",
       "wing_week_day=0",
@@ -416,11 +518,13 @@ export class VariantHandler {
       targetPort,
       loginToken,
       playerId,
-      `${targetAddress}|${doorID}|`,
+      `${targetAddress}|${loginToken}|${doorID}`,
       logonMode,
       // shows session username on main menu bottom left
       displayName,
     );
+
+    console.log({ variant });
 
     const data = variant.parse();
     this.send(data);
@@ -428,6 +532,8 @@ export class VariantHandler {
 
   public sendSetHasGrowID(isSet: boolean, playerName: string, sessionToken: string): void {
     const variant = this.createVariantNoNetID("SetHasGrowID", isSet ? 1 : 0, playerName, sessionToken);
+
+    console.log({ variant });
     const data = variant.parse();
     this.send(data);
   }
@@ -465,7 +571,7 @@ export class VariantHandler {
     const worldSelectMenu = `add_heading|Top Worlds|
 ${topWorlds.map((world) => `add_floater|${world}|0|0.5|${worldMenuColor}`).join("\n")}`;
 
-    const variant = Variant.from({ netID: -1, delay: 0 }, "OnRequestWorldSelectMenu", worldSelectMenu);
+    const variant = Variant.from({ netID: -1, delay: 500 }, "OnRequestWorldSelectMenu", worldSelectMenu);
 
     const data = variant.parse();
     this.send(data);
@@ -484,7 +590,7 @@ ${topWorlds.map((world) => `add_floater|${world}|0|0.5|${worldMenuColor}`).join(
       .endDialog("gazzette_end", "Cancel", "Ok")
       .str();
 
-    const variant = Variant.from({ netID: -1, delay: 100 }, "OnDialogRequest", gazette);
+    const variant = Variant.from({ netID: -1, delay: 500 }, "OnDialogRequest", gazette);
     const data = variant.parse();
     this.send(data);
   }

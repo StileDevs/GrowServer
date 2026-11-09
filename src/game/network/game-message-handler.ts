@@ -6,7 +6,12 @@ function Quit(player: Player, action: TextParser): void {
 }
 
 function QuitToExit(player: Player, action: TextParser): void {
-  // @TODO
+  player.world.leave();
+
+  if (!player.world.isInside) {
+    player.world.leave();
+    player.variants.sendOnRequestWorldSelectMenu();
+  }
 }
 
 function RefreshItemData(player: Player, action: TextParser): void {
@@ -19,17 +24,20 @@ function RefreshPlayerTributeData(player: Player, action: TextParser): void {
 }
 
 function EnterGame(player: Player, action: TextParser): void {
+  player.inventory.sendInventory();
   player.variants.sendGazette();
+  player.variants.sendOnSetFeatureEnableFlags();
+
   player.addStateStatus(PlayerStateFlags.IN_GAME);
 }
 
 function JoinRequest(player: Player, action: TextParser): void {
-  const name = action.get("name");
-  const invitedWorld = action.get("invitedWorld");
+  const rawName = action.get("name") ?? "";
+  const parts = rawName.split("|");
+  const worldName = parts[0] ?? "";
+  const doorId = parts[1] ?? "";
 
-  if (!name || !invitedWorld) return;
-
-  // @TODO
+  player.world.join(worldName, doorId);
 }
 
 function Input(player: Player, action: TextParser): void {
@@ -74,7 +82,8 @@ function Buy(player: Player, action: TextParser): void {
 }
 
 function SetSkin(player: Player, action: TextParser): void {
-  // @TODO
+  const color = action.get("color");
+  player.variants.sendClothes(player.netID, player.inventory.clothes, parseInt(color));
 }
 
 export const GameMessageMap: Record<string, (player: Player, action: TextParser) => void> = {
@@ -94,5 +103,5 @@ export const GameMessageMap: Record<string, (player: Player, action: TextParser)
   trash: Trash,
   store: Store,
   buy: Buy,
-  set_skin: SetSkin,
+  setSkin: SetSkin,
 };

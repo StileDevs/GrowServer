@@ -4,19 +4,14 @@ import path from "path";
 import { X509Certificate } from "crypto";
 import { logger } from "./logger";
 
-const REQUIRED_DNS_NAMES = [
-  "growtopia1.com",
-  "www.growtopia1.com",
-  "growtopia2.com",
-  "www.growtopia2.com",
-];
+const REQUIRED_DNS_NAMES = ["growtopia1.com", "www.growtopia1.com", "growtopia2.com", "www.growtopia2.com", "127.0.0.1"];
 
 function certNeedsRegeneration(certPem: string) {
   try {
     const cert = new X509Certificate(certPem);
     const san = String(cert.subjectAltName || "");
-    for (const name of REQUIRED_DNS_NAMES) {
-      if (!san.includes(`DNS:${name}`)) {
+    for (const host of REQUIRED_DNS_NAMES) {
+      if (!san.includes(`DNS:${host}`) && !san.includes(`IP Address:${host}`)) {
         return true;
       }
     }
@@ -42,9 +37,7 @@ export async function ensureTlsCertificate(certPath: string, keyPath: string) {
     if (!certNeedsRegeneration(certPem)) {
       return;
     }
-    console.warn(
-      "Existing TLS cert is incompatible with Growtopia hostnames. Regenerating...",
-    );
+    console.warn("Existing TLS cert is incompatible with Growtopia hostnames. Regenerating...");
   }
 
   await fs.mkdir(path.dirname(certResolved), { recursive: true });
@@ -58,15 +51,18 @@ export async function ensureTlsCertificate(certPath: string, keyPath: string) {
     extensions: [
       {
         name: "subjectAltName",
-        altNames: REQUIRED_DNS_NAMES.map((value) => ({ type: 2, value })),
+        altNames: REQUIRED_DNS_NAMES.map((host) => {
+          const isIp = /^(\d{1,3}\.){3}\d{1,3}$/.test(host);
+          return {
+            type: isIp ? 7 : 2, // 7 = IP, 2 = DNS
+            value: host,
+          };
+        }),
       },
     ],
   });
 
   await fs.writeFile(certResolved, pems.cert, "utf8");
   await fs.writeFile(keyResolved, pems.private, "utf8");
-  logger.info(
-    { certPath: certResolved, keyPath: keyResolved },
-    `generated Growtopia compatible selfsigned`,
-  );
+  logger.info({ certPath: certResolved, keyPath: keyResolved }, `generated Growtopia compatible selfsigned`);
 }
