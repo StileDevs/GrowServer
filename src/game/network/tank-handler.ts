@@ -13,6 +13,7 @@ import { handleFishingCast, handleFishingMovement, handleFishingPunch } from "..
 import { handleGeigerMovement } from "../geiger/geiger-manager";
 import { handleSurgeryWrench } from "../surgery/surgery-manager";
 import { DEAD_GEIGER_COUNTER, depositDeadGeiger } from "../world/tiles/geiger-charger-tile";
+import { loadLobsterTrap } from "../world/tiles/lobster-trap-tile";
 
 type TankHandler = (player: Player, tank: GameUpdatePacket, world: World) => Promise<void> | void;
 
@@ -90,11 +91,14 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
     if (handleSurgeryWrench(player, world, data.tileX, data.tileY, block.fg)) return;
     await tileFrom(world, block).onWrench(player);
   } else {
-    if (await handleFishingCast(player, world, data.itemID, data.tileX, data.tileY)) return;
-
     const itemMeta = getItem(data.itemID);
     if (!itemMeta) return;
     const type = itemMeta.type ?? ActionTypes.FOREGROUND;
+
+    // bait on a lobster trap loads it instead of casting
+    if (await loadLobsterTrap(player, world, block, itemMeta.id ?? 0)) return;
+
+    if (await handleFishingCast(player, world, data.itemID, data.tileX, data.tileY)) return;
 
     if (type === ActionTypes.CONSUMABLE) {
       await useConsumable(player, world, itemMeta, data.tileX, data.tileY);
