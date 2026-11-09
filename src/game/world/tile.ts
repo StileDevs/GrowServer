@@ -186,6 +186,7 @@ export class Tile {
     this.data.damage = 0;
     this.data.resetStateAt = 0;
     this.data.flags = this.data.flags & (TileFlags.LOCKED | TileFlags.WATER);
+    delete this.data.fishingWater;
 
     this.onDrop(player, destroyedItemId);
     addRoleXp(player, "builder", 1);

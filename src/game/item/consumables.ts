@@ -8,12 +8,13 @@ import { registerDialog } from "../network/dialog-handler";
 import { Variant } from "../packets/variants";
 import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
-import { ITEM_ID, LockPermission, TileFlags } from "../world/constants";
+import { ITEM_ID, LockPermission, TILE_ALT_MODE, TileFlags } from "../world/constants";
 import { tileFrom } from "../world/tiles";
 import type { TileData } from "../world/types";
 import type { World } from "../world/world";
 import { worldManager } from "../world/world-manager";
 import { getItem } from "./item-utils";
+import { HAND_DRILL, ICE_CRUST_BLOCK, NUCLEAR_DETONATOR, URANIUM_BLOCK } from "../fishing/fishing-manager";
 
 /** Items with their own behaviour. */
 const CONSUMABLE_ID = {
@@ -159,12 +160,85 @@ async function useWaterBucket(player: Player, world: World, tileX: number, tileY
   } else {
     if (player.removeItemInven(CONSUMABLE_ID.WATER_BUCKET, 1) <= 0) return;
     block.flags |= TileFlags.WATER;
+    if (block.fg === ICE_CRUST_BLOCK && (block.flags & TileFlags.OPEN)) {
+      block.fishingWater = "ice";
+    } else if (block.fg === URANIUM_BLOCK && (block.flags & TileFlags.OPEN)) {
+      block.fishingWater = "radioactive";
+    }
     player.sendTextBubble("You poured out the water.", true);
   }
 
   world.playPositioned("audio/splash.wav", player.netID);
   tileFrom(world, block).tileUpdate();
   world.markDirty();
+}
+
+/**
+ * Hand Drill / Nuclear Detonator: turns an Ice Crust or Uranium block into
+ * an open, passable fishing environment.
+ */
+async function useFishingTool(player: Player, world: World, itemId: number, tileX: number, tileY: number): Promise<void> {
+  const ice = itemId === HAND_DRILL;
+  const required = ice ? ICE_CRUST_BLOCK : URANIUM_BLOCK;
+  let targetTile = world.getTileAt(tileX, tileY);
+  let targetY = tileY;
+
+  // Allow clicking directly on the block, or on the water tile directly above it
+  if (!targetTile || targetTile.fg !== required) {
+    const below = world.getTileAt(tileX, tileY + 1);
+    if (below && below.fg === required) {
+      targetTile = below;
+      targetY = tileY + 1;
+    } else {
+      player.sendTextBubble(ice ? "Use the Hand Drill on an Ice Crust Block!" : "Use the Nuclear Detonator on a Uranium Block!", true);
+      return;
+    }
+  }
+
+  if (!(await world.hasTilePermission(player, targetTile, LockPermission.BUILD))) {
+    player.sendTextBubble("You don't have permission to do that here!", true);
+    return;
+  }
+
+  // Already drilled/detonated
+  if ((targetTile.flags & TileFlags.OPEN) !== 0) {
+    player.sendTextBubble(ice ? "This ice block is already drilled!" : "This uranium block is already detonated!", true);
+    return;
+  }
+
+  const waterHere = (targetTile.flags & TileFlags.WATER) !== 0;
+  const above = world.getTileAt(tileX, targetY - 1);
+  const waterAbove = !!above && (above.flags & TileFlags.WATER) !== 0;
+
+  if (player.removeItemInven(itemId, 1) <= 0) return;
+
+  const environment = ice ? "ice" : "radioactive";
+  targetTile.fishingWater = environment;
+  // Setting TileFlags.OPEN (0x0040) opens collisionType 4 (IF_OFF), making the block passable
+  // and switching the client to the open/drilled hole or opened uranium variant
+  targetTile.flags |= TileFlags.OPEN | TILE_ALT_MODE;
+
+  // Keep water if present on block or above
+  if (waterHere || waterAbove) {
+    targetTile.flags |= TileFlags.WATER;
+    if (!waterHere && above) {
+      above.flags |= TileFlags.WATER;
+      above.fishingWater = environment;
+    }
+  }
+
+  tileFrom(world, targetTile).tileUpdate();
+  if (!waterHere && above) tileFrom(world, above).tileUpdate();
+
+  world.broadcastVariant(Variant.from("OnParticleEffect", 36, [tileX * 32 + 16, targetY * 32 + 16]));
+  world.playPositioned(ice ? "audio/freeze.wav" : "audio/spray.wav", player.netID);
+  world.markDirty();
+
+  if (waterHere || waterAbove) {
+    player.sendTextBubble(ice ? "The water freezes over! Ice fishing is ready." : "The water glows green! Radioactive fishing is ready.", true);
+  } else {
+    player.sendTextBubble(ice ? "You drilled a hole in the ice! Pour water to start fishing." : "The uranium block detonated! Pour water to start fishing.", true);
+  }
 }
 
 /**
@@ -227,6 +301,11 @@ export async function useConsumable(player: Player, world: World, item: ItemDefi
   const providerSpray = PROVIDER_SPRAY_SECONDS[itemId];
   if (providerSpray !== undefined) {
     useProviderSpray(player, world, itemId, providerSpray, tileX, tileY);
+    return;
+  }
+
+  if (itemId === HAND_DRILL || itemId === NUCLEAR_DETONATOR) {
+    await useFishingTool(player, world, itemId, tileX, tileY);
     return;
   }
 

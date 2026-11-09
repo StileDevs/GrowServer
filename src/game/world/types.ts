@@ -31,6 +31,14 @@ export interface TileData {
     chargedAt: number;
     hasGeiger: boolean;
   };
+  /** Water environment marked by a drill/detonator on the block under water. */
+  fishingWater?: "ice" | "radioactive";
+  /** Baited lobster trap. */
+  trap?: {
+    baitId: number;
+    startedAt: number;
+    readyAt: number;
+  };
 }
 
 /**

@@ -153,6 +153,13 @@ export enum TileFlags {
   PURPLE = 0xa000,
 }
 
+/**
+ * Client alternate-sprite bit (the world format's `FG_ALT_MODE`). Blocks with
+ * a second frame switch to it: drilled Ice Crust Blocks and opened Uranium
+ * Blocks use it for the fishing hole, music blocks use it for "silenced".
+ */
+export const TILE_ALT_MODE = 0x0200;
+
 export enum TileExtraTypes {
   NONE = 0,
   DOOR = 1,
