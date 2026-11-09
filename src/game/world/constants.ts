@@ -73,6 +73,9 @@ export const ITEM_ID = {
   FISH_TANK: 3004,
   FISH_TANK_PORT: 3002,
   TRAINING_PORT: 5530,
+  FISH_MEDICINE: 5532,
+  FISH_REVIVER: 5534,
+  FISH_FLAKES: 5536,
 } as const;
 
 /** Weather id of the default (clear) sky. */

@@ -52,6 +52,9 @@ export interface TileData {
     exp: number;
     status: number;
     lastFed: number;
+    hunger?: number;
+    isSick?: boolean;
+    isDead?: boolean;
   };
 }
 
