@@ -38,7 +38,6 @@ export async function createHonoServer(): Promise<void> {
     const platform = typeof body["platform"] === "string" ? body["platform"] : "";
 
     if (!HTTPS.USER_AGENTS.includes(userAgent) || !protocol || !version || !platform) {
-      console.log("yuh", { userAgent, protocol, version, platform });
       return c.text("forbidden", 403);
     }
 
