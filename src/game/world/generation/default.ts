@@ -1,95 +1,56 @@
-import { TILE_EXTRA_TYPES, TILE_FLAGS, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT } from "../../../constants";
-import { Tile } from "../tile";
-import { WorldGenerator, type WorldGenResult } from "./world-generator";
+import { ITEM_ID, TileFlags, WEATHER_CLEAR, WORLD_SIZE, Y_END_DIRT, Y_LAVA_START, Y_START_DIRT, Y_WATER_LAKE } from "../constants";
+import type { TileData, WorldData } from "../types";
 
 /**
- * Standard Growtopia default world generator.
- * Supports default 100x60 worlds as well as custom world dimensions up to 255x255.
+ * Generates the classic procedural world: sky, a dirt layer with rocks and
+ * lava near the bottom, a bedrock floor, one main door at a random column on
+ * the surface and a small pond for fishing.
  */
-export class DefaultWorldGenerator extends WorldGenerator {
-  public weather = 41;
+export function generateDefaultWorld(name: string, width = WORLD_SIZE.WIDTH, height = WORLD_SIZE.HEIGHT): WorldData {
+  const blocks: TileData[] = [];
+  const mainDoorX = Math.floor(Math.random() * width);
+  // a pond a few tiles wide, somewhere away from the door
+  const lakeWidth = 6 + Math.floor(Math.random() * 5);
+  const lakeStart = Math.floor(Math.random() * Math.max(1, width - lakeWidth));
 
-  constructor(
-    worldName: string,
-    width = 100,
-    height = 60,
-  ) {
-    super(worldName, width, height);
-  }
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const block: TileData = { x, y, fg: 0, bg: 0, flags: 0 };
 
-  /**
-   * Generates a world with sky, dirt, cave background, lava, and bedrock.
-   * If custom dimensions are specified, layer boundaries scale proportionally.
-   */
-  public generate(): WorldGenResult {
-    const tiles: Tile[] = [];
-    const mainDoorPosition = Math.floor(Math.random() * this.width);
+      if (y === Y_START_DIRT - 1 && x === mainDoorX) {
+        block.fg = ITEM_ID.MAIN_DOOR;
+        block.door = { label: "EXIT", destination: "EXIT" };
+        block.flags |= TileFlags.PUBLIC | TileFlags.TILEEXTRA;
+      } else if (y >= Y_START_DIRT) {
+        block.bg = ITEM_ID.CAVE_BACKGROUND;
 
-    // Calculate layer boundaries (exact constants for standard 60-height, scaled for custom height)
-    const yStartDirt = this.height === 60 ? Y_START_DIRT : Math.max(1, Math.floor(this.height * (Y_START_DIRT / 60)));
-    const yLavaStart = this.height === 60 ? Y_LAVA_START : Math.max(yStartDirt + 1, Math.floor(this.height * (Y_LAVA_START / 60)));
-    const yEndDirt = this.height === 60 ? Y_END_DIRT : Math.max(yLavaStart + 1, Math.floor(this.height * (Y_END_DIRT / 60)));
-    const mainDoorY = yStartDirt - 1;
-
-    for (let y = 0; y < this.height; y++) {
-      for (let x = 0; x < this.width; x++) {
-        let fg = 0;
-        let bg = 0;
-        let flags = TILE_FLAGS.NONE;
-        let extra = undefined;
-
-        // Sky layer
-        if (y < yStartDirt) {
-          if (y === mainDoorY && x === mainDoorPosition) {
-            fg = 6; // Main Door
-            bg = 0;
-            flags = TILE_FLAGS.PUBLIC | TILE_FLAGS.TILEEXTRA;
-            extra = {
-              type: TILE_EXTRA_TYPES.DOOR as const,
-              label: "EXIT",
-              destination: "EXIT",
-            };
-          }
+        if (x === mainDoorX && y === Y_START_DIRT) {
+          // bedrock right under the main door so it can never fall away
+          block.fg = ITEM_ID.BEDROCK;
+        } else if (y >= Y_END_DIRT) {
+          block.fg = ITEM_ID.BEDROCK;
+        } else if (y >= Y_LAVA_START) {
+          const roll = Math.random();
+          block.fg = roll > 0.2 ? (Math.random() > 0.1 ? ITEM_ID.DIRT : ITEM_ID.ROCK) : ITEM_ID.LAVA;
+        } else if (y === Y_WATER_LAKE && x >= lakeStart && x < lakeStart + lakeWidth) {
+          // the pond bed; the water itself is a tile flag
+          block.fg = ITEM_ID.DIRT;
+          block.flags |= TileFlags.WATER;
         } else {
-          // Underground layer
-          bg = 14; // Cave Dirt background
-
-          if (x === mainDoorPosition && y === yStartDirt) {
-            fg = 8; // Bedrock foundation beneath main door
-          } else if (y < yEndDirt) {
-            if (y >= yLavaStart) {
-              // Deep layer with lava and rock pockets
-              fg = Math.random() > 0.2 ? (Math.random() > 0.1 ? 2 : 10) : 4;
-            } else {
-              // Upper dirt layer with occasional rocks
-              fg = Math.random() > 0.01 ? 2 : 10;
-            }
-          } else {
-            // Bedrock layer at bottom of world
-            fg = 8;
-          }
+          block.fg = Math.random() > 0.01 ? ITEM_ID.DIRT : ITEM_ID.ROCK;
         }
-
-        tiles.push(
-          new Tile({
-            x,
-            y,
-            fg,
-            bg,
-            flags,
-            extra,
-          }),
-        );
       }
+
+      blocks.push(block);
     }
-
-    return {
-      width: this.width,
-      height: this.height,
-      tiles,
-      weather: this.weather,
-    };
   }
-}
 
-export const Default = DefaultWorldGenerator;
+  return {
+    name,
+    width,
+    height,
+    blocks,
+    dropped: { uid: 0, items: [] },
+    weather: { id: WEATHER_CLEAR },
+  };
+}

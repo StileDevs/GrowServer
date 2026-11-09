@@ -57,6 +57,18 @@ export class ServerConsole {
         logger.info("pong");
       },
     });
+
+    this.registerCommand({
+      name: "stop",
+      aliases: ["exit", "shutdown"],
+      description: "Saves everything, disconnects players and stops the server",
+      usage: "stop",
+      execute: () => {
+        logger.info("stop requested from console");
+        // runs the same graceful shutdown path as ctrl+c
+        process.emit("SIGINT");
+      },
+    });
   }
 
   /**
@@ -104,6 +116,12 @@ export class ServerConsole {
       if (this.isRunning) {
         this.rl?.prompt();
       }
+    });
+
+    // readline swallows ctrl+c while it owns the terminal; forward it to the
+    // process so the graceful shutdown handlers run
+    this.rl.on("SIGINT", () => {
+      process.emit("SIGINT");
     });
 
     this.rl.on("close", () => {

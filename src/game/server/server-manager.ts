@@ -133,12 +133,7 @@ export class ServerManager extends EventEmitter {
 
   public getPlayerByName(name: string): Player | undefined {
     const lowerName = name.toLowerCase();
-    return this.players.find(
-      (p) =>
-        (p.username && p.username === lowerName) ||
-        p.tankIDName.toLowerCase() === lowerName ||
-        p.displayName.toLowerCase() === lowerName,
-    );
+    return this.players.find((p) => p.tankIDName.toLowerCase() === lowerName || p.displayName.toLowerCase() === lowerName);
   }
 
   /** Get an online player by global unique ID (e.g. "server-17091:0") */

@@ -37,7 +37,12 @@ export async function createHonoServer(): Promise<void> {
     const version = typeof body["version"] === "string" ? body["version"] : "";
     const platform = typeof body["platform"] === "string" ? body["platform"] : "";
 
-    if (!HTTPS.USER_AGENTS.includes(userAgent) || !protocol || !version || !platform) {
+    const isValidUserAgent = userAgent.startsWith(HTTPS.USER_AGENT_PREFIX) || HTTPS.USER_AGENTS.includes(userAgent);
+    if (!isValidUserAgent || !protocol || !version || !platform) {
+      logger.warn(
+        { userAgent, protocol, version, platform },
+        "rejected server data request with unexpected user agent or body",
+      );
       return c.text("forbidden", 403);
     }
 

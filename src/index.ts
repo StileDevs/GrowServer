@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { init } from "./services/wasm-init";
-import { startGameServer } from "./game";
+import { startGameServer, shutdownGameServer } from "./game";
 import { createHonoServer } from "./services/https-server";
 import { createLoginServer } from "./services/login-server";
 import { createCdnServer } from "./services/cdn-server";
@@ -15,7 +15,7 @@ import { runSetup, isInitialSetupNeeded } from "./scripts/setup";
 import { runDoctor } from "./scripts/doctor";
 import { buildItemsInfo } from "./scripts/generate-wiki";
 import { serverConsole } from "./cli/console";
-import { worldManager } from "./game/world";
+import { worldManager } from "./game/world/world-manager";
 
 let isShuttingDown = false;
 
@@ -31,6 +31,13 @@ function setupGracefulShutdown(): void {
 
     // Stop console interface
     serverConsole.stop();
+
+    // Persist players and worlds before the connections go away
+    try {
+      await shutdownGameServer();
+    } catch (err) {
+      logger.error({ err }, "failed to save game state during shutdown");
+    }
 
     // Stop Caddy reverse proxy subprocess if running
     stopCaddy();
@@ -52,6 +59,13 @@ function setupGracefulShutdown(): void {
 
   process.on("SIGINT", () => handleShutdown("SIGINT"));
   process.on("SIGTERM", () => handleShutdown("SIGTERM"));
+  // log instead of dying when a background promise or callback throws
+  process.on("unhandledRejection", (reason) => {
+    logger.error({ err: reason }, "unhandled promise rejection");
+  });
+  process.on("uncaughtException", (err) => {
+    logger.error({ err }, "uncaught exception");
+  });
   process.on("exit", () => {
     serverConsole.stop();
     stopCaddy();

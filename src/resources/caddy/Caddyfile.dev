@@ -7,12 +7,12 @@
 #     }
 # }
 
-# HTTPS for localhost and www.growtopia1.com (uses custom certificate for Growtopia login)
-https://localhost:443, https://www.growtopia1.com:443 {
-	#log {
-	#    output stdout
-	#    format console
-	#}
+# HTTPS for localhost and the Growtopia logon hosts (the client alternates between growtopia1.com and growtopia2.com)
+https://localhost:443, https://growtopia1.com:443, https://www.growtopia1.com:443, https://growtopia2.com:443, https://www.growtopia2.com:443 {
+	log {
+		output stdout
+		format console
+	}
 
   # Deprecated v5.59+, we'll use internal TLS instead
 	# tls .cache/tls/cert.pem .cache/tls/key.pem

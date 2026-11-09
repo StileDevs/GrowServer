@@ -7,6 +7,7 @@ import caddyfileDev from "./caddy/Caddyfile.dev" with { type: "text" };
 import caddyfile from "./caddy/Caddyfile" with { type: "text" };
 import bannerConf from "./custom-items/growserver/interface/banner/conf.toml" with { type: "text" };
 import bannerPngPath from "./custom-items/growserver/interface/banner/banner.png";
+import storeCatalogText from "./store/store.txt" with { type: "text" };
 import { logger } from "../utils/logger";
 
 /**
@@ -76,3 +77,9 @@ export async function autoGenerateCustomItems(
 
 export type HtmlTemplateName = keyof typeof HTML_TEMPLATES;
 export type EmbeddedConfigName = keyof typeof EMBEDDED_CONFIGS;
+
+/**
+ * Statically bundled in-game store catalog (`src/resources/store/store.txt`).
+ * One product per line: `tab|button|name|texture|description|textureX|textureY|cost|id:amount,...`.
+ */
+export const EMBEDDED_STORE_CATALOG: string = storeCatalogText as unknown as string;

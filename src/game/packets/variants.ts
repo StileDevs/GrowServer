@@ -1,7 +1,9 @@
 import { GameUpdatePacket } from "./game-packet";
 import { ExtendBuffer } from "../../utils/extend-buffer";
-import { LOGON_MODE, TANK_PACKET_FLAGS, TANK_PACKET_TYPE } from "../../constants";
-import type { Player, PlayerClothes } from "../player";
+import { CLIENT_FEATURE_FLAG, LOGIN_FEATURE_FLAGS, LOGON_MODE, TANK_PACKET_FLAGS, TANK_PACKET_TYPE } from "../../constants";
+import type { PlayerClothes, PlayerInventory } from "../player/inventory";
+import type { CharacterStats } from "../player/play-mods";
+import { worldManager } from "../world/world-manager";
 import { Packet, PacketKind, Peer } from "growtopia.wasm";
 import { TextParser } from "../../utils/text-parser";
 import { Color } from "../../utils/color";
@@ -18,7 +20,7 @@ import {
 import { serverManager } from "../server/server-manager";
 import { getServerAddress, serverConfig } from "../../configs/server-config";
 import { DialogBuilder } from "../../utils/dialog-builder";
-import { getCurrentTimeInSeconds } from "../../utils/date";
+import { buildEmoticonData, EMOTICON_DATA_VERSION } from "./emoticons";
 
 /**
  * Types for each Argument.
@@ -31,6 +33,7 @@ export enum VariantTypes {
   FLOAT_3,
   UNSIGNED_INT,
   SIGNED_INT = 0x9,
+  SIGNED_INT64 = 0xa,
 }
 
 /**
@@ -51,7 +54,33 @@ export enum PacketTypes {
 /**
  * The argument type for the variant.
  */
-export type VariantArg = string | number[] | number;
+/** A number that must be encoded as a signed 32-bit variant (type 9) even when it is not negative. */
+export interface VariantSignedInt {
+  int: number;
+}
+
+/** A number encoded as a signed 64-bit variant (type 10). */
+export interface VariantInt64 {
+  int64: number;
+}
+
+export type VariantArg = string | number[] | number | VariantSignedInt | VariantInt64;
+
+/**
+ * Marks a number as a signed 64-bit variant argument (used for gem counts on 5.61+).
+ */
+export function int64(value: number): VariantInt64 {
+  return { int64: value };
+}
+
+/**
+ * Marks a number as a signed 32-bit variant argument. Plain non-negative
+ * numbers are encoded unsigned; the client reads some parameters (GDPR
+ * override, GrowID flag) as signed ints, matching the official server.
+ */
+export function int32(value: number): VariantSignedInt {
+  return { int: value };
+}
 
 /**
  * Options for the Variant Packet
@@ -170,6 +199,11 @@ export class Variant {
     return arr;
   }
 
+  /** Wraps the parsed variant into a reliable ENet packet. */
+  public parsePacket(): Packet {
+    return new Packet(this.parse(), PacketKind.Reliable);
+  }
+
   /**
    * Parses the data of the Variant and returns a GameUpdatePacket from it.
    */
@@ -200,7 +234,18 @@ export class Variant {
         }
 
         case "object": {
-          if (!Array.isArray(arg)) return;
+          if (!Array.isArray(arg)) {
+            if ("int64" in arg) {
+              extendBuf.writeU8(VariantTypes.SIGNED_INT64);
+              const bytes = Buffer.alloc(8);
+              bytes.writeBigInt64LE(BigInt(Math.trunc(arg.int64)));
+              extendBuf.writeBytes(bytes);
+              return;
+            }
+            extendBuf.writeU8(VariantTypes.SIGNED_INT);
+            extendBuf.writeI32(arg.int);
+            return;
+          }
 
           const type = VariantTypes[`FLOAT_${arg.length}` as "FLOAT_1" | "FLOAT_2" | "FLOAT_3"];
           if (!type) return;
@@ -222,8 +267,9 @@ export class Variant {
       netID: this.options.netID ?? -1,
       targetNetID: 0,
       flags: TANK_PACKET_FLAGS.EXTENDED_DATA,
-      float_var: this.options.delay ?? 0,
-      itemID: 0,
+      float_var: 0,
+      // the client reads the variant delay (ms) from the int32 at offset 20
+      itemID: this.options.delay ?? 0,
       posX: 0,
       posY: 0,
       speedX: 0,
@@ -239,19 +285,6 @@ export class Variant {
   }
 }
 
-export interface WrenchCustomization {
-  WrenchForegroundCanRotate?: boolean;
-  WrenchForegroundID?: number;
-  WrenchIconID?: number;
-}
-
-export interface TitleIconData {
-  PlayerWorldID: number;
-  TitleTexture?: string;
-  TitleTextureCoordinates?: string;
-  WrenchCustomization?: WrenchCustomization;
-}
-
 export interface SpawnOptions {
   spawnType?: "avatar";
   netID?: number;
@@ -259,7 +292,6 @@ export interface SpawnOptions {
   x?: number;
   y?: number;
   displayName?: string;
-  titleIcon?: string | TitleIconData;
   country?: string;
   invis?: number;
   mstate?: number;
@@ -272,8 +304,11 @@ export class VariantHandler {
   constructor(private peer: Peer) {}
 
   private send(data: Buffer): void {
-    const packet = new Packet(data, PacketKind.Reliable);
-    this.peer.send(packet);
+    try {
+      this.peer.send(new Packet(data, PacketKind.Reliable));
+    } catch {
+      // the peer is already gone; nothing to deliver to
+    }
   }
 
   private createVariantNoNetID(...args: VariantArg[]): Variant {
@@ -295,116 +330,26 @@ export class VariantHandler {
    * @param options Spawn options or player data.
    */
   public sendOnSpawn(options: SpawnOptions = {}): void {
-    const netID = options.netID ?? 0;
-    const defaultTitleIcon: TitleIconData = {
-      PlayerWorldID: netID,
-      WrenchCustomization: {
-        WrenchForegroundCanRotate: false,
-        WrenchForegroundID: -1,
-        WrenchIconID: -1,
-      },
-    };
-
-    const titleIconStr = typeof options.titleIcon === "string" ? options.titleIcon : JSON.stringify(options.titleIcon ?? defaultTitleIcon);
-
     const text = new TextParser();
     text.add("spawn", options.spawnType ?? "avatar");
-    text.add("netID", netID);
+    text.add("netID", options.netID ?? 0);
     text.add("userID", options.userID ?? 0);
     text.add("colrect", 0, 0, 20, 30);
-    text.add("posXY", options.x ?? 0.0, options.y ?? 0.0);
-    text.add("name", `\`w${options.displayName ?? ""}\`\``);
-    text.add("titleIcon", titleIconStr);
-    text.add("country", options.country ?? "us");
+    text.add("posXY", options.x ?? 0, options.y ?? 0);
+    // the caller supplies the role-colored name (`Player.formattedName`)
+    text.add("name", options.displayName ?? "");
+    text.add("country", options.country ?? "");
     text.add("invis", options.invis ?? 0);
     text.add("mstate", options.mstate ?? 0);
-    text.add("smstate", options.smstate ?? 1);
+    text.add("smstate", options.smstate ?? 0);
     text.add("onlineID", options.onlineID ?? "");
-    if (options.type) {
-      text.add("type", options.type ?? "local");
-    }
+    // only the receiving client's own avatar carries `type|local`
+    if (options.type) text.add("type", options.type);
 
-    const payload = `${text.toString()}\n`;
-
-    const variant = Variant.from({ netID: -1, delay: -1 }, "OnSpawn", payload);
+    // the client's line parser expects every entry, including the last one, to end with a newline
+    const variant = Variant.from({ delay: -1 }, "OnSpawn", `${text.toString()}\n`);
     const data = variant.parse();
 
-    this.send(data);
-  }
-
-  public sendClothes(targetNetID: number, clothes: PlayerClothes, skinColor: Color | number, addDelay: boolean = true) {
-    if (typeof skinColor === "number") skinColor = Color.fromDecimal(skinColor >>> 0);
-    if (!skinColor) skinColor = new Color(180, 138, 120, 255); // @TODO still hardcoded skin color
-
-    const variant = Variant.from(
-      { netID: targetNetID, delay: 0 },
-      "OnSetClothing",
-      [clothes.hair, clothes.shirt, clothes.pants],
-      [clothes.feet, clothes.face, 98],
-      [clothes.back, clothes.mask, clothes.necklace],
-      skinColor.toDecimal() >>> 0,
-      [clothes.ances, 0.0, 0.0],
-    );
-
-    const data = variant.parse();
-
-    // @TODO just why i need this delay, if im not adding this just when just received join_request it just doesnt send any kind of clothes
-    if (addDelay) setTimeout(() => this.send(data), 800);
-  }
-
-  /**
-   * Sets player position via OnSetPos variant.
-   */
-  public sendOnSetPos(netID: number, x: number, y: number): void {
-    const variant = Variant.from({ netID, delay: 0 }, "OnSetPos", [x, y]);
-    const data = variant.parse();
-    this.send(data);
-  }
-
-  /**
-   * Plays a positional sound effect on an entity via OnPlayPositioned variant.
-   */
-  public sendOnPlayPositioned(netID: number, soundFile: string): void {
-    const variant = Variant.from({ netID, delay: 0 }, "OnPlayPositioned", soundFile);
-    const data = variant.parse();
-    this.send(data);
-  }
-
-  /**
-   * Removes an avatar or object from the client world.
-   * @param netID The network ID of the entity to remove.
-   */
-  public sendOnRemove(netID: number): void {
-    const text = new TextParser();
-    text.add("netID", netID);
-    text.add("pId", "");
-
-    const variant = Variant.from({ delay: 0 }, "OnRemove", text.toString());
-    const data = variant.parse();
-
-    this.send(data);
-  }
-
-  /**
-   * Applies the current weather ID on the client.
-   * @param weatherId Weather item ID (e.g. 41 = Clear Sky)
-   */
-  public sendOnSetCurrentWeather(weatherId: number): void {
-    const variant = Variant.from({ netID: -1, delay: 0 }, "OnSetCurrentWeather", weatherId);
-    const data = variant.parse();
-    this.send(data);
-  }
-
-  /**
-   * Displays a speech bubble over a player or entity.
-   * @param targetNetID The network ID of the target player.
-   * @param message The chat message string.
-   * @param chatType Chat type (0 = normal speech, 1 = yell/bubble)
-   * @param isOverlay Whether this is an overlay bubble
-   */
-  public sendOnTalkBubble(targetNetID: number, message: string, chatType = 0, isOverlay = 0): void {
-    const variant = Variant.from({ netID: targetNetID, delay: 0 }, "OnTalkBubble", targetNetID, message, chatType, isOverlay);
-    const data = variant.parse();
     this.send(data);
   }
 
@@ -415,33 +360,55 @@ export class VariantHandler {
     this.send(data);
   }
 
-  public sendOnSetBux(amount: number, skipAnimation: boolean = false): void {
-    const variant = Variant.from({ netID: -1, delay: 0 }, "OnSetBux", amount, Number(skipAnimation), [getCurrentTimeInSeconds(), 0.0, 0.0]);
+  /**
+   * Sends OnSetClothing for an avatar.
+   * @param skinColor Raw 32-bit skin color exactly as the client expects it (e.g. 0x8295c3ff).
+   */
+  public sendClothes(targetNetID: number, clothes: PlayerClothes, skinColor: number) {
+    const variant = Variant.from(
+      { netID: targetNetID },
+      "OnSetClothing",
+      [clothes.hair, clothes.shirt, clothes.pants],
+      [clothes.feet, clothes.face, clothes.hand],
+      [clothes.back, clothes.mask, clothes.necklace],
+      skinColor >>> 0,
+      [clothes.ances, 0.0, 0.0],
+    );
+
     const data = variant.parse();
 
     this.send(data);
   }
 
-  public sendOnSetFeatureEnableFlags(): void {
-    const variant = Variant.from({ netID: -1, delay: 0 }, "OnSetFeatureEnableFlags", "EA8DEAcGAgEOBQgKCQ0MEQQ=");
-    const data = variant.parse();
-
-    this.send(data);
+  /**
+   * Overrides the client's GDPR/age restrictions. Clients that report
+   * `GDPR|1` keep chat disabled until the server confirms the player's age
+   * and chat permission; the official server sends this before the logon
+   * acceptance.
+   */
+  public sendOnOverrideGdprFromServer(age = 18, canChat = true): void {
+    this.send(Variant.from("OnOverrideGDPRFromServer", int32(age), int32(canChat ? 1 : 0), int32(0), int32(1)).parse());
   }
 
-  public sendSuperMain() {
+  /**
+   * Accepts the logon: items.dat hash, CDN location and the client settings
+   * string. The settings mirror the official server's; `isPayingUser=1` is
+   * required because the client restricts chat for non-paying accounts, and
+   * `proto` echoes the protocol the client reported.
+   */
+  public sendSuperMain(protocol = 216) {
     const serverTick = Date.now() >>> 0;
 
     const settings = [
-      "proto=226",
+      `proto=${protocol}`,
       "choosemusic=audio/mp3/about_theme.mp3",
-      "active_holiday=6",
+      "active_holiday=0",
       "wing_week_day=0",
       "ubi_week_day=0",
       `server_tick=${serverTick}`,
       "clash_active=0",
       "drop_lavacheck_faster=1",
-      "isPayingUser=0",
+      "isPayingUser=1",
       "usingStoreNavigation=1",
       "enableInventoryTab=1",
       "bigBackpack=1",
@@ -518,22 +485,18 @@ export class VariantHandler {
       targetPort,
       loginToken,
       playerId,
-      `${targetAddress}|${loginToken}|${doorID}`,
+      `${targetAddress}|${doorID}|`,
       logonMode,
       // shows session username on main menu bottom left
       displayName,
     );
-
-    console.log({ variant });
 
     const data = variant.parse();
     this.send(data);
   }
 
   public sendSetHasGrowID(isSet: boolean, playerName: string, sessionToken: string): void {
-    const variant = this.createVariantNoNetID("SetHasGrowID", isSet ? 1 : 0, playerName, sessionToken);
-
-    console.log({ variant });
+    const variant = this.createVariantNoNetID("SetHasGrowID", int32(isSet ? 1 : 0), playerName, sessionToken);
     const data = variant.parse();
     this.send(data);
   }
@@ -563,18 +526,194 @@ export class VariantHandler {
     this.send(tank);
   }
 
-  public sendOnRequestWorldSelectMenu(): void {
-    // @TODO hardcoded for now
-    const worldMenuColor = 3529161471;
-    const topWorlds = ["START", "START1", "START2"];
+  /** Sends any variant to this peer. */
+  public sendVariant(variant: Variant): void {
+    this.send(variant.parse());
+  }
 
-    const worldSelectMenu = `add_heading|Top Worlds|
-${topWorlds.map((world) => `add_floater|${world}|0|0.5|${worldMenuColor}`).join("\n")}`;
+  public sendOnTalkBubble(netID: number, message: string, stacked = true): void {
+    this.send(Variant.from("OnTalkBubble", netID, message, 0, stacked ? 1 : 0).parse());
+  }
 
-    const variant = Variant.from({ netID: -1, delay: 500 }, "OnRequestWorldSelectMenu", worldSelectMenu);
+  public sendOnRemove(netID: number, playerId: number): void {
+    this.send(Variant.from("OnRemove", `netID|${netID}`, `pId|${playerId}`).parse());
+  }
 
-    const data = variant.parse();
-    this.send(data);
+  public sendOnSetCurrentWeather(weatherId: number): void {
+    this.send(Variant.from("OnSetCurrentWeather", weatherId).parse());
+  }
+
+  public sendOnCountryState(netID: number, state: string): void {
+    this.send(Variant.from({ netID }, "OnCountryState", state).parse());
+  }
+
+  public sendOnPlayPositioned(file: string, netID: number): void {
+    this.send(Variant.from({ netID }, "OnPlayPositioned", file).parse());
+  }
+
+  public sendOnSetFreezeState(netID: number, frozen: boolean, delay = 0): void {
+    this.send(Variant.from({ netID, delay }, "OnSetFreezeState", frozen ? 1 : 0).parse());
+  }
+
+  public sendOnKilled(netID: number): void {
+    this.send(Variant.from({ netID }, "OnKilled").parse());
+  }
+
+  /**
+   * Recolors an avatar that is already in the world; OnSetClothing alone
+   * only updates the HUD portrait of an existing avatar.
+   */
+  public sendOnChangeSkin(netID: number, skinColor: number): void {
+    this.send(Variant.from({ netID }, "OnChangeSkin", int32(skinColor | 0)).parse());
+  }
+
+  public sendOnSetPos(netID: number, x: number, y: number, delay = 0): void {
+    this.send(Variant.from({ netID, delay }, "OnSetPos", [x, y]).parse());
+  }
+
+  public sendOnZoomCamera(zoom: number, duration: number): void {
+    this.send(Variant.from("OnZoomCamera", [zoom], duration).parse());
+  }
+
+  public sendOnFailedToEnterWorld(): void {
+    this.send(Variant.from("OnFailedToEnterWorld", 1).parse());
+  }
+
+  public sendOnTextOverlay(message: string): void {
+    this.send(Variant.from("OnTextOverlay", message).parse());
+  }
+
+  /**
+   * Updates the gem counter on the HUD.
+   */
+  public sendOnSetBux(gems: number, skipAnimation = false): void {
+    const now = new Date();
+    const secondsToday = Math.floor((now.getTime() - new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()) / 1000);
+    // 5.61+ clients read the gem count as a 64-bit integer
+    this.send(Variant.from("OnSetBux", int64(gems), int32(skipAnimation ? 1 : 0), int32(0), [secondsToday, 0, 0]).parse());
+  }
+
+  /** Sends the chat emoticon list (name, glyph, unlocked). */
+  public sendOnEmoticonDataChanged(): void {
+    this.send(Variant.from("OnEmoticonDataChanged", int32(EMOTICON_DATA_VERSION), buildEmoticonData()).parse());
+  }
+
+  /** Tells the client today's date for daily features. */
+  public sendOnTodaysDate(): void {
+    const now = new Date();
+    this.send(Variant.from("OnTodaysDate", int32(now.getMonth() + 1), int32(now.getDate()), 0, 0).parse());
+  }
+
+  /** Asks the client to request store pricing; the official server sends it at enter_game. */
+  public sendOnRequestHoustonPricing(): void {
+    this.send(Variant.from("OnRequestHoustonPricing").parse());
+  }
+
+  /** Sends a PING_REQUEST game packet; the client answers with PING_REPLY. */
+  public sendPingRequest(): void {
+    this.send(GameUpdatePacket.create({ type: TANK_PACKET_TYPE.PING_REQUEST }).parse()!);
+  }
+
+  /**
+   * Tells the client (5.47+) which of its features are on. Without this the
+   * client treats the account as being in the tutorial and refuses to leave
+   * the world ("you must complete the tutorial first"). The payload is
+   * `[count, ...flags]` base64 encoded; the default list mirrors the official
+   * server's login payload (see `LOGIN_FEATURE_FLAGS`).
+   */
+  public sendOnSetFeatureEnableFlags(flags: readonly CLIENT_FEATURE_FLAG[] = LOGIN_FEATURE_FLAGS): void {
+    const payload = Buffer.from([flags.length, ...flags]).toString("base64");
+    this.send(Variant.from("OnSetFeatureEnableFlags", payload).parse());
+  }
+
+  /**
+   * Sends the full backpack (SEND_INVENTORY_STATE). Equipped items carry bit 8 of the amount.
+   */
+  public sendInventoryState(inventory: PlayerInventory): void {
+    const buffer = new ExtendBuffer(0);
+    buffer.writeU8(0x1);
+    buffer.writeU32(inventory.max);
+    buffer.writeU16(inventory.items.size);
+    for (const [itemId, amount] of inventory.items) {
+      buffer.writeU16(itemId);
+      buffer.writeU16(inventory.isEquipped(itemId) ? amount | (1 << 8) : amount);
+    }
+
+    const tank = GameUpdatePacket.create({
+      type: TANK_PACKET_TYPE.SEND_INVENTORY_STATE,
+      netID: -1,
+      extraData: buffer.data,
+    }).parse()!;
+    this.send(tank);
+  }
+
+  /**
+   * Adds or removes items from the client's backpack view (MODIFY_ITEM_INVENTORY).
+   * A positive delta adds, a negative one removes.
+   */
+  public sendModifyItemInventory(itemId: number, delta: number): void {
+    if (delta === 0) return;
+    const tank = GameUpdatePacket.create({
+      type: TANK_PACKET_TYPE.MODIFY_ITEM_INVENTORY,
+      netID: 0,
+      itemID: itemId,
+      jumpCount: delta < 0 ? -delta : 0,
+      buildRange: delta > 0 ? delta : 0,
+    }).parse()!;
+    this.send(tank);
+  }
+
+  /**
+   * Builds the SET_CHARACTER_STATE packet for a player: modifiers, punch id and
+   * the default movement values.
+   */
+  public buildCharacterState(netID: number, stats: CharacterStats, extraState = 0, punchId = stats.punchType): Buffer {
+    const tank = GameUpdatePacket.create({
+      type: TANK_PACKET_TYPE.SET_CHARACTER_STATE,
+      netID,
+      itemID: stats.charState | extraState,
+      posX: stats.speed,
+      posY: stats.punchPower,
+      speedX: stats.accel,
+      speedY: stats.gravity,
+    }).parse()!;
+
+    // byte layout after the 4-byte packet type header
+    tank.writeUInt8(punchId & 0xff, 4 + 1); // objectType: punch effect id
+    tank.writeUInt8(Math.min(255, stats.buildRange), 4 + 2); // jumpCount: build range
+    tank.writeUInt8(Math.min(255, stats.punchRange), 4 + 3); // buildRange: punch range
+    tank.writeFloatLE(stats.waterSpeed, 4 + 16); // float_var: water speed
+    return tank;
+  }
+
+  /**
+   * Shows the world select menu: the most populated worlds plus the player's
+   * recently visited ones.
+   */
+  public sendOnRequestWorldSelectMenu(recentWorlds: string[] = [], delay = 0): void {
+    const topColor = 3529161471;
+    const recentColor = 3417414143;
+
+    // signal-jammed worlds stay hidden from the world list
+    const populated = worldManager.mostPopulated(6).filter((world) => !world.signalJammed);
+    const topWorlds = ["START", "START1", "START2"].filter((name) => !populated.some((world) => world.name === name));
+
+    const lines = ["add_heading|Top Worlds|"];
+    for (const world of populated) lines.push(`add_floater|${world.name}|${world.players.length}|0.5|${topColor}`);
+    for (const name of topWorlds) lines.push(`add_floater|${name}|${worldManager.getLoaded(name)?.players.length ?? 0}|0.5|${topColor}`);
+
+    if (recentWorlds.length > 0) {
+      lines.push("add_heading|Recently Visited Worlds<CR>|");
+      for (const name of [...recentWorlds].reverse()) {
+        lines.push(`add_floater|${name}|${worldManager.getLoaded(name)?.players.length ?? 0}|0.5|${recentColor}`);
+      }
+    }
+
+    const variant = Variant.from({ netID: -1, delay }, "OnRequestWorldSelectMenu", lines.join("\n"));
+    this.send(variant.parse());
+
+    const online = serverManager.getTotalPlayersCount();
+    this.send(Variant.from({ delay }, "OnConsoleMessage", `Where would you like to go? (\`w${online}\`\` online)`).parse());
   }
 
   public sendGazette(): void {
@@ -590,7 +729,7 @@ ${topWorlds.map((world) => `add_floater|${world}|0|0.5|${worldMenuColor}`).join(
       .endDialog("gazzette_end", "Cancel", "Ok")
       .str();
 
-    const variant = Variant.from({ netID: -1, delay: 500 }, "OnDialogRequest", gazette);
+    const variant = Variant.from({ netID: -1, delay: 100 }, "OnDialogRequest", gazette);
     const data = variant.parse();
     this.send(data);
   }

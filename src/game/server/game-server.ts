@@ -2,16 +2,18 @@ import { NodeENetServer, Packet, PacketKind, type Peer } from "growtopia.wasm";
 import EventEmitter from "events";
 import dayjs from "dayjs";
 import { logger } from "../../utils/logger";
+import { isDevelopment } from "../../configs/server-config";
 import { Player, PlayerStateFlags } from "../player";
 import { Collection } from "../../utils/collection";
 import { serverManager } from "./server-manager";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { TextParser } from "../../utils/text-parser";
 import { TextColor } from "../../utils/text-color";
-import { LOGON_MODE, PACKET_TYPE, TANK_PACKET_TYPE } from "../../constants";
+import { LOGON_MODE, PACKET_TYPE } from "../../constants";
 import { GameUpdatePacket } from "../packets/game-packet";
 import { PlayerDB, SessionDB } from "../../database/services";
 import { GameMessageMap } from "../network/game-message-handler";
+import { handleTankPacket } from "../network/tank-handler";
 
 export interface GameServerEvents {
   "server:started": (data: { port: number; serverLabel: string }) => void;
@@ -97,11 +99,12 @@ export class GameServer extends EventEmitter {
   }
 
   public onDisconnect(): void {
-    this.host.emitter.on("disconnect", async (peer: Peer) => {
+    this.host.emitter.on("disconnect", (peer: Peer) => {
       const globalID = `${this.serverLabel}:${peer.id}`;
       const player = serverManager.getPlayerByID(globalID);
       if (player) {
-        await player.world.leave();
+        player.leaveWorld(false);
+        void player.saveToDatabase();
         serverManager.unregisterPlayer(player);
         this.emit("player:disconnect", player);
       }
@@ -116,18 +119,43 @@ export class GameServer extends EventEmitter {
       const player = serverManager.getPlayerByID(globalID);
       if (!player) return;
 
+      try {
+        await this.handlePacket(player, data);
+      } catch (err) {
+        // a bad packet or a vanished peer must never take the server down
+        logger.error({ err, id: player.id }, "failed to handle incoming packet");
+      }
+
+      this.emit("player:receive", player, packet, channelID);
+    });
+  }
+
+  /**
+   * Decodes one incoming packet and dispatches it to the text or tank handlers.
+   */
+  private async handlePacket(player: Player, data: Uint8Array): Promise<void> {
+    {
       const buf = new ExtendBuffer(Array.from(data));
       const type = buf.readI32();
-      const packetTypeName = PACKET_TYPE[type] ?? "UNKNOWN";
-      player.variants.sendOnConsoleMessage(new TextColor().dev("[DEBUG] ").white("Packet: ").yellow(packetTypeName).lightGray(` (${type})`).str());
+      // in-game protocol inspection during development: text packets only,
+      // game packets (movement) arrive many times per second and would flood the console
+      if (isDevelopment() && type !== PACKET_TYPE.GAME_PACKET) {
+        const packetTypeName = PACKET_TYPE[type] ?? "UNKNOWN";
+        player.variants.sendOnConsoleMessage(new TextColor().dev("[DEBUG] ").white("Packet: ").yellow(packetTypeName).lightGray(` (${type})`).str());
+      }
 
       switch (type) {
         case PACKET_TYPE.GENERIC_TEXT:
         case PACKET_TYPE.GAME_MESSAGE:
-          // payload and also cleanup null terminators
-          const payload = Buffer.from(data.slice(4)).toString("utf-8").replace(/\0+$/g, "");
+          // the text ends at the first null terminator; the client sometimes
+          // sends junk bytes after it, which must never reach the parser
+          const terminator = data.indexOf(0, 4);
+          const payload = Buffer.from(data.slice(4, terminator === -1 ? data.length : terminator))
+            .toString("utf-8")
+            // control characters and the replacement character of invalid bytes
+            .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f�]/g, "");
           const text = new TextParser(payload);
-          console.log({ text: text.getEntries(), netID: player.netID });
+          logger.debug({ netID: player.netID, action: text.get("action") || undefined, keys: text.getEntries().map(([key]) => key) }, "text packet received");
 
           if (text.contains("action")) {
             const action = text.get("action");
@@ -136,7 +164,7 @@ export class GameServer extends EventEmitter {
               const actionFunc = GameMessageMap[action];
 
               if (actionFunc) {
-                actionFunc(player, text);
+                await actionFunc(player, text);
               } else {
                 throw new Error(`unknown action: ${action}`);
               }
@@ -147,7 +175,9 @@ export class GameServer extends EventEmitter {
 
           // this is how it handles server static content requests
           if (text.contains("tankIDName") && !text.contains("ltoken") && text.contains("token")) {
-            player.variants.sendSuperMain();
+            // lift the GDPR chat restriction before the logon is accepted
+            player.variants.sendOnOverrideGdprFromServer(Math.max(18, text.getInt("player_age", 0, 18)));
+            player.variants.sendSuperMain(text.getInt("protocol", 0, 216));
           }
 
           if (text.contains("ltoken")) {
@@ -164,26 +194,17 @@ export class GameServer extends EventEmitter {
               return player.variants.sendOnConsoleMessage(new TextColor().crazyRed("Invalid or expired session token, please login again.").str());
             }
 
+            player.tankIDName = player.auth.tankIDName;
+            player.displayName = player.auth.tankIDName;
             player.playerId = session.player_id;
 
             player.removeStateStatus(PlayerStateFlags.LOGIN_REQUEST);
             player.addStateStatus(PlayerStateFlags.ENTERING_GAME);
 
-            // Fetch database player record to get unique database playerId and accurate displayName
-            const dbPlayer =
-              (session.player_id > 0 ? await PlayerDB.getById(session.player_id) : undefined) ??
-              (player.auth.tankIDName ? await PlayerDB.getByName(player.auth.tankIDName) : undefined);
-
+            // Fetch database player record to get unique database playerId
+            const dbPlayer = await PlayerDB.getByName(player.tankIDName);
             if (dbPlayer) {
               player.playerId = dbPlayer.id;
-              player.gems = dbPlayer.gems ?? 0;
-              player.username = dbPlayer.name.toLowerCase();
-              player.displayName = dbPlayer.display_name || dbPlayer.name;
-              player.tankIDName = dbPlayer.name.toLowerCase();
-            } else {
-              player.username = player.auth.tankIDName.toLowerCase();
-              player.displayName = player.auth.tankIDName;
-              player.tankIDName = player.auth.tankIDName.toLowerCase();
             }
 
             // Find optimal target game server dynamically instead of hardcoding
@@ -191,26 +212,24 @@ export class GameServer extends EventEmitter {
             const targetPort = optimalServer ? optimalServer.port : this.port;
             const targetServerLabel = optimalServer ? optimalServer.serverLabel : this.serverLabel;
 
-            // Prepare sub-server transfer token session with unique database playerId and displayName
+            // Prepare sub-server transfer token session with unique database playerId
             const transferSession = player.auth.prepareTransfer({
               playerId: player.playerId,
-              sessionToken,
-              tankIDName: player.tankIDName,
-              displayName: player.displayName,
               sourceServer: this.serverLabel,
               targetServer: targetServerLabel,
+              sessionToken,
             });
 
-            player.variants.sendSetHasGrowID(true, player.displayName || player.tankIDName, sessionToken);
+            player.variants.sendSetHasGrowID(true, player.tankIDName, sessionToken);
             // Send OnSendToServer packet (server address defaults to 127.0.0.1 in dev or configured host)
             player.sendOnSendToServer(undefined, targetPort, "", LOGON_MODE.WELCOME, transferSession.token);
             player.disconnectLater();
           }
 
           // Handle incoming sub-server transfer validation (after sended OnSendToServer with WELCOME)
-          if ((text.contains("UUIDToken") || text.contains("token")) && text.contains("user")) {
+          if (text.contains("token") && text.contains("user")) {
             player.auth.parseRaw(payload);
-            const token = text.get("UUIDToken") || text.get("token");
+            const token = text.get("token");
             const user = text.get("user");
 
             player.addStateStatus(PlayerStateFlags.LOGIN_REQUEST);
@@ -230,64 +249,45 @@ export class GameServer extends EventEmitter {
             const parsedPlayerId = Number(user);
             if (!Number.isNaN(parsedPlayerId) && parsedPlayerId > 0) {
               player.playerId = parsedPlayerId;
-              const dbPlayer = await PlayerDB.getById(parsedPlayerId);
-              if (dbPlayer) {
-                player.gems = dbPlayer.gems ?? 0;
-                player.username = dbPlayer.name.toLowerCase();
-                player.displayName = dbPlayer.display_name || dbPlayer.name;
-                player.tankIDName = dbPlayer.name.toLowerCase();
-              }
             }
 
-            if (!player.tankIDName) {
-              player.tankIDName = (player.auth.transferSession?.tankIDName || player.auth.tankIDName).toLowerCase();
-            }
-            if (!player.username) {
-              player.username = player.tankIDName;
-            }
-            if (!player.displayName) {
-              player.displayName = player.auth.transferSession?.displayName || player.auth.tankIDName;
+            player.tankIDName = player.auth.tankIDName;
+            player.displayName = player.auth.tankIDName;
+
+            // load role, gems, level and inventory from the database
+            const record = await PlayerDB.getById(player.playerId);
+            if (record) {
+              player.loadFromRecord(record);
+            } else {
+              player.loadFromRecord({ id: player.playerId, name: player.tankIDName, display_name: player.tankIDName } as Parameters<typeof player.loadFromRecord>[0]);
+              logger.warn({ id: player.id, playerId: player.playerId }, "player record not found, using defaults");
             }
 
-            const stalePlayer = serverManager.players.find(
-              (p) =>
-                p.id !== player.id &&
-                ((player.playerId > 0 && p.playerId === player.playerId) ||
-                  (player.username && p.username && p.username === player.username) ||
-                  (player.tankIDName && p.tankIDName.toLowerCase() === player.tankIDName.toLowerCase())),
-            );
-            if (stalePlayer) {
-              await stalePlayer.world.leave();
-              serverManager.unregisterPlayer(stalePlayer);
-              stalePlayer.disconnectLater();
+            // a second game connection of the same account replaces the first
+            // one; the login connection that redirected us is skipped because
+            // it is already closing
+            const previous = serverManager.players.find((other) => other !== player && other.playerId === player.playerId && other.hasStateStatus(PlayerStateFlags.IN_GAME));
+            if (previous) {
+              previous.variants.sendOnConsoleMessage("`4Someone else logged into this account.``");
+              previous.leaveWorld(false);
+              previous.disconnectLater();
             }
 
-            // @TODO fix this "Secure my account"
-            const sessionToken = player.auth.transferSession?.sessionToken ?? player.auth.token ?? "";
-            player.variants.sendSetHasGrowID(true, player.displayName || player.tankIDName, sessionToken);
-            player.variants.sendOnSetBux(player.gems);
-
-            logger.info(
-              { id: player.id, playerId: player.playerId, name: player.displayName || player.tankIDName },
-              "player sub-server transfer verified successfully",
-            );
+            // the client treats the connection as a guest (chat disabled, no
+            // profile) until it is told the GrowID it is logged in with
+            const savedToken = player.auth.metadata.tankIDPass || player.auth.transferSession?.sessionToken || "";
+            player.variants.sendSetHasGrowID(true, player.tankIDName, savedToken);
+            player.variants.sendOnSetFeatureEnableFlags();
+            logger.info({ id: player.id, playerId: player.playerId, name: player.tankIDName }, "player sub-server transfer verified successfully");
           }
 
           break;
 
         case PACKET_TYPE.GAME_PACKET:
-          const gamePacket = GameUpdatePacket.fromExtendBuffer(buf);
-          if (gamePacket.data.type === TANK_PACKET_TYPE.DISCONNECT) {
-            player.disconnectNow();
-          }
-
-          // console.log({ gamePacket });
+          await handleTankPacket(player, GameUpdatePacket.fromExtendBuffer(buf));
           break;
       }
 
-      if (player) {
-        this.emit("player:receive", player, packet, channelID);
-      }
-    });
+    }
   }
 }
