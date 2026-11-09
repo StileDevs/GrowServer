@@ -37,7 +37,7 @@ login.growserver.test {
     }
 
     # Please comment this if you using actual domain
-    #tls internal
+    tls internal
 
     reverse_proxy localhost:17901 {
         header_up Upgrade {http.request.header.Upgrade}
@@ -58,7 +58,7 @@ cdn.growserver.test {
   }
 
   # Please comment this if you using actual domain
-  #tls internal
+  tls internal
 
     reverse_proxy localhost:17902 {
         header_up Upgrade {http.request.header.Upgrade}

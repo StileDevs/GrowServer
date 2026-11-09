@@ -55,15 +55,7 @@ Console commands while the server runs: `ping`, `list`, `role <growid> <basic|su
 
 ## Running locally on Windows with the real client
 
-The Growtopia client only accepts a trusted certificate for `www.growtopia1.com`. Issue one with [mkcert](https://github.com/FiloSottile/mkcert) from your own shell (so the CA lands in your user store), then point the server at it:
-
-```bash
-mkcert -install
-```
-
-```bash
-mkcert -cert-file .cache/tls/cert.pem -key-file .cache/tls/key.pem growtopia1.com www.growtopia1.com growtopia2.com www.growtopia2.com login.growserver.test cdn.growserver.test localhost
-```
+Caddy automatically handles HTTPS and TLS certificates for local domains (`growtopia1.com`, `growtopia2.com`, `login.growserver.test`, `cdn.growserver.test`).
 
 Start with `bun run src/index.ts start:local` (Caddy on 443 in front of the logon, login and CDN servers), register an account on the login page the client opens, and give yourself the developer role from the console with `role <growid> developer` (`/find`, `/search`, `/warp`, ... are developer commands).
 
@@ -77,7 +69,6 @@ Start with `bun run src/index.ts start:local` (Caddy on 443 in front of the logo
 | Chat says "Chat is disabled." | The login page must return `accountAge: 2`, and the logon must send `OnOverrideGDPRFromServer` and `isPayingUser=1` (see AGENTS.md section 20). |
 | White avatar, empty profile HUD | The avatar net ID was 0; players get per-world net IDs from 1. |
 | You stay connected after the server is restarted | The server was force-killed; stop it with Ctrl+C or the console `stop` command so players are disconnected. |
-| `curl` fails with `CRYPT_E_NO_REVOCATION_CHECK` | Windows curl checks revocation and mkcert certificates have no CRL; pass `--ssl-no-revoke`. The game client is not affected. |
 
 ## Contributing
 
