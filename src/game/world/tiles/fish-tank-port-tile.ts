@@ -57,16 +57,14 @@ export class FishTankPortTile extends Tile {
 
   public override serializedFlags(flags: number): number {
     const glowing = this.data.fishTank?.glowing !== false;
-    return flags | TileFlags.TILEEXTRA | (glowing ? (TileFlags.OPEN | TILE_ALT_MODE) : 0);
+    return flags | TileFlags.TILEEXTRA | (glowing ? TileFlags.OPEN : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {
     buffer.writeU8(this.extraType);
     const fishes = this.data.fishTank?.fishes ?? [];
-    // flags (u8): bitmask for fish tank port settings.
-    // 0xFF enables all potential glow bits (0x01, 0x02, 0x04, etc.) in the Growtopia client
     const glowing = this.data.fishTank?.glowing !== false;
-    buffer.writeU8(glowing ? 0xff : 0x00);
+    buffer.writeU8(glowing ? 1 : 0);
     // Growtopia client loops: for (int i = 0; i < fish_count / 2; i++)
     // Therefore fish_count must be the count of uint32 values (fishes.length * 2)
     buffer.writeU32(fishes.length * 2);
@@ -149,9 +147,9 @@ registerDialog("fishtank_port_dialog", (player, action) => {
     const isGlowing = action.get("chk_glowing") === "1";
     tileData.fishTank.glowing = isGlowing;
     if (isGlowing) {
-      tileData.flags |= TileFlags.OPEN | TILE_ALT_MODE;
+      tileData.flags |= TileFlags.OPEN;
     } else {
-      tileData.flags &= ~(TileFlags.OPEN | TILE_ALT_MODE);
+      tileData.flags &= ~TileFlags.OPEN;
     }
     target.world.markDirty();
     new FishTankPortTile(target.world, tileData).tileUpdate();
