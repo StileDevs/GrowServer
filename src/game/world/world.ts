@@ -155,6 +155,28 @@ export class World {
     return this.data.blocks[x + y * this.width];
   }
 
+  /**
+   * Checks if a tile at the given block coordinates is solid (cannot drop, walk, or fish through).
+   */
+  public isSolid(x: number, y: number): boolean {
+    const tile = this.getTileAt(x, y);
+    if (!tile) return true; // Out of bounds is solid
+    if (!tile.fg) return false;
+
+    const item = getItem(tile.fg);
+    if (!item) return false;
+
+    const collision = item.collisionType ?? 0;
+    // 1: Solid block (Dirt, Rock, Bedrock, etc.)
+    if (collision === 1) return true;
+    // 3: Gate/Portcullis; solid unless open
+    if (collision === 3 && (tile.flags & TileFlags.OPEN) === 0) return true;
+    // 4: Trapdoor / IF_OFF; solid unless open
+    if (collision === 4 && (tile.flags & TileFlags.OPEN) === 0) return true;
+
+    return false;
+  }
+
   /** Tile at a block index. */
   public getTileByIndex(index: number): TileData | undefined {
     return this.data.blocks[index];

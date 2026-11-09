@@ -63,8 +63,8 @@ export class CuttingBoardTile extends Tile {
     const failed = isSmall && Math.random() < 0.2;
     const chunks = failed ? 0 : Math.max(1, Math.floor(weight / 10));
 
-    // Remove the fish from the world
-    this.world.removeDrop(fishDrop.uid, player);
+    // Remove the fish from the world (no picker so client does not treat it as collected)
+    this.world.removeDrop(fishDrop.uid);
 
     // Play cutting sound effects
     this.world.playPositioned("audio/splat.wav", player.netID);
@@ -83,6 +83,7 @@ export class CuttingBoardTile extends Tile {
       player.sendTextBubble("`4Ruined the cut!``", true);
     }
 
+    player.sendInventory();
     return true;
   }
 

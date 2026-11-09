@@ -150,7 +150,43 @@ const CAST_RANGE = 1;
 /** Fraction of the reels spent in an environment that roll its special pool when using standard bait. */
 const ENVIRONMENT_CATCH_CHANCE = 0.45;
 /** Chance that a catch also returns the next bait tier. */
-const BAIT_CHAIN_CHANCE = 0.12;
+const BAIT_CHAIN_CHANCE = 0.06;
+
+/** Fish species attractable by each bait tier (wiki). */
+export const BAIT_FISH_POOLS: Readonly<Record<number, readonly number[]>> = {
+  // 2914: Wiggly Worm (smallest fish)
+  2914: [3000, 3038, 3026, 3034, 3030, 3544], // Goldfish, Bass, Catfish, Mahi Mahi, Dogfish, Picasso Triggerfish
+  // 3012: Shiny Flashy Thing (small to medium)
+  3012: [3000, 3030, 3038, 3036, 3032, 3544, 3550, 5100], // Goldfish, Dogfish, Bass, Sunfish, Gar, Picasso Triggerfish, Axolotl, Koi Fish
+  // 3014: Salmon Eggs (medium)
+  3014: [3038, 3026, 3030, 3032, 3000, 3814, 3620, 5100], // Bass, Catfish, Dogfish, Gar, Goldfish, Stonefish, Pineapple Fish, Koi Fish
+  // 3016: Fishing Fly (medium-large)
+  3016: [3038, 3026, 3032, 3036, 3814, 3746, 3550, 3438], // Bass, Catfish, Gar, Sunfish, Stonefish, Firefin, Axolotl, Seahorse
+  // 3018: Shrimp Lure (large)
+  3018: [3032, 3034, 4958, 3036, 3024, 3438, 3434, 3820], // Gar, Mahi Mahi, Sand Shark, Sunfish, Whale, Seahorse, Rainbowfish, Orca
+  // 3020: Whizmo Gizmo (giant / rare)
+  3020: [7744, 3024, 4958, 3820, 5448, 3438, 3440, 3034, 8460], // Dragon Turtle, Whale, Sand Shark, Orca, Mr. Narwhal, Seahorse, Mutant Fish, Mahi Mahi, Clockwork Fish
+  // Otherworldly baits (dark/demon)
+  3098: [3092, 3094, 3096, 5542], // Skeletal Shark, Ghost Fish, Demon Angler, Double-Headed Angel-Devil Fish
+  4246: [3092, 3094, 3096],
+  4248: [3092, 3094, 3096, 5542],
+  // 3218: Candy Cane Bait (winter)
+  3218: [3222, 3224, 3226, 3220], // Antarctic Icefish, Gingerbread Fish, Swedish Fish, Neon Squid
+};
+
+/** Max fish weight (in lbs) that each bait tier attracts. */
+export const BAIT_MAX_WEIGHT: Readonly<Record<number, number>> = {
+  2914: 15,
+  3012: 25,
+  3014: 45,
+  3016: 70,
+  3018: 140,
+  3020: 220,
+  3098: 150,
+  4246: 80,
+  4248: 120,
+  3218: 60,
+};
 
 export interface FishingSession {
   tileX: number;
@@ -159,6 +195,7 @@ export interface FishingSession {
   baitName: string;
   rodId: number;
   startedAt: number;
+  biteAt: number;
   triggered: boolean;
   /** When the current bite appeared, for the miss window. */
   bittenAt: number;
@@ -223,7 +260,8 @@ export async function handleFishingCast(player: Player, world: World, itemId: nu
     return true;
   }
 
-  if (!isWaterTile(world.getTileAt(tileX, tileY))) {
+  const targetTile = world.getTileAt(tileX, tileY);
+  if (!isWaterTile(targetTile) || world.isSolid(tileX, tileY)) {
     player.sendTextBubble("You can only use bait on water!", true);
     return true;
   }
@@ -255,6 +293,11 @@ export async function handleFishingCast(player: Player, world: World, itemId: nu
   if (!player.inventory.hasItem(itemId)) return true;
   player.removeItemInven(itemId, 1, true);
 
+  const rod = FISHING_RODS[rodId] ?? DEFAULT_ROD;
+  const minWait = rod.fastBite ? 4000 : 8000;
+  const maxWait = rod.fastBite ? 9000 : 18000;
+  const biteAt = Date.now() + minWait + Math.random() * (maxWait - minWait);
+
   player.fishing = {
     tileX,
     tileY,
@@ -262,6 +305,7 @@ export async function handleFishingCast(player: Player, world: World, itemId: nu
     baitName: getItem(itemId)?.name ?? "bait",
     rodId,
     startedAt: Date.now(),
+    biteAt,
     triggered: false,
     bittenAt: 0,
     playerTileX,
@@ -290,10 +334,11 @@ export function tickFishing(world: World): void {
     // a missed splash loses the bite, another one may come later
     if (session.triggered && now - session.bittenAt > BITE_WINDOW_MS * (rod.biteWindow ?? 1)) {
       session.triggered = false;
+      session.biteAt = now + (rod.fastBite ? 4000 : 8000) + Math.random() * 5000;
       continue;
     }
 
-    if (!session.triggered && now - session.startedAt >= BITE_DELAY_MS / (rod.fastBite ? 2 : 1) && Math.random() <= 0.4) {
+    if (!session.triggered && now >= session.biteAt) {
       session.triggered = true;
       session.bittenAt = now;
       world.broadcastVariant(Variant.from("OnParticleEffect", 36, [session.tileX * 32 + 16, session.tileY * 32 + 16]));
@@ -496,7 +541,8 @@ function reelIn(player: Player, world: World): void {
       caughtItem = pick(RADIOACTIVE_ENVIRONMENT_IDS);
     } else {
       isFish = true;
-      caughtItem = pick(FISH_BASE_IDS);
+      const pool = BAIT_FISH_POOLS[session.baitId] ?? FISH_BASE_IDS;
+      caughtItem = pick(pool);
     }
   } else {
     // Normal water environment
@@ -506,13 +552,16 @@ function reelIn(player: Player, world: World): void {
       caughtItem = pick(BLOCK_BASE_IDS);
     } else {
       isFish = true;
-      caughtItem = pick(FISH_BASE_IDS);
+      const pool = BAIT_FISH_POOLS[session.baitId] ?? FISH_BASE_IDS;
+      caughtItem = pick(pool);
     }
   }
 
   // Weight calculation for fish catches
   if (isFish) {
-    count = Math.floor(Math.random() * rod.maxLbs) + 1;
+    const baitLimit = BAIT_MAX_WEIGHT[session.baitId] ?? 200;
+    const effectiveMax = Math.min(rod.maxLbs, baitLimit);
+    count = Math.floor(Math.random() * effectiveMax) + 1;
     if (rod.sizeBonus) count = Math.min(rod.maxLbs, Math.ceil(count * (1 + rod.sizeBonus / 100)));
     count = Math.min(rod.maxLbs, count + Math.floor(fishLevel * 0.5));
   }

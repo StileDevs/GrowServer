@@ -41,6 +41,14 @@ registerDialog("drop_end", (player, action) => {
   const x = player.state.x + (player.state.rotatedLeft ? -25 : 25) + extra;
   const y = player.state.y + extra - Math.floor(Math.random() * 4 - 3);
 
+  const targetTileX = Math.floor(x / 32);
+  const targetTileY = Math.floor(y / 32);
+
+  if (world.isSolid(targetTileX, targetTileY)) {
+    player.sendInventory();
+    return player.sendTextBubble("You can't drop that here, face a different direction!");
+  }
+
   player.removeItemInven(itemId, count);
   world.drop(player, x, y, itemId, count, { noSimilar: isFish });
   if (isFish) player.sendInventory();
