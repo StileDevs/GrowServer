@@ -59,7 +59,8 @@ export class TrainingPortTile extends Tile {
   }
 
   public override serializedFlags(flags: number): number {
-    return flags | TileFlags.TILEEXTRA;
+    const hasFish = (this.data.trainingPort?.fishId ?? 0) > 0;
+    return flags | TileFlags.TILEEXTRA | (hasFish ? TileFlags.OPEN : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {

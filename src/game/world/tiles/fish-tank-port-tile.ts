@@ -35,7 +35,7 @@ export class FishTankPortTile extends Tile {
 
     if (!(await super.onPlaceForeground(player, itemMeta))) return false;
 
-    this.data.flags |= TileFlags.TILEEXTRA;
+    this.data.flags |= TileFlags.TILEEXTRA | TileFlags.OPEN;
     this.data.fishTank = { fishes: [], glowing: true };
     return true;
   }
@@ -56,7 +56,8 @@ export class FishTankPortTile extends Tile {
   }
 
   public override serializedFlags(flags: number): number {
-    return flags | TileFlags.TILEEXTRA;
+    const glowing = this.data.fishTank?.glowing !== false;
+    return flags | TileFlags.TILEEXTRA | (glowing ? TileFlags.OPEN : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {
@@ -102,8 +103,6 @@ export class FishTankPortTile extends Tile {
       }
     }
 
-    dialog.addCheckbox("chk_glowing", "Glowing Fish (for 200 lb & Megafishes)", this.data.fishTank?.glowing !== false ? "selected" : "not_selected");
-
     if (fishes.length < MAX_FISH_PER_TANK) {
       const petFishInven: Array<{ id: number; amount: number }> = [];
       for (const [id, amount] of player.inventory.items) {
@@ -118,11 +117,15 @@ export class FishTankPortTile extends Tile {
           const name = getItem(it.id)?.name ?? "Fish";
           dialog.addButtonWithIcon(`addfish_${it.id}`, it.id, `Add ${it.amount} lb. ${name}`);
         }
+        dialog.addCustomBreak();
       } else {
         dialog.addSpacer("small").addSmallText("`4You don't have any fish in your backpack to add.`\``");
       }
     }
 
+    dialog.addSpacer("small");
+    dialog.addCheckbox("chk_glowing", "Glowing Fish (for 200 lb & Megafishes)", this.data.fishTank?.glowing !== false ? "selected" : "not_selected");
+    dialog.addSpacer("small");
     dialog.endDialog("fishtank_port_dialog", "Close", "Update");
     player.variants.sendOnDialogRequest(dialog.str());
     return true;
@@ -139,9 +142,20 @@ registerDialog("fishtank_port_dialog", (player, action) => {
   const button = action.get("buttonClicked");
 
   if (action.contains("chk_glowing")) {
-    tileData.fishTank.glowing = action.get("chk_glowing") === "1";
+    const isGlowing = action.get("chk_glowing") === "1";
+    tileData.fishTank.glowing = isGlowing;
+    if (isGlowing) {
+      tileData.flags |= TileFlags.OPEN;
+    } else {
+      tileData.flags &= ~TileFlags.OPEN;
+    }
     target.world.markDirty();
     new FishTankPortTile(target.world, tileData).tileUpdate();
+
+    if (button === "" || button === "update") {
+      player.sendTextBubble(isGlowing ? "`2Fish glow turned ON!``" : "`4Fish glow turned OFF!``", true);
+      player.variants.sendOnConsoleMessage(isGlowing ? "`2Fish tank glow enabled.``" : "`4Fish tank glow disabled.``");
+    }
   }
 
   // Adding a fish
