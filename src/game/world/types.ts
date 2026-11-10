@@ -2,6 +2,14 @@ import type { LockPermission } from "./constants";
 
 /** Per-tile data kept by the server. Only the fields a tile needs are set. */
 export interface TileData {
+  /** Persistent MAGPLANT storage and access settings. */
+  magplant?: {
+    instanceId: string;
+    itemId: number;
+    count: number;
+    collecting?: boolean;
+    planting?: boolean;
+  };
   fg: number;
   bg: number;
   x: number;

@@ -17,6 +17,7 @@ import { HeartMonitorTile } from "./heart-monitor-tile";
 import { MusicAmplifierTile, MusicBlockTile, SwitcheROO } from "./switcheroo-tile";
 import { WeatherTile } from "./weather-tile";
 import { VendingTile } from "./vending-tile";
+import { MagplantTile } from "./magplant-tile";
 import { EntranceTile } from "./entrance-tile";
 import { VipEntranceTile } from "./vip-entrance-tile";
 import { AntigravityTile } from "./antigravity-tile";
@@ -91,6 +92,7 @@ export const TileMapByItem: Partial<Record<number, TileClass>> = {
   [ITEM_ID.CUTTING_BOARD]: CuttingBoardTile,
   [ITEM_ID.FISH_TANK_PORT]: FishTankPortTile,
   [ITEM_ID.TRAINING_PORT]: TrainingPortTile,
+  [ITEM_ID.MAGPLANT]: MagplantTile,
   4654: GeigerChargerTile,
   [3448]: LobsterTrapTile,
 };

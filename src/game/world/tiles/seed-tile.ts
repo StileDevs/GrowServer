@@ -125,7 +125,7 @@ export class SeedTile extends Tile {
    */
   public override onDrop(player: Player, destroyedItemId: number): void {
     if (Math.random() <= SEED_DROP_CHANCE) {
-      this.world.drop(player, this.randomDropX(), this.randomDropY(), destroyedItemId, 1, { tree: true });
+      this.world.drop(player, this.randomDropX(), this.randomDropY(), destroyedItemId, 1, { tree: true, origin: "block" });
     }
   }
 
@@ -157,11 +157,11 @@ export class SeedTile extends Tile {
   }
 
   private dropHarvestGoodies(player: Player, seedMeta: ItemDefinition, tree: Tree): void {
-    this.world.drop(player, this.randomDropX(), this.randomDropY(), tree.fruit, tree.fruitCount, { tree: true });
-    this.spawnGems(player, seedMeta.rarity ?? 0);
+    this.world.drop(player, this.randomDropX(), this.randomDropY(), tree.fruit, tree.fruitCount, { tree: true, origin: "harvest" });
+    this.spawnGems(player, seedMeta.rarity ?? 0, "harvest");
 
     if (Math.random() <= SEED_DROP_CHANCE) {
-      this.world.drop(player, this.randomDropX(), this.randomDropY(), this.data.fg, 1, { tree: true });
+      this.world.drop(player, this.randomDropX(), this.randomDropY(), this.data.fg, 1, { tree: true, origin: "harvest" });
       player.sendTextBubble(`A \`w${seedMeta.name}\`\` falls out!`);
     }
   }

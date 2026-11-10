@@ -3,6 +3,7 @@ import { PACKET_TYPE, TANK_PACKET_TYPE } from "../../constants";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { logger } from "../../utils/logger";
 import { Collection } from "../../utils/collection";
+import { clearMagplantRemote, collectMagplantDrop } from "./magplant";
 import { PlayerDB } from "../../database/services/player-db";
 import { GameUpdatePacket } from "../packets/game-packet";
 import { int32, Variant } from "../packets/variants";
@@ -16,6 +17,8 @@ import { DEFAULT_MUSIC_BPM, ActionTypes, CLIENT_UNAMPLIFIED_MUSIC_TYPE, ITEM_ID,
 import type { DroppedItem, TileData, WorldData, XenoniteSettings } from "./types";
 
 export interface DropOptions {
+  /** Explicit collection provenance; animation flags do not authorize collection. */
+  origin?: "block" | "harvest";
   /** Drop without attributing it to a player (e.g. from a broken block). */
   tree?: boolean;
   /** Never merge into an existing stack on the same tile. */
@@ -531,6 +534,7 @@ export class World {
    */
   public leave(player: Player): void {
     if (player.world !== this) return;
+    clearMagplantRemote(player);
 
     const leftNetId = player.netID;
     // captured before the world is detached: the name color depends on it
@@ -562,7 +566,9 @@ export class World {
   /**
    * Drops an item into the world at pixel coordinates.
    */
-  public drop(player: Player, x: number, y: number, id: number, amount: number, { tree, noSimilar }: DropOptions = {}): void {
+  public drop(player: Player, x: number, y: number, id: number, amount: number, { tree, noSimilar, origin }: DropOptions = {}): void {
+    if (origin === "block" || origin === "harvest") amount = collectMagplantDrop(this, id, amount, { x, y });
+    if (amount <= 0) return;
     const tank = GameUpdatePacket.create({
       type: TANK_PACKET_TYPE.ITEM_CHANGE_OBJECT,
       netID: -1,

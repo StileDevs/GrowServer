@@ -1,5 +1,6 @@
 import { TANK_PACKET_TYPE } from "../../constants";
 import { logger } from "../../utils/logger";
+import { placeWithMagplantRemote } from "../world/magplant";
 import { getItem } from "../item/item-utils";
 import { useConsumable } from "../item/consumables";
 import type { GameUpdatePacket } from "../packets/game-packet";
@@ -89,6 +90,10 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
   const data = tank.data;
   const block = world.getTileAt(data.tileX, data.tileY);
   if (!block) return;
+  if (data.itemID === ITEM_ID.MAGPLANT_REMOTE) {
+    if (player.inventory.hasItem(ITEM_ID.MAGPLANT_REMOTE)) await placeWithMagplantRemote(player, world, block);
+    return;
+  }
 
   if (data.itemID === ITEM_ID.FIST) {
     if (handleFishingPunch(player, world)) return;

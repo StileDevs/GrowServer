@@ -32,8 +32,49 @@ import { PLAYER_ROLE } from "../src/constants";
 import { decodeTextPacket } from "../src/utils/text-packet";
 import { searchItemNames } from "../src/game/item/item-search";
 import type { ItemDefinition } from "grow-items";
+import * as itemUtils from "../src/game/item/item-utils";
+import { VendingTile } from "../src/game/world/tiles/vending-tile";
+import { ActionTypes, ITEM_ID, TILE_ALT_MODE } from "../src/game/world/constants";
 
 const hours = (count: number): number => count * 60 * 60 * 1000;
+
+describe("vending earnings", () => {
+  test("a purchase lights the lock indicator and the owner can withdraw after stock sells out", async () => {
+    const item = spyOn(itemUtils, "getItem").mockImplementation((id) => ({ id, name: "item", type: id === 2978 ? ActionTypes.VENDING_MACHINE : 0 }) as ItemDefinition);
+    const update = spyOn(VendingTile.prototype, "tileUpdate").mockImplementation(() => {});
+    try {
+      const block = { x: 5, y: 6, fg: 2978, vending: { itemId: 2, count: 1, price: 2 } } as TileData;
+      const world = { players: [], getTileAt: () => block, getTileOwnerPlayerId: () => 11,
+        getOwnerPlayerId: () => 11, playPositioned: () => {}, markDirty: () => {} } as unknown as World;
+      let locks = 10;
+      const buyer = { world, playerId: 12, state: { x: 160, y: 192 },
+        inventory: { getAmount: (id: number) => id === ITEM_ID.WORLD_LOCK ? locks : 0, canAddItem: () => true },
+        removeItemInven: (_id: number, n: number) => { locks -= n; return n; },
+        addItemInven: (_id: number, n: number) => n, sendInventory: () => {},
+        variants: { sendOnConsoleMessage: () => {} }, sendTextBubble: () => {},
+      } as unknown as Player;
+      await dialogs.get("vending")!(buyer, new TextParser("tilex|5\ntiley|6\nbuycount|1\nexpectprice|2\nexpectitem|2\nverify|1"));
+      const tile = new VendingTile(world, block);
+      expect(locks).toBe(8);
+      expect(tile.vending.earned).toBe(2);
+      expect(tile.vending.itemId).toBe(0);
+      expect(tile.serializedFlags(0) & TILE_ALT_MODE).toBe(TILE_ALT_MODE);
+      let dialog = "";
+      let collected = 0;
+      const owner = { ...buyer, playerId: 11,
+        inventory: { getAmount: () => 0, canAddItem: () => true },
+        addItemInven: (_id: number, n: number) => { collected += n; return n; },
+        variants: { sendOnDialogRequest: (text: string) => { dialog = text; }, sendOnConsoleMessage: () => {} },
+      } as unknown as Player;
+      tile.sendDialog(owner);
+      expect(dialog).toContain("add_button|withdraw|");
+      await dialogs.get("vending")!(owner, new TextParser("tilex|5\ntiley|6\nbuttonClicked|withdraw"));
+      expect(collected).toBe(2);
+      expect(tile.vending.earned).toBe(0);
+      expect(tile.serializedFlags(TILE_ALT_MODE) & TILE_ALT_MODE).toBe(0);
+    } finally { update.mockRestore(); item.mockRestore(); }
+  });
+});
 
 describe("command input boundaries", () => {
   test.each([Buffer.from([0x03, 0x71]), Buffer.from([0xff, 0x71]), Buffer.from([0, 0x71])])("stops at a corrupt suffix before it joins printable junk to the query", (suffix) => {

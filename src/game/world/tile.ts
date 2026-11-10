@@ -20,6 +20,8 @@ const PUNCH_DAMAGE = 6;
  * (doors, signs, ...) extend this class and override `serialize`.
  */
 export class Tile {
+  /** Optional storage source for remote placement; never credits the backpack. */
+  public placementSource: { available: () => boolean; consume: () => boolean } | undefined;
   /** Player the tile is being serialized for, when the payload is personal. */
   public viewer: Player | undefined;
 
@@ -44,12 +46,13 @@ export class Tile {
    */
   public async onPlaceForeground(player: Player, itemMeta: ItemDefinition): Promise<boolean> {
     const itemId = itemMeta.id!;
-    if (!player.inventory.hasItem(itemId)) return false;
+    if (!(this.placementSource ? this.placementSource.available() : player.inventory.hasItem(itemId))) return false;
     if (!(await this.world.hasTilePermission(player, this.data, LockPermission.BUILD))) {
       await this.onPlaceFail(player);
       return false;
     }
 
+    if (this.placementSource && !this.placementSource.consume()) return false;
     this.data.fg = itemId;
     this.data.damage = 0;
     this.data.resetStateAt = 0;
@@ -63,7 +66,7 @@ export class Tile {
     this.world.broadcast(
       GameUpdatePacket.create({
         type: TANK_PACKET_TYPE.TILE_CHANGE_REQUEST,
-        netID: player.netID,
+        netID: this.placementSource ? -1 : player.netID,
         itemID: this.data.fg,
         tileX: this.data.x,
         tileY: this.data.y,
@@ -73,7 +76,7 @@ export class Tile {
 
     // the client takes the placed block out of its backpack on its own when
     // it receives the tile change echo above
-    player.removeItemInven(itemId, 1, false);
+    if (!this.placementSource) player.removeItemInven(itemId, 1, false);
     return true;
   }
 
@@ -82,7 +85,7 @@ export class Tile {
    */
   public async onPlaceBackground(player: Player, itemMeta: ItemDefinition): Promise<boolean> {
     const itemId = itemMeta.id!;
-    if (!(await this.world.hasTilePermission(player, this.data, LockPermission.BUILD)) || !player.inventory.hasItem(itemId)) {
+    if (!(await this.world.hasTilePermission(player, this.data, LockPermission.BUILD)) || !(this.placementSource ? this.placementSource.available() : player.inventory.hasItem(itemId))) {
       await this.onPlaceFail(player);
       return false;
     }
@@ -94,20 +97,21 @@ export class Tile {
       return false;
     }
 
+    if (this.placementSource && !this.placementSource.consume()) return false;
     this.data.bg = itemId;
     if (!this.data.fg) this.data.damage = 0;
 
     this.world.broadcast(
       GameUpdatePacket.create({
         type: TANK_PACKET_TYPE.TILE_CHANGE_REQUEST,
-        netID: player.netID,
+        netID: this.placementSource ? -1 : player.netID,
         itemID: this.data.bg,
         tileX: this.data.x,
         tileY: this.data.y,
       }).parse()!,
     );
 
-    player.removeItemInven(itemId, 1, false);
+    if (!this.placementSource) player.removeItemInven(itemId, 1, false);
     return true;
   }
 
@@ -290,11 +294,11 @@ export class Tile {
 
     if (rand <= 0.11) {
       // 1/9 chance: the block itself
-      this.world.drop(player, dropX, dropY, destroyedItemId, 1, { tree: true });
+      this.world.drop(player, dropX, dropY, destroyedItemId, 1, { tree: true, origin: "block" });
     } else if (rand <= 0.33) {
       // 2/9 chance: its seed
       if (flags & BlockFlags.SEEDLESS) return;
-      this.world.drop(player, dropX, dropY, destroyedItemId + 1, 1, { tree: true });
+      this.world.drop(player, dropX, dropY, destroyedItemId + 1, 1, { tree: true, origin: "block" });
     } else if (!((itemMeta.flags2 ?? 0) & BlockFlags2.GEMLESS)) {
       // items without a rarity never drop gems
       if ((itemMeta.rarity ?? 999) >= 999) return;
@@ -454,9 +458,10 @@ export class Tile {
     return result;
   }
 
-  protected spawnGems(player: Player, rarity: number): void {
+  protected spawnGems(player: Player, rarity: number, origin: "block" | "harvest" = "block"): void {
     for (const gem of this.splitGemsDrop(this.randomizeGemsDrop(rarity))) {
       this.world.drop(player, this.data.x * 32 + Math.floor(Math.random() * 16), this.data.y * 32 + Math.floor(Math.random() * 16), ITEM_ID.GEMS, gem, {
+        origin,
         tree: true,
         noSimilar: true,
       });

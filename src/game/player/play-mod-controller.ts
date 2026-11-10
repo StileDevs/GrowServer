@@ -45,6 +45,7 @@ export class PlayModController {
     const expiresAt = duration > 0 ? Date.now() + duration * 1000 : 0;
     const existed = this.active.has(id);
     this.active.set(id, { id, expiresAt });
+    if (id === "malpractice" && this.player.inventory.isEquipped(3172) && this.player.tryUseLegalBriefs()) return true;
 
     if (!existed && def.addMessage) {
       const left = duration > 0 ? `, \`$${formatDuration(duration)} \`oleft` : "";
@@ -96,6 +97,7 @@ export class PlayModController {
 
   /** Drops expired mods; called every second by the game loop. */
   public tick(): void {
+    if (this.has("malpractice") && this.player.inventory.isEquipped(3172)) this.player.tryUseLegalBriefs();
     const now = Date.now();
     for (const entry of [...this.active.values()]) {
       if (entry.expiresAt && entry.expiresAt <= now) this.remove(entry.id);
