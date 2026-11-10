@@ -271,6 +271,10 @@ export class Tile {
     const dropY = this.data.y * 32 + Math.floor(Math.random() * 16);
     const rand = Math.random();
 
+    if (player.playMods.has("arroz_con_pollo") && Math.random() < 0.1) {
+      this.world.drop(player, dropX, dropY, ITEM_ID.GEMS, 1, { tree: true, noSimilar: true });
+    }
+
     if (rand <= 0.11) {
       // 1/9 chance: the block itself
       this.world.drop(player, dropX, dropY, destroyedItemId, 1, { tree: true });

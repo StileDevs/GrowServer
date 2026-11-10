@@ -449,7 +449,14 @@ export class Player {
       return;
     }
 
-    this.xp += amount;
+    let finalAmount = amount;
+    if (this.playMods.has("triple_xp") && Math.random() < 0.1) {
+      finalAmount *= 3;
+    } else if (this.playMods.has("extra_xp") && Math.random() < 0.25) {
+      finalAmount *= 2;
+    }
+
+    this.xp += finalAmount;
     const required = Player.requiredXpForLevel(this.level);
     if (this.xp >= required) {
       this.level++;

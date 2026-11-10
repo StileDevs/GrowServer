@@ -38,7 +38,10 @@ export class PlayModController {
     const def = PLAY_MODS.get(id);
     if (!def) return false;
 
-    const duration = durationSeconds ?? def.duration;
+    let duration = durationSeconds ?? def.duration;
+    if (duration > 0 && def.name.startsWith("Food:") && id !== "gluttons_gazpacho" && this.has("gluttons_gazpacho")) {
+      duration = Math.round(duration * 1.3);
+    }
     const expiresAt = duration > 0 ? Date.now() + duration * 1000 : 0;
     const existed = this.active.has(id);
     this.active.set(id, { id, expiresAt });

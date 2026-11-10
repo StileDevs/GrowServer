@@ -119,10 +119,13 @@ export function deliverDailyQuest(player: Player): boolean {
 
   player.removeItemInven(quest.item1, quest.item1c);
   player.removeItemInven(quest.item2, quest.item2c);
-  player.addGems(CRAZY_JIM_GEM_REWARD);
+  const gemReward = CRAZY_JIM_GEM_REWARD + (player.playMods.has("gemonade") ? 500 : 0);
+  player.addGems(gemReward);
+  const tokenCount = player.playMods.has("growlectables") && Math.random() < 0.25 ? 2 : 1;
+  player.addItemInven(1486, tokenCount);
   player.quests.markDailyDelivered();
 
-  const message = `You delivered \`w${quest.item1c} ${itemName(quest.item1)}\`\` and \`w${quest.item2c} ${itemName(quest.item2)}\`\` to Crazy Jim and got \`w${CRAZY_JIM_GEM_REWARD}\`\` gems!`;
+  const message = `You delivered \`w${quest.item1c} ${itemName(quest.item1)}\`\` and \`w${quest.item2c} ${itemName(quest.item2)}\`\` to Crazy Jim and got \`w${gemReward}\`\` gems and \`2${tokenCount} Growtoken${tokenCount > 1 ? "s" : ""}\`\`!`;
   player.sendTextBubble(message, true);
   player.variants.sendOnConsoleMessage(message);
   logger.info({ player: player.tankIDName, item1: quest.item1, item2: quest.item2 }, "crazy jim daily delivery completed");

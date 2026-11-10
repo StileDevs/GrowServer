@@ -39,6 +39,36 @@ export interface TileData {
     startedAt: number;
     readyAt: number;
   };
+  /** Active cooking oven state. */
+  oven?: OvenData;
+}
+
+export interface OvenIngredient {
+  /** Ingredient item ID. */
+  itemId: number;
+  /** Elapsed Low-Heat equivalent milliseconds when the ingredient was added. */
+  timeAddedMs: number;
+}
+
+export interface OvenData {
+  /** Heat level: 0 = off, 1 = Low (1x), 2 = Med (2x), 3 = High (3x). */
+  tempLevel: number;
+  /** Timestamp (ms) when the oven was started. */
+  startedAt: number;
+  /** Player ID of the chef cooking on this oven. */
+  chefPlayerId: number;
+  /** NetID of the chef when cooking started (for positioned bubbles). */
+  chefNetId: number;
+  /** Main ingredients placed in the oven. */
+  ingredients: OvenIngredient[];
+  /** Spices added during cooking. */
+  spices: {
+    salt: number;
+    pepper: number;
+    sugar: number;
+  };
+  /** Last Low-Heat equivalent second that was ticked, to avoid duplicate bubbles. */
+  lastTickSec: number;
 }
 
 /**

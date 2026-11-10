@@ -514,7 +514,8 @@ function reelIn(player: Player, world: World): void {
   if (isFish) {
     count = Math.floor(Math.random() * rod.maxLbs) + 1;
     if (rod.sizeBonus) count = Math.min(rod.maxLbs, Math.ceil(count * (1 + rod.sizeBonus / 100)));
-    count = Math.min(rod.maxLbs, count + Math.floor(fishLevel * 0.5));
+    if (player.playMods.has("fish_and_chips")) count = Math.ceil(count * 1.05);
+    count = Math.min(Math.ceil(rod.maxLbs * 1.05), count + Math.floor(fishLevel * 0.5));
   }
 
   // Role perks: an infusion bonus at level 2+, a rare bonus at level 3+.
@@ -545,7 +546,15 @@ function reelIn(player: Player, world: World): void {
   else if (weight >= 60) gems = Math.floor(Math.random() * 400) + 1;
   else if (weight >= 30) gems = Math.floor(Math.random() * 250) + 1;
   if (fishLevel >= 10 && Math.random() * 100 <= 1) gems *= 2;
+  if (isFish && player.playMods.has("fish_taco")) gems += Math.floor(weight / 5);
+  if (player.playMods.has("gemonade")) gems += 125;
 
+  let fishXp = isFish ? Math.max(10, Math.floor(weight * 1.5)) : 25;
+  if (player.playMods.has("guac_perfecto")) fishXp = Math.round(fishXp * 1.35);
+  else if (player.playMods.has("guac_sabroso")) fishXp = Math.round(fishXp * 1.2);
+  else if (player.playMods.has("guac_bueno")) fishXp = Math.round(fishXp * 1.1);
+
+  player.addXp(fishXp);
   player.addGems(gems);
   addRoleXp(player, "fishing", isFish ? 2 : 5);
 
