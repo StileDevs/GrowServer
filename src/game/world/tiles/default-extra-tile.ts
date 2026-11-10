@@ -76,9 +76,6 @@ const DEFAULT_EXTRA_BY_ACTION: Partial<Record<number, number[]>> = {
   [ActionTypes.STATS_BLOCK]: [66, 0], // GrowScan 9000
   [ActionTypes.FIELD_NODE]: [67, ...z(8)],
   [ActionTypes.OUIJA_BOARD]: [68, ...z(12)],
-  [ActionTypes.AUTO_ACTION_BREAK]: [69, ...z(16)], // Tesseract Manipulator
-  [ActionTypes.AUTO_ACTION_HARVEST]: [70, ...z(16)], // Heart of Gaia
-  [ActionTypes.AUTO_ACTION_HARVEST_SUCK]: [71, ...z(26)], // Techno-Organic Engine: 16B + 10B
   [ActionTypes.LIGHTNING_IF_ON]: [72, ...z(12)], // Storm Cloud
   [ActionTypes.PHASED_BLOCK]: [73, ...z(4)],
   [ActionTypes.PASSWORD_STORAGE]: [74], // Safe Vault
@@ -113,6 +110,9 @@ export const UNSUPPORTED_EXTRA_TYPES: ReadonlySet<number> = new Set([
   ActionTypes.CHALLENGE_FLAG,
   ActionTypes.PORTRAIT, // 22 vs 26 vs 32 bytes
   ActionTypes.ITEM_PLANTER,
+  ActionTypes.AUTO_ACTION_BREAK, // Tesseract Manipulator: unimplemented
+  ActionTypes.AUTO_ACTION_HARVEST, // Heart of Gaia: unimplemented
+  ActionTypes.AUTO_ACTION_HARVEST_SUCK, // Techno-Organic Engine: unimplemented
   ActionTypes.PHASED_BLOCK_2,
   ActionTypes.FEEDING_BLOCK,
 ]);

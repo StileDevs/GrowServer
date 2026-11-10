@@ -10,13 +10,6 @@ export interface TileData {
     collecting?: boolean;
     planting?: boolean;
   };
-  /** Persistent auto-action settings (Heart of Gaia, Tesseract Manipulator, Techno-Organic Engine). */
-  autoAction?: {
-    gems: number;
-    targetItemId: number;
-    enabled: boolean;
-    lastWorkTime?: number;
-  };
   fg: number;
   bg: number;
   x: number;

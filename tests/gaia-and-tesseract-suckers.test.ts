@@ -10,7 +10,8 @@ import { ActionTypes, ITEM_ID, TileExtraTypes, TileFlags } from "../src/game/wor
 import { World } from "../src/game/world/world";
 import type { TileData } from "../src/game/world/types";
 import { MagplantTile } from "../src/game/world/tiles/magplant-tile";
-import { AutoActionTile, isAutoActionBlock, MAX_AUTO_ACTION_FUEL, tickAutoActionMachines, validateAutoActionTarget } from "../src/game/world/tiles/auto-action-tile";
+import { UNSUPPORTED_EXTRA_TYPES } from "../src/game/world/tiles/default-extra-tile";
+import { isPlaceableType } from "../src/game/world/tiles/index";
 import { collectMagplantDrop, getSuckerCapacity, isSuckerBlock } from "../src/game/world/magplant";
 
 const catalog = new Map<number, ItemDefinition>([
@@ -222,200 +223,6 @@ describe("Gaia's Beacon & Unstable Tesseract", () => {
     expect(blocksLeft).toBe(50);
     expect(b2.magplant.count).toBe(1500);
   });
-});
-
-describe("Heart of Gaia, Tesseract Manipulator & Techno-Organic Engine", () => {
-  let catSpy: ReturnType<typeof mockCatalog>;
-  afterEach(() => { catSpy?.mockRestore(); });
-
-  test("target validation restricts item types correctly", () => {
-    catSpy = mockCatalog();
-    // Heart of Gaia: seeds only
-    expect(validateAutoActionTarget(ITEM_ID.GAIA_HEART, ITEM_ID.DIRT_SEED).ok).toBe(true);
-    expect(validateAutoActionTarget(ITEM_ID.GAIA_HEART, ITEM_ID.DIRT).ok).toBe(false);
-
-    // Tesseract Manipulator: blocks only
-    expect(validateAutoActionTarget(ITEM_ID.TESSERACT_MANIPULATOR, ITEM_ID.DIRT).ok).toBe(true);
-    expect(validateAutoActionTarget(ITEM_ID.TESSERACT_MANIPULATOR, ITEM_ID.CAVE_BACKGROUND).ok).toBe(true);
-
-    // Techno-Organic Engine: both blocks and seeds
-    expect(validateAutoActionTarget(ITEM_ID.TECHNO_ORGANIC_ENGINE, ITEM_ID.DIRT).ok).toBe(true);
-    expect(validateAutoActionTarget(ITEM_ID.TECHNO_ORGANIC_ENGINE, ITEM_ID.DIRT_SEED).ok).toBe(true);
-  });
-
-  test("binary layout: Heart of Gaia serializes extra type 70 with 16-byte payload", () => {
-    catSpy = mockCatalog();
-    const world = makeWorld();
-    const block = world.getTileAt(6, 6)!;
-    block.fg = ITEM_ID.GAIA_HEART;
-    const tile = new AutoActionTile(world, block);
-    tile.autoState.gems = 2500;
-    tile.autoState.targetItemId = ITEM_ID.DIRT_SEED;
-    tile.autoState.enabled = true;
-
-    const buf = new ExtendBuffer(0);
-    tile.serialize(buf);
-    const data = Buffer.from(buf.data);
-    expect(data[0]).toBe(TileExtraTypes.GAIA_HEART); // 70
-    expect(data.readUInt32LE(1)).toBe(2500); // gems
-    expect(data.readUInt32LE(5)).toBe(0); // next_update_ms
-    expect(data.readUInt32LE(9)).toBe(ITEM_ID.DIRT_SEED); // target item
-    expect(data.readUInt32LE(13)).toBe(1); // enabled
-    expect(data.length).toBe(17); // 1 header + 16 payload
-  });
-
-  test("binary layout: Tesseract Manipulator serializes extra type 69 with 16-byte payload", () => {
-    catSpy = mockCatalog();
-    const world = makeWorld();
-    const block = world.getTileAt(7, 7)!;
-    block.fg = ITEM_ID.TESSERACT_MANIPULATOR;
-    const tile = new AutoActionTile(world, block);
-    tile.autoState.gems = 1200;
-    tile.autoState.targetItemId = ITEM_ID.DIRT;
-    tile.autoState.enabled = false;
-
-    const buf = new ExtendBuffer(0);
-    tile.serialize(buf);
-    const data = Buffer.from(buf.data);
-    expect(data[0]).toBe(TileExtraTypes.TESSERACT_MANIPULATOR); // 69
-    expect(data.readUInt32LE(1)).toBe(1200); // gems
-    expect(data.readUInt32LE(5)).toBe(0);
-    expect(data.readUInt32LE(9)).toBe(ITEM_ID.DIRT);
-    expect(data.readUInt32LE(13)).toBe(0); // disabled
-    expect(data.length).toBe(17);
-  });
-
-  test("binary layout: Techno-Organic Engine serializes extra type 71 with 26-byte payload", () => {
-    catSpy = mockCatalog();
-    const world = makeWorld();
-    const block = world.getTileAt(8, 8)!;
-    block.fg = ITEM_ID.TECHNO_ORGANIC_ENGINE;
-    const tile = new AutoActionTile(world, block);
-    tile.autoState.gems = 4000;
-    tile.autoState.targetItemId = ITEM_ID.DIRT;
-    tile.autoState.enabled = true;
-
-    const buf = new ExtendBuffer(0);
-    tile.serialize(buf);
-    const data = Buffer.from(buf.data);
-    expect(data[0]).toBe(TileExtraTypes.TECHNO_ORGANIC_ENGINE); // 71
-    expect(data.readUInt32LE(1)).toBe(4000);
-    expect(data.readUInt32LE(9)).toBe(ITEM_ID.DIRT);
-    expect(data.readUInt32LE(13)).toBe(1);
-    expect(data.length).toBe(27); // 1 header + 16 base + 10 engine payload
-  });
-
-  test("autoactionblock dialog refuels gems and selects target", async () => {
-    catSpy = mockCatalog();
-    const world = makeWorld();
-    const block = world.getTileAt(12, 12)!;
-    block.fg = ITEM_ID.TESSERACT_MANIPULATOR;
-    const tile = new AutoActionTile(world, block);
-
-    const owner = makePlayer(42);
-    owner.world = world;
-    owner.gems = 3000;
-
-    const handler = dialogs.get("autoactionblock")!;
-    // Refuel 1500 gems
-    await handler(owner, new TextParser(`dialog_name|autoactionblock\ntilex|12\ntiley|12\nrefillfuel|1500\n`));
-    expect(tile.autoState.gems).toBe(1500);
-    expect(owner.gems).toBe(1500);
-
-    // Select target Dirt (2)
-    await handler(owner, new TextParser(`dialog_name|autoactionblock\ntilex|12\ntiley|12\nselecttarget|${ITEM_ID.DIRT}\n`));
-    expect(tile.autoState.targetItemId).toBe(ITEM_ID.DIRT);
-  });
-
-  test("punch toggles enabled state and warns before breaking with gems", async () => {
-    catSpy = mockCatalog();
-    const world = makeWorld();
-    const block = world.getTileAt(14, 14)!;
-    block.fg = ITEM_ID.GAIA_HEART;
-    const tile = new AutoActionTile(world, block);
-    tile.autoState.gems = 500;
-    tile.autoState.enabled = false;
-
-    const owner = makePlayer(42);
-    owner.world = world;
-
-    // First punch toggles enabled to true
-    await tile.onPunch(owner);
-    expect(tile.autoState.enabled).toBe(true);
-
-    // Second punch while in reset cooldown warns about stored gems
-    block.resetStateAt = Date.now() + 5000;
-    let bubble = "";
-    owner.sendTextBubble = (msg) => { bubble = msg; };
-    const broken = await tile.onPunch(owner);
-    expect(broken).toBe(false);
-    expect(bubble).toContain("lose ALL");
-  });
-
-  test("world tick: Heart of Gaia auto-harvests mature trees and consumes gem fuel", () => {
-    catSpy = mockCatalog();
-    const world = makeWorld();
-    const machine = world.getTileAt(15, 15)!;
-    machine.fg = ITEM_ID.GAIA_HEART;
-    machine.autoAction = {
-      gems: 10,
-      targetItemId: ITEM_ID.DIRT_SEED,
-      enabled: true,
-    };
-
-    // Mature Dirt Tree at (20, 20)
-    const treeTile = world.getTileAt(20, 20)!;
-    treeTile.fg = ITEM_ID.DIRT_SEED;
-    treeTile.tree = {
-      fruit: ITEM_ID.DIRT,
-      fruitCount: 3,
-      fullyGrownAt: Date.now() - 1000,
-      plantedAt: Date.now() - 60000,
-      isSpliced: false,
-    };
-
-    tickAutoActionMachines(world);
-
-    // Tree should be harvested (fg reset to 0)
-    expect(treeTile.fg).toBe(0);
-    expect(treeTile.tree).toBeUndefined();
-    // 1 gem fuel deducted
-    expect(machine.autoAction.gems).toBe(9);
-  });
-
-  test("world tick: Tesseract Manipulator auto-breaks target blocks without dropping gems", () => {
-    catSpy = mockCatalog();
-    const world = makeWorld();
-    const machine = world.getTileAt(16, 16)!;
-    machine.fg = ITEM_ID.TESSERACT_MANIPULATOR;
-    machine.autoAction = {
-      gems: 10,
-      targetItemId: ITEM_ID.DIRT,
-      enabled: true,
-    };
-
-    // Target dirt block at (25, 25) with breakHits: 3
-    const targetTile = world.getTileAt(25, 25)!;
-    targetTile.fg = ITEM_ID.DIRT;
-    targetTile.damage = 0;
-
-    // Tick 1: damage becomes 1
-    tickAutoActionMachines(world);
-    expect(targetTile.damage).toBe(1);
-    expect(machine.autoAction.gems).toBe(9);
-
-    // Tick 2: advance clock, damage becomes 2
-    machine.autoAction.lastWorkTime = 0;
-    tickAutoActionMachines(world);
-    expect(targetTile.damage).toBe(2);
-    expect(machine.autoAction.gems).toBe(8);
-
-    // Tick 3: block breaks
-    machine.autoAction.lastWorkTime = 0;
-    tickAutoActionMachines(world);
-    expect(targetTile.fg).toBe(0);
-    expect(machine.autoAction.gems).toBe(7);
-  });
 
   test("Gaia's Beacon & Unstable Tesseract wrench dialog omits remote and building mode UI", async () => {
     catSpy = mockCatalog();
@@ -478,48 +285,16 @@ describe("Heart of Gaia, Tesseract Manipulator & Techno-Organic Engine", () => {
     expect(left2).toBe(0);
     expect(tile.storage.count).toBe(50);
   });
+});
 
-  test("Tesseract Manipulator wrench dialog toggles power via chk_enabled and broadcasts punch damage without sucker beam", async () => {
-    catSpy = mockCatalog();
-    const world = makeWorld();
-    const machine = world.getTileAt(17, 17)!;
-    machine.fg = ITEM_ID.TESSERACT_MANIPULATOR;
-    const tile = new AutoActionTile(world, machine);
-    tile.autoState.gems = 100;
-    tile.autoState.targetItemId = ITEM_ID.DIRT;
-    tile.autoState.enabled = true;
+describe("Heart of Gaia, Tesseract Manipulator & Techno-Organic Engine (Unimplemented)", () => {
+  test("ActionTypes are marked in UNSUPPORTED_EXTRA_TYPES and not placeable", () => {
+    expect(UNSUPPORTED_EXTRA_TYPES.has(ActionTypes.AUTO_ACTION_BREAK)).toBe(true);
+    expect(UNSUPPORTED_EXTRA_TYPES.has(ActionTypes.AUTO_ACTION_HARVEST)).toBe(true);
+    expect(UNSUPPORTED_EXTRA_TYPES.has(ActionTypes.AUTO_ACTION_HARVEST_SUCK)).toBe(true);
 
-    const owner = makePlayer(42);
-    owner.world = world;
-    let sentDialog = "";
-    owner.variants.sendOnDialogRequest = (d) => { sentDialog = d; };
-
-    await tile.onWrench(owner);
-    expect(sentDialog).toContain("add_checkbox|chk_enabled|Status: ON|1|");
-
-    const handler = dialogs.get("autoactionblock")!;
-    // Submit chk_enabled as 0
-    await handler(owner, new TextParser("dialog_name|autoactionblock\ntilex|17\ntiley|17\nchk_enabled|0\n"));
-    expect(tile.autoState.enabled).toBe(false);
-
-    // Submit chk_enabled as 1
-    await handler(owner, new TextParser("dialog_name|autoactionblock\ntilex|17\ntiley|17\nchk_enabled|1\n"));
-    expect(tile.autoState.enabled).toBe(true);
-
-    // Verify punch damage packet on world tick (no ITEM_EFFECT sucker packet)
-    const target = world.getTileAt(26, 26)!;
-    target.fg = ITEM_ID.DIRT;
-    target.damage = 0;
-
-    const broadcasted: any[] = [];
-    world.broadcast = (buf: any) => { broadcasted.push(buf); };
-
-    tickAutoActionMachines(world);
-    expect(target.damage).toBe(1);
-    // broadcasted should contain TILE_APPLY_DAMAGE (type 8 in GameUpdatePacket)
-    // GameUpdatePacket type byte is at offset 4 (after 4-byte header)
-    const types = broadcasted.map((b) => Buffer.from(b)[4]);
-    expect(types).toContain(8); // TILE_APPLY_DAMAGE
-    expect(types).not.toContain(19); // Not ITEM_EFFECT (19)
+    expect(isPlaceableType(ActionTypes.AUTO_ACTION_BREAK)).toBe(false);
+    expect(isPlaceableType(ActionTypes.AUTO_ACTION_HARVEST)).toBe(false);
+    expect(isPlaceableType(ActionTypes.AUTO_ACTION_HARVEST_SUCK)).toBe(false);
   });
 });
