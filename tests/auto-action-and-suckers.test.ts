@@ -436,16 +436,15 @@ describe("Heart of Gaia, Tesseract Manipulator & Techno-Organic Engine", () => {
     expect(sentDialog).not.toContain("Remote");
     expect(sentDialog).toContain("itemsucker_seed");
 
-    // Magplant with building mode disabled omits "Building mode: DISABLED"
+    // Magplant omits Building mode active/inactive from dialog
     block.fg = ITEM_ID.MAGPLANT;
     tile.storage.planting = false;
     await tile.onWrench(owner);
-    expect(sentDialog).not.toContain("Building mode: DISABLED");
+    expect(sentDialog).not.toContain("Building mode");
 
-    // Magplant with building mode active includes "Building mode: ACTIVE"
     tile.storage.planting = true;
     await tile.onWrench(owner);
-    expect(sentDialog).toContain("Building mode: ACTIVE");
+    expect(sentDialog).not.toContain("Building mode");
     expect(sentDialog).toContain("getplantationdevice");
   });
 

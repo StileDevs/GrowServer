@@ -223,7 +223,7 @@ describe("MAGPLANT 5000", () => {
       expect(dialog).toContain("add_button|retrieveitem|");
       expect(dialog).toContain("add_button|getplantationdevice|");
       expect(dialog).toContain("add_checkbox|chk_enablesucking|");
-      expect(dialog).toContain("Building mode: ACTIVE");
+      expect(dialog).not.toContain("Building mode:");
       expect(dialog).not.toContain("checkbox_gemcollection");
       f.machine.magplant!.count = 0;
       f.machine.magplant!.itemId = 0;
