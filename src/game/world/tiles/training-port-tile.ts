@@ -201,8 +201,12 @@ export class TrainingPortTile extends Tile {
     buffer.writeU16(tp?.status ?? 0);
     buffer.writeU32(tp?.fishId ?? 0);
     buffer.writeU32(tp?.exp ?? 0);
+    buffer.writeU32(0);
+    buffer.writeU32(0);
     buffer.writeU32(tp?.level ?? 0);
     buffer.writeU32(0);
+    buffer.writeU32(0);
+    buffer.writeU8(0);
   }
 
   public override async onWrench(player: Player): Promise<boolean> {

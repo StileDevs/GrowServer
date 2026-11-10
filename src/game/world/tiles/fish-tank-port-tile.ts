@@ -66,7 +66,7 @@ export class FishTankPortTile extends Tile {
     const fishes = this.data.fishTank?.fishes ?? [];
     const glowing = this.data.fishTank?.glowing !== false;
     buffer.writeU8(glowing ? 1 : 0);
-    buffer.writeU32(fishes.length);
+    buffer.writeU32(fishes.length * 2);
     for (const f of fishes) {
       buffer.writeU32(f.id);
       buffer.writeU32(f.weight);
