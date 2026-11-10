@@ -4,6 +4,7 @@ import { CLIENT_FEATURE_FLAG, LOGIN_FEATURE_FLAGS, LOGON_MODE, TANK_PACKET_FLAGS
 import type { PlayerClothes, PlayerInventory } from "../player/inventory";
 import type { CharacterStats } from "../player/play-mods";
 import { worldManager } from "../world/world-manager";
+import { buildWorldSelectMarkup } from "../world/world-select";
 import { Packet, PacketKind, Peer } from "growtopia.wasm";
 import { TextParser } from "../../utils/text-parser";
 import { Color } from "../../utils/color";
@@ -690,34 +691,23 @@ export class VariantHandler {
    * Shows the world select menu: the most populated worlds plus the player's
    * recently visited ones.
    */
-  public sendOnRequestWorldSelectMenu(recentWorlds: string[] = [], delay = 0): void {
-    const topColor = 3529161471;
-    const recentColor = 3417414143;
-
-    // signal-jammed worlds stay hidden from the world list
-    const populated = worldManager.mostPopulated(6).filter((world) => !world.signalJammed);
-    const topWorlds = ["START", "START1", "START2"].filter((name) => !populated.some((world) => world.name === name));
-
-    const lines = ["add_heading|Top Worlds|"];
-    for (const world of populated) lines.push(`add_floater|${world.name}|${world.players.length}|0.5|${topColor}`);
-    for (const name of topWorlds) lines.push(`add_floater|${name}|${worldManager.getLoaded(name)?.players.length ?? 0}|0.5|${topColor}`);
-
-    if (recentWorlds.length > 0) {
-      lines.push("add_heading|Recently Visited Worlds<CR>|");
-      for (const name of [...recentWorlds].reverse()) {
-        lines.push(`add_floater|${name}|${worldManager.getLoaded(name)?.players.length ?? 0}|0.5|${recentColor}`);
-      }
-    }
-
-    const variant = Variant.from({ netID: -1, delay }, "OnRequestWorldSelectMenu", lines.join("\n"));
+  public sendOnRequestWorldSelectMenu(recentWorlds: string[] = [], delay = 0, homeWorld: string | null = null, playerId?: number): void {
+    const worlds = worldManager.worlds.toArray().map((world) => ({
+      name: world.name,
+      players: world.players.length,
+      signalJammed: world.signalJammed,
+      ownerPlayerId: world.getOwnerPlayerId(),
+    }));
+    const markup = buildWorldSelectMarkup(worlds, { recentWorlds, homeWorld, playerId });
+    const variant = Variant.from({ netID: -1, delay }, "OnRequestWorldSelectMenu", markup);
     this.send(variant.parse());
 
     const online = serverManager.getTotalPlayersCount();
     this.send(Variant.from({ delay }, "OnConsoleMessage", `Where would you like to go? (\`w${online}\`\` online)`).parse());
   }
 
-  public sendGazette(): void {
-    this.sendOnRequestWorldSelectMenu();
+  public sendGazette(homeWorld: string | null = null, playerId?: number, recentWorlds: string[] = []): void {
+    this.sendOnRequestWorldSelectMenu(recentWorlds, 0, homeWorld, playerId);
 
     const gazette = new DialogBuilder()
       .defaultColor()

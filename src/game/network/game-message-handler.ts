@@ -1,4 +1,4 @@
-import type { TextParser } from "../../utils/text-parser";
+import { TextParser } from "../../utils/text-parser";
 import { DialogBuilder } from "../../utils/dialog-builder";
 import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
@@ -49,7 +49,7 @@ function EnterGame(player: Player): void {
   player.variants.sendSetHasGrowID(true, player.tankIDName, player.auth.metadata.tankIDPass || player.auth.transferSession?.sessionToken || "");
   player.variants.sendOnTodaysDate();
   player.variants.sendOnRequestHoustonPricing();
-  player.variants.sendGazette();
+  player.variants.sendGazette(player.homeWorld, player.playerId, player.lastVisitedWorlds);
   player.variants.sendPingRequest();
   player.variants.sendOnSetFeatureEnableFlags();
   player.addStateStatus(PlayerStateFlags.IN_GAME);
@@ -80,6 +80,25 @@ async function JoinRequest(player: Player, action: TextParser): Promise<void> {
 
 async function Input(player: Player, action: TextParser): Promise<void> {
   await handleChatInput(player, action.get("text"));
+}
+
+/** Routes the native discovery Home button using the account's saved destination. */
+async function GoHomeWorld(player: Player): Promise<void> {
+  const name = player.homeWorld;
+  if (!name) {
+    player.variants.sendOnFailedToEnterWorld();
+    player.variants.sendOnConsoleMessage("You haven't set a home world yet. Use /sethome in a world you own.");
+    return;
+  }
+  if (player.world?.name === name) {
+    const door = player.world.mainDoor;
+    player.setPosition((door?.x ?? 0) * 32, (door?.y ?? 0) * 32);
+    player.world.playPositioned("audio/door_open.wav", player.netID);
+    return;
+  }
+  const action = new TextParser();
+  action.set("name", name);
+  await JoinRequest(player, action);
 }
 
 function Respawn(player: Player): void {
@@ -257,6 +276,7 @@ export const GameMessageMap: Record<string, (player: Player, action: TextParser)
   refresh_item_data: RefreshItemData,
   refresh_player_tribute_data: RefreshPlayerTributeData,
   join_request: JoinRequest,
+  gohomeworld: GoHomeWorld,
   input: Input,
   respawn: Respawn,
   respawn_spike: Respawn,

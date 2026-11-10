@@ -249,7 +249,6 @@ export function mixTints(tints: readonly (readonly [number, number, number, numb
   return [Math.round(red / weight), Math.round(green / weight), Math.round(blue / weight), alpha];
 }
 
-/** Composites the tint over a packed `0xRRGGBBAA` skin color. */
 /**
  * Applies a Xenonite Crystal's force/block masks to the stats, with the same
  * clamp values as the official server. Heat resist (fire damage) and the
@@ -301,6 +300,7 @@ export function applyXenonite(stats: CharacterStats, settings: XenoniteSettings)
   return restricted;
 }
 
+/** Composites an RGBA tint over the client's packed `0xBBGGRRAA` skin color. */
 export function tintSkinColor(color: number, tint: [number, number, number, number] | undefined): number {
   if (!tint) return color >>> 0;
   const [red, green, blue, alpha] = tint;
@@ -309,5 +309,5 @@ export function tintSkinColor(color: number, tint: [number, number, number, numb
     const base = (color >>> shift) & 0xff;
     return Math.round(base * (1 - coverage) + value * coverage) & 0xff;
   };
-  return ((channel(24, red) << 24) | (channel(16, green) << 16) | (channel(8, blue) << 8) | 0xff) >>> 0;
+  return ((channel(24, blue) << 24) | (channel(16, green) << 16) | (channel(8, red) << 8) | (color & 0xff)) >>> 0;
 }

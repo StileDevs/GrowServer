@@ -26,7 +26,7 @@ export const OVEN_ITEM_IDS: ReadonlySet<number> = new Set([
   TACO_TRUCK_OVEN,
 ]);
 
-/** Heat setting levels stored in the oven tile extra data. */
+/** Server heat multipliers; the client's integer heat rate is three times this value. */
 export const OVEN_HEAT = {
   OFF: 0,
   LOW: 1,

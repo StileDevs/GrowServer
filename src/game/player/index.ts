@@ -623,7 +623,7 @@ export class Player {
     world.leave(this);
 
     if (sendMenu) {
-      this.variants.sendOnRequestWorldSelectMenu(this.lastVisitedWorlds, 500);
+      this.variants.sendOnRequestWorldSelectMenu(this.lastVisitedWorlds, 500, this.homeWorld, this.playerId);
     }
   }
 

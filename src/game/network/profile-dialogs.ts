@@ -117,6 +117,8 @@ registerDialog("popup", (player, action) => {
   const targetNetId = action.getInt("netID", 0, -1);
   const target = player.world?.players.find((other) => other.netID === targetNetId);
 
+  // Quick shortcuts are only present in the player's own wrench popup.
+  if (["home_world", "daily_quests", "role_goals", "my_worlds"].includes(button) && targetNetId !== player.netID) return;
   switch (button) {
     case "daily_quests": {
       player.variants.sendOnDialogRequest(questDailyDialog(player));
@@ -134,7 +136,7 @@ registerDialog("popup", (player, action) => {
         .addTextBox("Place a World Lock in a world to lock it. Break your World Lock to unlock a world.")
         .addSpacer("small");
       for (const name of ownedWorldNames(player)) dialog.addWorldLinkButton(name, name, name);
-      dialog.addSpacer("small").endDialog("worlds_list", "", "Back").addQuickExit();
+      dialog.addSpacer("small").addQuickExit().endDialog("worlds_list", "", "Back");
       player.variants.sendOnDialogRequest(dialog.str());
       return;
     }

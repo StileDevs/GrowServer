@@ -5,7 +5,7 @@ import { logger } from "../../utils/logger";
 import { Collection } from "../../utils/collection";
 import { PlayerDB } from "../../database/services/player-db";
 import { GameUpdatePacket } from "../packets/game-packet";
-import { Variant } from "../packets/variants";
+import { int32, Variant } from "../packets/variants";
 import { getItem } from "../item/item-utils";
 import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
@@ -147,6 +147,14 @@ export class World {
         posY: user.state.y + 16,
       }).parse()!,
     );
+  }
+
+  /** Animates an item from the player's avatar into the target tile. */
+  public sendItemEffectToTile(itemId: number, user: Player, tile: TileData): void {
+    this.broadcastVariant(Variant.from(
+      "OnItemEffect", 4, int32(itemId), int32(1), [0, 0],
+      [tile.x * 32 + 16, tile.y * 32 + 16], int32(user.netID),
+    ));
   }
 
   /** Tile at a block position, or undefined when out of bounds. */

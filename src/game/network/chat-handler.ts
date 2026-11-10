@@ -1,4 +1,5 @@
 import { logger } from "../../utils/logger";
+import { normalizeChatInput } from "../../utils/chat-input";
 import { Variant } from "../packets/variants";
 import type { Player } from "../player";
 import { executeCommand } from "../commands";
@@ -8,7 +9,7 @@ import { PLAYER_ROLE } from "../../constants";
  * Handles the `input` action: slash commands or world chat.
  */
 export async function handleChatInput(player: Player, rawText: string): Promise<void> {
-  const text = rawText.trim();
+  const text = normalizeChatInput(rawText);
   if (!text || text.replace(/`.|`/g, "").length < 1) return;
 
   // support /say as a chat command

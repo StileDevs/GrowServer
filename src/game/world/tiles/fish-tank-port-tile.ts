@@ -65,7 +65,8 @@ export class FishTankPortTile extends Tile {
     buffer.writeU8(this.extraType);
     const fishes = this.data.fishTank?.fishes ?? [];
     const glowing = this.data.fishTank?.glowing !== false;
-    buffer.writeU8(glowing ? 1 : 0);
+    // The client uses bit 4 of the extra-data flags for perfect-fish glow.
+    buffer.writeU8(glowing ? 0x10 : 0);
     buffer.writeU32(fishes.length * 2);
     for (const f of fishes) {
       buffer.writeU32(f.id);

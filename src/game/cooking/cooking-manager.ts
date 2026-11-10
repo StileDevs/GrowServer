@@ -160,8 +160,8 @@ registerDialog("grinder", async (player, action) => {
 
   const itemId = action.getInt("itemID");
   const count = action.getInt("count");
-  const tileX = action.getInt("tilex", -1);
-  const tileY = action.getInt("tiley", -1);
+  const tileX = action.getInt("tilex", 0, -1);
+  const tileY = action.getInt("tiley", 0, -1);
 
   if (!Number.isSafeInteger(count) || count <= 0 || tileX < 0 || tileY < 0) return;
   const recipe = GRINDABLE_ITEMS[itemId];
@@ -325,8 +325,8 @@ registerDialog("homeoven_edit", async (player, action) => {
   const world = player.world;
   if (!world) return;
 
-  const tileX = action.getInt("tilex", -1);
-  const tileY = action.getInt("tiley", -1);
+  const tileX = action.getInt("tilex", 0, -1);
+  const tileY = action.getInt("tiley", 0, -1);
   const itemId = action.getInt("cookthis", 0);
   const button = action.get("buttonClicked");
 
@@ -364,7 +364,7 @@ registerDialog("homeoven_edit", async (player, action) => {
     lastTickSec: 0,
   };
 
-  world.sendItemEffect(itemId, player, player);
+  world.sendItemEffectToTile(itemId, player, block);
   world.playPositioned("audio/MenuClick.wav", player.netID);
   tileFrom(world, block).tileUpdate();
   world.markDirty();
@@ -444,7 +444,7 @@ export async function handleOvenItemPlace(
       oven.spices.sugar++;
       player.sendTextBubble("You sweetened your food with sugar!", true);
     }
-    world.sendItemEffect(itemId, player, player);
+    world.sendItemEffectToTile(itemId, player, block);
     world.playPositioned("audio/spray.wav", player.netID);
     tileFrom(world, block).tileUpdate();
     world.markDirty();
@@ -463,7 +463,7 @@ export async function handleOvenItemPlace(
       tryMergeSalsaInOven(oven.ingredients.map((ing) => ({ ...ing })), itemId, elapsedLowMs)) {
     if (player.removeItemInven(itemId, 1, true) <= 0) return true;
     tryMergeSalsaInOven(oven.ingredients, itemId, elapsedLowMs);
-    world.sendItemEffect(itemId, player, player);
+    world.sendItemEffectToTile(itemId, player, block);
     world.playPositioned("audio/MenuClick.wav", player.netID);
     tileFrom(world, block).tileUpdate();
     world.markDirty();
@@ -483,7 +483,7 @@ export async function handleOvenItemPlace(
     timeAddedMs: elapsedLowMs,
   });
 
-  world.sendItemEffect(itemId, player, player);
+  world.sendItemEffectToTile(itemId, player, block);
   world.playPositioned("audio/MenuClick.wav", player.netID);
   tileFrom(world, block).tileUpdate();
   world.markDirty();

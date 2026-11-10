@@ -5,6 +5,7 @@ import { ExtendBuffer } from "../../utils/extend-buffer";
 import { GameUpdatePacket } from "../packets/game-packet";
 import { getItem } from "../item/item-utils";
 import { addRoleXp } from "../quests/role-quests";
+import { getSupplyCrateDrops, isSupplyCrate } from "../item/supply-crates";
 import type { Player } from "../player";
 import type { World } from "./world";
 import type { TileData } from "./types";
@@ -227,6 +228,18 @@ export class Tile {
   public onDrop(player: Player, destroyedItemId: number): void {
     const itemMeta = getItem(destroyedItemId);
     if (!itemMeta) return;
+
+    if (isSupplyCrate(destroyedItemId)) {
+      // Crates drop all of their supplies at the broken tile, not the block/seed.
+      const x = this.data.x * 32 + 8;
+      const y = this.data.y * 32 + 8;
+      const drops = getSupplyCrateDrops(destroyedItemId);
+      for (const { itemId, amount } of drops) this.world.drop(player, x, y, itemId, amount, { tree: true });
+      player.sendTextBubble(drops.length > 0 ? `You opened a ${itemMeta.name}!` : `This crate has no compatible supplies in items.dat.`, true);
+      this.world.playPositioned("audio/secret.wav", player.netID);
+      return;
+    }
+
     const flags = itemMeta.flags ?? 0;
 
     if (flags & BlockFlags.PERMANENT) {

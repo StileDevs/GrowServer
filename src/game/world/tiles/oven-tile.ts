@@ -19,14 +19,13 @@ import { Tile } from "../tile";
  *
  * Binary extra layout (TileExtraTypes.OVEN = 55):
  *   u8  extraType (55)
- *   u32 tempLevel (0 = Off, 1 = Low, 2 = Med, 3 = High)
+ *   u32 heatRate (0 = Off, 3 = Low, 6 = Med, 9 = High)
  *   u32 ingredientListSize (ingredients.length * 2)
  *   repeat (ingredients.length):
  *     u32 itemId
- *     u32 timeAdded
- *   u32 unk1 (0)
- *   u32 unk2 (0)
- *   u32 unk3 (0)
+ *     u32 heatReceived (3 units per low-heat equivalent second)
+ *   u32 timer (seconds since this snapshot)
+ *   u64 started (Unix seconds)
  */
 export class OvenTile extends Tile {
   public override serializedFlags(flags: number): number {
@@ -37,18 +36,20 @@ export class OvenTile extends Tile {
     const oven = this.data.oven;
     const tempLevel = oven?.tempLevel ?? OVEN_HEAT.OFF;
     const ingredients = oven?.ingredients ?? [];
+    const elapsedLowMs = oven ? getOvenElapsedLowMs(oven) : 0;
 
     buffer.writeU8(TileExtraTypes.OVEN);
-    buffer.writeU32(tempLevel);
+    // Tile::GetOvenString compares integer heat rates against 3 and 6.
+    buffer.writeU32(tempLevel * 3);
     buffer.writeU32(ingredients.length * 2);
 
     for (const ing of ingredients) {
       buffer.writeU32(ing.itemId);
-      buffer.writeU32(Math.floor(ing.timeAddedMs / 1000));
+      buffer.writeU32(Math.floor(Math.max(0, elapsedLowMs - ing.timeAddedMs) * 3 / 1000));
     }
 
     buffer.writeU32(0);
-    buffer.writeU32(0);
+    buffer.writeU32(oven ? Math.floor(oven.startedAt / 1000) : 0);
     buffer.writeU32(0);
   }
 
@@ -77,7 +78,7 @@ export class OvenTile extends Tile {
           : oven.tempLevel === OVEN_HEAT.MED
             ? "`9Medium Heat``"
             : "`4High Heat``";
-      const elapsedSec = Math.floor(getOvenElapsedLowMs(oven) / 1000);
+      const elapsedSec = Math.floor(Math.max(0, Date.now() - oven.startedAt) / 1000);
       const ingNames = oven.ingredients.map((i) => getItem(i.itemId)?.name ?? `Item #${i.itemId}`).join(", ");
       dialog
         .addTextBox(`Status: Cooking on ${heatLabel} (${elapsedSec}s elapsed)`)

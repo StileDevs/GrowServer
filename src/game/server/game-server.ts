@@ -8,6 +8,7 @@ import { Collection } from "../../utils/collection";
 import { serverManager } from "./server-manager";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { TextParser } from "../../utils/text-parser";
+import { decodeTextPacket } from "../../utils/text-packet";
 import { TextColor } from "../../utils/text-color";
 import { LOGON_MODE, PACKET_TYPE } from "../../constants";
 import { GameUpdatePacket } from "../packets/game-packet";
@@ -147,13 +148,7 @@ export class GameServer extends EventEmitter {
       switch (type) {
         case PACKET_TYPE.GENERIC_TEXT:
         case PACKET_TYPE.GAME_MESSAGE:
-          // the text ends at the first null terminator; the client sometimes
-          // sends junk bytes after it, which must never reach the parser
-          const terminator = data.indexOf(0, 4);
-          const payload = Buffer.from(data.slice(4, terminator === -1 ? data.length : terminator))
-            .toString("utf-8")
-            // control characters and the replacement character of invalid bytes
-            .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f�]/g, "");
+          const payload = decodeTextPacket(data);
           const text = new TextParser(payload);
           logger.debug({ netID: player.netID, action: text.get("action") || undefined, keys: text.getEntries().map(([key]) => key) }, "text packet received");
 
