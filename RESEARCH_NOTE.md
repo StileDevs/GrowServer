@@ -14,7 +14,7 @@ Not all Growtopia reference sources are equally reliable for every piece of data
 | **2 (Binary Layouts)** | **`badewen/Growtopia-Things`** | `https://github.com/badewen/Growtopia-Things` (`parsers/world_parser.ksy`, `parsers/world_parser.py`, `parsers/TileExtra.h`) | **Exact binary layout of `TileExtra` (`SEND_MAP_DATA` / `SEND_TILE_UPDATE_DATA`)**. Built from real live-server world dumps. | Covers up to ~v4.x/v5.x tile extras; brand-new extra types (`> 74`) may still need a live dump. |
 | **3 (Codebase Reference)** | **GrowServer `default-extra-tile.ts`** | `src/game/world/tiles/default-extra-tile.ts` | Verified byte lengths for empty tile extra payloads (world version 25 / `items-v5.61.dat`) and list of `UNSUPPORTED_EXTRA_TYPES` where open-source parsers disagree. | Only stores the *empty/default* byte array; variable-length payloads (like `OVEN = 55` with ingredients) must be checked against `world_parser.ksy`. |
 | **4 (Data Tables & Dialogs)** | **ItsKyy (`gtps-v8`) Source** | Local: `Reference/itskyy source.rar`<br>GitHub: `https://github.com/jaaakee/gtps-v8` | Complete data lookup tables (`Base.h`), dialog builders (`Dialog.h`), tile state structs (`Tile.h`), role quest tables, and store catalogs (`53785`, etc.). | **Beware of wrong item IDs in C++ code!** (e.g., `itskyy` wrote `item == 4562` (Flour) where `4582` (Food Grinder) was meant, and `4672` (Avocado) where `4612` (Mac n' Cheese Star) was meant). Always verify every numeric ID against `.cache/items.dat`. |
-| **5 (Gameplay Loops & Packets)** | **GTOS v2.0.35 Source** | Local: `Reference/Source Code GTOS v2.0.35.zip`<br>GitHub: `https://github.com/Realznx/GTOS` | Complete gameplay state machines (Surgery, Fishing, Geiger, Combiners/Labs, PlayMods, Consumables, Lock permissions, Tank packet flags). | Monolithic files (`world.h` ~490 KB, `gt.cpp` ~670 KB, `dialog_handler.h` ~220 KB). Uses simplified fixed-size tile extra serializers that can crash modern clients if copied blindly. |
+| **5 (Gameplay Loops & Packets)** | **GTOS Source** | Local: `Reference/GTOS` (untracked)<br>GitHub: `https://github.com/zKaan/GTOSLatest` | Complete gameplay state machines (Surgery, Fishing, Geiger, Combiners/Labs, PlayMods, Consumables, Lock permissions, Tank packet flags, World Chat formatting). | Monolithic files (`Main.cpp` ~1.2 MB, `tile.h` ~480 KB, `player.h` ~103 KB). Uses simplified fixed-size tile extra serializers that can crash modern clients if copied blindly. |
 | **6 (Classic C++ Servers)** | **`Hirako2000/GrowtopiaServer`** & **`RebillionXX/GrowtopiaServer`** | `https://github.com/Hirako2000/GrowtopiaServer`<br>`https://github.com/RebillionXX/GrowtopiaServer` | Clean `PlayerMoving` / `GameUpdatePacket` field mappings, `OnTalkBubble` / `OnParticleEffect` / `OnPlayPositioned` SFX names, and classic consumable/playmod strings. | Missing newer mechanics and often uses placeholder formulas. |
 | **7 (Recipes & Descriptions)** | **Local `.cache/wiki.json` & Growtopia Wiki** | `.cache/wiki.json`<br>`https://growtopia.fandom.com/wiki/` | Exact recipe timings, splice pairs, 3-item combine recipes, item descriptions, role perks, and buff percentages. | **Scraper artifact warning:** In `.cache/wiki.json`, if an item's wiki page has a *"Used In"* combine table instead of a *"Created By"* combine table (e.g., `Dough`, `Bread`), the scraper records a self-referential recipe where `info.id` appears inside `recipe.combine.items`. Always filter out `combine.items.some(i => i.id === info.id)`! |
 
@@ -107,15 +107,18 @@ curl -s "https://raw.githubusercontent.com/badewen/Growtopia-Things/master/parse
   - `Dialog.h`: Exact `DialogBuilder` layouts, embedded hidden fields (`add_custom_margin`, `embed_data|tilex|...`, button names), and store tabs.
   - `Tile.h`: Per-tile state variables needed at runtime.
 
-### 3. `GTOS v2.0.35` (`world.h`, `gt.cpp`, `dialog_handler.h`)
-- **Why it is valuable:** Has the most complete end-to-end player interaction flows.
+### 3. `GTOS` (`Main.cpp`, `tile.h`, `player.h`)
+- **Why it is valuable:** Has the most complete end-to-end player interaction flows and accurate variant packet payloads.
 - **What to look at:**
-  - **`world.h`**:
+  - **World Chat & Speech Bubbles (`tile.h:9131-9132`, `player.h:2356-2364`)**:
+    - Console message requires the channel tag, player tag, and internal `$player_chat=` delimiter:
+      `CP:_PL:0_OID:_CT:[W]_ `6<`wDisplayName`6> `$player_chat=`$Message`
+    - Talk bubble must ONLY contain the speech message (with `CP:_PL:0_OID:_` prefix), never the `<name>` tag:
+      `Variant.from("OnTalkBubble", netID, "CP:_PL:0_OID:_`wMessage", 0, 0)`
+  - **`Main.cpp` / `tile.h`**:
     - `ITEM_CHANGE_OBJECT` modes (`netID = -1` new drop, `netID = -2` remove drop by `uid`, `netID = -3` update existing drop count in `float_var` at byte offset `20`).
     - Consumable effects, `PlayMod` add/remove messages, skin color tints (`0xRRGGBBAA`), character state bitflags (`CHARACTER_STATE`), and audio/particle IDs (`OnPlayPositioned`, `OnParticleEffect`).
     - 3-item combiner logic (`Laboratory` `932`, `E-Z Cook Oven` `952`, `Microwave` `1472`, etc.).
-  - **`dialog_handler.h`**:
-    - Button names (`buttonClicked`) and input fields returned by the client when submitting dialogs (`grinder`, `homeoven_edit`, `surgery`, `vending`, `lock_edit`).
 
 ---
 
