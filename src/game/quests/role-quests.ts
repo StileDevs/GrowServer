@@ -14,6 +14,7 @@ const ROLE_CLAIM_PREFIX: Readonly<Record<RoleId, string>> = {
   farmer: "t",
   provider: "p",
   geiger: "g",
+  cook: "c",
 };
 
 /** Dialog name of each role's milestone reward dialog. */
@@ -24,6 +25,7 @@ const ROLE_REWARD_DIALOG: Readonly<Record<RoleId, string>> = {
   farmer: "quest_reward_farmer",
   provider: "quest_reward_provider",
   geiger: "quest_reward_geiger",
+  cook: "quest_reward_cook",
 };
 
 /** Goals dialog button that opens a role's reward dialog. */
@@ -34,6 +36,7 @@ const ROLE_REWARD_BUTTON: Readonly<Record<RoleId, string>> = {
   farmer: "farmer_reward",
   provider: "provider_reward",
   geiger: "geiger_reward",
+  cook: "cook_reward",
 };
 
 /** Descriptions of the roles, from the reference reward dialogs. */
@@ -44,6 +47,7 @@ const ROLE_DESCRIPTION: Readonly<Record<RoleId, string>> = {
   farmer: "Harvest your trees and receive awesome Farmer Rewards everyday by leveling up",
   provider: "A provider is a non-solid foreground block which can be harvested periodically (time depends on the provider) for an item. Harvest your providers and earn awesome rewards by leveling up!",
   geiger: "Once the player stands for a few moments on the source of radioactivity, the item they found will be added into their inventory. Hunt the items with your geiger and claim your prizes for leveling up!",
+  cook: "Cooking is a feature in Growtopia that allows players to prepare delicious dishes in Cooking Ovens using fresh ingredients and spices. Cook high-quality meals to earn Mac n' Cheese Stars and level up your Chef role!",
 };
 
 /** Name of an item for dialogs, falling back to the raw id. */

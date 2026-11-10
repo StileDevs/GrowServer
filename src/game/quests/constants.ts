@@ -23,8 +23,8 @@ export const CRAZY_JIM_ICON = 1486;
 
 // --- role quests -------------------------------------------------------------
 
-/** The six ItsKyy role quests. */
-export type RoleId = "surgeon" | "fishing" | "builder" | "farmer" | "provider" | "geiger";
+/** The seven role quests (including Chef). */
+export type RoleId = "surgeon" | "fishing" | "builder" | "farmer" | "provider" | "geiger" | "cook";
 
 export interface RoleDef {
   id: RoleId;
@@ -32,7 +32,7 @@ export interface RoleDef {
   name: string;
   /** Item icon shown next to the role name. */
   icon: number;
-  /** Milestone reward items, one per 5 levels (level 5..50). */
+  /** Milestone reward items, one per level (level 1..10). */
   rewards: readonly number[];
   /** Stack count granted per milestone, parallel to `rewards`. */
   rewardCounts: readonly number[];
@@ -85,10 +85,17 @@ export const ROLES: Readonly<Record<RoleId, RoleDef>> = {
     rewards: [4656, 262, 4658, 3764, 6976, 3146, 2266, 10424, 5084, 2478],
     rewardCounts: [1, 50, 10, 1, 1, 1, 1, 1, 1, 1],
   },
+  cook: {
+    id: "cook",
+    name: "Chef",
+    icon: 7076,
+    rewards: [4582, 4618, 6906, 6908, 4498, 6910, 4620, 6912, 6914, 4614],
+    rewardCounts: [1, 2, 10, 10, 1, 10, 1, 10, 10, 1],
+  },
 };
 
 /** Every role id, in goals-dialog order. */
-export const ROLE_ORDER: readonly RoleId[] = ["surgeon", "fishing", "builder", "farmer", "provider", "geiger"];
+export const ROLE_ORDER: readonly RoleId[] = ["surgeon", "fishing", "builder", "farmer", "provider", "geiger", "cook"];
 
 /** Gems granted when a role levels up (ItsKyy add_*_xp functions). */
 export const ROLE_LEVELUP_GEMS = 500;
@@ -103,6 +110,9 @@ export function roleXpRequirement(level: number, role?: RoleId): number {
   }
   if (role === "provider") {
     return level <= 0 ? 600 : 1300 * level;
+  }
+  if (role === "cook") {
+    return level <= 0 ? 300 : 500 * level;
   }
   return 10 * (level * level + 2);
 }

@@ -30,7 +30,7 @@ export class SeedTile extends Tile {
   public override async onPlaceForeground(player: Player, itemMeta: ItemDefinition): Promise<boolean> {
     if (!(await super.onPlaceForeground(player, itemMeta))) return false;
 
-    this.initializeTreeData(itemMeta);
+    this.initializeTreeData(itemMeta, player);
     // the TILE_CHANGE_REQUEST sent by the base class carries no fruit count,
     // so send the full tile state afterwards
     this.tileUpdate();
@@ -66,7 +66,7 @@ export class SeedTile extends Tile {
       return false;
     }
 
-    this.initializeTreeData(resultSeedMeta);
+    this.initializeTreeData(resultSeedMeta, player);
     this.data.tree!.isSpliced = true;
     this.tileUpdate();
 
@@ -170,10 +170,12 @@ export class SeedTile extends Tile {
    * Resets the tile to a freshly planted tree of the given seed. When a tree
    * is already growing (splicing) the original planting time is kept.
    */
-  private initializeTreeData(seed: ItemDefinition): void {
+  private initializeTreeData(seed: ItemDefinition, player?: Player): void {
     const now = Date.now();
     const rarity = seed.rarity ?? 0;
     const fruitCount = Math.floor(Math.random() * 10 * (1 - rarity / 1000)) + 1;
+    const growSpeedMult = player?.playMods.has("apple_strudel") ? 0.95 : 1;
+    const growTimeMs = Math.floor((seed.growTime ?? 0) * 1000 * growSpeedMult);
 
     this.data.flags |= TileFlags.TILEEXTRA | TileFlags.SEED;
     this.data.fg = seed.id ?? 0;
@@ -182,7 +184,7 @@ export class SeedTile extends Tile {
     this.data.tree = {
       fruit: (seed.id ?? 0) - 1,
       fruitCount,
-      fullyGrownAt: (this.data.tree?.plantedAt ?? now) + (seed.growTime ?? 0) * 1000,
+      fullyGrownAt: (this.data.tree?.plantedAt ?? now) + growTimeMs,
       plantedAt: now,
       isSpliced: false,
     };

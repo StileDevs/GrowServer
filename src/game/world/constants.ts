@@ -222,6 +222,7 @@ export enum TileExtraTypes {
   WEATHER_SPECIAL2 = 49,
   FOSSIL_PREP = 50,
   DNA_MACHINE = 51,
+  OVEN = 55,
   TRAINING_PORT = 61,
   MAGPLANT = 62,
   GROWSCAN = 66,

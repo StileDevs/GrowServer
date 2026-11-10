@@ -46,7 +46,7 @@ const YUM: ConsumableEffect = { action: "consume", bubble: ":D`#YUM!``" };
 /** Generic consumables, keyed by item id; mirrors the official effect list. */
 const CONSUMABLES: Partial<Record<number, ConsumableEffect>> = {
   // snacks
-  3404: YUM, 3406: YUM, 4422: YUM, 950: YUM, 968: YUM, 1058: YUM, 1096: YUM, 868: YUM, 4668: YUM, 1094: YUM, 1098: YUM, 4378: YUM, 1374: YUM, 406: YUM, 966: YUM, 958: YUM, 1580: YUM, 7052: YUM, 8520: YUM, 3546: YUM, 3600: YUM, 3836: YUM, 3240: YUM, 4984: YUM, 2734: YUM, 3622: YUM, 10988: YUM, 4764: YUM, 964: YUM, 3428: YUM, 4752: YUM, 3816: YUM, 1208: YUM,
+  3402: YUM, 3404: YUM, 3406: YUM, 4422: YUM, 918: YUM, 950: YUM, 968: YUM, 1058: YUM, 1096: YUM, 868: YUM, 4666: YUM, 4668: YUM, 1094: YUM, 1098: YUM, 4378: YUM, 1374: YUM, 406: YUM, 966: YUM, 958: YUM, 1580: YUM, 7052: YUM, 7346: YUM, 8520: YUM, 3546: YUM, 3600: YUM, 3836: YUM, 3240: YUM, 4984: YUM, 2734: YUM, 3622: YUM, 10988: YUM, 4764: YUM, 964: YUM, 3428: YUM, 4752: YUM, 3816: YUM, 1208: YUM,
   3536: { action: "consume", bubble: "Mmm, sugar!" },
   4410: { action: "consume", bubble: ":P`#Bleh.``" },
   [ITEM_ID.FISH_CHUNK]: { action: "consume", bubble: "Blech! That was slimy!" },
@@ -60,6 +60,7 @@ const CONSUMABLES: Partial<Record<number, ConsumableEffect>> = {
   2206: { action: "apply", mod: "irradiated" },
   408: { action: "apply", mod: "duct_tape" },
   384: { action: "apply", mod: "valentine" },
+  14246: { action: "apply", mod: "valentine", bubble: ":D`#YUM!``" },
   528: { action: "apply", mod: "lucky" },
   1056: { action: "apply", mod: "lucky" },
   750: { action: "apply", mod: "lucky" },
@@ -78,8 +79,27 @@ const CONSUMABLES: Partial<Record<number, ConsumableEffect>> = {
   1988: { action: "apply", mod: "haunted" },
   1634: { action: "apply", mod: "caffeinated" },
   4766: { action: "apply", mod: "blushing_red" },
-  1474: { action: "apply", mod: "extra_xp" },
+  1474: { action: "apply", mod: "extra_xp", bubble: ":D`#YUM!``" },
+  4592: { action: "apply", mod: "fish_taco", bubble: ":D`#YUM!``" },
+  4594: { action: "apply", mod: "apple_strudel", bubble: ":D`#YUM!``" },
+  4596: { action: "apply", mod: "berry_crepes", bubble: ":D`#YUM!``" },
+  4598: { action: "apply", mod: "bbq_bacon_burger", bubble: ":D`#YUM!``" },
+  4600: { action: "apply", mod: "fish_and_chips", bubble: ":D`#YUM!``" },
+  4604: { action: "apply", mod: "arroz_con_pollo", bubble: ":D`#YUM!``" },
+  4674: { action: "apply", mod: "chips_and_guac", bubble: ":D`#YUM!``" },
+  4768: { action: "apply", mod: "pineapple_turnover", bubble: ":D`#YUM!``" },
+  5452: { action: "apply", mod: "triple_xp", bubble: ":D`#YUM!``" },
+  6046: { action: "apply", mod: "guac_bueno", bubble: ":D`#YUM!``" },
+  6048: { action: "apply", mod: "guac_sabroso", bubble: ":D`#YUM!``" },
+  6050: { action: "apply", mod: "guac_perfecto", bubble: ":D`#YUM!``" },
+  6316: { action: "apply", mod: "deep_fried_ice_cream", bubble: ":D`#YUM!``" },
   6906: { action: "apply", mod: "composer", bubble: ":D`#YUM!``" },
+  6908: { action: "apply", mod: "gluttons_gazpacho", bubble: ":D`#YUM!``" },
+  6910: { action: "apply", mod: "growlectables", bubble: ":D`#YUM!``" },
+  6912: { action: "apply", mod: "spicey_skills", bubble: ":D`#YUM!``" },
+  6914: { action: "apply", mod: "gemonade", bubble: ":D`#YUM!``" },
+  7056: { action: "apply", mod: "coconut_tart", bubble: ":D`#YUM!``" },
+  10270: { action: "apply", mod: "cooking_gas", bubble: ":D`#YUM!``" },
   // thrown
   368: { action: "throw", mod: "muddy", effectId: 42 },
   874: { action: "throw", mod: "egged", effectId: 42 },
@@ -336,6 +356,10 @@ export async function useConsumable(player: Player, world: World, item: ItemDefi
   if (effect.action === "consume") world.playPositioned("audio/eat.wav", target.netID);
   if (effect.effectId) world.sendParticleEffect(effect.effectId, target.state.x + 16, target.state.y + 16);
   if (effect.mod) target.playMods.add(effect.mod);
+
+  const baseXp = Math.max(1, Math.floor((item.rarity ?? 5) / 5));
+  player.addXp(player.playMods.has("pineapple_turnover") ? baseXp * 3 : baseXp);
+
   if (effect.mod && target !== player) {
     const name = getItem(itemId)?.name ?? "something";
     for (const other of world.players) other.variants.sendOnConsoleMessage(`\`7[\`\`${player.displayName} used \`2${name}\`\` on ${target.displayName}.\`7]\`\``);

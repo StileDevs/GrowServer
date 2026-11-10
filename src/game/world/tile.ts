@@ -271,6 +271,10 @@ export class Tile {
     const dropY = this.data.y * 32 + Math.floor(Math.random() * 16);
     const rand = Math.random();
 
+    if (player.playMods.has("arroz_con_pollo") && Math.random() < 0.1) {
+      this.world.drop(player, dropX, dropY, ITEM_ID.GEMS, 1, { tree: true, noSimilar: true });
+    }
+
     if (rand <= 0.11) {
       // 1/9 chance: the block itself
       this.world.drop(player, dropX, dropY, destroyedItemId, 1, { tree: true });
@@ -321,7 +325,10 @@ export class Tile {
 
   /** Lets a tile adjust the flags that get serialized without changing the stored ones. */
   public serializedFlags(flags: number): number {
-    return flags;
+    if (this.serialize === Tile.prototype.serialize) {
+      return flags & ~TileFlags.TILEEXTRA;
+    }
+    return flags | TileFlags.TILEEXTRA;
   }
 
   private serializeHeader(buffer: ExtendBuffer): void {

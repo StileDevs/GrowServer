@@ -68,6 +68,8 @@ const DEFAULT_EXTRA_BY_ACTION: Partial<Record<number, number[]>> = {
   [ActionTypes.ADVENTURE_RESET]: [58],
   [ActionTypes.TOMB_ROBBER]: [59],
   [ActionTypes.FACTION]: [60, ...z(5)],
+  // Training Port (Fishgotchi Tank): u32 fish_lb, u16 status, u32 item_id, u32 total_exp, 8B unk1, u32 fish_level, u32 unk2, 5B unk3 (35 bytes)
+  [ActionTypes.FISHGOTCHI_TANK]: [61, ...z(35)],
   // Magplant / item sucker: u32 item, u32 amount, u8 sucking, u8 planting, u32 capacity (5000)
   [ActionTypes.ITEM_SUCKER]: [62, ...z(8), 1, 0, ...u32(5000)],
   [ActionTypes.ROBOT]: [63, ...z(12)],
@@ -81,7 +83,6 @@ const DEFAULT_EXTRA_BY_ACTION: Partial<Record<number, number[]>> = {
   [ActionTypes.WEATHER_INFINITY]: [77, ...z(8)], // u32, u32 count
   [ActionTypes.KRANKENS_BLOCK]: [80, ...z(8)],
   [ActionTypes.FRIENDS_ENTRANCE]: [81, ...z(8)], // u32 owner, u16, u16 count
-  [ActionTypes.FISHGOTCHI_TANK]: [61, ...z(22)], // Training Port (22 bytes: u32 FishLb, u16 Status, u32 FishId, u32 Exp, u32 Level, u32 unk)
 };
 
 /** Extra data chosen by item ID rather than action type. */

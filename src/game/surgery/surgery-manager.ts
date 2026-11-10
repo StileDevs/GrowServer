@@ -342,7 +342,8 @@ export function handleSurgeryAction(player: Player, world: World, button: string
   if (toolId !== FIX_IT_ID) player.removeItemInven(toolId, 1, true);
 
   // Skill roll: the reference fails `30 - skill/4` percent of the time.
-  const failChance = skillFailChance(player.quests.surgerySkill);
+  const baseFailChance = skillFailChance(player.quests.surgerySkill);
+  const failChance = player.playMods.has("spicey_skills") ? Math.floor(baseFailChance / 2) : baseFailChance;
   s.skillPassed = Math.random() * 100 >= failChance;
   s.antibs = false;
 
@@ -595,6 +596,20 @@ function finishSurgery(player: Player, world: World): void {
     player.quests.surgerySkill = Math.min(100, player.quests.surgerySkill + 1);
     player.quests.incrementSurgeryDone();
     addRoleXp(player, "surgeon", 10);
+
+    let surgXp = 100;
+    if (player.playMods.has("deep_fried_ice_cream")) surgXp = Math.round(surgXp * 1.5);
+    else if (player.playMods.has("guac_perfecto")) surgXp = Math.round(surgXp * 1.35);
+    else if (player.playMods.has("berry_crepes")) surgXp = Math.round(surgXp * 1.3);
+    else if (player.playMods.has("guac_sabroso")) surgXp = Math.round(surgXp * 1.2);
+    else if (player.playMods.has("guac_bueno")) surgXp = Math.round(surgXp * 1.1);
+    player.addXp(surgXp);
+
+    if (player.playMods.has("gemonade")) {
+      player.addGems(250);
+      player.variants.sendOnConsoleMessage("`2Gemonade bonus: +250 Gems for completing surgery!``");
+    }
+
     player.playMods.add(MOD_RECOVERING, 1200);
     world.playPositioned("audio/double_chance.wav", player.netID);
     player.variants.sendOnConsoleMessage("`2Congratulations on your successful surgery!``");

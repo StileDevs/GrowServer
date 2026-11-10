@@ -28,6 +28,8 @@ import { LobsterTrapTile } from "./lobster-trap-tile";
 import { CuttingBoardTile } from "./cutting-board-tile";
 import { FishTankPortTile } from "./fish-tank-port-tile";
 import { TrainingPortTile } from "./training-port-tile";
+import { OvenTile } from "./oven-tile";
+import { ChemicalCombinerTile } from "./chemical-combiner-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
 import { ITEM_ID } from "../constants";
 // dialog modules register their dialog returns on import
@@ -64,6 +66,8 @@ export const TileMap: Partial<Record<number, TileClass>> = {
   [ActionTypes.LOBSTER_TRAP]: LobsterTrapTile,
   [ActionTypes.FISHTANK]: FishTankPortTile,
   [ActionTypes.FISHGOTCHI_TANK]: TrainingPortTile,
+  [ActionTypes.OVEN]: OvenTile,
+  [ActionTypes.LAB]: ChemicalCombinerTile,
 };
 
 /** Tile behaviour for single items whose action type is shared with plain blocks. */
