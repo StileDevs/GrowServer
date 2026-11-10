@@ -10,6 +10,17 @@ import type { TileData } from "./types";
 import type { World } from "./world";
 
 export const MAGPLANT_CAPACITY = 5000;
+export const SUCKER_CAPACITY_1500 = 1500;
+
+export function getSuckerCapacity(itemId: number): number {
+  if (itemId === ITEM_ID.GAIA_BEACON || itemId === ITEM_ID.UNSTABLE_TESSERACT) return SUCKER_CAPACITY_1500;
+  return MAGPLANT_CAPACITY;
+}
+
+export function isSuckerBlock(itemId: number): boolean {
+  return itemId === ITEM_ID.MAGPLANT || itemId === ITEM_ID.GAIA_BEACON || itemId === ITEM_ID.UNSTABLE_TESSERACT;
+}
+
 interface RemoteBinding { world: World; block: TileData; state: NonNullable<TileData["magplant"]>; }
 const remotes = new Collection<Player, RemoteBinding>();
 
@@ -44,7 +55,7 @@ export function clearMagplantRemote(player: Player): void {
 export function tickMagplantRemotes(): void {
   for (const [player, binding] of remotes) {
     if (player.world !== binding.world || binding.world.getTileAt(binding.block.x, binding.block.y) !== binding.block
-      || binding.block.magplant !== binding.state || binding.block.fg !== ITEM_ID.MAGPLANT
+      || binding.block.magplant !== binding.state || !isSuckerBlock(binding.block.fg)
       || !canUseMagplantRemote(player, binding.world, binding.block)) clearMagplantRemote(player);
   }
 }
@@ -68,11 +79,17 @@ export function bindMagplantRemote(player: Player, world: World, block: TileData
 export function collectMagplantDrop(world: World, itemId: number, amount: number, source?: { x: number; y: number }): number {
   if (world.getOwnerPlayerId() === undefined || amount <= 0) return amount;
   let remaining = amount;
+  const itemMeta = getItem(itemId);
+  const isSeedItem = itemMeta?.type === ActionTypes.SEED;
   // Block-array order is stable across saves and resolves multiple matching machines.
   for (const block of world.data.blocks) {
     const state = block.magplant;
-    if (block.fg !== ITEM_ID.MAGPLANT || !state || state.collecting === false || state.itemId !== itemId || itemId === ITEM_ID.GEMS) continue;
-    const capacity = MAGPLANT_CAPACITY;
+    if (!isSuckerBlock(block.fg) || !state || state.collecting === false || state.itemId !== itemId || itemId === ITEM_ID.GEMS) continue;
+    // Gaia's Beacon only stores seeds; Unstable Tesseract only stores blocks
+    if (block.fg === ITEM_ID.GAIA_BEACON && !isSeedItem) continue;
+    if (block.fg === ITEM_ID.UNSTABLE_TESSERACT && isSeedItem) continue;
+
+    const capacity = getSuckerCapacity(block.fg);
     const taken = Math.min(remaining, Math.max(0, capacity - state.count));
     if (taken <= 0) continue;
     state.count += taken;
@@ -95,7 +112,7 @@ export async function placeWithMagplantRemote(player: Player, world: World, targ
   const binding = remotes.get(player);
   if (!binding || binding.world !== world || player.world !== world || binding.block.magplant !== binding.state
     || world.getTileAt(binding.block.x, binding.block.y) !== binding.block
-    || binding.block.fg !== ITEM_ID.MAGPLANT || !canUseMagplantRemote(player, world, binding.block)) {
+    || !isSuckerBlock(binding.block.fg) || !canUseMagplantRemote(player, world, binding.block)) {
     clearMagplantRemote(player);
     player.sendTextBubble("Wrench a MAGPLANT to get a connected remote.", true);
     return;
@@ -112,7 +129,7 @@ export async function placeWithMagplantRemote(player: Player, world: World, targ
   const selected = state.itemId;
   const available = () => remotes.get(player) === binding && player.world === world && binding.block.magplant === state
     && world.getTileAt(binding.block.x, binding.block.y) === binding.block
-    && binding.block.fg === ITEM_ID.MAGPLANT && canUseMagplantRemote(player, world, binding.block)
+    && isSuckerBlock(binding.block.fg) && canUseMagplantRemote(player, world, binding.block)
     && state.planting === true && state.itemId === selected && state.count > 0 && target.fg === fg && target.bg === bg
     && world.getTileAt(target.x, target.y) === target;
   const tile = tileFrom(world, target, background ? undefined : type, background ? undefined : item.id);

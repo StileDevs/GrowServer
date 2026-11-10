@@ -10,6 +10,7 @@ import { tickFishing } from "./fishing/fishing-manager";
 import { tickCooking } from "./cooking/cooking-manager";
 import { tickFishTraining } from "./world/tiles/training-port-tile";
 import { tickMagplantRemotes } from "./world/magplant";
+import { tickAutoActionMachines } from "./world/tiles/auto-action-tile";
 
 export async function startGameServer(): Promise<void> {
   const ports = serverConfig?.game.server_ports ?? [];
@@ -77,6 +78,11 @@ function startPlayModTicker(): void {
         tickFishTraining(world);
       } catch (err) {
         logger.error({ err, world: world.name }, "fish training tick failed");
+      }
+      try {
+        tickAutoActionMachines(world);
+      } catch (err) {
+        logger.error({ err, world: world.name }, "auto action tick failed");
       }
     }
     tickMagplantRemotes();

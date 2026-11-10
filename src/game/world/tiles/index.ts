@@ -31,11 +31,13 @@ import { FishTankPortTile } from "./fish-tank-port-tile";
 import { TrainingPortTile } from "./training-port-tile";
 import { OvenTile } from "./oven-tile";
 import { ChemicalCombinerTile } from "./chemical-combiner-tile";
+import { AutoActionTile } from "./auto-action-tile";
 import { DefaultExtraTile, getDefaultExtra, UNSUPPORTED_EXTRA_TYPES } from "./default-extra-tile";
 import { ITEM_ID } from "../constants";
 // dialog modules register their dialog returns on import
 import "./lock-dialogs";
 import "./vending-dialog";
+import "./auto-action-tile";
 
 type TileClass = new (world: World, data: TileData) => Tile;
 
@@ -69,6 +71,10 @@ export const TileMap: Partial<Record<number, TileClass>> = {
   [ActionTypes.FISHGOTCHI_TANK]: TrainingPortTile,
   [ActionTypes.OVEN]: OvenTile,
   [ActionTypes.LAB]: ChemicalCombinerTile,
+  [ActionTypes.ITEM_SUCKER]: MagplantTile,
+  [ActionTypes.AUTO_ACTION_BREAK]: AutoActionTile,
+  [ActionTypes.AUTO_ACTION_HARVEST]: AutoActionTile,
+  [ActionTypes.AUTO_ACTION_HARVEST_SUCK]: AutoActionTile,
 };
 
 /** Tile behaviour for single items whose action type is shared with plain blocks. */
@@ -93,6 +99,11 @@ export const TileMapByItem: Partial<Record<number, TileClass>> = {
   [ITEM_ID.FISH_TANK_PORT]: FishTankPortTile,
   [ITEM_ID.TRAINING_PORT]: TrainingPortTile,
   [ITEM_ID.MAGPLANT]: MagplantTile,
+  [ITEM_ID.GAIA_BEACON]: MagplantTile,
+  [ITEM_ID.UNSTABLE_TESSERACT]: MagplantTile,
+  [ITEM_ID.GAIA_HEART]: AutoActionTile,
+  [ITEM_ID.TESSERACT_MANIPULATOR]: AutoActionTile,
+  [ITEM_ID.TECHNO_ORGANIC_ENGINE]: AutoActionTile,
   4654: GeigerChargerTile,
   [3448]: LobsterTrapTile,
 };
