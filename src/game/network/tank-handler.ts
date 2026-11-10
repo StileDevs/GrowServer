@@ -92,7 +92,7 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
 
   if (data.itemID === ITEM_ID.FIST) {
     if (handleFishingPunch(player, world)) return;
-    if (handleCuttingBoardSlice(player, world, block)) return;
+    if (await handleCuttingBoardSlice(player, world, block)) return;
     await tileFrom(world, block).onPunch(player);
     if (player.inventory.clothes.hand === ITEM_ID.RAYMANS_FIST) await raymanPunch(player, world, data);
   } else if (data.itemID === ITEM_ID.WRENCH) {

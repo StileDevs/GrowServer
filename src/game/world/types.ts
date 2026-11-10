@@ -53,6 +53,8 @@ export interface TileData {
     status: number;
     lastFed: number;
     hunger?: number;
+    /** Hunger at the most recent feeding, for stable offline decay. */
+    hungerAtLastFed?: number;
     isSick?: boolean;
     isDead?: boolean;
   };

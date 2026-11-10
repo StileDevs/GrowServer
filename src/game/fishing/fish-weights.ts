@@ -32,37 +32,38 @@ export const FISH_MAX_WEIGHT: Readonly<Record<number, number>> = {
   3094: 200,  // Ghost Fish
   3096: 200,  // Demon Angler
   3220: 200,  // Neon Squid
-  3222: 200,  // Antarctic Icefish
-  3450: 200,  // Lobster
-  3452: 200,  // Purple Shore Crab
+  3222: 120,  // Antarctic Icefish
+  3450: 150,  // Lobster
+  3452: 100,  // Purple Shore Crab
   3454: 200,  // Alaskan King Crab
-  3456: 200,  // Dungeonist Crab
-  3458: 200,  // Crawdad
+  3456: 100,  // Dungeonist Crab
+  3458: 50,  // Crawdad
   3460: 200,  // Hermit Crab
   3820: 200,  // Orca
   4958: 200,  // Sand Shark
   5448: 200,  // Mr. Narwhal
-  5542: 200,  // Double-Headed Angel-Devil Fish
-  5548: 200,  // Absolutely Real Elephant Fish
-  5552: 200,  // Cuttlefish
-  5574: 200,  // Alpha Great White Shark
-  5580: 200,  // Weird Manta Ray
+  5542: 60,  // Double-Headed Angel-Devil Fish
+  5548: 60,  // Absolutely Real Elephant Fish
+  5552: 120,  // Cuttlefish
+  5574: 190,  // Alpha Great White Shark
+  5580: 190,  // Weird Manta Ray
   7744: 200,  // Dragon Turtle
   8460: 200,  // Clockwork Fish
-  10264: 200, // Turkey Fish
+  10264: 150, // Turkey Fish
 };
 
 /**
  * Returns the maximum/perfect weight threshold for a given fish item ID.
- * Defaults to 200 lb for unlisted or apex fish.
+ * Returns 0 for fish without a verified threshold; unknown items are not perfect fish.
  */
 export function getFishMaxWeight(itemId: number): number {
-  return FISH_MAX_WEIGHT[itemId] ?? 200;
+  return FISH_MAX_WEIGHT[itemId] ?? 0;
 }
 
 /**
  * Checks whether a given fish weight meets or exceeds the species' perfect threshold.
  */
 export function isFishPerfect(itemId: number, weight: number): boolean {
-  return weight >= getFishMaxWeight(itemId);
+  const maximum = getFishMaxWeight(itemId);
+  return maximum > 0 && Number.isFinite(weight) && weight >= maximum;
 }

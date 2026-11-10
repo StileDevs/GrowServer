@@ -1,4 +1,5 @@
 import { isFishPerfect } from "../../fishing/fish-weights";
+import { returnFishOrDrop } from "../../fishing/fish-inventory";
 import type { ItemDefinition } from "grow-items";
 import type { ExtendBuffer } from "../../../utils/extend-buffer";
 import { DialogBuilder } from "../../../utils/dialog-builder";
@@ -18,7 +19,7 @@ const MAX_FISH_PER_TANK = 10;
  * Rules:
  * - Must be placed on top of a Fish Tank background block (ITEM_ID.FISH_TANK = 3004).
  * - Stores and displays fish swimming in the connected tank.
- * - Fish size scales automatically with its weight (lb), and 200 lb perfect fish emit a glow.
+ * - Fish size scales with weight (lb), and eligible perfect fish glow when enabled.
  * - Only the world owner / build permitted players can add or retrieve fish.
  */
 export class FishTankPortTile extends Tile {
@@ -38,6 +39,8 @@ export class FishTankPortTile extends Tile {
 
     this.data.flags |= TileFlags.TILEEXTRA | TileFlags.OPEN;
     this.data.fishTank = { fishes: [], glowing: true };
+    this.tileUpdate();
+    this.world.markDirty();
     return true;
   }
 
@@ -48,17 +51,14 @@ export class FishTankPortTile extends Tile {
 
     // Return any fish inside to the player or drop in the world
     for (const fish of fishes) {
-      const added = player.addItemInven(fish.id, fish.weight);
-      if (added <= 0) {
-        this.world.drop(player, this.data.x * 32, this.data.y * 32, fish.id, fish.weight, { noSimilar: true });
-      }
+      returnFishOrDrop(player, this.world, fish.id, fish.weight, this.data.x, this.data.y);
     }
     if (fishes.length > 0) player.sendInventory();
   }
 
   public override serializedFlags(flags: number): number {
     const glowing = this.data.fishTank?.glowing !== false;
-    return (flags & ~TILE_ALT_MODE) | TileFlags.TILEEXTRA | (glowing ? TileFlags.OPEN : 0);
+    return (flags & ~(TILE_ALT_MODE | TileFlags.OPEN)) | TileFlags.TILEEXTRA | (glowing ? TileFlags.OPEN : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {
@@ -133,9 +133,13 @@ export class FishTankPortTile extends Tile {
   }
 }
 
-registerDialog("fishtank_port_dialog", (player, action) => {
+registerDialog("fishtank_port_dialog", async (player, action) => {
   const target = tileFromDialog(player, action);
-  if (!target || !(target.block.fg === ITEM_ID.FISH_TANK_PORT)) return;
+  if (!target || target.block.fg !== ITEM_ID.FISH_TANK_PORT) return;
+  if (!player.isDeveloper && !(await target.world.hasTilePermission(player, target.block, LockPermission.BUILD))) {
+    player.sendTextBubble("Only permitted players can manage fish here!", true);
+    return;
+  }
 
   const tileData = target.block;
   if (!tileData.fishTank) tileData.fishTank = { fishes: [], glowing: true };
@@ -162,10 +166,10 @@ registerDialog("fishtank_port_dialog", (player, action) => {
   // Adding a fish
   if (button.startsWith("addfish_")) {
     const fishId = Number.parseInt(button.replace("addfish_", ""), 10);
-    if (!fishId || isNaN(fishId)) return;
+    if (!Number.isSafeInteger(fishId) || getItem(fishId)?.type !== ActionTypes.PETFISH) return;
 
     const owned = player.inventory.getAmount(fishId);
-    if (owned <= 0) {
+    if (!Number.isSafeInteger(owned) || owned <= 0) {
       player.sendTextBubble("You don't have that fish in your inventory!", true);
       return;
     }
@@ -175,7 +179,7 @@ registerDialog("fishtank_port_dialog", (player, action) => {
       return;
     }
 
-    player.removeItemInven(fishId, owned);
+    if (player.removeItemInven(fishId, owned) !== owned) return;
     fishes.push({ id: fishId, weight: owned });
     target.world.markDirty();
 
@@ -196,15 +200,10 @@ registerDialog("fishtank_port_dialog", (player, action) => {
     const fish = fishes[i];
     if (!fish) return;
 
-    if (player.inventory.isFull && !player.inventory.hasItem(fish.id)) {
-      player.sendTextBubble("Your backpack is full!", true);
-      return;
-    }
-
     fishes.splice(i, 1);
     target.world.markDirty();
 
-    player.addItemInven(fish.id, fish.weight);
+    returnFishOrDrop(player, target.world, fish.id, fish.weight, tileData.x, tileData.y);
     player.sendInventory();
     player.sendSfx("audio/splash.wav");
 

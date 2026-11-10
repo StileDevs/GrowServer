@@ -1,4 +1,6 @@
 import { isFishPerfect, getFishMaxWeight } from "../../fishing/fish-weights";
+import { returnFishOrDrop } from "../../fishing/fish-inventory";
+import { getTrainingFoodXp } from "../../fishing/fish-training-food";
 import type { ItemDefinition } from "grow-items";
 import type { ExtendBuffer } from "../../../utils/extend-buffer";
 import { DialogBuilder } from "../../../utils/dialog-builder";
@@ -90,36 +92,44 @@ export const HUNGER_DISPLAY: Record<number, { name: string; color: string }> = {
 /**
  * Updates hunger and health states based on time elapsed since last feeding.
  */
-export function updateTrainingPortState(tp: NonNullable<TileData["trainingPort"]>): void {
+export function updateTrainingPortState(tp: NonNullable<TileData["trainingPort"]>, now = Date.now()): void {
   if (tp.fishId <= 0) return;
   if (tp.hunger === undefined) tp.hunger = FishHungerLevel.CONTENT;
   if (tp.isDead) {
-    tp.status = 7; // Dead
-    return;
-  }
-
-  const now = Date.now();
-  const elapsedHours = (now - (tp.lastFed || now)) / (1000 * 60 * 60);
-
-  // If starved for more than 24h -> Dies
-  if (tp.hunger <= FishHungerLevel.STARVING && elapsedHours >= 24) {
-    tp.isDead = true;
     tp.status = 7;
     return;
   }
 
-  // Hunger drops 1 level every 2 hours
-  const hungerDrop = Math.floor(elapsedHours / 2);
-  if (hungerDrop > 0) {
-    tp.hunger = Math.max(0, tp.hunger - hungerDrop);
-    tp.lastFed = now - ((elapsedHours % 2) * 1000 * 60 * 60);
-  }
+  // lastFed is the timestamp of the last actual feeding, not the last hunger tick.
+  // Advancing it during each tick previously made death by starvation impossible.
+  if (!Number.isFinite(tp.lastFed) || tp.lastFed <= 0 || tp.lastFed > now) tp.lastFed = now;
+  if (tp.hungerAtLastFed === undefined) tp.hungerAtLastFed = tp.hunger;
+  const elapsedHours = Math.max(0, (now - tp.lastFed) / (1000 * 60 * 60));
+  tp.hunger = Math.max(FishHungerLevel.STARVING, tp.hungerAtLastFed - Math.floor(elapsedHours / 2));
 
-  if (tp.isSick) {
-    tp.status = 6; // Sick
+  if (tp.hunger === FishHungerLevel.STARVING && elapsedHours >= 24) {
+    tp.isDead = true;
+    tp.status = 7;
   } else {
-    tp.status = tp.hunger;
+    tp.status = tp.isSick ? 6 : tp.hunger;
   }
+}
+
+/** Fresh feeding, medicine, and revival establish a new hunger decay baseline. */
+function resetHungerClock(tp: NonNullable<TileData["trainingPort"]>): void {
+  tp.lastFed = Date.now();
+  tp.hungerAtLastFed = tp.hunger ?? FishHungerLevel.CONTENT;
+}
+
+/** A trained fish may advance several levels from one high-XP feed. */
+export function awardTrainingXp(tp: NonNullable<TileData["trainingPort"]>, amount: number): void {
+  if (tp.level < 1 || tp.level > 10 || !Number.isSafeInteger(amount) || amount <= 0) return;
+  tp.exp += amount;
+  while (tp.level < 10 && tp.exp >= (TRAINING_LEVEL_XP[tp.level] ?? Infinity)) {
+    tp.exp -= TRAINING_LEVEL_XP[tp.level]!;
+    tp.level += 1;
+  }
+  if (tp.level === 10) tp.exp = Math.min(tp.exp, TRAINING_LEVEL_XP[10]!);
 }
 
 function pickReward(tiers: readonly TrainingRewardTier[]): number {
@@ -168,9 +178,12 @@ export class TrainingPortTile extends Tile {
       status: 0,
       lastFed: 0,
       hunger: FishHungerLevel.CONTENT,
+      hungerAtLastFed: FishHungerLevel.CONTENT,
       isSick: false,
       isDead: false,
     };
+    this.tileUpdate();
+    this.world.markDirty();
     return true;
   }
 
@@ -180,10 +193,7 @@ export class TrainingPortTile extends Tile {
     delete this.data.trainingPort;
 
     if (tp && tp.fishId > 0 && tp.weight > 0) {
-      const added = player.addItemInven(tp.fishId, tp.weight);
-      if (added <= 0) {
-        this.world.drop(player, this.data.x * 32, this.data.y * 32, tp.fishId, tp.weight, { noSimilar: true });
-      }
+      returnFishOrDrop(player, this.world, tp.fishId, tp.weight, this.data.x, this.data.y);
       player.sendInventory();
     }
   }
@@ -248,7 +258,9 @@ export class TrainingPortTile extends Tile {
 
       dialog.addCustomBreak().addSpacer("small").endDialog("training_port_dialog", "Close", "");
     } else {
+      const oldStatus = tp.status;
       updateTrainingPortState(tp);
+      if (oldStatus !== tp.status) this.world.markDirty();
       const fishName = getItem(tp.fishId)?.name ?? "Fish";
       const requiredXp = TRAINING_LEVEL_XP[tp.level] ?? 1500;
       const hungerInfo = HUNGER_DISPLAY[tp.hunger ?? FishHungerLevel.CONTENT] ?? HUNGER_DISPLAY[FishHungerLevel.CONTENT]!;
@@ -271,7 +283,7 @@ export class TrainingPortTile extends Tile {
           .addTextBox("Your fish is sick and can't eat! Use a `2Fish Medicine`` to cure it before it starves!")
           .addSpacer("small")
           .addButton("train_cure", "Cure Sick fish");
-      } else if (tp.level >= 10) {
+      } else if (tp.level >= 10 && tp.exp >= TRAINING_LEVEL_XP[10]!) {
         dialog
           .addTextBox(`Your fish is ${hungerInfo.color}${hungerInfo.name}\`\``)
           .addTextBox("`2★ LEVEL 10 MAX REACHED! Training is complete! ★``")
@@ -304,9 +316,14 @@ export class TrainingPortTile extends Tile {
   }
 }
 
-registerDialog("training_port_dialog", (player, action) => {
+registerDialog("training_port_dialog", async (player, action) => {
   const target = tileFromDialog(player, action);
   if (!target || !(target.block.fg === ITEM_ID.TRAINING_PORT)) return;
+
+  if (!player.isDeveloper && !(await target.world.hasTilePermission(player, target.block, LockPermission.BUILD))) {
+    player.sendTextBubble("Only permitted players can train fish here!", true);
+    return;
+  }
 
   const tileData = target.block;
   if (!tileData.trainingPort) {
@@ -318,18 +335,21 @@ registerDialog("training_port_dialog", (player, action) => {
       status: 0,
       lastFed: 0,
       hunger: FishHungerLevel.CONTENT,
+      hungerAtLastFed: FishHungerLevel.CONTENT,
       isSick: false,
       isDead: false,
     };
   }
   const tp = tileData.trainingPort;
+  const previousStatus = tp.status;
   updateTrainingPortState(tp);
+  if (previousStatus !== tp.status) target.world.markDirty();
   const button = action.get("buttonClicked");
 
   // Start training a fish
   if (button.startsWith("trainstart_")) {
     const fishId = Number.parseInt(button.replace("trainstart_", ""), 10);
-    if (!fishId || isNaN(fishId)) return;
+    if (!Number.isSafeInteger(fishId) || !FISH_TRAINING_REWARDS[fishId] || tp.fishId > 0) return;
 
     const owned = player.inventory.getAmount(fishId);
     if (!isFishPerfect(fishId, owned)) {
@@ -337,7 +357,7 @@ registerDialog("training_port_dialog", (player, action) => {
       return;
     }
 
-    player.removeItemInven(fishId, owned);
+    if (player.removeItemInven(fishId, owned) !== owned) return;
     tp.fishId = fishId;
     tp.weight = owned;
     tp.level = 1;
@@ -346,7 +366,7 @@ registerDialog("training_port_dialog", (player, action) => {
     tp.status = FishHungerLevel.CONTENT;
     tp.isSick = false;
     tp.isDead = false;
-    tp.lastFed = Date.now();
+    resetHungerClock(tp);
     target.world.markDirty();
 
     new TrainingPortTile(target.world, tileData).tileUpdate();
@@ -378,7 +398,7 @@ registerDialog("training_port_dialog", (player, action) => {
     tp.isSick = false;
     tp.hunger = FishHungerLevel.MODERATELY_FULL;
     tp.status = tp.hunger;
-    tp.lastFed = Date.now();
+    resetHungerClock(tp);
 
     target.world.markDirty();
     new TrainingPortTile(target.world, tileData).tileUpdate();
@@ -409,7 +429,7 @@ registerDialog("training_port_dialog", (player, action) => {
     tp.isSick = false;
     tp.hunger = FishHungerLevel.HUNGRY;
     tp.status = tp.hunger;
-    tp.lastFed = Date.now();
+    resetHungerClock(tp);
 
     target.world.markDirty();
     new TrainingPortTile(target.world, tileData).tileUpdate();
@@ -457,7 +477,7 @@ registerDialog("training_port_dialog", (player, action) => {
       tp.isSick = false;
       tp.hunger = FishHungerLevel.CONTENT;
       tp.status = tp.hunger;
-      tp.lastFed = Date.now();
+      resetHungerClock(tp);
       target.world.markDirty();
       new TrainingPortTile(target.world, tileData).tileUpdate();
       player.sendSfx("audio/heal.wav");
@@ -482,7 +502,7 @@ registerDialog("training_port_dialog", (player, action) => {
       tp.isSick = false;
       tp.hunger = FishHungerLevel.HUNGRY;
       tp.status = tp.hunger;
-      tp.lastFed = Date.now();
+      resetHungerClock(tp);
       target.world.markDirty();
       new TrainingPortTile(target.world, tileData).tileUpdate();
       player.sendSfx("audio/resurrect.wav");
@@ -499,8 +519,8 @@ registerDialog("training_port_dialog", (player, action) => {
       player.sendTextBubble("Your fish is sick and can't eat! Use a Fish Medicine first.", true);
       return;
     }
-    if (tp.level >= 10) {
-      player.sendTextBubble("Your fish has already reached max level 10!", true);
+    if (tp.level >= 10 && tp.exp >= TRAINING_LEVEL_XP[10]!) {
+      player.sendTextBubble("Your fish has completed its training! Claim its graduation reward.", true);
       return;
     }
 
@@ -525,12 +545,12 @@ registerDialog("training_port_dialog", (player, action) => {
       hungerGain = 2;
     } else if (getItem(foodItemId)?.type === ActionTypes.PETFISH) {
       const ownedWeight = player.inventory.getAmount(foodItemId);
-      if (ownedWeight <= 0) {
-        player.sendTextBubble("You don't have that fish in your inventory!", true);
+      xpGained = getTrainingFoodXp(tp.fishId, foodItemId, ownedWeight);
+      if (xpGained <= 0) {
+        player.sendTextBubble("That fish is not an eligible food for this species!", true);
         return;
       }
-      player.removeItemInven(foodItemId, ownedWeight);
-      xpGained = Math.max(2, Math.round(ownedWeight * 1.5));
+      if (player.removeItemInven(foodItemId, ownedWeight) !== ownedWeight) return;
       hungerGain = 2;
     } else {
       player.sendTextBubble("That item cannot be fed to fish! Choose Fish Chunks, Fish Flakes, or fish.", true);
@@ -549,21 +569,22 @@ registerDialog("training_port_dialog", (player, action) => {
     } else {
       tp.hunger = Math.min(FishHungerLevel.SUPER_FULL, (tp.hunger ?? FishHungerLevel.CONTENT) + hungerGain);
       tp.status = tp.hunger;
-      tp.lastFed = Date.now();
+      resetHungerClock(tp);
       player.sendSfx("audio/eat.wav");
       const foodName = getItem(foodItemId)?.name ?? "Food";
       player.sendTextBubble(`\`2Fed ${foodName} (+${xpGained} XP)!\`\``, true);
     }
 
-    // Add XP and handle level up
-    tp.exp += xpGained;
-    const requiredXp = TRAINING_LEVEL_XP[tp.level] ?? 1500;
-    if (tp.exp >= requiredXp && tp.level < 10) {
-      tp.level += 1;
-      tp.exp -= requiredXp;
+    // Advance through every earned level and preserve surplus XP.
+    const previousLevel = tp.level;
+    awardTrainingXp(tp, xpGained);
+    if (tp.level > previousLevel) {
       player.sendSfx("audio/level_up.wav");
       player.variants.sendOnConsoleMessage(`Your fish reached \`2Training Level ${tp.level}\`\`!`);
       player.sendTextBubble(`\`2Level Up! (Level ${tp.level})\`\``, true);
+    }
+    if (tp.level === 10 && tp.exp >= TRAINING_LEVEL_XP[10]!) {
+      player.sendTextBubble("`2Training complete! Claim your fish's graduation reward.``", true);
     }
 
     target.world.markDirty();
@@ -573,7 +594,7 @@ registerDialog("training_port_dialog", (player, action) => {
 
   // Claim Level 10 Rewards
   if (button === "train_claim_reward" || action.contains("train_claim_reward")) {
-    if (tp.fishId <= 0 || tp.level < 10) return;
+    if (tp.fishId <= 0 || tp.isDead || tp.level < 10 || tp.exp < TRAINING_LEVEL_XP[10]!) return;
 
     const fishId = tp.fishId;
     const weight = tp.weight;
@@ -591,10 +612,7 @@ registerDialog("training_port_dialog", (player, action) => {
     }
 
     // Return the trained fish back to backpack
-    const addedFish = player.addItemInven(fishId, weight);
-    if (addedFish <= 0) {
-      target.world.drop(player, target.block.x * 32, target.block.y * 32, fishId, weight, { noSimilar: true });
-    }
+    returnFishOrDrop(player, target.world, fishId, weight, target.block.x, target.block.y);
 
     // Reset training port
     tp.fishId = 0;
@@ -603,6 +621,8 @@ registerDialog("training_port_dialog", (player, action) => {
     tp.exp = 0;
     tp.status = 0;
     tp.hunger = FishHungerLevel.CONTENT;
+    tp.hungerAtLastFed = FishHungerLevel.CONTENT;
+    tp.lastFed = 0;
     tp.isSick = false;
     tp.isDead = false;
     target.world.markDirty();
@@ -619,11 +639,6 @@ registerDialog("training_port_dialog", (player, action) => {
   // Retrieve fish
   if (button === "train_retrieve" || action.contains("train_retrieve")) {
     if (tp.fishId <= 0) return;
-    if (player.inventory.isFull && !player.inventory.hasItem(tp.fishId)) {
-      player.sendTextBubble("Your backpack is full!", true);
-      return;
-    }
-
     const fishId = tp.fishId;
     const weight = tp.weight;
     tp.fishId = 0;
@@ -632,11 +647,13 @@ registerDialog("training_port_dialog", (player, action) => {
     tp.exp = 0;
     tp.status = 0;
     tp.hunger = FishHungerLevel.CONTENT;
+    tp.hungerAtLastFed = FishHungerLevel.CONTENT;
+    tp.lastFed = 0;
     tp.isSick = false;
     tp.isDead = false;
     target.world.markDirty();
 
-    player.addItemInven(fishId, weight);
+    returnFishOrDrop(player, target.world, fishId, weight, target.block.x, target.block.y);
     player.sendInventory();
     player.sendSfx("audio/splash.wav");
 

@@ -44,8 +44,8 @@ import {
 const MAX_OVEN_INGREDIENTS = 6;
 /** Low-heat equivalent seconds after which an unattended oven burns out on its own. */
 const OVEN_BURNOUT_LOW_SEC = 180;
-/** Chance (20%) for the Replicator (6412) to produce a duplicate dish. */
-const REPLICATOR_DUPLICATE_CHANCE = 0.2;
+/** Chance (5%) for the Replicator (6412) to produce a duplicate dish. */
+const REPLICATOR_DUPLICATE_CHANCE = 0.05;
 
 /** Returns the display name of an item ID. */
 function itemName(id: number): string {
@@ -154,7 +154,7 @@ export function handleFoodGrinderUse(player: Player, block: TileData, itemId: nu
   return true;
 }
 
-registerDialog("grinder", (player, action) => {
+registerDialog("grinder", async (player, action) => {
   const world = player.world;
   if (!world) return;
 
@@ -163,23 +163,25 @@ registerDialog("grinder", (player, action) => {
   const tileX = action.getInt("tilex", -1);
   const tileY = action.getInt("tiley", -1);
 
-  if (count <= 0) return;
+  if (!Number.isSafeInteger(count) || count <= 0 || tileX < 0 || tileY < 0) return;
   const recipe = GRINDABLE_ITEMS[itemId];
   if (!recipe) return;
-
-  if (tileX >= 0 && tileY >= 0) {
-    const block = world.getTileAt(tileX, tileY);
-    if (!block || block.fg !== FOOD_GRINDER) return;
+  const block = world.getTileAt(tileX, tileY);
+  if (!block || block.fg !== FOOD_GRINDER) return;
+  if (!(await world.hasTilePermission(player, block, LockPermission.BUILD))) {
+    player.sendTextBubble("You don't have permission to use that grinder!", true);
+    return;
   }
 
   const required = count * recipe.count;
+  if (!Number.isSafeInteger(required) || required <= 0) return;
   const held = player.inventory.getAmount(itemId);
   if (held < required) {
     player.sendTextBubble(`You don't have enough ${itemName(itemId)}!`, true);
     return;
   }
 
-  if (player.removeItemInven(itemId, required, true) <= 0) return;
+  if (player.removeItemInven(itemId, required, true) !== required) return;
   giveOrDropItem(player, world, recipe.prize, count);
 
   const inName = itemName(itemId);
@@ -202,7 +204,7 @@ const FISH_ID_SET: ReadonlySet<number> = new Set(FISH_BASE_IDS);
  * while holding a Butcher Knife (4506) or Sushi Knife (3466).
  * @returns true when a dropped item was sliced on the cutting board.
  */
-export function handleCuttingBoardSlice(player: Player, world: World, block: TileData): boolean {
+export async function handleCuttingBoardSlice(player: Player, world: World, block: TileData): Promise<boolean> {
   if (block.fg !== CUTTING_BOARD) return false;
 
   const hand = player.inventory.clothes.hand;
@@ -212,6 +214,7 @@ export function handleCuttingBoardSlice(player: Player, world: World, block: Til
     (d) => d.block.x === block.x && d.block.y === block.y && d.amount > 0,
   );
   if (dropsOnTile.length === 0) return false;
+  if (!(await world.hasTilePermission(player, block, LockPermission.BUILD))) return false;
 
   for (const drop of dropsOnTile) {
     let resultId = 0;
@@ -329,7 +332,7 @@ registerDialog("homeoven_edit", async (player, action) => {
 
   const tempLevel =
     button === "low" ? OVEN_HEAT.LOW : button === "med" ? OVEN_HEAT.MED : button === "high" ? OVEN_HEAT.HIGH : OVEN_HEAT.OFF;
-  if (tempLevel === OVEN_HEAT.OFF || itemId <= 0) return;
+  if (tempLevel === OVEN_HEAT.OFF || !OVEN_COOKABLE_INGREDIENTS.has(itemId)) return;
 
   const block = world.getTileAt(tileX, tileY);
   if (!block || !isOvenTile(block)) return;
@@ -443,6 +446,7 @@ export async function handleOvenItemPlace(
     }
     world.sendItemEffect(itemId, player, player);
     world.playPositioned("audio/spray.wav", player.netID);
+    tileFrom(world, block).tileUpdate();
     world.markDirty();
     return true;
   }
@@ -455,8 +459,10 @@ export async function handleOvenItemPlace(
   const elapsedLowMs = getOvenElapsedLowMs(oven);
 
   // Check if Tomato + Habanero Pepper merges into Salsa (4560) in-place
-  if ((itemId === 712 || itemId === 962) && tryMergeSalsaInOven(oven.ingredients, itemId, elapsedLowMs)) {
+  if ((itemId === 712 || itemId === 962) &&
+      tryMergeSalsaInOven(oven.ingredients.map((ing) => ({ ...ing })), itemId, elapsedLowMs)) {
     if (player.removeItemInven(itemId, 1, true) <= 0) return true;
+    tryMergeSalsaInOven(oven.ingredients, itemId, elapsedLowMs);
     world.sendItemEffect(itemId, player, player);
     world.playPositioned("audio/MenuClick.wav", player.netID);
     tileFrom(world, block).tileUpdate();
@@ -488,16 +494,17 @@ export async function handleOvenItemPlace(
 
 /**
  * Normalizes the oven's placed ingredients for recipe matching.
- * If a recipe expects Salsa (4560) and the player placed Tomato (962) + Onion (4602)
- * or Tomato (962) + Habanero Pepper (712), they are combined into Salsa (4560).
+ * If a recipe expects Salsa (4560) and the player placed Tomato (962)
+ * and Habanero Pepper (712), they are combined into Salsa (4560).
  */
 function normalizeIngredientsForRecipe(placed: readonly OvenIngredient[], recipe: OvenRecipe): OvenIngredient[] {
   const copy = placed.map((ing) => ({ ...ing }));
   const needsSalsa = recipe.ingredients.some((i) => i.id === SALSA);
   if (needsSalsa && !copy.some((i) => i.itemId === SALSA)) {
     const tomatoIdx = copy.findIndex((i) => i.itemId === 962);
-    const partnerIdx = copy.findIndex((i) => i.itemId === 712 || i.itemId === 4602);
-    if (tomatoIdx !== -1 && partnerIdx !== -1) {
+    const partnerIdx = copy.findIndex((i) => i.itemId === 712);
+    if (tomatoIdx !== -1 && partnerIdx !== -1 &&
+        Math.abs(copy[tomatoIdx]!.timeAddedMs - copy[partnerIdx]!.timeAddedMs) <= 8000) {
       const tomato = copy[tomatoIdx]!;
       tomato.itemId = SALSA;
       copy.splice(partnerIdx, 1);
@@ -640,7 +647,7 @@ export function finishOvenCooking(player: Player, world: World, block: TileData)
     }
   }
 
-  // Replicator (6412) has a 20% chance to duplicate the dish
+  // Replicator (6412) has a 5% chance to duplicate the dish
   const replicated = block.fg === REPLICATOR && Math.random() < REPLICATOR_DUPLICATE_CHANCE;
   const dishCount = replicated ? 2 : 1;
 
@@ -730,13 +737,15 @@ export function tickCooking(world: World): void {
     // Emit stage transitions for the first ingredient as a helpful visual cue
     const firstIng = oven.ingredients[0];
     if (firstIng && chef) {
-      const ingAgeSec = Math.floor((getOvenElapsedLowMs(oven, now) - firstIng.timeAddedMs) / 1000);
+      const ingAddedSec = Math.floor(firstIng.timeAddedMs / 1000);
+      const prevAge = prevSec - ingAddedSec;
+      const ingAgeSec = elapsedLowSec - ingAddedSec;
       const name = itemName(firstIng.itemId);
-      if (ingAgeSec === 15) {
+      if (prevAge < 15 && ingAgeSec >= 15) {
         chef.sendTextBubble(`\`2[\`w${name}\`\` is uncooked.]\`\``, true);
-      } else if (ingAgeSec === 35) {
+      } else if (prevAge < 35 && ingAgeSec >= 35) {
         chef.sendTextBubble(`\`2[\`w${name}\`\` is mostly cooked.]\`\``, true);
-      } else if (ingAgeSec === 125) {
+      } else if (prevAge < 125 && ingAgeSec >= 125) {
         chef.sendTextBubble(`\`4[\`w${name}\`\` is burning!]\`\``, true);
       }
     }
