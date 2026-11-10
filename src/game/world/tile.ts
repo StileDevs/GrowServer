@@ -325,7 +325,10 @@ export class Tile {
 
   /** Lets a tile adjust the flags that get serialized without changing the stored ones. */
   public serializedFlags(flags: number): number {
-    return flags;
+    if (this.serialize === Tile.prototype.serialize) {
+      return flags & ~TileFlags.TILEEXTRA;
+    }
+    return flags | TileFlags.TILEEXTRA;
   }
 
   private serializeHeader(buffer: ExtendBuffer): void {

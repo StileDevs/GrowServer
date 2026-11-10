@@ -68,6 +68,8 @@ const DEFAULT_EXTRA_BY_ACTION: Partial<Record<number, number[]>> = {
   [ActionTypes.ADVENTURE_RESET]: [58],
   [ActionTypes.TOMB_ROBBER]: [59],
   [ActionTypes.FACTION]: [60, ...z(5)],
+  // Training Port (Fishgotchi Tank): u32 weight, u16 status, u32 fishId, u32 exp, u32 level, u32 unk (22 bytes)
+  [ActionTypes.FISHGOTCHI_TANK]: [61, ...z(22)],
   // Magplant / item sucker: u32 item, u32 amount, u8 sucking, u8 planting, u32 capacity (5000)
   [ActionTypes.ITEM_SUCKER]: [62, ...z(8), 1, 0, ...u32(5000)],
   [ActionTypes.ROBOT]: [63, ...z(12)],
@@ -108,7 +110,6 @@ export const UNSUPPORTED_EXTRA_TYPES: ReadonlySet<number> = new Set([
   ActionTypes.SWING, // Sewing Machine: u16 vs u32 count
   ActionTypes.CHALLENGE_FLAG,
   ActionTypes.PORTRAIT, // 22 vs 26 vs 32 bytes
-  ActionTypes.FISHGOTCHI_TANK, // 22 vs 35 bytes
   ActionTypes.ITEM_PLANTER,
   ActionTypes.AUTO_ACTION_HARVEST, // Heart of Gaia: unknown
   ActionTypes.AUTO_ACTION_HARVEST_SUCK, // Techno-Organic Engine: unknown
