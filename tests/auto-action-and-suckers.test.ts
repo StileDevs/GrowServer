@@ -416,4 +416,111 @@ describe("Heart of Gaia, Tesseract Manipulator & Techno-Organic Engine", () => {
     expect(targetTile.fg).toBe(0);
     expect(machine.autoAction.gems).toBe(7);
   });
+
+  test("Gaia's Beacon & Unstable Tesseract wrench dialog omits remote and building mode UI", async () => {
+    catSpy = mockCatalog();
+    const world = makeWorld();
+    const block = world.getTileAt(10, 10)!;
+    block.fg = ITEM_ID.GAIA_BEACON;
+    const tile = new MagplantTile(world, block);
+    tile.storage.itemId = ITEM_ID.DIRT_SEED;
+
+    const owner = makePlayer(42);
+    owner.world = world;
+    let sentDialog = "";
+    owner.variants.sendOnDialogRequest = (d) => { sentDialog = d; };
+
+    await tile.onWrench(owner);
+    expect(sentDialog).not.toContain("Building mode");
+    expect(sentDialog).not.toContain("getplantationdevice");
+    expect(sentDialog).not.toContain("Remote");
+    expect(sentDialog).toContain("itemsucker_seed");
+
+    // Magplant with building mode disabled omits "Building mode: DISABLED"
+    block.fg = ITEM_ID.MAGPLANT;
+    tile.storage.planting = false;
+    await tile.onWrench(owner);
+    expect(sentDialog).not.toContain("Building mode: DISABLED");
+
+    // Magplant with building mode active includes "Building mode: ACTIVE"
+    tile.storage.planting = true;
+    await tile.onWrench(owner);
+    expect(sentDialog).toContain("Building mode: ACTIVE");
+    expect(sentDialog).toContain("getplantationdevice");
+  });
+
+  test("Gaia's Beacon punch toggles collecting and disables suction when off", async () => {
+    catSpy = mockCatalog();
+    const world = makeWorld();
+    const block = world.getTileAt(11, 11)!;
+    block.fg = ITEM_ID.GAIA_BEACON;
+    const tile = new MagplantTile(world, block);
+    tile.storage.itemId = ITEM_ID.DIRT_SEED;
+    tile.storage.collecting = true;
+
+    const owner = makePlayer(42);
+    owner.world = world;
+
+    // Punch toggles collecting off
+    await tile.onPunch(owner);
+    expect(tile.storage.collecting).toBe(false);
+
+    // Drop seeds: because collecting is false, it cannot suck
+    const left1 = collectMagplantDrop(world, ITEM_ID.DIRT_SEED, 50, { x: 32, y: 32 });
+    expect(left1).toBe(50);
+    expect(tile.storage.count).toBe(0);
+
+    // Punch again toggles collecting back on
+    block.resetStateAt = 0;
+    await tile.onPunch(owner);
+    expect(tile.storage.collecting).toBe(true);
+
+    const left2 = collectMagplantDrop(world, ITEM_ID.DIRT_SEED, 50, { x: 32, y: 32 });
+    expect(left2).toBe(0);
+    expect(tile.storage.count).toBe(50);
+  });
+
+  test("Tesseract Manipulator wrench dialog toggles power via chk_enabled and broadcasts punch damage without sucker beam", async () => {
+    catSpy = mockCatalog();
+    const world = makeWorld();
+    const machine = world.getTileAt(17, 17)!;
+    machine.fg = ITEM_ID.TESSERACT_MANIPULATOR;
+    const tile = new AutoActionTile(world, machine);
+    tile.autoState.gems = 100;
+    tile.autoState.targetItemId = ITEM_ID.DIRT;
+    tile.autoState.enabled = true;
+
+    const owner = makePlayer(42);
+    owner.world = world;
+    let sentDialog = "";
+    owner.variants.sendOnDialogRequest = (d) => { sentDialog = d; };
+
+    await tile.onWrench(owner);
+    expect(sentDialog).toContain("add_checkbox|chk_enabled|Status: ON|1|");
+
+    const handler = dialogs.get("autoactionblock")!;
+    // Submit chk_enabled as 0
+    await handler(owner, new TextParser("dialog_name|autoactionblock\ntilex|17\ntiley|17\nchk_enabled|0\n"));
+    expect(tile.autoState.enabled).toBe(false);
+
+    // Submit chk_enabled as 1
+    await handler(owner, new TextParser("dialog_name|autoactionblock\ntilex|17\ntiley|17\nchk_enabled|1\n"));
+    expect(tile.autoState.enabled).toBe(true);
+
+    // Verify punch damage packet on world tick (no ITEM_EFFECT sucker packet)
+    const target = world.getTileAt(26, 26)!;
+    target.fg = ITEM_ID.DIRT;
+    target.damage = 0;
+
+    const broadcasted: any[] = [];
+    world.broadcast = (buf: any) => { broadcasted.push(buf); };
+
+    tickAutoActionMachines(world);
+    expect(target.damage).toBe(1);
+    // broadcasted should contain TILE_APPLY_DAMAGE (type 8 in GameUpdatePacket)
+    // GameUpdatePacket type byte is at offset 4 (after 4-byte header)
+    const types = broadcasted.map((b) => Buffer.from(b)[4]);
+    expect(types).toContain(8); // TILE_APPLY_DAMAGE
+    expect(types).not.toContain(19); // Not ITEM_EFFECT (19)
+  });
 });

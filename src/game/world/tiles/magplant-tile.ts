@@ -61,6 +61,8 @@ export class MagplantTile extends Tile {
     const s = this.storage;
     const owner = canManageMagplant(player, this.world);
     const title = this.machineTitle;
+    const isMag = this.data.fg === ITEM_ID.MAGPLANT;
+
     const dialog = new DialogBuilder().defaultColor().addLabelWithIcon(title, this.data.fg, "big")
       .embed("tilex", this.data.x).embed("tiley", this.data.y).addSpacer("small");
     if (!s.itemId) {
@@ -79,32 +81,58 @@ export class MagplantTile extends Tile {
           else dialog.addButton("retrieveitem", "Retrieve Item");
         } else dialog.addButton("clearitem", "Change Item");
       }
-      dialog.addTextBox(`Building mode: ${s.planting ? "ACTIVE" : "DISABLED"}`);
-      if (owner || s.planting) dialog.addTextBox(`Use the MAGPLANT 5000 Remote to build ${name} directly from the ${title}'s storage.`);
-      if (canUseMagplantRemote(player, this.world, this.data)) dialog.addButton("getplantationdevice", "Get Remote");
+      if (isMag) {
+        if (s.planting) {
+          dialog.addTextBox("Building mode: ACTIVE");
+          dialog.addTextBox(`Use the MAGPLANT 5000 Remote to build ${name} directly from the ${title}'s storage.`);
+        }
+        if (canUseMagplantRemote(player, this.world, this.data)) dialog.addButton("getplantationdevice", "Get Remote");
+      }
       if (owner) dialog.addCheckbox("chk_enablesucking", "Enable Collection.", s.collecting ? "selected" : "not_selected");
     }
-    dialog.endDialog("itemsucker_block", "Close", owner && s.itemId ? "Update" : "");
+    const dialogName = this.data.fg === ITEM_ID.GAIA_BEACON ? "itemsucker_seed" : "itemsucker_block";
+    dialog.endDialog(dialogName, "Close", owner && s.itemId ? "Update" : "");
     player.variants.sendOnDialogRequest(dialog.str());
     return true;
   }
 
-  /** An idle punch toggles building; continued punches can break an empty machine. */
+  /**
+   * For MAGPLANT: an idle punch toggles building mode.
+   * For Gaia's Beacon and Unstable Tesseract: an idle punch toggles collection (enabled/disabled).
+   * Continued punches break an empty machine.
+   */
   public override async onPunch(player: Player): Promise<boolean> {
     if (!canManageMagplant(player, this.world)) {
       player.sendTextBubble("Only the world owner can activate this!", true);
       return false;
     }
     const s = this.storage;
-    if (s.itemId && (!this.data.resetStateAt || this.data.resetStateAt <= Date.now())) {
-      if (!isMagplantPlantable(s.itemId)) {
-        player.sendTextBubble(`Cannot activate the ${this.machineTitle}, the current item cannot be placed.`, true);
-      } else {
-        s.planting = !s.planting;
-        if (s.planting) bindMagplantRemote(player, this.world, this.data);
-        else invalidateMagplantRemotes(this.data);
-        player.sendTextBubble(`Building mode: ${s.planting ? "ACTIVE" : "DISABLED"}`, true);
+    const isMag = this.data.fg === ITEM_ID.MAGPLANT;
+
+    if (isMag) {
+      if (s.itemId && (!this.data.resetStateAt || this.data.resetStateAt <= Date.now())) {
+        if (!isMagplantPlantable(s.itemId)) {
+          player.sendTextBubble(`Cannot activate the ${this.machineTitle}, the current item cannot be placed.`, true);
+        } else {
+          s.planting = !s.planting;
+          if (s.planting) bindMagplantRemote(player, this.world, this.data);
+          else invalidateMagplantRemotes(this.data);
+          if (s.planting) player.sendTextBubble("Building mode: ACTIVE", true);
+        }
+        this.data.resetStateAt = Date.now() + (this.item?.resetStateAfter ?? 4) * 1000;
+        this.data.damage = 0;
+        this.tileUpdate();
+        this.world.markDirty();
+        return true;
       }
+      if (s.count > 0) { player.sendTextBubble(`Empty the ${this.machineTitle} before breaking it!`, true); return false; }
+      return super.onPunch(player);
+    }
+
+    // Gaia's Beacon and Unstable Tesseract: toggle collection (enabled/disabled)
+    if (!this.data.resetStateAt || this.data.resetStateAt <= Date.now()) {
+      s.collecting = !s.collecting;
+      player.sendTextBubble(`${this.machineTitle} is now ${s.collecting ? "`2ENABLED``" : "`4DISABLED``"}.`, true);
       this.data.resetStateAt = Date.now() + (this.item?.resetStateAfter ?? 4) * 1000;
       this.data.damage = 0;
       this.tileUpdate();
@@ -123,14 +151,14 @@ export class MagplantTile extends Tile {
   }
 }
 
-registerDialog("itemsucker_block", async (player, action) => {
+async function handleSuckerDialog(player: Player, action: any): Promise<void> {
   const target = tileFromDialog(player, action);
   if (!target || !isSuckerBlock(target.block.fg)) return;
   const { world, block } = target;
   const tile = new MagplantTile(world, block);
   const s = tile.storage;
   const button = action.get("buttonClicked");
-  if (button === "getplantationdevice") { bindMagplantRemote(player, world, block); return; }
+  if (button === "getplantationdevice" && block.fg === ITEM_ID.MAGPLANT) { bindMagplantRemote(player, world, block); return; }
   if (!canManageMagplant(player, world)) return;
   if (action.contains("selectitem")) {
     const raw = action.get("selectitem");
@@ -189,10 +217,14 @@ registerDialog("itemsucker_block", async (player, action) => {
     if (value !== "0" && value !== "1") return;
     s.collecting = value === "1";
   } else return;
+
   world.markDirty();
   tile.tileUpdate();
   await tile.onWrench(player);
-});
+}
+
+registerDialog("itemsucker_block", handleSuckerDialog);
+registerDialog("itemsucker_seed", handleSuckerDialog);
 
 for (const adding of [true, false]) registerDialog(adding ? "itemaddedtosucker" : "itemremovedfromsucker", async (player, action) => {
   const target = tileFromDialog(player, action);

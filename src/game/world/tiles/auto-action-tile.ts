@@ -8,11 +8,12 @@ import { ActionTypes, BlockFlags, ITEM_ID, TileExtraTypes, TileFlags } from "../
 import { Tile } from "../tile";
 import type { World } from "../world";
 import type { TileData } from "../types";
+import { Packet, PacketKind } from "growtopia.wasm";
 import { GameUpdatePacket } from "../../packets/game-packet";
 import { TANK_PACKET_TYPE } from "../../../constants";
 
 export const MAX_AUTO_ACTION_FUEL = 8000;
-export const AUTO_ACTION_TICK_RATE_MS = 1000;
+export const AUTO_ACTION_TICK_RATE_MS = 1500;
 
 /** Checks whether a tile is an auto-action machine. */
 export function isAutoActionBlock(itemId: number): boolean {
@@ -145,6 +146,10 @@ export class AutoActionTile extends Tile {
 
     if (owner) {
       dialog.addItemPicker("selecttarget", "`wChoose Target Item``", "Choose the target item!");
+      dialog.addSpacer("small");
+      dialog.addCheckbox("chk_enabled", "Status: ON", s.enabled ? "selected" : "not_selected");
+    } else {
+      dialog.addSmallText(`Status: ${s.enabled ? "`2ON``" : "`4OFF``"}`);
     }
 
     dialog
@@ -198,6 +203,13 @@ registerDialog("autoactionblock", async (player, action) => {
 
   const tile = new AutoActionTile(world, block);
   const s = tile.autoState;
+
+  if (action.contains("chk_enabled")) {
+    s.enabled = action.get("chk_enabled") === "1";
+  }
+  if (action.get("buttonClicked") === "toggle_power") {
+    s.enabled = !s.enabled;
+  }
 
   if (action.contains("refillfuel")) {
     const raw = action.get("refillfuel");
@@ -342,21 +354,18 @@ function executeTesseractBreak(world: World, machineBlock: TileData, state: NonN
     state.gems--;
     if (state.gems <= 0) state.enabled = false;
 
-    // Visual effect
-    world.broadcast(GameUpdatePacket.create({
-      type: TANK_PACKET_TYPE.ITEM_EFFECT,
-      buildRange: 6,
-      netID: -1,
-      tileX: state.targetItemId,
-      posX: machineBlock.x * 32 + 16,
-      posY: machineBlock.y * 32 + 16,
-      speedX: block.x * 32 + 16,
-      speedY: block.y * 32 + 16,
-    }).parse()!);
-
     const itemMeta = getItem(state.targetItemId);
     const maxDamage = itemMeta?.breakHits ?? 4;
     block.damage = (block.damage ?? 0) + 1;
+
+    // Visual punch damage effect on targeted block (crack animation and hit sound)
+    world.broadcast(GameUpdatePacket.create({
+      type: TANK_PACKET_TYPE.TILE_APPLY_DAMAGE,
+      netID: -1,
+      itemID: 6, // PUNCH_DAMAGE
+      tileX: block.x,
+      tileY: block.y,
+    }).parse()!);
 
     if (block.damage >= maxDamage) {
       // Block broken: drop without gems
@@ -388,14 +397,22 @@ function executeTesseractBreak(world: World, machineBlock: TileData, state: NonN
         tileX: block.x,
         tileY: block.y,
       }).parse()!);
-    } else {
-      // Visual damage hit
-      world.broadcast(GameUpdatePacket.create({
-        type: TANK_PACKET_TYPE.TILE_APPLY_DAMAGE,
-        netID: -1,
-        tileX: block.x,
-        tileY: block.y,
-      }).parse()!);
+
+      const cleared = new Tile(world, block);
+      const clearedBytes = cleared.parse().data;
+      for (const player of world.players) {
+        player.send(
+          new Packet(
+            GameUpdatePacket.create({
+              type: TANK_PACKET_TYPE.SEND_TILE_UPDATE_DATA,
+              tileX: block.x,
+              tileY: block.y,
+              extraData: clearedBytes,
+            }).parse()!,
+            PacketKind.Reliable,
+          ),
+        );
+      }
     }
 
     world.markDirty();
