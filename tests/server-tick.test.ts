@@ -5,6 +5,33 @@ import { serverManager } from "../src/game/server/server-manager";
 import type { Player } from "../src/game/player";
 import type { World } from "../src/game/world/world";
 import { tickGeiger } from "../src/game/geiger/geiger-manager";
+import { handleTankPacket } from "../src/game/network/tank-handler";
+import { GameUpdatePacket } from "../src/game/packets/game-packet";
+import { TANK_PACKET_TYPE } from "../src/constants";
+
+test("movement emits geiger rings without waiting for the scheduler and shares its throttle", async () => {
+  let pulses = 0;
+  const player = {
+    netID: 1, state: { x: 0, y: 0 },
+    inventory: { clothes: { hand: 2204 } }, playMods: { has: () => false },
+    geiger: { targetX: 400, targetY: 0, lastPulseAt: 0 },
+    sendBuffer: () => { pulses++; },
+    world: { syncMusic: () => {}, broadcast: () => {} },
+  } as unknown as Player;
+  const now = spyOn(Date, "now").mockReturnValue(10000);
+  const packet = GameUpdatePacket.create({ type: TANK_PACKET_TYPE.STATE, posX: 100, posY: 0, tileX: 1 });
+  try {
+    await handleTankPacket(player, packet);
+    expect(pulses).toBe(1);
+    expect(player.state.x).toBe(100);
+    tickGeiger(player);
+    await handleTankPacket(player, packet);
+    expect(pulses).toBe(1);
+    now.mockReturnValue(11800);
+    tickGeiger(player);
+    expect(pulses).toBe(2);
+  } finally { now.mockRestore(); }
+});
 
 test("geiger interval follows distance when approaching and retreating from the same target", () => {
   let pulses = 0;

@@ -11,6 +11,7 @@ import { isPlaceableType, tileFrom } from "../world/tiles";
 import type { World } from "../world/world";
 import { worldManager } from "../world/world-manager";
 import { handleFishingCast, handleFishingMovement, handleFishingPunch } from "../fishing/fishing-manager";
+import { tickGeiger } from "../geiger/geiger-manager";
 import { handleSurgeryWrench } from "../surgery/surgery-manager";
 import { DEAD_GEIGER_COUNTER, depositDeadGeiger } from "../world/tiles/geiger-charger-tile";
 import { loadLobsterTrap } from "../world/tiles/lobster-trap-tile";
@@ -36,6 +37,7 @@ function State(player: Player, tank: GameUpdatePacket, world: World): void {
   world.syncMusic();
 
   handleFishingMovement(player, world);
+  tickGeiger(player);
 
   world.broadcast(tank.parse()!, player.id);
 
