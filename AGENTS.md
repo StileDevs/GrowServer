@@ -106,6 +106,12 @@ public players: Collection<string, Player> = new Collection();
   - `migrate`: Applies pending database migrations to `data/local.db`.
   - `wiki`: Scrapes Growtopia Wiki and generates `.cache/wiki.json`.
 - **Graceful Shutdown:** `setupGracefulShutdown()` handles `SIGINT` (Ctrl+C) and `SIGTERM` signals, ensuring all background child processes (Caddy) and database connections are closed before calling `process.exit(0)`.
+- **Server Game Ticker (`src/game/index.ts`):** One global interval (`startGameTicker()`, started from `startGameServer()` only, never at module load) drives two phases:
+  - **Fast phase (250 ms):** scans `serverManager.players` once and calls `tickGeiger(player, now)` for players inside a world. Geiger pulses are throttled per player by `GeigerSession.nextPulseAt` (600 ms), so the fast tick never floods packets. Never call `world.players`, hit the database, or serialize inside this phase.
+  - **Slow phase (1000 ms):** gated by `nextSlowTickAt`, runs play mods, fishing, cooking, fish training and magplant remotes. Missed slow ticks are skipped, never replayed in a burst.
+  - **New server-pushed mechanics belong on the ticker,** not in a movement packet handler: movement handlers only provide immediate feedback. Both entry points share per-session timers so a mechanic cannot double-fire.
+  - Overruns above `TICK_WARN_MS` (100 ms) log `game tick overran its budget`, throttled to once every 5 s. `shutdownGameServer()` clears the interval before saving and disconnecting players.
+  - Per-world session state (e.g. `player.geiger`) is cleared in `World.leave()`, because a session generated in one world must not leak into the next.
 
 ---
 

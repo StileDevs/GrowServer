@@ -2,10 +2,14 @@ import { TANK_PACKET_TYPE } from "../../constants";
 import { getItem } from "../item/item-utils";
 import { GameUpdatePacket } from "../packets/game-packet";
 import type { Player } from "../player";
-import { ClothTypes } from "../player/inventory";
 import { isSunday } from "../quests/quest-state";
 import { addRoleXp } from "../quests/role-quests";
 import type { World } from "../world/world";
+
+/** Active Geiger Counter item id. */
+const GEIGER_COUNTER = 2204;
+/** Minimum time between radiation pulses. */
+const GEIGER_PULSE_MS = 600;
 
 /** Rewards obtainable through Geiger hunting, from GTOS world.h:4204. */
 export const GEIGER_REWARDS: readonly number[] = [
@@ -15,32 +19,51 @@ export const GEIGER_REWARDS: readonly number[] = [
 export interface GeigerSession {
   targetX: number;
   targetY: number;
-  lastPulseAt: number;
+  nextPulseAt: number;
 }
 
 /**
- * Handles Geiger Counter radiation detection during player movement.
+ * Handles Geiger detection from a movement packet: immediate feedback while
+ * the player walks. Idle pulses are driven by `tickGeiger` from the game tick.
  * Transcribed from GTOS Main.cpp:17418 and world.h:4194 (find_geiger).
  */
 export function handleGeigerMovement(player: Player, world: World): void {
+  pulseGeiger(player, world, Date.now());
+}
+
+/**
+ * Server-authoritative Geiger pulse. Called by the game tick even when the
+ * player is not sending movement packets.
+ */
+export function tickGeiger(player: Player, now = Date.now()): void {
+  const world = player.world;
+  if (!world) {
+    player.geiger = null;
+    return;
+  }
+  pulseGeiger(player, world, now);
+}
+
+function pulseGeiger(player: Player, world: World, now: number): void {
   // Must hold Geiger Counter (2204) in hand
-  if (player.inventory.clothes.hand !== 2204) return;
+  if (player.inventory.clothes.hand !== GEIGER_COUNTER) {
+    player.geiger = null;
+    return;
+  }
 
   // If already irradiated (cooldown), Geiger cannot hunt
   if (player.playMods.has("irradiated")) return;
 
-  const now = Date.now();
   if (!player.geiger) {
     player.geiger = {
       targetX: Math.floor(Math.random() * ((world.width - 4) * 32)) + 64,
       targetY: Math.floor(Math.random() * ((world.height - 4) * 32)) + 64,
-      lastPulseAt: 0,
+      nextPulseAt: 0,
     };
   }
 
-  // Throttle detection pulses to every 600ms
-  if (now - player.geiger.lastPulseAt < 600) return;
-  player.geiger.lastPulseAt = now;
+  if (now < player.geiger.nextPulseAt) return;
+  player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
 
   const dx = player.geiger.targetX - player.state.x;
   const dy = player.geiger.targetY - player.state.y;
