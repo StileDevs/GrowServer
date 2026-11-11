@@ -542,6 +542,8 @@ export class World {
     this.stopMusicFor(player);
     player.world = null;
     player.netID = 0;
+    // Geiger targets belong to a world; a new world starts a new hunt
+    player.geiger = null;
     // the crystal's powers only apply inside the world
     player.playMods.remove("xenonite");
     player.state.world.name = "";

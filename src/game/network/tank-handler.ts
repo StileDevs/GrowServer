@@ -37,6 +37,8 @@ function State(player: Player, tank: GameUpdatePacket, world: World): void {
   world.syncMusic();
 
   handleFishingMovement(player, world);
+  // movement gives immediate Geiger feedback; the game tick keeps pulses
+  // running while the player is idle
   handleGeigerMovement(player, world);
 
   world.broadcast(tank.parse()!, player.id);
