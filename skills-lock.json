@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "skills": {
+    "deep-thinking": {
+      "source": "neekaru/skills-daily",
+      "sourceType": "github",
+      "skillPath": "skills/deep-thinking/SKILL.md",
+      "computedHash": "1b68cd262e719ff5fa344f2212294e22e9a5db67dba8145ce052a0de25d7e917"
+    },
+    "hyper-focus-solver": {
+      "source": "neekaru/skills-daily",
+      "sourceType": "github",
+      "skillPath": "skills/hyper-focus-solver/SKILL.md",
+      "computedHash": "4616f9e0c81a949076f61b91b817345f0f847b2dce1c3f9467807d5be5a412f6"
+    },
+    "reasonable-code-inspector": {
+      "source": "neekaru/skills-daily",
+      "sourceType": "github",
+      "skillPath": "skills/reasonable-code-inspector/SKILL.md",
+      "computedHash": "58851f455a5d72efceedd5c13e4b224ace77fe18313cd3b1bebb22d1b52fe032"
+    },
+    "reasonable-code-writer": {
+      "source": "neekaru/skills-daily",
+      "sourceType": "github",
+      "skillPath": "skills/reasonable-code-writer/SKILL.md",
+      "computedHash": "20386c883c123bd77dbc3ac515c59d23290c4059b565b29808f12e5d3ea8e6a0"
+    },
+    "smart-analyzer": {
+      "source": "neekaru/skills-daily",
+      "sourceType": "github",
+      "skillPath": "skills/smart-analyzer/SKILL.md",
+      "computedHash": "db80cc894468f63c265a685dba38c5f7aa7a147b1ab96c195df134c78fa9ce21"
+    }
+  }
+}
