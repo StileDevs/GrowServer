@@ -7,6 +7,9 @@ import { worldManager } from "./world/world-manager";
 import { registerGameConsoleCommands } from "../cli/game-commands";
 import { loadStoreCatalog } from "./network/store-catalog";
 import { tickFishing } from "./fishing/fishing-manager";
+import { tickCooking } from "./cooking/cooking-manager";
+import { tickFishTraining } from "./world/tiles/training-port-tile";
+import { tickMagplantRemotes } from "./world/magplant";
 
 export async function startGameServer(): Promise<void> {
   const ports = serverConfig?.game.server_ports ?? [];
@@ -65,7 +68,18 @@ function startPlayModTicker(): void {
       } catch (err) {
         logger.error({ err, world: world.name }, "fishing tick failed");
       }
+      try {
+        tickCooking(world);
+      } catch (err) {
+        logger.error({ err, world: world.name }, "cooking tick failed");
+      }
+      try {
+        tickFishTraining(world);
+      } catch (err) {
+        logger.error({ err, world: world.name }, "fish training tick failed");
+      }
     }
+    tickMagplantRemotes();
   }, PLAY_MOD_TICK_MS);
 }
 

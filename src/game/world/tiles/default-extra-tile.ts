@@ -68,13 +68,14 @@ const DEFAULT_EXTRA_BY_ACTION: Partial<Record<number, number[]>> = {
   [ActionTypes.ADVENTURE_RESET]: [58],
   [ActionTypes.TOMB_ROBBER]: [59],
   [ActionTypes.FACTION]: [60, ...z(5)],
+  // Training Port (Fishgotchi Tank): u32 fish_lb, u16 status, u32 item_id, u32 total_exp, 8B unk1, u32 fish_level, u32 unk2, 5B unk3 (35 bytes)
+  [ActionTypes.FISHGOTCHI_TANK]: [61, ...z(35)],
   // Magplant / item sucker: u32 item, u32 amount, u8 sucking, u8 planting, u32 capacity (5000)
   [ActionTypes.ITEM_SUCKER]: [62, ...z(8), 1, 0, ...u32(5000)],
   [ActionTypes.ROBOT]: [63, ...z(12)],
   [ActionTypes.STATS_BLOCK]: [66, 0], // GrowScan 9000
   [ActionTypes.FIELD_NODE]: [67, ...z(8)],
   [ActionTypes.OUIJA_BOARD]: [68, ...z(12)],
-  [ActionTypes.AUTO_ACTION_BREAK]: [69, ...z(16)], // Tesseract Manipulator
   [ActionTypes.LIGHTNING_IF_ON]: [72, ...z(12)], // Storm Cloud
   [ActionTypes.PHASED_BLOCK]: [73, ...z(4)],
   [ActionTypes.PASSWORD_STORAGE]: [74], // Safe Vault
@@ -108,10 +109,10 @@ export const UNSUPPORTED_EXTRA_TYPES: ReadonlySet<number> = new Set([
   ActionTypes.SWING, // Sewing Machine: u16 vs u32 count
   ActionTypes.CHALLENGE_FLAG,
   ActionTypes.PORTRAIT, // 22 vs 26 vs 32 bytes
-  ActionTypes.FISHGOTCHI_TANK, // 22 vs 35 bytes
   ActionTypes.ITEM_PLANTER,
-  ActionTypes.AUTO_ACTION_HARVEST, // Heart of Gaia: unknown
-  ActionTypes.AUTO_ACTION_HARVEST_SUCK, // Techno-Organic Engine: unknown
+  ActionTypes.AUTO_ACTION_BREAK, // Tesseract Manipulator: unimplemented
+  ActionTypes.AUTO_ACTION_HARVEST, // Heart of Gaia: unimplemented
+  ActionTypes.AUTO_ACTION_HARVEST_SUCK, // Techno-Organic Engine: unimplemented
   ActionTypes.PHASED_BLOCK_2,
   ActionTypes.FEEDING_BLOCK,
 ]);

@@ -1,5 +1,6 @@
 import { TANK_PACKET_TYPE } from "../../constants";
 import { logger } from "../../utils/logger";
+import { placeWithMagplantRemote } from "../world/magplant";
 import { getItem } from "../item/item-utils";
 import { useConsumable } from "../item/consumables";
 import type { GameUpdatePacket } from "../packets/game-packet";
@@ -14,6 +15,13 @@ import { handleGeigerMovement } from "../geiger/geiger-manager";
 import { handleSurgeryWrench } from "../surgery/surgery-manager";
 import { DEAD_GEIGER_COUNTER, depositDeadGeiger } from "../world/tiles/geiger-charger-tile";
 import { loadLobsterTrap } from "../world/tiles/lobster-trap-tile";
+import {
+  handleCookingItemActivate,
+  handleCuttingBoardSlice,
+  handleFoodGrinderUse,
+  handleFoodGrinderWrench,
+  handleOvenItemPlace,
+} from "../cooking/cooking-manager";
 
 type TankHandler = (player: Player, tank: GameUpdatePacket, world: World) => Promise<void> | void;
 
@@ -82,13 +90,19 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
   const data = tank.data;
   const block = world.getTileAt(data.tileX, data.tileY);
   if (!block) return;
+  if (data.itemID === ITEM_ID.MAGPLANT_REMOTE) {
+    if (player.inventory.hasItem(ITEM_ID.MAGPLANT_REMOTE)) await placeWithMagplantRemote(player, world, block);
+    return;
+  }
 
   if (data.itemID === ITEM_ID.FIST) {
     if (handleFishingPunch(player, world)) return;
+    if (await handleCuttingBoardSlice(player, world, block)) return;
     await tileFrom(world, block).onPunch(player);
     if (player.inventory.clothes.hand === ITEM_ID.RAYMANS_FIST) await raymanPunch(player, world, data);
   } else if (data.itemID === ITEM_ID.WRENCH) {
     if (handleSurgeryWrench(player, world, data.tileX, data.tileY, block.fg)) return;
+    if (handleFoodGrinderWrench(player, block)) return;
     await tileFrom(world, block).onWrench(player);
   } else {
     const itemMeta = getItem(data.itemID);
@@ -97,6 +111,9 @@ async function TileChangeRequest(player: Player, tank: GameUpdatePacket, world: 
 
     // bait on a lobster trap loads it instead of casting
     if (await loadLobsterTrap(player, world, block, itemMeta.id ?? 0)) return;
+    // items used on a Food Grinder or Cooking Oven go into the appliance before consumable/fishing checks
+    if (handleFoodGrinderUse(player, block, itemMeta.id ?? 0)) return;
+    if (await handleOvenItemPlace(player, world, block, itemMeta.id ?? 0)) return;
 
     if (await handleFishingCast(player, world, data.itemID, data.tileX, data.tileY)) return;
 
@@ -185,6 +202,8 @@ async function ItemActivateRequest(player: Player, tank: GameUpdatePacket): Prom
   const itemId = tank.data.itemID;
   const item = getItem(itemId);
   if (!item || !player.inventory.hasItem(itemId)) return;
+
+  if (await handleCookingItemActivate(player, itemId)) return;
 
   if (item.type === ActionTypes.LOCK) {
     const convert = (from: number, fromAmount: number, to: number, toAmount: number, message: string, tooMany: string) => {

@@ -1,6 +1,6 @@
 import { getItem } from "../item/item-utils";
 import type { Player } from "../player";
-import { ITEM_ID } from "../world/constants";
+import { ActionTypes, ITEM_ID } from "../world/constants";
 import { registerDialog } from "./dialog-handler";
 
 /**
@@ -28,6 +28,12 @@ registerDialog("drop_end", (player, action) => {
   if (count <= 0) return player.sendTextBubble("Nice try. You remind me of myself at that age.");
   if (itemId === ITEM_ID.FIST || itemId === ITEM_ID.WRENCH) return player.sendTextBubble("You'd be sorry if you lost that.");
 
+  const isFish = getItem(itemId)?.type === ActionTypes.PETFISH;
+  if (isFish && count !== owned) {
+    player.sendInventory();
+    return player.sendTextBubble("Please don't chop up the fish.");
+  }
+
   const world = player.world;
   if (!world) return;
 
@@ -35,8 +41,17 @@ registerDialog("drop_end", (player, action) => {
   const x = player.state.x + (player.state.rotatedLeft ? -25 : 25) + extra;
   const y = player.state.y + extra - Math.floor(Math.random() * 4 - 3);
 
+  const targetTileX = Math.floor(x / 32);
+  const targetTileY = Math.floor(y / 32);
+
+  if (world.isSolid(targetTileX, targetTileY)) {
+    player.sendInventory();
+    return player.sendTextBubble("You can't drop that here, face a different direction!");
+  }
+
   player.removeItemInven(itemId, count);
-  world.drop(player, x, y, itemId, count);
+  world.drop(player, x, y, itemId, count, { noSimilar: isFish });
+  if (isFish) player.sendInventory();
   player.sendClothesToWorld();
 });
 
@@ -51,8 +66,17 @@ registerDialog("trash_end", (player, action) => {
   if (itemId === ITEM_ID.FIST || itemId === ITEM_ID.WRENCH) return player.sendTextBubble("Cannot trash this item.");
   if (count <= 0) return player.sendTextBubble("Nice try. You remind me of myself at that age.");
 
+  const isFish = getItem(itemId)?.type === ActionTypes.PETFISH;
+  if (isFish && count !== owned) {
+    player.sendInventory();
+    return player.sendTextBubble("Please don't chop up the fish.");
+  }
+
   player.removeItemInven(itemId, count);
+  if (isFish) player.sendInventory();
   player.sendSfx("audio/trash.wav");
   player.sendClothesToWorld();
-  player.variants.sendOnConsoleMessage(`You trashed \`w${count} ${getItem(itemId)?.name}`);
+  player.variants.sendOnConsoleMessage(
+    isFish ? `You trashed \`w${count} lb. ${getItem(itemId)?.name}` : `You trashed \`w${count} ${getItem(itemId)?.name}`,
+  );
 });

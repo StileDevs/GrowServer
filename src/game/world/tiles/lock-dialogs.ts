@@ -70,6 +70,11 @@ function reapplyLock(player: Player, world: World, block: TileData, lock: LockPa
 }
 
 registerDialog("area_lock_edit", async (player, action) => {
+  const clicked = action.get("buttonClicked");
+  // Closing the popup or pressing an unrelated (unimplemented) button must not
+  // accidentally clear settings by submitting absent checkbox fields as false.
+  if (["Cancel", "__close__", "session_length", "set_category"].includes(clicked)) return;
+  if (!action.contains("allow_break_build")) return;
   const target = tileFromDialog(player, action);
   if (!target) return;
   const { world, block } = target;
@@ -94,7 +99,7 @@ registerDialog("area_lock_edit", async (player, action) => {
 
     // the home world is a per-player setting stored on the account
     const wantsHome = action.get("home_world") === "1";
-    if (wantsHome !== (player.homeWorld === world.name)) {
+    if (world.getOwnerPlayerId() === player.playerId && wantsHome !== (player.homeWorld === world.name)) {
       player.setHomeWorld(wantsHome ? world.name : null);
       player.sendTextBubble(`${world.name} has been ${wantsHome ? "set as" : "removed as"} your home world!`, false);
     }

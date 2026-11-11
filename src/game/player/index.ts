@@ -210,6 +210,8 @@ export class Player {
     // the tools can never be missing
     if (!this.inventory.hasItem(ITEM_ID.FIST)) this.inventory.addItem(ITEM_ID.FIST, 1);
     if (!this.inventory.hasItem(ITEM_ID.WRENCH)) this.inventory.addItem(ITEM_ID.WRENCH, 1);
+    // A saved token has no live machine binding after a reconnect or restart.
+    this.inventory.removeItem(ITEM_ID.MAGPLANT_REMOTE, this.inventory.getAmount(ITEM_ID.MAGPLANT_REMOTE));
 
     this.playMods.syncWearables(false);
   }
@@ -449,7 +451,14 @@ export class Player {
       return;
     }
 
-    this.xp += amount;
+    let finalAmount = amount;
+    if (this.playMods.has("triple_xp") && Math.random() < 0.1) {
+      finalAmount *= 3;
+    } else if (this.playMods.has("extra_xp") && Math.random() < 0.25) {
+      finalAmount *= 2;
+    }
+
+    this.xp += finalAmount;
     const required = Player.requiredXpForLevel(this.level);
     if (this.xp >= required) {
       this.level++;
@@ -473,20 +482,11 @@ export class Player {
   /** Toggles a clothing item on or off. */
   public equipClothes(itemId: number): void {
     if (!this.inventory.hasItem(itemId)) return;
+    if (itemId === 3172 && this.tryUseLegalBriefs()) return;
 
     if (this.inventory.isEquipped(itemId)) {
       this.unequipClothes(itemId);
       return;
-    }
-
-    // Special item effects on equip (from GTOS world.h:7384)
-    if (itemId === 3172 && this.playMods.has("malpractice")) {
-      this.sendTextBubble("`2Your briefs have stunned the judge!", true);
-      this.removeItemInven(3172, 1, true);
-      this.playMods.remove("malpractice");
-      this.variants.sendOnConsoleMessage("You've paid your debt to society! (`$Malpractice`` mod removed)");
-      this.sendSfx("audio/dialog_confirm.wav");
-      if (!this.inventory.hasItem(3172)) return;
     }
 
     const item = getItem(itemId);
@@ -505,6 +505,17 @@ export class Player {
 
   public unequipClothes(itemId: number): void {
     if (this.inventory.unequipById(itemId)) this.onClothesChanged(itemId, false);
+  }
+
+  /** Consumes one Legal Briefs to clear malpractice; inventory removal updates worn clothes. */
+  public tryUseLegalBriefs(): boolean {
+    if (!this.playMods.has("malpractice") || !this.inventory.hasItem(3172)) return false;
+    if (this.removeItemInven(3172, 1, true) !== 1) return false;
+    this.playMods.remove("malpractice");
+    this.sendTextBubble("`2Your briefs have stunned the judge!``", true);
+    this.variants.sendOnConsoleMessage("You've paid your debt to society! (`$Malpractice`` mod removed)");
+    this.sendSfx("audio/dialog_confirm.wav");
+    return true;
   }
 
   private onClothesChanged(itemId: number, equipped: boolean): void {
@@ -616,7 +627,7 @@ export class Player {
     world.leave(this);
 
     if (sendMenu) {
-      this.variants.sendOnRequestWorldSelectMenu(this.lastVisitedWorlds, 500);
+      this.variants.sendOnRequestWorldSelectMenu(this.lastVisitedWorlds, 500, this.homeWorld, this.playerId);
     }
   }
 

@@ -83,7 +83,14 @@ export class LockTile extends Tile {
   }
 
   public override async onDestroy(player: Player): Promise<void> {
+    const removedWorldLock = !!this.data.worldLockData;
+    const originalOwner = this.data.lock?.ownerPlayerId;
     await super.onDestroy(player);
+
+    // A home world must not silently point at a world the player no longer owns.
+    if (removedWorldLock && originalOwner === player.playerId && player.homeWorld === this.world.name) {
+      player.setHomeWorld(null);
+    }
 
     if (this.data.worldLockData) {
       this.notifyWorldLockRemove();

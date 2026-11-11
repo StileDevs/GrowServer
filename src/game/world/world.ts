@@ -3,9 +3,10 @@ import { PACKET_TYPE, TANK_PACKET_TYPE } from "../../constants";
 import { ExtendBuffer } from "../../utils/extend-buffer";
 import { logger } from "../../utils/logger";
 import { Collection } from "../../utils/collection";
+import { clearMagplantRemote, collectMagplantDrop } from "./magplant";
 import { PlayerDB } from "../../database/services/player-db";
 import { GameUpdatePacket } from "../packets/game-packet";
-import { Variant } from "../packets/variants";
+import { int32, Variant } from "../packets/variants";
 import { getItem } from "../item/item-utils";
 import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
@@ -16,6 +17,8 @@ import { DEFAULT_MUSIC_BPM, ActionTypes, CLIENT_UNAMPLIFIED_MUSIC_TYPE, ITEM_ID,
 import type { DroppedItem, TileData, WorldData, XenoniteSettings } from "./types";
 
 export interface DropOptions {
+  /** Explicit collection provenance; animation flags do not authorize collection. */
+  origin?: "block" | "harvest";
   /** Drop without attributing it to a player (e.g. from a broken block). */
   tree?: boolean;
   /** Never merge into an existing stack on the same tile. */
@@ -149,10 +152,40 @@ export class World {
     );
   }
 
+  /** Animates an item from the player's avatar into the target tile. */
+  public sendItemEffectToTile(itemId: number, user: Player, tile: TileData): void {
+    this.broadcastVariant(Variant.from(
+      "OnItemEffect", 4, int32(itemId), int32(1), [0, 0],
+      [tile.x * 32 + 16, tile.y * 32 + 16], int32(user.netID),
+    ));
+  }
+
   /** Tile at a block position, or undefined when out of bounds. */
   public getTileAt(x: number, y: number): TileData | undefined {
     if (x < 0 || y < 0 || x >= this.width || y >= this.height) return undefined;
     return this.data.blocks[x + y * this.width];
+  }
+
+  /**
+   * Checks if a tile at the given block coordinates is solid (cannot drop, walk, or fish through).
+   */
+  public isSolid(x: number, y: number): boolean {
+    const tile = this.getTileAt(x, y);
+    if (!tile) return true; // Out of bounds is solid
+    if (!tile.fg) return false;
+
+    const item = getItem(tile.fg);
+    if (!item) return false;
+
+    const collision = item.collisionType ?? 0;
+    // 1: Solid block (Dirt, Rock, Bedrock, etc.)
+    if (collision === 1) return true;
+    // 3: Gate/Portcullis; solid unless open
+    if (collision === 3 && (tile.flags & TileFlags.OPEN) === 0) return true;
+    // 4: Trapdoor / IF_OFF; solid unless open
+    if (collision === 4 && (tile.flags & TileFlags.OPEN) === 0) return true;
+
+    return false;
   }
 
   /** Tile at a block index. */
@@ -501,6 +534,7 @@ export class World {
    */
   public leave(player: Player): void {
     if (player.world !== this) return;
+    clearMagplantRemote(player);
 
     const leftNetId = player.netID;
     // captured before the world is detached: the name color depends on it
@@ -532,7 +566,9 @@ export class World {
   /**
    * Drops an item into the world at pixel coordinates.
    */
-  public drop(player: Player, x: number, y: number, id: number, amount: number, { tree, noSimilar }: DropOptions = {}): void {
+  public drop(player: Player, x: number, y: number, id: number, amount: number, { tree, noSimilar, origin }: DropOptions = {}): void {
+    if (origin === "block" || origin === "harvest") amount = collectMagplantDrop(this, id, amount, { x, y });
+    if (amount <= 0) return;
     const tank = GameUpdatePacket.create({
       type: TANK_PACKET_TYPE.ITEM_CHANGE_OBJECT,
       netID: -1,
@@ -545,7 +581,10 @@ export class World {
     const blockX = Math.trunc(x / 32);
     const blockY = Math.trunc(y / 32);
 
-    const similarDrops = noSimilar
+    const isFish = getItem(id)?.type === ActionTypes.PETFISH;
+    const forceNoSimilar = noSimilar || isFish;
+
+    const similarDrops = forceNoSimilar
       ? []
       : this.data.dropped.items.filter((item) => item.id === id && item.block.x === blockX && item.block.y === blockY).sort((a, b) => a.amount - b.amount);
     const similarDrop = similarDrops[0];
@@ -585,6 +624,27 @@ export class World {
   }
 
   /**
+   * Removes a dropped item from the world and notifies clients to despawn it.
+   */
+  public removeDrop(uid: number, picker?: Player): boolean {
+    const droppedItem = this.data.dropped.items.find((item) => item.uid === uid);
+    if (!droppedItem) return false;
+
+    this.broadcast(
+      GameUpdatePacket.create({
+        type: TANK_PACKET_TYPE.ITEM_CHANGE_OBJECT,
+        netID: picker?.netID ?? -1,
+        targetNetID: -1,
+        itemID: uid,
+      }).parse()!,
+    );
+
+    this.data.dropped.items = this.data.dropped.items.filter((item) => item.uid !== uid);
+    this.markDirty();
+    return true;
+  }
+
+  /**
    * Gives a dropped item to a player.
    */
   public collect(player: Player, uid: number): void {
@@ -596,22 +656,20 @@ export class World {
 
     const owned = player.inventory.getAmount(droppedItem.id);
     const isGems = droppedItem.id === ITEM_ID.GEMS;
+    const isFish = itemMeta?.type === ActionTypes.PETFISH;
 
     if (!isGems && ((owned === 0 && player.inventory.isFull) || owned >= 200)) return;
+    if (isFish && owned > 0) return;
 
-    this.broadcast(
-      GameUpdatePacket.create({
-        type: TANK_PACKET_TYPE.ITEM_CHANGE_OBJECT,
-        netID: player.netID,
-        targetNetID: -1,
-        itemID: uid,
-      }).parse()!,
-    );
+    this.removeDrop(uid, player);
 
     // the client adds the collected amount to its backpack on its own when it
     // receives the collect packet above, so the items are added silently here
     if (isGems) {
       player.addGems(droppedItem.amount);
+    } else if (isFish) {
+      player.addItemInven(droppedItem.id, droppedItem.amount, false);
+      player.variants.sendOnConsoleMessage(`Collected \`w${droppedItem.amount} lb. ${itemMeta?.name}\`\`.`);
     } else if (owned + droppedItem.amount > 200) {
       const extra = owned + droppedItem.amount - 200;
       player.variants.sendOnConsoleMessage(`Collected \`w${200 - owned} ${itemMeta?.name}\`\`.`);
@@ -621,9 +679,6 @@ export class World {
       player.addItemInven(droppedItem.id, droppedItem.amount, false);
       player.variants.sendOnConsoleMessage(`Collected \`w${droppedItem.amount} ${itemMeta?.name}\`\`.`);
     }
-
-    this.data.dropped.items = this.data.dropped.items.filter((item) => item.uid !== droppedItem.uid);
-    this.markDirty();
   }
 
   /** Removes every dropped item (used by /clearworld and similar). */

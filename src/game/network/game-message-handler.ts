@@ -1,4 +1,4 @@
-import type { TextParser } from "../../utils/text-parser";
+import { TextParser } from "../../utils/text-parser";
 import { DialogBuilder } from "../../utils/dialog-builder";
 import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
@@ -7,7 +7,7 @@ import { Player, PlayerStateFlags, MAX_LEVEL, DEFAULT_SKIN_COLOR } from "../play
 import { PLAYER_ROLE } from "../../constants";
 import { Variant, int32 } from "../packets/variants";
 import { serverManager } from "../server/server-manager";
-import { BlockFlags, ITEM_ID } from "../world/constants";
+import { BlockFlags, ITEM_ID, ActionTypes } from "../world/constants";
 import { handleDialogReturn } from "./dialog-handler";
 // registers the backpack and gazette dialog returns
 import "./item-dialogs";
@@ -49,7 +49,7 @@ function EnterGame(player: Player): void {
   player.variants.sendSetHasGrowID(true, player.tankIDName, player.auth.metadata.tankIDPass || player.auth.transferSession?.sessionToken || "");
   player.variants.sendOnTodaysDate();
   player.variants.sendOnRequestHoustonPricing();
-  player.variants.sendGazette();
+  player.variants.sendGazette(player.homeWorld, player.playerId, player.lastVisitedWorlds);
   player.variants.sendPingRequest();
   player.variants.sendOnSetFeatureEnableFlags();
   player.addStateStatus(PlayerStateFlags.IN_GAME);
@@ -82,6 +82,25 @@ async function Input(player: Player, action: TextParser): Promise<void> {
   await handleChatInput(player, action.get("text"));
 }
 
+/** Routes the native discovery Home button using the account's saved destination. */
+async function GoHomeWorld(player: Player): Promise<void> {
+  const name = player.homeWorld;
+  if (!name) {
+    player.variants.sendOnFailedToEnterWorld();
+    player.variants.sendOnConsoleMessage("You haven't set a home world yet. Use /sethome in a world you own.");
+    return;
+  }
+  if (player.world?.name === name) {
+    const door = player.world.mainDoor;
+    player.setPosition((door?.x ?? 0) * 32, (door?.y ?? 0) * 32);
+    player.world.playPositioned("audio/door_open.wav", player.netID);
+    return;
+  }
+  const action = new TextParser();
+  action.set("name", name);
+  await JoinRequest(player, action);
+}
+
 function Respawn(player: Player): void {
   player.respawn();
 }
@@ -110,15 +129,28 @@ function Drop(player: Player, action: TextParser): void {
   const item = getItem(itemId);
   if (!item || !player.inventory.hasItem(itemId)) return;
 
+  const isFish = item.type === ActionTypes.PETFISH;
+  const owned = player.inventory.getAmount(itemId);
+
   const dialog = new DialogBuilder()
     .defaultColor()
-    .addLabelWithIcon(`Drop ${item.name}`, itemId, "big")
-    .addTextBox("How many to drop?")
-    .addInputBox("drop_count", "", player.inventory.getAmount(itemId), 5)
+    .addLabelWithIcon(`Drop ${item.name}`, itemId, "big");
+
+  if (isFish) {
+    dialog
+      .addTextBox(`Drop this ${owned} lb. ${item.name}?`)
+      .addInputBox("drop_count", "", owned, 5);
+  } else {
+    dialog
+      .addTextBox("How many to drop?")
+      .addInputBox("drop_count", "", owned, 5);
+  }
+
+  dialog
     .embed("itemID", itemId)
-    .endDialog("drop_end", "Cancel", "OK")
-    .str();
-  player.variants.sendOnDialogRequest(dialog);
+    .endDialog("drop_end", "Cancel", "OK");
+
+  player.variants.sendOnDialogRequest(dialog.str());
 }
 
 function Info(player: Player, action: TextParser): void {
@@ -163,15 +195,28 @@ function Trash(player: Player, action: TextParser): void {
     return;
   }
 
+  const isFish = item.type === ActionTypes.PETFISH;
+  const owned = player.inventory.getAmount(itemId);
+
   const dialog = new DialogBuilder()
     .defaultColor()
-    .addLabelWithIcon(`Trash ${item.name}`, itemId, "big")
-    .addTextBox("How many to `4destroy`o?")
-    .addInputBox("trash_count", "", 0, 5)
+    .addLabelWithIcon(`Trash ${item.name}`, itemId, "big");
+
+  if (isFish) {
+    dialog
+      .addTextBox(`Trash this ${owned} lb. ${item.name}?`)
+      .addInputBox("trash_count", "", owned, 5);
+  } else {
+    dialog
+      .addTextBox("How many to `4destroy`o?")
+      .addInputBox("trash_count", "", 0, 5);
+  }
+
+  dialog
     .embed("itemID", itemId)
-    .endDialog("trash_end", "Cancel", "OK")
-    .str();
-  player.variants.sendOnDialogRequest(dialog);
+    .endDialog("trash_end", "Cancel", "OK");
+
+  player.variants.sendOnDialogRequest(dialog.str());
 }
 
 function Store(player: Player): void {
@@ -231,6 +276,7 @@ export const GameMessageMap: Record<string, (player: Player, action: TextParser)
   refresh_item_data: RefreshItemData,
   refresh_player_tribute_data: RefreshPlayerTributeData,
   join_request: JoinRequest,
+  gohomeworld: GoHomeWorld,
   input: Input,
   respawn: Respawn,
   respawn_spike: Respawn,

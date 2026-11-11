@@ -1,5 +1,6 @@
 import { CHARACTER_STATE, PLAYER_ROLE, PLAYER_ROLE_NAMES } from "../../constants";
 import { DialogBuilder } from "../../utils/dialog-builder";
+import { searchItemNames } from "../item/item-search";
 import { PlayerDB } from "../../database/services/player-db";
 import { items } from "../item/item-info";
 import { getItem } from "../item/item-utils";
@@ -7,6 +8,8 @@ import { Variant } from "../packets/variants";
 import type { Player } from "../player";
 import { serverManager } from "../server/server-manager";
 import { registerDialog } from "../network/dialog-handler";
+import { homeWorldDialog } from "../network/home-world-dialog";
+import { questDailyDialog, sendGoalsDialog } from "../quests";
 import { ActionTypes, ITEM_ID, LOCKS } from "../world/constants";
 import { worldManager } from "../world/world-manager";
 import { canUseCommand, commands, registerCommand, type ChatCommand } from "./registry";
@@ -175,8 +178,8 @@ registerCommand({
     const world = player.world;
     if (!world) return player.variants.sendOnConsoleMessage("`4You are not in a world.");
 
-    if (world.getOwnerPlayerId() === undefined) {
-      return player.variants.sendOnConsoleMessage("`4You can only set a home world in a world locked world.");
+    if (world.getOwnerPlayerId() !== player.playerId) {
+      return player.variants.sendOnConsoleMessage("`4You can only set your home world in a World Locked world that you own.");
     }
     if (player.homeWorld === world.name) {
       return player.variants.sendOnConsoleMessage(`\`2${world.name}\`\` is already your home world!`);
@@ -208,36 +211,68 @@ registerCommand({
 
 registerCommand({
   name: "home",
+  aliases: ["gethome"],
   description: "Warp to your home world.",
   usage: "/home",
   cooldown: 15,
   async execute(player) {
     const name = player.homeWorld;
     if (!name) {
-      return player.variants.sendOnConsoleMessage("You haven't set a home world yet! Use `\`2/sethome\`\` in a world locked world to set one.");
+      player.variants.sendOnDialogRequest(homeWorldDialog(player));
+      return;
     }
 
     player.variants.sendOnConsoleMessage(`Magically warping to home world \`5${name}\`\`...`);
+    if (player.world?.name === name) {
+      const door = player.world.mainDoor;
+      player.setPosition((door?.x ?? 0) * 32, (door?.y ?? 0) * 32);
+      player.world.playPositioned("audio/door_open.wav", player.netID);
+      return;
+    }
     await player.enterWorld(name);
+  },
+});
+
+registerCommand({
+  name: "homeworld",
+  description: "Open your home-world settings.",
+  cooldown: 1,
+  execute(player) {
+    player.variants.sendOnDialogRequest(homeWorldDialog(player));
+  },
+});
+
+registerCommand({
+  name: "daily",
+  aliases: ["dailyquest", "dailyquests"],
+  description: "Open Crazy Jim's daily quest.",
+  cooldown: 1,
+  execute(player) {
+    player.variants.sendOnDialogRequest(questDailyDialog(player));
+  },
+});
+
+registerCommand({
+  name: "roles",
+  aliases: ["rolequest", "rolequests", "quests"],
+  description: "Open your role quests and level rewards.",
+  cooldown: 1,
+  execute(player) {
+    sendGoalsDialog(player);
   },
 });
 
 function sendFindResults(player: Player, query: string, seedsOnly: boolean): void {
   const dialog = new DialogBuilder().defaultColor().addQuickExit().addLabelWithIcon("Find the item", 6016, "big").addSpacer("small");
-  // input boxes and chat both append the pressed Enter as a trailing
-  // newline; color codes come along for the ride too
-  const needle = query.replace(/[\r\n]+/g, " ").replace(/`./g, "").trim().toLowerCase();
-  let count = 0;
-
-  for (const item of items.meta.items.values()) {
-    const id = item.id ?? 0;
-    if (id <= 0 || !item.name?.toLowerCase().includes(needle)) continue;
-    if (seedsOnly ? id % 2 === 0 : id % 2 === 1) continue;
-    dialog.addButtonWithIcon(id, id, item.name, "staticBlueFrame", id);
-    if (++count >= 100) break;
+  const result = searchItemNames(items.meta.items.values(), query, seedsOnly);
+  if (!result.query) return;
+  if (result.corrected) dialog.addSmallText(`No exact matches; showing results for: ${result.query}`);
+  for (const item of result.matches) {
+    const id = item.id!;
+    dialog.addButtonWithIcon(id, id, item.name ?? String(id), "staticBlueFrame", id);
   }
 
-  if (count === 0) dialog.addSmallText("`4No items found.``");
+  if (result.matches.length === 0) dialog.addSmallText("`4No items found.``");
   dialog.endDialog("find_item_end", "Cancel", "");
   player.variants.sendOnDialogRequest(dialog.str());
 }

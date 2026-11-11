@@ -2,6 +2,14 @@ import type { LockPermission } from "./constants";
 
 /** Per-tile data kept by the server. Only the fields a tile needs are set. */
 export interface TileData {
+  /** Persistent MAGPLANT storage and access settings. */
+  magplant?: {
+    instanceId: string;
+    itemId: number;
+    count: number;
+    collecting?: boolean;
+    planting?: boolean;
+  };
   fg: number;
   bg: number;
   x: number;
@@ -39,6 +47,55 @@ export interface TileData {
     startedAt: number;
     readyAt: number;
   };
+  /** Fish Tank Port with stored fish. */
+  fishTank?: {
+    fishes: Array<{ id: number; weight: number }>;
+    glowing?: boolean;
+  };
+  /** Training Port for fish training. */
+  trainingPort?: {
+    fishId: number;
+    weight: number;
+    level: number;
+    exp: number;
+    status: number;
+    lastFed: number;
+    hunger?: number;
+    /** Hunger at the most recent feeding, for stable offline decay. */
+    hungerAtLastFed?: number;
+    isSick?: boolean;
+    isDead?: boolean;
+  };
+  /** Active cooking oven state. */
+  oven?: OvenData;
+}
+
+export interface OvenIngredient {
+  /** Ingredient item ID. */
+  itemId: number;
+  /** Elapsed Low-Heat equivalent milliseconds when the ingredient was added. */
+  timeAddedMs: number;
+}
+
+export interface OvenData {
+  /** Heat level: 0 = off, 1 = Low (1x), 2 = Med (2x), 3 = High (3x). */
+  tempLevel: number;
+  /** Timestamp (ms) when the oven was started. */
+  startedAt: number;
+  /** Player ID of the chef cooking on this oven. */
+  chefPlayerId: number;
+  /** NetID of the chef when cooking started (for positioned bubbles). */
+  chefNetId: number;
+  /** Main ingredients placed in the oven. */
+  ingredients: OvenIngredient[];
+  /** Spices added during cooking. */
+  spices: {
+    salt: number;
+    pepper: number;
+    sugar: number;
+  };
+  /** Last Low-Heat equivalent second that was ticked, to avoid duplicate bubbles. */
+  lastTickSec: number;
 }
 
 /**

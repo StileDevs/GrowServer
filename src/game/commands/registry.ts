@@ -1,5 +1,6 @@
 import { PLAYER_ROLE, playerRoleRank } from "../../constants";
 import { Collection } from "../../utils/collection";
+import { normalizeChatInput } from "../../utils/chat-input";
 import type { Player } from "../player";
 
 /** Definition of a chat command (`/name args`). */
@@ -46,7 +47,9 @@ export function canUseCommand(player: Player, command: ChatCommand): boolean {
  * Parses and runs a slash command typed in chat (without the leading slash).
  */
 export async function executeCommand(player: Player, input: string): Promise<void> {
-  const args = input.trim().split(/\s+/);
+  const normalized = normalizeChatInput(input);
+  if (!normalized) return;
+  const args = normalized.split(/\s+/);
   const name = (args.shift() ?? "").toLowerCase();
   const command = findCommand(name);
 
@@ -69,6 +72,6 @@ export async function executeCommand(player: Player, input: string): Promise<voi
   }
   cooldowns.set(cooldownKey, now + (command.cooldown ?? 1) * 1000);
 
-  await command.execute(player, args, input);
+  await command.execute(player, args, normalized);
 }
 

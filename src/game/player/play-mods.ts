@@ -84,6 +84,7 @@ for (const def of [
   mod({ id: "putt_putt_putt", name: "Putt Putt Putt", displayItem: 898, addMessage: "Tractors are not speedy.", removeMessage: "You can walk faster than that thing!", speed: -100, items: [898, 1830, 1966] }),
   mod({ id: "hunting_ghosts", name: "Hunting Ghosts", displayItem: 3716, addMessage: "You fire Neutron Beams (requires Neutron Pack to work).", removeMessage: "You're afraid of a ghost.", punchType: 69, punchRange: 2, items: [3716] }),
   mod({ id: "geiger_counter", name: "Geiger Counter", displayItem: 2204, addMessage: "You are detecting radiation...", removeMessage: "Geiger Counter removed.", items: [2204] }),
+  mod({ id: "slasher", name: "Slasher", displayItem: 3466, addMessage: "You can slash with your blade!", removeMessage: "You put your blade away.", punchType: 29, items: [3466, 4506] }),
 
   // --- world-driven ------------------------------------------------------------
   // granted while a Xenonite Crystal is placed in the world; its masks, not the
@@ -114,6 +115,25 @@ for (const def of [
   mod({ id: "megaphone", name: "Megaphone!", displayItem: 2480, addMessage: "Broadcasting to ALL!", removeMessage: "You can broadcast once again.", duration: 600 }),
   mod({ id: "extra_xp", name: "Food: Extra XP", displayItem: 1474, addMessage: "25% chance of double XP for all actions.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/spray.wav" }),
   mod({ id: "composer", name: "Food: Composer", displayItem: 6906, addMessage: "You can see musical notes in the world!", removeMessage: "The music fades from your eyes.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "berry_crepes", name: "Food: Berry Crepes", displayItem: 4596, addMessage: "Gain 30% more XP from Surgery!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "deep_fried_ice_cream", name: "Food: Deep-Fried Ice Cream", displayItem: 6316, addMessage: "Gain 50% more XP from Surgery!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "apple_strudel", name: "Food: Apple Strudel", displayItem: 4594, addMessage: "Trees you plant grow 5% faster!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "arroz_con_pollo", name: "Food: Arroz Con Pollo", displayItem: 4604, addMessage: "10% chance of a gem when you break a block.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "fish_and_chips", name: "Food: Fish and Chips", displayItem: 4600, addMessage: "Catch 5% larger fish!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "fish_taco", name: "Food: Fish Taco", displayItem: 4592, addMessage: "Gain 1 gem for every 5lbs. your fish catches weigh.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "pineapple_turnover", name: "Food: Pineapple Turnover", displayItem: 4768, addMessage: "Get triple XP for using consumables.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "triple_xp", name: "Food: Triple XP", displayItem: 5452, addMessage: "10% chance of triple XP for all actions.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "cooking_gas", name: "Food: Cooking on Gas!", displayItem: 10270, addMessage: "Now we are cooking on gas! (+5% Cooking Quality)", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "gluttons_gazpacho", name: "Food: Glutton's Gazpacho", displayItem: 6908, addMessage: "Increase the duration of food buffs by 30%.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "growlectables", name: "Food: Growlectables", displayItem: 6910, addMessage: "25% chance of double Growtokens from Daily Quests.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "spicey_skills", name: "Food: Spicey Skills", displayItem: 6912, addMessage: "Reduce your skill fails by half in both Surgery and Startopia missions.", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "gemonade", name: "Food: Gemonade", displayItem: 6914, addMessage: "Get extra gems from a variety of actions!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "bbq_bacon_burger", name: "Food: BBQ Bacon Burger", displayItem: 4598, addMessage: "You deal more damage in Carnage and Guild battles!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "chips_and_guac", name: "Food: Chips and Guac", displayItem: 4674, addMessage: "Gain 15% more XP from Crime Wave battles!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "guac_bueno", name: "Food: Guacamole Bueno", displayItem: 6046, addMessage: "Gain 10% more XP from Fishing and Surgery!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "guac_sabroso", name: "Food: Guacamole Sabroso", displayItem: 6048, addMessage: "Gain 20% more XP from Fishing and Surgery!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "guac_perfecto", name: "Food: Guacamole Perfecto", displayItem: 6050, addMessage: "Gain 35% more XP from Fishing and Surgery!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
+  mod({ id: "coconut_tart", name: "Food: Coconut Tart", displayItem: 7056, addMessage: "You feel refreshed with tropical energy!", removeMessage: "Your stomach's rumbling.", duration: 1800, sound: "audio/eat.wav" }),
   mod({ id: "malpractice", name: "Malpractice", displayItem: 1258, addMessage: "You are not allowed to perform surgery for a while!", removeMessage: "You can perform surgery again.", duration: 3600 }),
   mod({ id: "recovering", name: "Recovering", displayItem: 1256, addMessage: "Congratulations on your successful surgery!", removeMessage: "Fully recovered from surgery.", duration: 1200 }),
 ]) {
@@ -229,7 +249,6 @@ export function mixTints(tints: readonly (readonly [number, number, number, numb
   return [Math.round(red / weight), Math.round(green / weight), Math.round(blue / weight), alpha];
 }
 
-/** Composites the tint over a packed `0xRRGGBBAA` skin color. */
 /**
  * Applies a Xenonite Crystal's force/block masks to the stats, with the same
  * clamp values as the official server. Heat resist (fire damage) and the
@@ -281,6 +300,7 @@ export function applyXenonite(stats: CharacterStats, settings: XenoniteSettings)
   return restricted;
 }
 
+/** Composites an RGBA tint over the client's packed `0xBBGGRRAA` skin color. */
 export function tintSkinColor(color: number, tint: [number, number, number, number] | undefined): number {
   if (!tint) return color >>> 0;
   const [red, green, blue, alpha] = tint;
@@ -289,5 +309,5 @@ export function tintSkinColor(color: number, tint: [number, number, number, numb
     const base = (color >>> shift) & 0xff;
     return Math.round(base * (1 - coverage) + value * coverage) & 0xff;
   };
-  return ((channel(24, red) << 24) | (channel(16, green) << 16) | (channel(8, blue) << 8) | 0xff) >>> 0;
+  return ((channel(24, blue) << 24) | (channel(16, green) << 16) | (channel(8, red) << 8) | (color & 0xff)) >>> 0;
 }

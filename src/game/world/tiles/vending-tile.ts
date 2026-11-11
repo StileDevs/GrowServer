@@ -5,7 +5,7 @@ import { getItem } from "../../item/item-utils";
 import type { Player } from "../../player";
 import { Tile } from "../tile";
 import type { Vending } from "../types";
-import { BlockFlags, ITEM_ID, TileExtraTypes, TileFlags } from "../constants";
+import { BlockFlags, ITEM_ID, TileExtraTypes, TileFlags, TILE_ALT_MODE } from "../constants";
 
 /** World locks one diamond lock is worth. */
 export const DIAMOND_LOCK_VALUE = 100;
@@ -28,6 +28,8 @@ export class VendingTile extends Tile {
   /** The machine state, created on demand for machines placed before this handler existed. */
   public get vending(): Vending {
     if (!this.data.vending) this.data.vending = { itemId: 0, count: 0, price: 0, earned: 0 };
+    // Older world saves may predate the earnings field. Do not add into undefined.
+    if (!Number.isSafeInteger(this.data.vending.earned) || this.data.vending.earned < 0) this.data.vending.earned = 0;
     return this.data.vending;
   }
 
@@ -92,15 +94,19 @@ export class VendingTile extends Tile {
     player.variants.sendOnDialogRequest(dialog.str());
   }
 
-  // The client lights the machine up when it holds an item.
+  /** Uses the reference machine frame plus the independent World Lock earnings overlay. */
   public override serializedFlags(flags: number): number {
-    return this.vending.itemId ? flags | TileFlags.OPEN : flags;
+    const v = this.vending;
+    return (flags & ~TILE_ALT_MODE) | TileFlags.TILEEXTRA | TileFlags.OPEN
+      | (v.earned > 0 ? TILE_ALT_MODE : 0);
   }
 
   public override serialize(buffer: ExtendBuffer): void {
     buffer.writeU8(this.extraType);
-    buffer.writeU32(this.vending.itemId);
-    buffer.writeI32(this.vending.price);
+    const v = this.vending;
+    const forSale = v.price !== 0 && v.count >= (v.price < 0 ? -v.price : 1);
+    buffer.writeU32(forSale ? v.itemId : 0);
+    buffer.writeI32(v.price);
   }
 
   /**
