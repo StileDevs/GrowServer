@@ -6,36 +6,6 @@ import { isSunday } from "../quests/quest-state";
 import { addRoleXp } from "../quests/role-quests";
 import type { World } from "../world/world";
 
-/** Active Geiger Counter item id. */
-const GEIGER_COUNTER = 2204;
-/** Minimum time between radiation pulses. */
-const GEIGER_PULSE_MS = 600;
-/** Pixel size of one world block. */
-const TILE_PX = 32;
-
-/**
- * Ring bands in blocks, from the wiki:
- * red 15-30, yellow 7.5-15, green 4-7.5, rapid green 0-4.
- * Further than 30 blocks emits no rings at all.
- */
-const GEIGER_RED_RANGE_BLOCKS = 30;
-const GEIGER_YELLOW_RANGE_BLOCKS = 15;
-const GEIGER_GREEN_RANGE_BLOCKS = 7.5;
-const GEIGER_RAPID_GREEN_RANGE_BLOCKS = 4;
-/**
- * Faster pulse interval inside the rapid green band. Kept below the 250 ms
- * fast tick so one pulse lands on every tick instead of every other tick.
- */
-const GEIGER_RAPID_PULSE_MS = 200;
-
-/** Ring color carried in particle 114's `speedX`. */
-const GEIGER_SIGNAL = {
-  RED: 0,
-  YELLOW: 1,
-  GREEN: 2,
-  FOUND: 3,
-} as const;
-
 /** Rewards obtainable through Geiger hunting, from GTOS world.h:4204. */
 export const GEIGER_REWARDS: readonly number[] = [
   6416, 2206, 3792, 3196, 4654, 3306, 1498, 1500, 2804, 2806, 8270, 8272, 8274, 2242, 2244, 2246, 2248, 2250,
@@ -44,21 +14,12 @@ export const GEIGER_REWARDS: readonly number[] = [
 export interface GeigerSession {
   targetX: number;
   targetY: number;
-  nextPulseAt: number;
+  lastPulseAt: number;
 }
 
 /**
- * Handles Geiger detection from a movement packet: immediate feedback while
- * the player walks. Idle pulses are driven by `tickGeiger` from the game tick.
+ * Handles Geiger Counter radiation detection on the fast server tick.
  * Transcribed from GTOS Main.cpp:17418 and world.h:4194 (find_geiger).
- */
-export function handleGeigerMovement(player: Player, world: World): void {
-  pulseGeiger(player, world, Date.now());
-}
-
-/**
- * Server-authoritative Geiger pulse. Called by the game tick even when the
- * player is not sending movement packets.
  */
 export function tickGeiger(player: Player, now = Date.now()): void {
   const world = player.world;
@@ -66,12 +27,8 @@ export function tickGeiger(player: Player, now = Date.now()): void {
     player.geiger = null;
     return;
   }
-  pulseGeiger(player, world, now);
-}
-
-function pulseGeiger(player: Player, world: World, now: number): void {
   // Must hold Geiger Counter (2204) in hand
-  if (player.inventory.clothes.hand !== GEIGER_COUNTER) {
+  if (player.inventory.clothes.hand !== 2204) {
     player.geiger = null;
     return;
   }
@@ -83,20 +40,29 @@ function pulseGeiger(player: Player, world: World, now: number): void {
     player.geiger = {
       targetX: Math.floor(Math.random() * ((world.width - 4) * 32)) + 64,
       targetY: Math.floor(Math.random() * ((world.height - 4) * 32)) + 64,
-      nextPulseAt: 0,
+      lastPulseAt: 0,
     };
   }
 
-  if (now < player.geiger.nextPulseAt) return;
-
   const dx = player.geiger.targetX - player.state.x;
   const dy = player.geiger.targetY - player.state.y;
+  const dist = Math.hypot(dx, dy);
+  // Preserve the upstream detection limit of 30 world blocks.
+  if (dist > 30 * 32) return;
 
-  // 1. RADIATION SOURCE FOUND! (standing on the source block)
-  if (Math.abs(dx) <= TILE_PX && Math.abs(dy) <= TILE_PX) {
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
+  // Recompute from the current distance so approaching speeds up immediately.
+  // Green slows to 1.4 seconds at its outer edge, reaching 200ms only within 50px.
+  // Continue smoothly through yellow (1.4–2.2 seconds) and red (up to 3 seconds).
+  const pulseIntervalMs = dist <= 200
+    ? 200 + Math.max(0, dist - 50) * 8
+    : Math.min(3000, 1400 + (dist - 200) * 4);
+  if (player.geiger.lastPulseAt !== 0 && now - player.geiger.lastPulseAt < pulseIntervalMs) return;
+  player.geiger.lastPulseAt = now;
+
+  // 1. RADIATION SOURCE FOUND! (within ~30 pixels)
+  if (Math.abs(dx) <= 32 && Math.abs(dy) <= 32) {
     // Found particle: size 3 (white flash/source found)
-    sendGeigerParticle(player, GEIGER_SIGNAL.FOUND);
+    sendGeigerParticle(player, 3);
 
     // Roll reward item from GTOS table
     const rewardId = GEIGER_REWARDS[Math.floor(Math.random() * GEIGER_REWARDS.length)] ?? 2206;
@@ -160,37 +126,15 @@ function pulseGeiger(player: Player, world: World, now: number): void {
     return;
   }
 
-  // 2. RADIATION DISTANCE SIGNALS, from the wiki:
-  // red 15-30 blocks, yellow 7.5-15, green 4-7.5, rapid green 0-4.
-  // Beyond 30 blocks there is no ring at all and the signal stays silent.
-  const distanceInBlocks = Math.hypot(dx, dy) / TILE_PX;
-  if (distanceInBlocks > GEIGER_RED_RANGE_BLOCKS) {
-    // too far to detect: no rings, so the next pulse comes at the normal rate
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
-    return;
+  // 2. RADIATION DISTANCE SIGNALS:
+  // Red: 15–30 blocks; yellow: 7.5–15 blocks; green: within 7.5 blocks.
+  if (dist > 15 * 32) {
+    sendGeigerParticle(player, 0);
+  } else if (dist > 7.5 * 32) {
+    sendGeigerParticle(player, 1);
+  } else {
+    sendGeigerParticle(player, 2);
   }
-
-  if (distanceInBlocks > GEIGER_YELLOW_RANGE_BLOCKS) {
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
-    sendGeigerParticle(player, GEIGER_SIGNAL.RED);
-    return;
-  }
-
-  if (distanceInBlocks > GEIGER_GREEN_RANGE_BLOCKS) {
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
-    sendGeigerParticle(player, GEIGER_SIGNAL.YELLOW);
-    return;
-  }
-
-  if (distanceInBlocks > GEIGER_RAPID_GREEN_RANGE_BLOCKS) {
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
-    sendGeigerParticle(player, GEIGER_SIGNAL.GREEN);
-    return;
-  }
-
-  // rapid green: same ring, pulsing faster
-  player.geiger.nextPulseAt = now + GEIGER_RAPID_PULSE_MS;
-  sendGeigerParticle(player, GEIGER_SIGNAL.GREEN);
 }
 
 /**

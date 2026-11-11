@@ -94,7 +94,7 @@ export interface OvenData {
     pepper: number;
     sugar: number;
   };
-  /** Last Low-Heat equivalent second that was ticked, to avoid duplicate bubbles. */
+  /** Last Low-Heat equivalent second processed by the cooking tick. */
   lastTickSec: number;
 }
 

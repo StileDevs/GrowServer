@@ -1,0 +1,105 @@
+import "../src/game/index";
+import { afterEach, expect, spyOn, test } from "bun:test";
+import { runFastTick, runSlowTick, startServerTicks, stopServerTicks, FAST_TICK_MS, SLOW_TICK_MS } from "../src/game/server-tick";
+import { serverManager } from "../src/game/server/server-manager";
+import type { Player } from "../src/game/player";
+import type { World } from "../src/game/world/world";
+import { tickGeiger } from "../src/game/geiger/geiger-manager";
+
+test("geiger interval follows distance when approaching and retreating from the same target", () => {
+  let pulses = 0;
+  const player = {
+    world: {} as World, inventory: { clothes: { hand: 2204 } }, playMods: { has: () => false },
+    state: { x: 0, y: 0 }, geiger: { targetX: 900, targetY: 0, lastPulseAt: 10000 },
+    sendBuffer: () => { pulses++; },
+  } as unknown as Player;
+  const now = spyOn(Date, "now").mockReturnValue(10600);
+  try {
+    tickGeiger(player);
+    expect(pulses).toBe(0);
+    player.state.x = 800;
+    tickGeiger(player);
+    expect(pulses).toBe(1);
+    expect(player.geiger!.targetX).toBe(900);
+    player.state.x = 0;
+    now.mockReturnValue(10800);
+    tickGeiger(player);
+    expect(pulses).toBe(1);
+    now.mockReturnValue(13600);
+    tickGeiger(player);
+    expect(pulses).toBe(2);
+  } finally { now.mockRestore(); }
+});
+
+afterEach(() => {
+  stopServerTicks();
+  serverManager.players.delete("tick-test");
+});
+
+test.each([
+  [900, 3000], [500, 2600], [400, 2200], [300, 1800],
+  [201, 1404], [200, 1400], [199, 1392], [175, 1200], [150, 1000], [100, 600], [50, 200],
+])("stationary geiger at %i pixels pulses every %i ms", (distance, interval) => {
+  let pulses = 0;
+  const player = {
+    id: "tick-test", netID: 1, world: {} as World,
+    inventory: { clothes: { hand: 2204 } },
+    playMods: { has: () => false },
+    state: { x: 0, y: 0 },
+    geiger: { targetX: distance, targetY: 0, lastPulseAt: 0 },
+    sendBuffer: () => { pulses++; },
+  } as unknown as Player;
+  serverManager.players.set(player.id, player);
+  const now = spyOn(Date, "now").mockReturnValue(10000);
+  try {
+    runFastTick();
+    expect(pulses).toBe(1);
+    now.mockReturnValue(10000 + interval - 1);
+    runFastTick();
+    expect(pulses).toBe(1);
+    now.mockReturnValue(10000 + interval);
+    runFastTick();
+    expect(pulses).toBe(2);
+    player.world = undefined;
+    now.mockReturnValue(10000 + interval * 2);
+    runFastTick();
+    expect(pulses).toBe(2);
+  } finally {
+    now.mockRestore();
+  }
+});
+
+test("play mods run on the slow tick only", () => {
+  let updates = 0;
+  serverManager.players.set("tick-test", {
+    playMods: { tick: () => { updates++; } },
+  } as unknown as Player);
+  runFastTick();
+  expect(updates).toBe(0);
+  runSlowTick();
+  expect(updates).toBe(1);
+});
+
+test("starting twice creates only two timers and stopping permits restart", () => {
+  const intervals: number[] = [];
+  const interval = spyOn(globalThis, "setInterval").mockImplementation(((_callback: unknown, ms: number) => {
+    intervals.push(ms);
+    return intervals.length;
+  }) as typeof setInterval);
+  const clear = spyOn(globalThis, "clearInterval").mockImplementation(() => {});
+  try {
+    startServerTicks();
+    startServerTicks();
+    expect(intervals).toEqual([FAST_TICK_MS, SLOW_TICK_MS]);
+    stopServerTicks();
+    expect(clear).toHaveBeenCalledTimes(2);
+    stopServerTicks();
+    expect(clear).toHaveBeenCalledTimes(2);
+    startServerTicks();
+    expect(intervals).toEqual([200, 1000, 200, 1000]);
+    stopServerTicks();
+  } finally {
+    interval.mockRestore();
+    clear.mockRestore();
+  }
+});
