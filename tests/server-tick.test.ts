@@ -80,9 +80,14 @@ test("play mods run on the slow tick only", () => {
   expect(updates).toBe(1);
 });
 
-test("starting twice creates only two timers and stopping permits restart", () => {
+test("upstream scheduler starts once, gates slow ticks, and skips missed ticks", () => {
   const intervals: number[] = [];
+  let callback: () => void = () => {};
+  let updates = 0;
+  serverManager.players.set("tick-test", { playMods: { tick: () => { updates++; } } } as unknown as Player);
+  const now = spyOn(Date, "now").mockReturnValue(10000);
   const interval = spyOn(globalThis, "setInterval").mockImplementation(((_callback: unknown, ms: number) => {
+    callback = _callback as () => void;
     intervals.push(ms);
     return intervals.length;
   }) as typeof setInterval);
@@ -90,16 +95,27 @@ test("starting twice creates only two timers and stopping permits restart", () =
   try {
     startServerTicks();
     startServerTicks();
-    expect(intervals).toEqual([FAST_TICK_MS, SLOW_TICK_MS]);
+    expect(intervals).toEqual([FAST_TICK_MS]);
+    callback();
+    expect(updates).toBe(0);
+    now.mockReturnValue(10000 + SLOW_TICK_MS);
+    callback();
+    expect(updates).toBe(1);
+    now.mockReturnValue(20000);
+    callback();
+    expect(updates).toBe(2);
+    callback();
+    expect(updates).toBe(2);
     stopServerTicks();
-    expect(clear).toHaveBeenCalledTimes(2);
+    expect(clear).toHaveBeenCalledTimes(1);
     stopServerTicks();
-    expect(clear).toHaveBeenCalledTimes(2);
+    expect(clear).toHaveBeenCalledTimes(1);
     startServerTicks();
-    expect(intervals).toEqual([200, 1000, 200, 1000]);
+    expect(intervals).toEqual([250, 250]);
     stopServerTicks();
   } finally {
     interval.mockRestore();
     clear.mockRestore();
+    now.mockRestore();
   }
 });
