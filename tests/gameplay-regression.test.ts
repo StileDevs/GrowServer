@@ -183,6 +183,7 @@ describe("mechanics dialog returns", () => {
   });
 
   test("starts an oven at the submitted coordinates after selecting heat", async () => {
+    const bubbles: string[] = [];
     const block = { x: 7, y: 9, fg: HOME_OVEN } as TileData;
     const world = {
       getTileAt: (x: number, y: number) => x === 7 && y === 9 ? block : undefined,
@@ -193,13 +194,14 @@ describe("mechanics dialog returns", () => {
     const player = {
       world, playerId: 1, netID: 1,
       inventory: { hasItem: () => true }, removeItemInven: () => 1,
-      sendTextBubble: () => {},
+      sendTextBubble: (message: string) => { bubbles.push(message); },
     } as unknown as Player;
     await dialogs.get("homeoven_edit")!(player, new TextParser(
       "tilex|7\ntiley|9\ncookthis|4602\nbuttonClicked|high",
     ));
     expect(block.oven?.tempLevel).toBe(OVEN_HEAT.HIGH);
     expect(block.oven?.ingredients).toEqual([{ itemId: 4602, timeAddedMs: 0 }]);
+    expect(bubbles).toEqual([]);
   });
 
   test("handles a training picker selection without a Feed button", async () => {
@@ -429,6 +431,29 @@ describe("oven cooking", () => {
     const startedAt = 10_000;
     const oven = { tempLevel: OVEN_HEAT.HIGH, startedAt } as NonNullable<TileData["oven"]>;
     expect(getOvenElapsedLowMs(oven, startedAt + 5000)).toBe(15000);
+  });
+
+  test.each([[4562, 874], [962, 712]])("adding ingredient %i then %i emits no cooking state bubble", async (first, next) => {
+    const bubbles: string[] = [];
+    const block = {
+      fg: HOME_OVEN, x: 5, y: 6,
+      oven: {
+        tempLevel: OVEN_HEAT.LOW, startedAt: Date.now(), chefPlayerId: 1, chefNetId: 1,
+        ingredients: [{ itemId: first, timeAddedMs: 0 }],
+        spices: { salt: 0, pepper: 0, sugar: 0 }, lastTickSec: 0,
+      },
+    } as TileData;
+    const player = {
+      inventory: { hasItem: () => true }, removeItemInven: () => 1, netID: 1,
+      sendTextBubble: (message: string) => { bubbles.push(message); },
+    } as unknown as Player;
+    const world = {
+      players: [], hasTilePermission: async () => true, sendItemEffectToTile: () => {},
+      playPositioned: () => {}, markDirty: () => {}, getTileAt: () => block,
+    } as unknown as World;
+    expect(await handleOvenItemPlace(player, world, block, next)).toBe(true);
+    expect(bubbles).toEqual([]);
+    expect(block.oven!.ingredients.some((ingredient) => ingredient.itemId === (first === 962 ? 4560 : next))).toBe(true);
   });
 
   test("accepts spices while an oven is cooking", async () => {

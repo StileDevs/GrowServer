@@ -1,4 +1,5 @@
 import { getItem } from "../item/item-utils";
+import { CADUCEUS_ID } from "../quests/constants";
 import type { Player } from "../player";
 import { ActionTypes, ITEM_ID } from "../world/constants";
 import { registerDialog } from "./dialog-handler";
@@ -19,6 +20,7 @@ registerDialog("gazzette_end", () => {});
 
 registerDialog("drop_end", (player, action) => {
   const itemId = action.getInt("itemID", 0, 0);
+  if (itemId === CADUCEUS_ID) return player.sendTextBubble("Caduceus cannot be dropped.");
   const count = parseCount(player, action.get("drop_count"));
   if (count === null) return;
 

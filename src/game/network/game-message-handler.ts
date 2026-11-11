@@ -1,4 +1,5 @@
 import { TextParser } from "../../utils/text-parser";
+import { CADUCEUS_ID } from "../quests/constants";
 import { DialogBuilder } from "../../utils/dialog-builder";
 import { logger } from "../../utils/logger";
 import { getItem } from "../item/item-utils";
@@ -122,6 +123,10 @@ function Wrench(player: Player, action: TextParser): void {
 
 function Drop(player: Player, action: TextParser): void {
   const itemId = action.getInt("itemID", 0, 0);
+  if (itemId === CADUCEUS_ID) {
+    player.sendTextBubble("Caduceus cannot be dropped.");
+    return;
+  }
   if (itemId === ITEM_ID.FIST || itemId === ITEM_ID.WRENCH) {
     player.variants.sendOnConsoleMessage("You'd be sorry if you lost that.");
     return;

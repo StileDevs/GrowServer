@@ -11,13 +11,14 @@ import {
   MALPRACTICE_SUNDAY_SECONDS,
   MOD_MALPRACTICE,
   MOD_RECOVERING,
-  SURGERY_LOOT_BASE,
+  RECOVERY_SECONDS,
   SURGERY_ROBOT_IDS,
   type MaladyCase,
 } from "../quests/constants";
 import { isSunday } from "../quests/quest-state";
 import { addRoleXp } from "../quests/role-quests";
 import type { World } from "../world/world";
+import { rollSurgeryPrizes } from "./surgery-rewards";
 
 /** Short tray labels used by the reference dialog. */
 const TOOL_LABELS: Readonly<Record<number, string>> = {
@@ -69,6 +70,8 @@ export interface ActiveSurgery {
   tileX: number;
   tileY: number;
   robotId: number;
+  /** Persistent id of the other player in the hospital bed; absent for robots. */
+  patientId?: number;
   maladyName: string;
   /** Secret malady text shown once diagnosed. */
   scanText: string;
@@ -168,11 +171,19 @@ export function handleSurgeryWrench(player: Player, world: World, tileX: number,
 
   const robotName = blockId === HOSPITAL_BED_ID ? "Hospital Bed" : "Surg-E Anatomical Dummy";
   const icon = blockId === HOSPITAL_BED_ID ? HOSPITAL_BED_ID : 4296;
+  const patient = blockId === HOSPITAL_BED_ID ? world.players.find((other) =>
+    other !== player && Math.floor((other.state.x + 10) / 32) === tileX
+    && Math.floor((other.state.y + 15) / 32) === tileY) : undefined;
+  if (blockId === HOSPITAL_BED_ID && !patient) {
+    player.sendTextBubble("Another player must be in the hospital bed to perform surgery.", true);
+    return true;
+  }
 
   player.surgery = {
     tileX,
     tileY,
     robotId: blockId,
+    ...(patient ? { patientId: patient.playerId } : {}),
     maladyName: "",
     scanText: "",
     fixText: "",
@@ -221,6 +232,14 @@ export function handleSurgeryWrench(player: Player, world: World, tileX: number,
 export function startSurgery(player: Player, world: World): void {
   const s = player.surgery;
   if (!s) return;
+  if (s.robotId === HOSPITAL_BED_ID && !world.players.some((other) =>
+    other !== player && other.playerId === s.patientId
+    && Math.floor((other.state.x + 10) / 32) === s.tileX
+    && Math.floor((other.state.y + 15) / 32) === s.tileY)) {
+    player.surgery = null;
+    player.sendTextBubble("The patient is no longer in the hospital bed.", true);
+    return;
+  }
 
   const forced = player.quests.forcedMalady(player.playMods.list().map((entry) => entry.def.id));
   const malady: MaladyCase = (forced >= 0 ? MALADIES[forced] : MALADIES[Math.floor(Math.random() * MALADIES.length)]) ?? MALADIES[0]!;
@@ -589,9 +608,20 @@ function finishSurgery(player: Player, world: World): void {
   const success = s.endText === "success";
 
   if (success) {
-    for (const id of [CADUCEUS_ID, SURGERY_LOOT_BASE[Math.floor(Math.random() * SURGERY_LOOT_BASE.length)] ?? 1258]) {
-      const added = player.addItemInven(id, 1);
-      if (added <= 0) world.drop(player, player.state.x, player.state.y + 16, id, 1);
+    const prizes: string[] = [];
+    const caduceusAdded = player.addItemInven(CADUCEUS_ID, 1);
+    if (caduceusAdded > 0) {
+      prizes.push("1 Caduceus");
+    } else {
+      player.variants.sendOnConsoleMessage("`4No room for Caduceus. It cannot be dropped.``");
+    }
+    const malady = MALADIES.findIndex((entry) => entry.name === s.maladyName);
+    for (const { id, amount } of rollSurgeryPrizes(malady, isSunday())) {
+      const added = player.addItemInven(id, amount);
+      if (added < amount) world.drop(player, player.state.x, player.state.y + 16, id, amount - added);
+      const name = getItem(id)?.name ?? `Item ${id}`;
+      if (added > 0) prizes.push(`${added} ${name}`);
+      if (added < amount) prizes.push(`${amount - added} ${name} (dropped nearby)`);
     }
     player.quests.surgerySkill = Math.min(100, player.quests.surgerySkill + 1);
     player.quests.incrementSurgeryDone();
@@ -610,10 +640,20 @@ function finishSurgery(player: Player, world: World): void {
       player.variants.sendOnConsoleMessage("`2Gemonade bonus: +250 Gems for completing surgery!``");
     }
 
-    player.playMods.add(MOD_RECOVERING, 1200);
-    world.playPositioned("audio/double_chance.wav", player.netID);
-    player.variants.sendOnConsoleMessage("`2Congratulations on your successful surgery!``");
-    player.sendTextBubble("`2Success! You saved the patient!``", true);
+    if (s.robotId === HOSPITAL_BED_ID && s.patientId !== undefined) {
+      const patient = world.players.find((other) => other !== player && other.playerId === s.patientId);
+      patient?.playMods.add(MOD_RECOVERING, RECOVERY_SECONDS);
+    }
+    const successLines = [
+      "Success! You saved the patient!",
+      "A clean operation! The patient is safe!",
+      "Another life saved! Great work, doctor!",
+      "The patient will make a full recovery!",
+    ];
+    const line = successLines[Math.floor(Math.random() * successLines.length)]!;
+    const message = `\`2${line}\`\` You received: \`w${prizes.join(", ")}\`\`.`;
+    player.variants.sendOnConsoleMessage(message);
+    player.sendTextBubble(message, true);
   } else {
     const duration = isSunday() ? MALPRACTICE_SUNDAY_SECONDS : MALPRACTICE_SECONDS;
     player.playMods.add(MOD_MALPRACTICE, duration);
@@ -623,7 +663,9 @@ function finishSurgery(player: Player, world: World): void {
   }
 
   destroyTarget(player, world, s);
-  world.broadcastVariant(Variant.from("OnParticleEffect", 57, [s.tileX * 32 + 16, s.tileY * 32 + 16]));
+  if (!success) {
+    world.broadcastVariant(Variant.from("OnParticleEffect", 57, [s.tileX * 32 + 16, s.tileY * 32 + 16]));
+  }
 
   player.surgery = null;
 }

@@ -2,6 +2,8 @@ import type { ItemDefinition } from "grow-items";
 import type { ExtendBuffer } from "../../../utils/extend-buffer";
 import { getItem } from "../../item/item-utils";
 import { FISHING_BAITS } from "../../fishing/fishing-manager";
+import { returnFishOrDrop } from "../../fishing/fish-inventory";
+import { getFishMaxWeight } from "../../fishing/fish-weights";
 import type { Player } from "../../player";
 import { ActionTypes, LockPermission, TileFlags } from "../constants";
 import { Tile } from "../tile";
@@ -22,23 +24,27 @@ const LEFTOVER_MS = 24 * 60 * 60 * 1000;
 /** Water buckets above the trap raise the maximum size, up to this depth. */
 const MAX_DEPTH = 3;
 
-/** Bait tiers and the crabs each one can attract (wiki table). */
-const TRAP_TIERS: ReadonlyArray<{ baits: readonly number[]; maxLbs: number; pool: readonly number[] }> = [
-  { baits: [2914], maxLbs: 5, pool: [3458, 3452, 3460] },
-  { baits: [3012, 4246], maxLbs: 15, pool: [3458, 3452, 3460] },
-  { baits: [3014], maxLbs: 25, pool: [3458, 3452, 3460, 3450] },
-  { baits: [3016, 4248], maxLbs: 40, pool: [3458, 3452, 3460, 3450, 3456, 3454, 3464, 12448] },
-  { baits: [3018, 3098], maxLbs: 50, pool: [3458, 3452, 3460, 3450, 3456, 3454, 3464, 3812, 4760, 12448] },
-  { baits: [3020], maxLbs: 200, pool: [3458, 3452, 3460, 3450, 3456, 3454, 3464, 3812, 4760, 12448] },
+/** Crab and equipment pools unlocked by bait quality and water depth. */
+const COMMON = [3458, 3452, 3460];
+const LOBSTER = [...COMMON, 3450];
+const DUNGEON = [...LOBSTER, 3456];
+const KING = [...DUNGEON, 3454];
+const ALL = [...KING, 3464, 3812, 4760, 12448];
+const TRAP_TIERS = [
+  { baits: [2914], maxLbs: 5, pools: [COMMON, COMMON, COMMON, COMMON] },
+  { baits: [3012, 4246], maxLbs: 15, pools: [COMMON, COMMON, LOBSTER, DUNGEON] },
+  { baits: [3014], maxLbs: 25, pools: [LOBSTER, DUNGEON, DUNGEON, DUNGEON] },
+  { baits: [3016, 4248], maxLbs: 40, pools: [DUNGEON, DUNGEON, KING, [...KING, 3464, 12448]] },
+  { baits: [3018, 3098, 3218], maxLbs: 50, pools: [DUNGEON, DUNGEON, [...KING, 3464], ALL] },
+  { baits: [3020], maxLbs: 200, pools: [ALL, ALL, ALL, ALL] },
 ];
 
-const DEFAULT_TIER = TRAP_TIERS[0]!;
-
-/** Tier definition used for a bait. */
-function tierFor(baitId: number): (typeof TRAP_TIERS)[number] {
-  return TRAP_TIERS.find((tier) => tier.baits.includes(baitId)) ?? DEFAULT_TIER;
+/** Resolves the wiki's bait/depth reward table; unlisted bait uses the basic tier. */
+export function getLobsterTrapRewards(baitId: number, depth: number): { maxLbs: number; pool: readonly number[] } {
+  const tier = TRAP_TIERS.find((entry) => entry.baits.includes(baitId)) ?? TRAP_TIERS[0]!;
+  const level = Math.max(0, Math.min(MAX_DEPTH, Math.floor(depth)));
+  return { maxLbs: baitId === 3020 ? 200 : tier.maxLbs * (1 + level), pool: tier.pools[level]! };
 }
-
 /**
  * Lobster Trap: load it with five bait, wait one to two days and punch it to
  * collect a crab. Water buckets stacked above raise the maximum size.
@@ -105,6 +111,8 @@ export class LobsterTrapTile extends Tile {
       await this.onPunchFail(player);
       return false;
     }
+    // Another punch may have harvested this trap while permission was resolving.
+    if (this.data.trap !== trap) return true;
 
     const now = Date.now();
     if (now < trap.readyAt) {
@@ -128,19 +136,20 @@ export class LobsterTrapTile extends Tile {
       return true;
     }
 
-    const tier = tierFor(trap.baitId);
-    const maxLbs = tier.maxLbs * (1 + this.depth());
-    const lbs = Math.max(1, Math.floor(Math.random() * maxLbs) + 1);
+    const tier = getLobsterTrapRewards(trap.baitId, this.depth());
     const caught = tier.pool[Math.floor(Math.random() * tier.pool.length)] ?? 3458;
-
-    const added = player.addItemInven(caught, 1);
-    if (added <= 0) this.world.drop(player, this.data.x * 32, this.data.y * 32, caught, 1);
-
+    const fishMax = getFishMaxWeight(caught);
+    const lbs = fishMax > 0 ? Math.floor(Math.random() * Math.min(tier.maxLbs, fishMax)) + 1 : 1;
     delete this.data.trap;
+    if (fishMax > 0) {
+      returnFishOrDrop(player, this.world, caught, lbs, this.data.x, this.data.y);
+    } else if (player.addItemInven(caught, 1) <= 0) {
+      this.world.drop(player, this.data.x * 32, this.data.y * 32, caught, 1);
+    }
     this.world.markDirty();
     this.tileUpdate();
     this.world.playPositioned("audio/getpoint.wav", player.netID);
-    player.sendTextBubble(`You caught a \`2${lbs} lb. ${getItem(caught)?.name ?? "Crawdad"}\`w!\`\``, true);
+    player.sendTextBubble(`You caught a \`2${fishMax > 0 ? `${lbs} lb. ` : ""}${getItem(caught)?.name ?? caught}\`w!\`\``, true);
     return true;
   }
 }
@@ -150,7 +159,7 @@ export class LobsterTrapTile extends Tile {
  * @returns true when the tile is a lobster trap (handled or refused).
  */
 export async function loadLobsterTrap(player: Player, world: World, block: TileData, itemId: number): Promise<boolean> {
-  if (getItem(block.fg)?.id !== LOBSTER_TRAP) return false;
+  if (block.fg !== LOBSTER_TRAP) return false;
   if (!FISHING_BAITS.has(itemId)) return false;
 
   if (block.trap) {
@@ -162,13 +171,14 @@ export async function loadLobsterTrap(player: Player, world: World, block: TileD
     player.sendTextBubble("You don't have permission to use that trap!", true);
     return true;
   }
+  if (block.trap || block.fg !== LOBSTER_TRAP) return true;
 
   if (player.inventory.getAmount(itemId) < BAIT_COST) {
     player.sendTextBubble(`You need ${BAIT_COST} ${getItem(itemId)?.name ?? "bait"} to load the trap!`, true);
     return true;
   }
 
-  player.removeItemInven(itemId, BAIT_COST, true);
+  if (player.removeItemInven(itemId, BAIT_COST, true) !== BAIT_COST) return true;
   const now = Date.now();
   block.trap = {
     baitId: itemId,

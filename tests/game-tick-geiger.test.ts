@@ -1,6 +1,19 @@
 import { describe, expect, test } from "bun:test";
 import { GameUpdatePacket } from "../src/game/packets/game-packet";
-import { tickGeiger } from "../src/game/geiger/geiger-manager";
+import { tickGeiger, rollGeigerReward } from "../src/game/geiger/geiger-manager";
+
+test("normal geiger rewards respect explicit rarity weights", () => {
+  const counts: Record<number, number> = {};
+  for (let i = 0; i < 1235; i++) {
+    const id = rollGeigerReward(() => (i + 0.5) / 1235);
+    counts[id] = (counts[id] ?? 0) + 1;
+  }
+  expect(counts[6416]).toBe(100);
+  expect(counts[2244]).toBe(10);
+  expect(counts[2248]).toBe(2);
+  expect(counts[2250]).toBe(1);
+  expect(counts[12502]).toBe(1);
+});
 import type { Player } from "../src/game/player";
 import type { World } from "../src/game/world/world";
 
@@ -24,7 +37,7 @@ function fakePlayer(): FakePlayer {
     state: { x: 0, y: 0 },
     inventory: { clothes: { hand: 2204 } },
     playMods: { has: () => false },
-    geiger: { targetX: 10_000, targetY: 10_000, nextPulseAt: 0 },
+    geiger: { targetX: 10_000, targetY: 10_000, lastPulseAt: 0 },
     sent: [],
     sendBuffer(buffer: Buffer) {
       player.sent.push(buffer);
@@ -44,7 +57,7 @@ function lastRing(player: FakePlayer): number | null {
 
 /** Places the target on the same row, `blocks` away. */
 function targetBlocksAway(player: FakePlayer, blocks: number): void {
-  player.geiger = { targetX: blocks * TILE_PX, targetY: 0, nextPulseAt: 0 };
+  player.geiger = { targetX: blocks * TILE_PX, targetY: 0, lastPulseAt: 0 };
 }
 
 describe("geiger signal bands", () => {
@@ -84,22 +97,22 @@ describe("geiger signal bands", () => {
     expect(lastRing(player)).toBe(2);
   });
 
-  test("rapid green rings inside 4 blocks", () => {
+  test("green pulses accelerate with proximity inside 4 blocks", () => {
     const player = fakePlayer();
     targetBlocksAway(player, 4);
 
     tickGeiger(asPlayer(player), 1_000);
     expect(lastRing(player)).toBe(2);
 
-    // the rapid band pulses on each 250 ms fast tick, not every other one
+    // Four blocks is still outside the fastest close-range pulse.
     tickGeiger(asPlayer(player), 1_250);
-    expect(player.sent).toHaveLength(2);
+    expect(player.sent).toHaveLength(1);
 
-    tickGeiger(asPlayer(player), 1_500);
-    expect(player.sent).toHaveLength(3);
+    tickGeiger(asPlayer(player), 1_824);
+    expect(player.sent).toHaveLength(2);
   });
 
-  test("normal bands keep the 600 ms interval", () => {
+  test("normal bands use the distance-adaptive interval", () => {
     const player = fakePlayer();
     targetBlocksAway(player, 10);
 
@@ -107,7 +120,7 @@ describe("geiger signal bands", () => {
     tickGeiger(asPlayer(player), 1_250);
     expect(player.sent).toHaveLength(1);
 
-    tickGeiger(asPlayer(player), 1_600);
+    tickGeiger(asPlayer(player), 2_880);
     expect(player.sent).toHaveLength(2);
   });
 });
@@ -123,7 +136,7 @@ describe("geiger game tick", () => {
     tickGeiger(asPlayer(player), 1_100);
     expect(player.sent).toHaveLength(1);
 
-    tickGeiger(asPlayer(player), 1_700);
+    tickGeiger(asPlayer(player), 4_000);
     expect(player.sent).toHaveLength(2);
   });
 

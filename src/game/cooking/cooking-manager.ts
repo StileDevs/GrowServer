@@ -368,8 +368,6 @@ registerDialog("homeoven_edit", async (player, action) => {
   world.playPositioned("audio/MenuClick.wav", player.netID);
   tileFrom(world, block).tileUpdate();
   world.markDirty();
-
-  player.sendTextBubble(`\`2[\`w${itemName(itemId)}\`\` is still cold.]\`\``, true);
 });
 
 /**
@@ -467,7 +465,6 @@ export async function handleOvenItemPlace(
     world.playPositioned("audio/MenuClick.wav", player.netID);
     tileFrom(world, block).tileUpdate();
     world.markDirty();
-    player.sendTextBubble("`2[`wSalsa`` is sizzling in the oven!]``", true);
     return true;
   }
 
@@ -487,8 +484,6 @@ export async function handleOvenItemPlace(
   world.playPositioned("audio/MenuClick.wav", player.netID);
   tileFrom(world, block).tileUpdate();
   world.markDirty();
-
-  player.sendTextBubble(`\`2[\`w${itemName(itemId)}\`\` is still cold.]\`\``, true);
   return true;
 }
 
@@ -689,7 +684,7 @@ export function finishOvenCooking(player: Player, world: World, block: TileData)
 
 /**
  * Periodic 1-second tick for all active ovens in a world.
- * Emits stage notifications as ingredients warm up, cook, reach perfection, or burn.
+ * Handles oven burnout without interrupting the chef with stage notifications.
  */
 export function tickCooking(world: World): void {
   if (world.players.length === 0) return;
@@ -702,7 +697,6 @@ export function tickCooking(world: World): void {
     const elapsedLowSec = Math.floor(getOvenElapsedLowMs(oven, now) / 1000);
     if (elapsedLowSec <= oven.lastTickSec) continue;
 
-    const prevSec = oven.lastTickSec;
     oven.lastTickSec = elapsedLowSec;
 
     // Find the chef in the world (or fall back to any player in the world for the tile bubble)
@@ -723,31 +717,5 @@ export function tickCooking(world: World): void {
       continue;
     }
 
-    // Check if a matching recipe has reached its exact target cook duration
-    for (const recipe of OVEN_RECIPES) {
-      const targetSec = Math.round(recipe.durationSec);
-      if (prevSec < targetSec && elapsedLowSec >= targetSec) {
-        if (scoreRecipeMatch(oven, recipe, recipe.durationSec) >= 50 && chef) {
-          world.sendParticleEffect(36, block.x * 32 + 16, block.y * 32 + 16);
-          chef.sendTextBubble(`\`2[\`w${recipe.name}\`\` is cooked to \`$Perfection!\`\` Punch the oven now!]\`\``, true);
-        }
-      }
-    }
-
-    // Emit stage transitions for the first ingredient as a helpful visual cue
-    const firstIng = oven.ingredients[0];
-    if (firstIng && chef) {
-      const ingAddedSec = Math.floor(firstIng.timeAddedMs / 1000);
-      const prevAge = prevSec - ingAddedSec;
-      const ingAgeSec = elapsedLowSec - ingAddedSec;
-      const name = itemName(firstIng.itemId);
-      if (prevAge < 15 && ingAgeSec >= 15) {
-        chef.sendTextBubble(`\`2[\`w${name}\`\` is uncooked.]\`\``, true);
-      } else if (prevAge < 35 && ingAgeSec >= 35) {
-        chef.sendTextBubble(`\`2[\`w${name}\`\` is mostly cooked.]\`\``, true);
-      } else if (prevAge < 125 && ingAgeSec >= 125) {
-        chef.sendTextBubble(`\`4[\`w${name}\`\` is burning!]\`\``, true);
-      }
-    }
   }
 }

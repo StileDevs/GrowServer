@@ -6,59 +6,44 @@ import { isSunday } from "../quests/quest-state";
 import { addRoleXp } from "../quests/role-quests";
 import type { World } from "../world/world";
 
-/** Active Geiger Counter item id. */
-const GEIGER_COUNTER = 2204;
-/** Minimum time between radiation pulses. */
-const GEIGER_PULSE_MS = 600;
-/** Pixel size of one world block. */
-const TILE_PX = 32;
-
-/**
- * Ring bands in blocks, from the wiki:
- * red 15-30, yellow 7.5-15, green 4-7.5, rapid green 0-4.
- * Further than 30 blocks emits no rings at all.
- */
-const GEIGER_RED_RANGE_BLOCKS = 30;
-const GEIGER_YELLOW_RANGE_BLOCKS = 15;
-const GEIGER_GREEN_RANGE_BLOCKS = 7.5;
-const GEIGER_RAPID_GREEN_RANGE_BLOCKS = 4;
-/**
- * Faster pulse interval inside the rapid green band. Kept below the 250 ms
- * fast tick so one pulse lands on every tick instead of every other tick.
- */
-const GEIGER_RAPID_PULSE_MS = 200;
-
-/** Ring color carried in particle 114's `speedX`. */
-const GEIGER_SIGNAL = {
-  RED: 0,
-  YELLOW: 1,
-  GREEN: 2,
-  FOUND: 3,
-} as const;
-
-/** Rewards obtainable through Geiger hunting, from GTOS world.h:4204. */
+/** Normal Geiger rewards, including the wiki's Nerd Hair prize. */
 export const GEIGER_REWARDS: readonly number[] = [
-  6416, 2206, 3792, 3196, 4654, 3306, 1498, 1500, 2804, 2806, 8270, 8272, 8274, 2242, 2244, 2246, 2248, 2250,
+  6416, 2206, 3792, 3196, 4654, 3306, 1498, 1500, 2804, 2806, 8270, 8272, 8274, 2242, 2244, 2246, 2248, 2250, 12502,
 ];
+
+/** Server balance weights; official per-item probabilities are not published. */
+const REWARD_WEIGHTS: Readonly<Record<number, number>> = {
+  2242: 10, 2244: 10, 2246: 10, 2248: 2, 2250: 1, 4654: 1, 12502: 1,
+};
+const STUFF_IDS = new Set([1498, 1500, 2804, 2806, 8270, 8272, 8274]);
+
+/** Picks a normal prize using the server's explicit rarity weights. */
+export function rollGeigerReward(random = Math.random): number {
+  const total = GEIGER_REWARDS.reduce((sum, id) => sum + (REWARD_WEIGHTS[id] ?? 100), 0);
+  let roll = random() * total;
+  for (const id of GEIGER_REWARDS) {
+    roll -= REWARD_WEIGHTS[id] ?? 100;
+    if (roll < 0) return id;
+  }
+  return GEIGER_REWARDS[GEIGER_REWARDS.length - 1]!;
+}
+
+/** Awards the prize bundle and drops any amount that cannot fit in the backpack. */
+function grantGeigerReward(player: Player, world: World, id: number): void {
+  const amount = id === 6416 ? 5 : STUFF_IDS.has(id) ? 3 : 1;
+  const added = player.addItemInven(id, amount);
+  if (added < amount) world.drop(player, player.state.x, player.state.y + 16, id, amount - added);
+}
 
 export interface GeigerSession {
   targetX: number;
   targetY: number;
-  nextPulseAt: number;
+  lastPulseAt: number;
 }
 
 /**
- * Handles Geiger detection from a movement packet: immediate feedback while
- * the player walks. Idle pulses are driven by `tickGeiger` from the game tick.
+ * Handles Geiger Counter radiation detection on the fast server tick.
  * Transcribed from GTOS Main.cpp:17418 and world.h:4194 (find_geiger).
- */
-export function handleGeigerMovement(player: Player, world: World): void {
-  pulseGeiger(player, world, Date.now());
-}
-
-/**
- * Server-authoritative Geiger pulse. Called by the game tick even when the
- * player is not sending movement packets.
  */
 export function tickGeiger(player: Player, now = Date.now()): void {
   const world = player.world;
@@ -66,12 +51,8 @@ export function tickGeiger(player: Player, now = Date.now()): void {
     player.geiger = null;
     return;
   }
-  pulseGeiger(player, world, now);
-}
-
-function pulseGeiger(player: Player, world: World, now: number): void {
   // Must hold Geiger Counter (2204) in hand
-  if (player.inventory.clothes.hand !== GEIGER_COUNTER) {
+  if (player.inventory.clothes.hand !== 2204) {
     player.geiger = null;
     return;
   }
@@ -83,23 +64,32 @@ function pulseGeiger(player: Player, world: World, now: number): void {
     player.geiger = {
       targetX: Math.floor(Math.random() * ((world.width - 4) * 32)) + 64,
       targetY: Math.floor(Math.random() * ((world.height - 4) * 32)) + 64,
-      nextPulseAt: 0,
+      lastPulseAt: 0,
     };
   }
 
-  if (now < player.geiger.nextPulseAt) return;
-
   const dx = player.geiger.targetX - player.state.x;
   const dy = player.geiger.targetY - player.state.y;
+  const dist = Math.hypot(dx, dy);
+  // Preserve the upstream detection limit of 30 world blocks.
+  if (dist > 30 * 32) return;
 
-  // 1. RADIATION SOURCE FOUND! (standing on the source block)
-  if (Math.abs(dx) <= TILE_PX && Math.abs(dy) <= TILE_PX) {
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
+  // Recompute from the current distance so approaching speeds up immediately.
+  // Green slows to 1.4 seconds at its outer edge, reaching 200ms only within 50px.
+  // Continue smoothly through yellow (1.4–2.2 seconds) and red (up to 3 seconds).
+  const pulseIntervalMs = dist <= 200
+    ? 200 + Math.max(0, dist - 50) * 8
+    : Math.min(3000, 1400 + (dist - 200) * 4);
+  if (player.geiger.lastPulseAt !== 0 && now - player.geiger.lastPulseAt < pulseIntervalMs) return;
+  player.geiger.lastPulseAt = now;
+
+  // 1. RADIATION SOURCE FOUND! (within ~30 pixels)
+  if (Math.abs(dx) <= 32 && Math.abs(dy) <= 32) {
     // Found particle: size 3 (white flash/source found)
-    sendGeigerParticle(player, GEIGER_SIGNAL.FOUND);
+    sendGeigerParticle(player, 3);
 
     // Roll reward item from GTOS table
-    const rewardId = GEIGER_REWARDS[Math.floor(Math.random() * GEIGER_REWARDS.length)] ?? 2206;
+    const rewardId = rollGeigerReward();
     const itemName = getItem(rewardId)?.name ?? `Item ${rewardId}`;
 
     const roleState = player.quests.role("geiger");
@@ -107,26 +97,23 @@ function pulseGeiger(player: Player, world: World, now: number): void {
 
     // Role perks from GTOS
     const infusionChance = Math.min(5, Math.max(1, Math.floor(geigerLevel / 2)));
-    if (geigerLevel >= 2 && Math.random() * 100 <= infusionChance) {
-      const bonusReward = GEIGER_REWARDS[Math.floor(Math.random() * GEIGER_REWARDS.length)] ?? 2206;
-      player.addItemInven(bonusReward, 1);
+    if (geigerLevel >= 2 && Math.random() * 100 < infusionChance) {
+      const bonusReward = rollGeigerReward();
+      grantGeigerReward(player, world, bonusReward);
       player.variants.sendOnConsoleMessage(`Infusion bonus obtained \`w${getItem(bonusReward)?.name ?? bonusReward}\`\``);
-    } else if (geigerLevel >= 3 && Math.random() * 100 <= 1) {
-      player.addItemInven(4658, 1); // Uranium Block
+    } else if (geigerLevel >= 3 && Math.random() * 100 < 1) {
+      grantGeigerReward(player, world, 4658); // Uranium Block
       player.variants.sendOnConsoleMessage("Obtained Uranium Block");
-    } else if (geigerLevel >= 5 && Math.random() * 100 <= 1) {
-      player.addItemInven(6976, 1); // Electrical Power Cube
+    } else if (geigerLevel >= 5 && Math.random() * 100 < 1) {
+      grantGeigerReward(player, world, 6976); // Electrical Power Cube
       player.variants.sendOnConsoleMessage("Obtained Electrical Power Cube");
-    } else if (geigerLevel >= 10 && Math.random() * 100 <= 1) {
-      player.addItemInven(1486, 1); // Growtoken
+    } else if (geigerLevel >= 10 && Math.random() * 100 < 1) {
+      grantGeigerReward(player, world, 1486); // Growtoken
       player.variants.sendOnConsoleMessage("Obtained Growtoken");
     }
 
     // Grant found item
-    const added = player.addItemInven(rewardId, 1);
-    if (added <= 0) {
-      world.drop(player, player.state.x, player.state.y + 16, rewardId, 1);
-    }
+    grantGeigerReward(player, world, rewardId);
 
     addRoleXp(player, "geiger", 10);
     player.sendTextBubble(`I found a \`2${itemName}\`\`!`, true);
@@ -134,9 +121,9 @@ function pulseGeiger(player: Player, world: World, now: number): void {
 
     // Weil Magic perk (Level >= 4): 1% to 2% chance of gaining extra bonus drop (GTOS world.h:4038)
     const weilChance = geigerLevel >= 7 ? 2 : geigerLevel >= 4 ? 1 : 0;
-    if (weilChance > 0 && Math.random() * 100 <= weilChance) {
-      const extraItem = GEIGER_REWARDS[Math.floor(Math.random() * GEIGER_REWARDS.length)] ?? 2206;
-      player.addItemInven(extraItem, 1);
+    if (weilChance > 0 && Math.random() * 100 < weilChance) {
+      const extraItem = rollGeigerReward();
+      grantGeigerReward(player, world, extraItem);
       player.variants.sendOnConsoleMessage(`\`2[Weil Magic]: Extra bonus item obtained \`w${getItem(extraItem)?.name ?? extraItem}\`\`!`);
     }
 
@@ -147,7 +134,7 @@ function pulseGeiger(player: Player, world: World, now: number): void {
     // Apply Irradiated play mod (30 minutes, or 15 minutes on Sunday)
     // Infusion perk: 1% to 5% chance of avoiding irradiated mod (GTOS Main.cpp:14028)
     const avoidModChance = geigerLevel >= 2 ? Math.min(5, Math.max(1, Math.floor(geigerLevel / 2))) : 0;
-    if (avoidModChance > 0 && Math.random() * 100 <= avoidModChance) {
+    if (avoidModChance > 0 && Math.random() * 100 < avoidModChance) {
       player.variants.sendOnConsoleMessage("`2[Infusion Perk]: You avoided radiation!``");
     } else {
       const duration = isSunday() ? 900 : 1800;
@@ -160,37 +147,15 @@ function pulseGeiger(player: Player, world: World, now: number): void {
     return;
   }
 
-  // 2. RADIATION DISTANCE SIGNALS, from the wiki:
-  // red 15-30 blocks, yellow 7.5-15, green 4-7.5, rapid green 0-4.
-  // Beyond 30 blocks there is no ring at all and the signal stays silent.
-  const distanceInBlocks = Math.hypot(dx, dy) / TILE_PX;
-  if (distanceInBlocks > GEIGER_RED_RANGE_BLOCKS) {
-    // too far to detect: no rings, so the next pulse comes at the normal rate
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
-    return;
+  // 2. RADIATION DISTANCE SIGNALS:
+  // Red: 15–30 blocks; yellow: 7.5–15 blocks; green: within 7.5 blocks.
+  if (dist > 15 * 32) {
+    sendGeigerParticle(player, 0);
+  } else if (dist > 7.5 * 32) {
+    sendGeigerParticle(player, 1);
+  } else {
+    sendGeigerParticle(player, 2);
   }
-
-  if (distanceInBlocks > GEIGER_YELLOW_RANGE_BLOCKS) {
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
-    sendGeigerParticle(player, GEIGER_SIGNAL.RED);
-    return;
-  }
-
-  if (distanceInBlocks > GEIGER_GREEN_RANGE_BLOCKS) {
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
-    sendGeigerParticle(player, GEIGER_SIGNAL.YELLOW);
-    return;
-  }
-
-  if (distanceInBlocks > GEIGER_RAPID_GREEN_RANGE_BLOCKS) {
-    player.geiger.nextPulseAt = now + GEIGER_PULSE_MS;
-    sendGeigerParticle(player, GEIGER_SIGNAL.GREEN);
-    return;
-  }
-
-  // rapid green: same ring, pulsing faster
-  player.geiger.nextPulseAt = now + GEIGER_RAPID_PULSE_MS;
-  sendGeigerParticle(player, GEIGER_SIGNAL.GREEN);
 }
 
 /**
