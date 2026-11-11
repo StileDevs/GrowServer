@@ -6,10 +6,34 @@ import { isSunday } from "../quests/quest-state";
 import { addRoleXp } from "../quests/role-quests";
 import type { World } from "../world/world";
 
-/** Rewards obtainable through Geiger hunting, from GTOS world.h:4204. */
+/** Normal Geiger rewards, including the wiki's Nerd Hair prize. */
 export const GEIGER_REWARDS: readonly number[] = [
-  6416, 2206, 3792, 3196, 4654, 3306, 1498, 1500, 2804, 2806, 8270, 8272, 8274, 2242, 2244, 2246, 2248, 2250,
+  6416, 2206, 3792, 3196, 4654, 3306, 1498, 1500, 2804, 2806, 8270, 8272, 8274, 2242, 2244, 2246, 2248, 2250, 12502,
 ];
+
+/** Server balance weights; official per-item probabilities are not published. */
+const REWARD_WEIGHTS: Readonly<Record<number, number>> = {
+  2242: 10, 2244: 10, 2246: 10, 2248: 2, 2250: 1, 4654: 1, 12502: 1,
+};
+const STUFF_IDS = new Set([1498, 1500, 2804, 2806, 8270, 8272, 8274]);
+
+/** Picks a normal prize using the server's explicit rarity weights. */
+export function rollGeigerReward(random = Math.random): number {
+  const total = GEIGER_REWARDS.reduce((sum, id) => sum + (REWARD_WEIGHTS[id] ?? 100), 0);
+  let roll = random() * total;
+  for (const id of GEIGER_REWARDS) {
+    roll -= REWARD_WEIGHTS[id] ?? 100;
+    if (roll < 0) return id;
+  }
+  return GEIGER_REWARDS[GEIGER_REWARDS.length - 1]!;
+}
+
+/** Awards the prize bundle and drops any amount that cannot fit in the backpack. */
+function grantGeigerReward(player: Player, world: World, id: number): void {
+  const amount = id === 6416 ? 5 : STUFF_IDS.has(id) ? 3 : 1;
+  const added = player.addItemInven(id, amount);
+  if (added < amount) world.drop(player, player.state.x, player.state.y + 16, id, amount - added);
+}
 
 export interface GeigerSession {
   targetX: number;
@@ -65,7 +89,7 @@ export function tickGeiger(player: Player, now = Date.now()): void {
     sendGeigerParticle(player, 3);
 
     // Roll reward item from GTOS table
-    const rewardId = GEIGER_REWARDS[Math.floor(Math.random() * GEIGER_REWARDS.length)] ?? 2206;
+    const rewardId = rollGeigerReward();
     const itemName = getItem(rewardId)?.name ?? `Item ${rewardId}`;
 
     const roleState = player.quests.role("geiger");
@@ -73,26 +97,23 @@ export function tickGeiger(player: Player, now = Date.now()): void {
 
     // Role perks from GTOS
     const infusionChance = Math.min(5, Math.max(1, Math.floor(geigerLevel / 2)));
-    if (geigerLevel >= 2 && Math.random() * 100 <= infusionChance) {
-      const bonusReward = GEIGER_REWARDS[Math.floor(Math.random() * GEIGER_REWARDS.length)] ?? 2206;
-      player.addItemInven(bonusReward, 1);
+    if (geigerLevel >= 2 && Math.random() * 100 < infusionChance) {
+      const bonusReward = rollGeigerReward();
+      grantGeigerReward(player, world, bonusReward);
       player.variants.sendOnConsoleMessage(`Infusion bonus obtained \`w${getItem(bonusReward)?.name ?? bonusReward}\`\``);
-    } else if (geigerLevel >= 3 && Math.random() * 100 <= 1) {
-      player.addItemInven(4658, 1); // Uranium Block
+    } else if (geigerLevel >= 3 && Math.random() * 100 < 1) {
+      grantGeigerReward(player, world, 4658); // Uranium Block
       player.variants.sendOnConsoleMessage("Obtained Uranium Block");
-    } else if (geigerLevel >= 5 && Math.random() * 100 <= 1) {
-      player.addItemInven(6976, 1); // Electrical Power Cube
+    } else if (geigerLevel >= 5 && Math.random() * 100 < 1) {
+      grantGeigerReward(player, world, 6976); // Electrical Power Cube
       player.variants.sendOnConsoleMessage("Obtained Electrical Power Cube");
-    } else if (geigerLevel >= 10 && Math.random() * 100 <= 1) {
-      player.addItemInven(1486, 1); // Growtoken
+    } else if (geigerLevel >= 10 && Math.random() * 100 < 1) {
+      grantGeigerReward(player, world, 1486); // Growtoken
       player.variants.sendOnConsoleMessage("Obtained Growtoken");
     }
 
     // Grant found item
-    const added = player.addItemInven(rewardId, 1);
-    if (added <= 0) {
-      world.drop(player, player.state.x, player.state.y + 16, rewardId, 1);
-    }
+    grantGeigerReward(player, world, rewardId);
 
     addRoleXp(player, "geiger", 10);
     player.sendTextBubble(`I found a \`2${itemName}\`\`!`, true);
@@ -100,9 +121,9 @@ export function tickGeiger(player: Player, now = Date.now()): void {
 
     // Weil Magic perk (Level >= 4): 1% to 2% chance of gaining extra bonus drop (GTOS world.h:4038)
     const weilChance = geigerLevel >= 7 ? 2 : geigerLevel >= 4 ? 1 : 0;
-    if (weilChance > 0 && Math.random() * 100 <= weilChance) {
-      const extraItem = GEIGER_REWARDS[Math.floor(Math.random() * GEIGER_REWARDS.length)] ?? 2206;
-      player.addItemInven(extraItem, 1);
+    if (weilChance > 0 && Math.random() * 100 < weilChance) {
+      const extraItem = rollGeigerReward();
+      grantGeigerReward(player, world, extraItem);
       player.variants.sendOnConsoleMessage(`\`2[Weil Magic]: Extra bonus item obtained \`w${getItem(extraItem)?.name ?? extraItem}\`\`!`);
     }
 
@@ -113,7 +134,7 @@ export function tickGeiger(player: Player, now = Date.now()): void {
     // Apply Irradiated play mod (30 minutes, or 15 minutes on Sunday)
     // Infusion perk: 1% to 5% chance of avoiding irradiated mod (GTOS Main.cpp:14028)
     const avoidModChance = geigerLevel >= 2 ? Math.min(5, Math.max(1, Math.floor(geigerLevel / 2))) : 0;
-    if (avoidModChance > 0 && Math.random() * 100 <= avoidModChance) {
+    if (avoidModChance > 0 && Math.random() * 100 < avoidModChance) {
       player.variants.sendOnConsoleMessage("`2[Infusion Perk]: You avoided radiation!``");
     } else {
       const duration = isSunday() ? 900 : 1800;

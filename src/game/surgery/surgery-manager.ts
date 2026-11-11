@@ -11,6 +11,7 @@ import {
   MALPRACTICE_SUNDAY_SECONDS,
   MOD_MALPRACTICE,
   MOD_RECOVERING,
+  RECOVERY_SECONDS,
   SURGERY_ROBOT_IDS,
   type MaladyCase,
 } from "../quests/constants";
@@ -69,6 +70,8 @@ export interface ActiveSurgery {
   tileX: number;
   tileY: number;
   robotId: number;
+  /** Persistent id of the other player in the hospital bed; absent for robots. */
+  patientId?: number;
   maladyName: string;
   /** Secret malady text shown once diagnosed. */
   scanText: string;
@@ -168,11 +171,19 @@ export function handleSurgeryWrench(player: Player, world: World, tileX: number,
 
   const robotName = blockId === HOSPITAL_BED_ID ? "Hospital Bed" : "Surg-E Anatomical Dummy";
   const icon = blockId === HOSPITAL_BED_ID ? HOSPITAL_BED_ID : 4296;
+  const patient = blockId === HOSPITAL_BED_ID ? world.players.find((other) =>
+    other !== player && Math.floor((other.state.x + 10) / 32) === tileX
+    && Math.floor((other.state.y + 15) / 32) === tileY) : undefined;
+  if (blockId === HOSPITAL_BED_ID && !patient) {
+    player.sendTextBubble("Another player must be in the hospital bed to perform surgery.", true);
+    return true;
+  }
 
   player.surgery = {
     tileX,
     tileY,
     robotId: blockId,
+    ...(patient ? { patientId: patient.playerId } : {}),
     maladyName: "",
     scanText: "",
     fixText: "",
@@ -221,6 +232,14 @@ export function handleSurgeryWrench(player: Player, world: World, tileX: number,
 export function startSurgery(player: Player, world: World): void {
   const s = player.surgery;
   if (!s) return;
+  if (s.robotId === HOSPITAL_BED_ID && !world.players.some((other) =>
+    other !== player && other.playerId === s.patientId
+    && Math.floor((other.state.x + 10) / 32) === s.tileX
+    && Math.floor((other.state.y + 15) / 32) === s.tileY)) {
+    player.surgery = null;
+    player.sendTextBubble("The patient is no longer in the hospital bed.", true);
+    return;
+  }
 
   const forced = player.quests.forcedMalady(player.playMods.list().map((entry) => entry.def.id));
   const malady: MaladyCase = (forced >= 0 ? MALADIES[forced] : MALADIES[Math.floor(Math.random() * MALADIES.length)]) ?? MALADIES[0]!;
@@ -621,7 +640,10 @@ function finishSurgery(player: Player, world: World): void {
       player.variants.sendOnConsoleMessage("`2Gemonade bonus: +250 Gems for completing surgery!``");
     }
 
-    player.playMods.add(MOD_RECOVERING, 1200);
+    if (s.robotId === HOSPITAL_BED_ID && s.patientId !== undefined) {
+      const patient = world.players.find((other) => other !== player && other.playerId === s.patientId);
+      patient?.playMods.add(MOD_RECOVERING, RECOVERY_SECONDS);
+    }
     const successLines = [
       "Success! You saved the patient!",
       "A clean operation! The patient is safe!",

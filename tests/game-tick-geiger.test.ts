@@ -1,6 +1,19 @@
 import { describe, expect, test } from "bun:test";
 import { GameUpdatePacket } from "../src/game/packets/game-packet";
-import { tickGeiger } from "../src/game/geiger/geiger-manager";
+import { tickGeiger, rollGeigerReward } from "../src/game/geiger/geiger-manager";
+
+test("normal geiger rewards respect explicit rarity weights", () => {
+  const counts: Record<number, number> = {};
+  for (let i = 0; i < 1235; i++) {
+    const id = rollGeigerReward(() => (i + 0.5) / 1235);
+    counts[id] = (counts[id] ?? 0) + 1;
+  }
+  expect(counts[6416]).toBe(100);
+  expect(counts[2244]).toBe(10);
+  expect(counts[2248]).toBe(2);
+  expect(counts[2250]).toBe(1);
+  expect(counts[12502]).toBe(1);
+});
 import type { Player } from "../src/game/player";
 import type { World } from "../src/game/world/world";
 
