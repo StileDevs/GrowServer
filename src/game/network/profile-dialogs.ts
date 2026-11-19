@@ -5,9 +5,10 @@ import { Variant } from "../packets/variants";
 import { MAX_LEVEL, Player } from "../player";
 import { formatDuration } from "../player/play-mods";
 import { PLAYER_ROLE_NAMES } from "../../constants";
-import { ITEM_ID } from "../world/constants";
+import { ActionTypes, ITEM_ID } from "../world/constants";
 import { worldManager } from "../world/world-manager";
 import { questDailyDialog, sendGoalsDialog } from "../quests";
+import type { PlayerClothes } from "../player/inventory";
 import { registerDialog } from "./dialog-handler";
 
 /** Buttons of the wrench menu that open one of the client's RML pages. */
@@ -107,6 +108,56 @@ export function otherProfileDialog(target: Player): string {
     .str();
 }
 
+/**
+ * Wardrobe: take worn slots off and put clothing items from the backpack on.
+ */
+function wardrobeDialog(player: Player): string {
+  const dialog = new DialogBuilder()
+    .defaultColor("`o")
+    .addLabelWithIcon("`wWardrobe``", ITEM_ID.WRENCH, "big")
+    .addSpacer("small")
+    .addTextBox("`oTap a worn slot to take it off, or pick a clothing item to put it on.`\`")
+    .addSpacer("small");
+
+  for (const [slot, itemId] of Object.entries(player.inventory.clothes) as Array<[keyof PlayerClothes, number]>) {
+    if (itemId <= 0) continue;
+    dialog.addButton(`unequip_${slot}`, `\`o${slot}\`\`: \`w${getItem(itemId)?.name ?? itemId}\`\``);
+  }
+
+  dialog
+    .addSpacer("small")
+    .addItemPicker("choose", "`wPick a clothing item``", "Wear")
+    .addSpacer("small")
+    .addQuickExit()
+    .endDialog("wardrobe_dialog", "", "Done");
+
+  return dialog.str();
+}
+
+registerDialog("wardrobe_dialog", (player, action) => {
+  const clicked = action.get("buttonClicked") ?? "";
+
+  if (clicked.startsWith("unequip_")) {
+    const slot = clicked.slice("unequip_".length) as keyof PlayerClothes;
+    const itemId = player.inventory.clothes[slot];
+    if (itemId > 0) player.unequipClothes(itemId);
+    player.variants.sendOnDialogRequest(wardrobeDialog(player));
+    return;
+  }
+
+  if (!action.contains("choose")) return;
+  const itemId = action.getInt("choose", 0, 0);
+  const item = getItem(itemId);
+  if (!item || (item.type !== ActionTypes.CLOTHES && item.type !== ActionTypes.ANCES)) {
+    player.sendTextBubble("That isn't something you can wear.", false);
+    return;
+  }
+  if (!player.inventory.hasItem(itemId)) return;
+
+  player.equipClothes(itemId);
+  player.variants.sendOnDialogRequest(wardrobeDialog(player));
+});
+
 /** Worlds owned by a player among the loaded ones. */
 function ownedWorldNames(player: Player): string[] {
   return worldManager.worlds.filter((world) => world.getOwnerPlayerId() === player.playerId).map((world) => world.name);
@@ -136,6 +187,10 @@ registerDialog("popup", (player, action) => {
       for (const name of ownedWorldNames(player)) dialog.addWorldLinkButton(name, name, name);
       dialog.addSpacer("small").endDialog("worlds_list", "", "Back").addQuickExit();
       player.variants.sendOnDialogRequest(dialog.str());
+      return;
+    }
+    case "wardrobe_customization": {
+      player.variants.sendOnDialogRequest(wardrobeDialog(player));
       return;
     }
     case "show_clothes": {
