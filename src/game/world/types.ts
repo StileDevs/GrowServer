@@ -39,6 +39,17 @@ export interface TileData {
     startedAt: number;
     readyAt: number;
   };
+  /** Stored loot of an ITEM_SUCKER block (MAGPLANT and friends). */
+  sucker?: Sucker;
+}
+
+/** Storage of an ITEM_SUCKER machine: one item kind at a time. */
+export interface Sucker {
+  itemId: number;
+  amount: number;
+  capacity: number;
+  /** Whether the machine is currently pulling drops in. */
+  sucking: boolean;
 }
 
 /**
@@ -95,6 +106,8 @@ export interface DroppedItem {
   x: number;
   y: number;
   uid: number;
+  /** Dropped by a broken/harvested block instead of by a player. */
+  fromBreak?: boolean;
 }
 
 export interface Dropped {

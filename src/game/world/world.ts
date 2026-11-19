@@ -20,6 +20,8 @@ export interface DropOptions {
   tree?: boolean;
   /** Never merge into an existing stack on the same tile. */
   noSimilar?: boolean;
+  /** Drop comes from a broken/harvested block, not from a player's backpack. */
+  fromBreak?: boolean;
 }
 
 /** A music block currently playing in a world. */
@@ -532,7 +534,7 @@ export class World {
   /**
    * Drops an item into the world at pixel coordinates.
    */
-  public drop(player: Player, x: number, y: number, id: number, amount: number, { tree, noSimilar }: DropOptions = {}): void {
+  public drop(player: Player, x: number, y: number, id: number, amount: number, { tree, noSimilar, fromBreak }: DropOptions = {}): void {
     const tank = GameUpdatePacket.create({
       type: TANK_PACKET_TYPE.ITEM_CHANGE_OBJECT,
       netID: -1,
@@ -565,6 +567,7 @@ export class World {
 
       amount += similarDrop.amount;
       similarDrop.amount = amount;
+      similarDrop.fromBreak ||= fromBreak || tree === true;
     } else {
       this.data.dropped.items.push({
         id,
@@ -573,6 +576,7 @@ export class World {
         y,
         uid: ++this.data.dropped.uid,
         block: { x: blockX, y: blockY },
+        fromBreak: fromBreak || tree === true,
       });
     }
 
